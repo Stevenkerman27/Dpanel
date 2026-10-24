@@ -6,8 +6,11 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .venv/
+.venv-vortexad/
 venv/
 env/
+runs/backend_probes/
+
 *.egg-info/
 
 # Local configuration and editor files
