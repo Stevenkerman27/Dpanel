@@ -40,7 +40,9 @@ python -m pytest -q test/test_vortexad_backend.py
 # FLOWPanel：独立 Julia 项目/Depot，保持在仓库内部
 # Linux/macOS shell:
 export JULIA_DEPOT_PATH="$PWD/.julia-depot"
-julia --project=. -e 'using Pkg; Pkg.add("FLOWPanel"); using FLOWPanel; println("FLOWPanel installed")'
+mkdir -p runs/backend_probes/flowpanel_env runs/backend_probes/julia_depot
+JULIA_DEPOT_PATH="$PWD/runs/backend_probes/julia_depot" julia --project=runs/backend_probes/flowpanel_env -e 'using Pkg; Pkg.add(["FLOWPanel", "GeoIO", "Rotations"]); using FLOWPanel, GeoIO, Rotations; println("FLOWPanel installed")'
+julia --project=runs/backend_probes/flowpanel_env test/probe_flowpanel.jl
 ```
 
 如安装失败，保存完整日志、命令和退出码，不删除环境，不声称通过。第一轮不要下载大量训练数据或运行生成器训练。
