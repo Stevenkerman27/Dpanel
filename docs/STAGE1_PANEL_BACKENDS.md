@@ -43,6 +43,11 @@ python -m pip install -e runs/backend_probes/src/CSDL_alpha
 python -m pip install -e runs/backend_probes/src/VortexAD
 python -m pytest -q test/test_vortexad_backend.py -s
 python -m pytest -q test/test_vortexad_mesh_vjp.py -s
+
+# Patch only the isolated VortexAD source checkout to expose raw Cp.
+# The patch script is version-guarded and fails rather than patching unknown code.
+python test/patch_vortexad_raw_cp.py runs/backend_probes/src/VortexAD
+python -m pytest -q test/test_vortexad_raw_cp.py -s
 ```
 
 Windows PowerShell 中激活命令改为 `.venv-vortexad\\Scripts\\Activate.ps1`。使用 editable source checkout 是为了确保 `SAMPLE_GEOMETRY_PATH` 能访问上游源码内的样例网格；单纯安装 wheel 当前不满足这个前置条件。若安装/checkout 失败，保存完整日志、命令与退出码，不删除环境，不宣称通过。
@@ -54,6 +59,17 @@ mkdir -p runs/backend_probes/flowpanel_env runs/backend_probes/julia_depot
 JULIA_DEPOT_PATH="$PWD/runs/backend_probes/julia_depot" julia --project=runs/backend_probes/flowpanel_env -e 'using Pkg; Pkg.add(["FLOWPanel", "GeoIO", "Rotations"]); using FLOWPanel, GeoIO, Rotations; println("FLOWPanel installed")'
 JULIA_DEPOT_PATH="$PWD/runs/backend_probes/julia_depot" julia --project=runs/backend_probes/flowpanel_env test/probe_flowpanel.jl
 ```
+
+## 当前实测状态（2026-10-24）
+
+本地 agent 已回报：
+- `test/test_vortexad_backend.py`: 1 passed，冷启动约 159–166 s，峰值 RSS 876 MB；
+- `test/test_vortexad_mesh_vjp.py`: 1 passed，约 8.6–8.8 s，峰值 RSS 794 MB；
+- 固定拓扑下单节点 z 坐标的局部面力 VJP 与中心差分相对误差约 `4.9e-8`（810 节点、1616 三角面元）。
+- 以上两项仍使用 `Cp cutoff=-5`；**原始压力门槛未通过**。
+- FLOWPanel 因本地没有 Julia 工具链仍未运行。
+
+下一项验收是运行 `test/test_vortexad_raw_cp.py`。它需要先对独立 VortexAD 源码 checkout 运行 `test/patch_vortexad_raw_cp.py`。补丁只用于诊断：保存 `Cp_raw`，并允许 `Cp cutoff=None` 关闭截断。比较 raw 与 cutoff=0 的压力和力，确认差异是否实质；不要将 cutoff=0 当生产设置。补丁有严格源码片段匹配，不匹配时应停止并人工检查。
 
 ## 验收与交付
 
