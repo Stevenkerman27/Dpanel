@@ -1,0 +1,191 @@
+[
+  {
+    "test": "log_gradient_vs_analytic_complex_velocity",
+    "max_q2_error": 6.754075076997879e-11,
+    "passed": true
+  },
+  {
+    "test": "physical_area_Jacobian_by_coordinate_differences",
+    "relative_error": 1.0080847268056914e-10,
+    "passed": true
+  },
+  {
+    "test": "cusp_fourth_order_polynomial_degree_0",
+    "error": 0.0,
+    "passed": true
+  },
+  {
+    "test": "cusp_fourth_order_polynomial_degree_1",
+    "error": 0.0,
+    "passed": true
+  },
+  {
+    "test": "cusp_fourth_order_polynomial_degree_2",
+    "error": 0.0,
+    "passed": true
+  },
+  {
+    "test": "cusp_fourth_order_polynomial_degree_3",
+    "error": 1.0164395367051604e-20,
+    "passed": true
+  },
+  {
+    "test": "cusp_fourth_order_polynomial_degree_4",
+    "error": 0.0,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0_32x128_r20_o4d2",
+    "rms": 1.82396870278096e-14,
+    "maximum": 8.098829574782411e-12,
+    "saved_flux_difference": 2.220446049250313e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0_64x256_r20_o4d2",
+    "rms": 7.635021484727815e-14,
+    "maximum": 6.285017904076459e-11,
+    "saved_flux_difference": 2.220446049250313e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0_128x512_r20_o4d2",
+    "rms": 3.3638543807326846e-13,
+    "maximum": 2.9518546866965077e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0_128x512_r20_o2d2",
+    "rms": 3.2810562755806927e-13,
+    "maximum": 2.0964582752594174e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0_128x512_r20_o4d3",
+    "rms": 3.346465565962298e-13,
+    "maximum": 4.670217389317921e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0_128x512_r20_o4d4",
+    "rms": 3.408785008123642e-13,
+    "maximum": 3.2689928066331294e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a-5_eps0.08_eta0_128x512_r20_o4d2",
+    "rms": 3.4087045445799686e-13,
+    "maximum": 7.237601867799806e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a0_eps0.08_eta0_128x512_r20_o4d2",
+    "rms": 3.221247245769121e-13,
+    "maximum": 1.180901240568019e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.04_eta0_128x512_r20_o4d2",
+    "rms": 3.59400507579048e-13,
+    "maximum": 4.188741058326818e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.16_eta0_128x512_r20_o4d2",
+    "rms": 3.063979416242201e-13,
+    "maximum": 6.127970421022173e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.3_eta0_128x512_r20_o4d2",
+    "rms": 2.515595280991245e-13,
+    "maximum": 9.61635133833309e-10,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a0_eps0.08_eta0.04_128x512_r20_o4d2",
+    "rms": 3.3644483369511306e-13,
+    "maximum": 5.941111448514728e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0.04_128x512_r20_o4d2",
+    "rms": 3.220360681168941e-13,
+    "maximum": 2.057850877064594e-09,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0_128x1024_r20_o4d2",
+    "rms": 1.1623045101173983e-12,
+    "maximum": 1.6949882698201183e-08,
+    "saved_flux_difference": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0_a5_eps0.08_eta0_256x512_r20_o4d2",
+    "rms": 5.707584124126993e-13,
+    "maximum": 9.083583666669444e-09,
+    "saved_flux_difference": 5.551115123125783e-17,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_exact_M0.001_a5_eps0.08_eta0_128x512_r20_o4d2",
+    "rms": 1.855929157176322e-12,
+    "maximum": 7.31095001840324e-08,
+    "saved_flux_difference": 1.6653345369377348e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_uniform_M0.1_a5_eps0.08_eta0_64x256_r20_o4d2",
+    "rms": 2.904832645420732e-11,
+    "maximum": 3.4826359247572546e-08,
+    "saved_flux_difference": 3.3306690738754696e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_uniform_M0.2_a5_eps0.08_eta0_64x256_r20_o4d2",
+    "rms": 1.8444620226032393e-11,
+    "maximum": 2.2854743013548774e-08,
+    "saved_flux_difference": 3.3306690738754696e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_uniform_M0.3_a5_eps0.08_eta0_64x256_r20_o4d2",
+    "rms": 3.2873999874902924e-11,
+    "maximum": 4.245820325335757e-08,
+    "saved_flux_difference": 3.3306690738754696e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_uniform_M0.2_a5_eps0.08_eta0_128x512_r20_o4d2",
+    "rms": 2.1713026075668657e-11,
+    "maximum": 3.454438694908089e-08,
+    "saved_flux_difference": 1.6653345369377348e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_uniform_M0.2_a5_eps0.08_eta0_98x512_r10_o4d2",
+    "rms": 3.7848642079488175e-11,
+    "maximum": 6.175768118355639e-08,
+    "saved_flux_difference": 8.326672684688674e-17,
+    "passed": true
+  },
+  {
+    "test": "independent_log_shared_flux_uniform_M0.2_a5_eps0.08_eta0_158x512_r40_o4d2",
+    "rms": 1.1274778467970088e-11,
+    "maximum": 7.402021238863543e-08,
+    "saved_flux_difference": 3.3306690738754696e-16,
+    "passed": true
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "method": "wing-p2",
+  "geometry": {
+    "size": 0.2,
+    "span": 4,
+    "thickness": 0.24,
+    "radius": 5,
+    "far-size": 1.6666666666666667,
+    "curvature": 32,
+    "body-length": 3,
+    "body-radius": 0.35,
+    "body-aft": 0.9,
+    "wake-strips": 24
+  },
+  "flow": {"alpha": 5, "mach": 0},
+  "numerics": {"ncpu": 8, "quadrature": 3, "kutta": "weak"}
+}

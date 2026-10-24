@@ -1,0 +1,36 @@
+[
+  {
+    "test": "kind0_independent_quadrature",
+    "potential_error": 4.163336342344337e-17,
+    "velocity_error": 8.049116928532385e-16,
+    "passed": true
+  },
+  {
+    "test": "kind0_potential_derivative",
+    "error": 3.965652806137143e-11,
+    "passed": true
+  },
+  {
+    "test": "kind1_independent_quadrature",
+    "potential_error": 3.0531133177191805e-16,
+    "velocity_error": 1.6653345369377348e-15,
+    "passed": true
+  },
+  {
+    "test": "kind1_potential_derivative",
+    "error": 1.4716605711839748e-10,
+    "passed": true
+  },
+  {
+    "test": "source_jump",
+    "measured": -0.9999999725037064,
+    "expected": -1.0,
+    "exterior_trace": -0.5,
+    "passed": true
+  },
+  {
+    "test": "closed_doublet_gauss_identity",
+    "error": 8.673617379884035e-17,
+    "passed": true
+  }
+]

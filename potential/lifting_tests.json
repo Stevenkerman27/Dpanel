@@ -1,0 +1,271 @@
+[
+  {
+    "test": "analytic_pressure_lift_wall_Kutta_eps0.08_eta0.0_a5.0",
+    "force_error": 8.326672684688674e-17,
+    "wall_normal_error": 1.8942088481375746e-12,
+    "te_error": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_physical_contour_Gamma_eps0.08_eta0.0_a5.0",
+    "circulation": -1.1828498736997646,
+    "error": 2.220446049250313e-16,
+    "passed": true
+  },
+  {
+    "test": "analytic_pressure_lift_wall_Kutta_eps0.08_eta0.0_a-5.0",
+    "force_error": 5.551115123125783e-17,
+    "wall_normal_error": 2.1751549553092027e-12,
+    "te_error": 1.1102230246251565e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_physical_contour_Gamma_eps0.08_eta0.0_a-5.0",
+    "circulation": 1.1828498736997646,
+    "error": 2.220446049250313e-16,
+    "passed": true
+  },
+  {
+    "test": "analytic_pressure_lift_wall_Kutta_eps0.08_eta0.04_a0.0",
+    "force_error": 3.814856169696941e-17,
+    "wall_normal_error": 1.3630901962713438e-12,
+    "te_error": 2.3373266544311625e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_physical_contour_Gamma_eps0.08_eta0.04_a0.0",
+    "circulation": -0.5026548245743674,
+    "error": 4.440892098500626e-16,
+    "passed": true
+  },
+  {
+    "test": "analytic_pressure_lift_wall_Kutta_eps0.16_eta0.06_a5.0",
+    "force_error": 5.551115123125783e-17,
+    "wall_normal_error": 3.2645691705468494e-12,
+    "te_error": 1.1339573027377576e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_physical_contour_Gamma_eps0.16_eta0.06_a5.0",
+    "circulation": -2.0215814896795408,
+    "error": 4.440892098500626e-16,
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a5_e0_32x128_r20",
+    "rms": 1.964351131698147e-14,
+    "maximum": 1.70288622608752e-11,
+    "flux_reconstruction_error": 2.220446049250313e-16,
+    "global_cancellation_error": 2.514739176444347e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 1.5543122344752192e-15,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a5_e0_64x256_r20",
+    "rms": 8.749543167487226e-14,
+    "maximum": 3.075497245656474e-10,
+    "flux_reconstruction_error": 2.220446049250313e-16,
+    "global_cancellation_error": 6.136181955618009e-16,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.375877272697835e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a5_e0_128x512_r20",
+    "rms": 3.627284863468937e-13,
+    "maximum": 3.0878600753880405e-09,
+    "flux_reconstruction_error": 2.220446049250313e-16,
+    "global_cancellation_error": 9.709260212294635e-16,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.9753977059954195e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a-5_e0_128x512_r20",
+    "rms": 3.541971111519668e-13,
+    "maximum": 2.635667249757177e-09,
+    "flux_reconstruction_error": 1.6653345369377348e-16,
+    "global_cancellation_error": 1.406660203966928e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.220446049250313e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a0_e0_128x512_r20",
+    "rms": 3.5821926740715936e-13,
+    "maximum": 4.8616272786527095e-09,
+    "flux_reconstruction_error": 1.6653345369377348e-16,
+    "global_cancellation_error": 5.907293829528261e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.442895784506931e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a0_e0.04_128x512_r20",
+    "rms": 3.5082554890264004e-13,
+    "maximum": 3.8589514780950955e-09,
+    "flux_reconstruction_error": 1.1102230246251565e-16,
+    "global_cancellation_error": 3.936977242753568e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 1.9872992140790302e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a5_e0.04_128x512_r20",
+    "rms": 3.788830659764846e-13,
+    "maximum": 8.888976816562512e-09,
+    "flux_reconstruction_error": 1.1102230246251565e-16,
+    "global_cancellation_error": 5.079752405286197e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 1.532107773982716e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0.001_a5_e0_128x512_r20",
+    "rms": 4.002659113211423e-13,
+    "maximum": 1.0560841397231018e-08,
+    "flux_reconstruction_error": 1.6653345369377348e-16,
+    "global_cancellation_error": 2.066890569676574e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.731148640577885e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_uniform_M0_a5_e0_64x256_r20",
+    "rms": 9.010710899103873e-14,
+    "maximum": 7.057987597852859e-10,
+    "flux_reconstruction_error": 2.220446049250313e-16,
+    "global_cancellation_error": 1.382094342672422e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.4646951146678475e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_uniform_M0.1_a5_e0_64x256_r20",
+    "rms": 2.7395578191383467e-11,
+    "maximum": 3.1532461379883324e-08,
+    "flux_reconstruction_error": 3.3306690738754696e-16,
+    "global_cancellation_error": 5.498728252920472e-16,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 3.3084646133829665e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_uniform_M0.2_a5_e0_64x256_r20",
+    "rms": 1.5787505777781757e-11,
+    "maximum": 1.7889817641978068e-08,
+    "flux_reconstruction_error": 3.3306690738754696e-16,
+    "global_cancellation_error": 1.4231076779784753e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 1.4876988529977098e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_uniform_M0.3_a5_e0_64x256_r20",
+    "rms": 2.287106149886329e-11,
+    "maximum": 2.5471968303644928e-08,
+    "flux_reconstruction_error": 2.220446049250313e-16,
+    "global_cancellation_error": 2.2546466985616e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 3.241851231905457e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_uniform_M0.2_a5_e0_128x512_r20",
+    "rms": 2.0609125422244347e-11,
+    "maximum": 3.22680800974978e-08,
+    "flux_reconstruction_error": 1.6653345369377348e-16,
+    "global_cancellation_error": 1.27181478222553e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.4424906541753444e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_uniform_M0.2_a5_e0_98x512_r10",
+    "rms": 3.583183848497073e-11,
+    "maximum": 2.726367894788913e-08,
+    "flux_reconstruction_error": 8.326672684688674e-17,
+    "global_cancellation_error": 6.098556222705381e-16,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 1.0658141036401503e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_uniform_M0.2_a5_e0_158x512_r40",
+    "rms": 1.0678657012355053e-11,
+    "maximum": 3.356500639010477e-08,
+    "flux_reconstruction_error": 3.3306690738754696e-16,
+    "global_cancellation_error": 6.149440509401822e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 5.3512749786932545e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a5_128x1024",
+    "rms": 1.3538259455716431e-12,
+    "maximum": 3.476518572026445e-08,
+    "flux_reconstruction_error": 1.6653345369377348e-16,
+    "global_cancellation_error": 8.130337859053416e-16,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.6201263381153694e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a5_256x1024",
+    "rms": 1.4595196812279854e-12,
+    "maximum": 3.9432226368810015e-08,
+    "flux_reconstruction_error": 8.326672684688674e-17,
+    "global_cancellation_error": 1.1486144091476535e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 1.354472090042691e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a5_256x512",
+    "rms": 6.115921616141922e-13,
+    "maximum": 1.2703023906858756e-08,
+    "flux_reconstruction_error": 5.551115123125783e-17,
+    "global_cancellation_error": 2.0555729654216152e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 2.020605904817785e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "independent_flux_and_branch_exact_M0_a5_512x512",
+    "rms": 1.702735506092299e-12,
+    "maximum": 9.024159873870715e-08,
+    "flux_reconstruction_error": 5.551115123125783e-17,
+    "global_cancellation_error": 2.353429808378932e-15,
+    "paired_cut_flux_error": 0.0,
+    "potential_jump_error": 3.441691376337985e-14,
+    "branch_pair_check_type": "construction identity, not a physical accuracy test",
+    "passed": true
+  },
+  {
+    "test": "panel_independent_Gauss_kernel_far_contour_flux_and_circulation",
+    "mass_flux": 0.0024905020554811213,
+    "circulation": -1.158653058320053,
+    "mass_identity_error": 1.5436003170110624e-14,
+    "circulation_identity_error": 5.995204332975845e-15,
+    "passed": true
+  }
+]

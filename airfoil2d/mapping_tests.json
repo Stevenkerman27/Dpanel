@@ -1,0 +1,21 @@
+[
+  {
+    "test": "map_derivative_and_inverse",
+    "exponent": 1.9,
+    "derivative_error": 4.465096368517514e-10,
+    "inverse_error": 2.7897115105821212e-15,
+    "passed": true
+  },
+  {
+    "test": "map_derivative_and_inverse",
+    "exponent": 2.0,
+    "derivative_error": 3.627174176924052e-10,
+    "inverse_error": 3.8665581509333295e-15,
+    "passed": true
+  },
+  {
+    "test": "n2_joukowski_limit",
+    "error": 6.670367046887759e-16,
+    "passed": true
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "method": "wing-p2",
+  "geometry": {
+    "size": 0.2,
+    "span": 4.0,
+    "thickness": 0.12,
+    "taper": 0.5,
+    "sweep": 20.0,
+    "curvature": 32,
+    "wake-strips": 24
+  },
+  "flow": {"alpha": 5.0, "mach": 0.0},
+  "numerics": {"ncpu": 8, "kutta": "weak"}
+}

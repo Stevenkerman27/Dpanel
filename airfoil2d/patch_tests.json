@@ -1,0 +1,17 @@
+[
+  {
+    "test": "P2_Kronecker_nodal_values",
+    "error": 0.0,
+    "passed": true
+  },
+  {
+    "test": "P2_partition_and_gradient_sum",
+    "error": 4.440892098500626e-16,
+    "passed": true
+  },
+  {
+    "test": "P2_physical_quadratic_patch",
+    "error": 4.440892098500626e-15,
+    "passed": true
+  }
+]

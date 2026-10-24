@@ -1,0 +1,25 @@
+{
+  "method": "wing-p2",
+  "geometry": {
+    "size": 0.25,
+    "span": 4,
+    "thickness": 0.24,
+    "taper": 0.5,
+    "sweep": 20,
+    "curvature": 16,
+    "wake-strips": 16,
+    "body-length": 4,
+    "body-radius": 0.35,
+    "body-aft": 1.5,
+    "root-wake": "merged"
+  },
+  "flow": {
+    "alpha": 5,
+    "mach": 0
+  },
+  "numerics": {
+    "ncpu": 8,
+    "kutta": "weak",
+    "linear-solver": "schur"
+  }
+}

@@ -1,0 +1,161 @@
+[
+  {
+    "test": "2D_line_gradient_vs_independent_quadrature",
+    "error": 2.220446049250313e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0_r20_32x64",
+    "rms": 7.743914638012234e-15,
+    "maximum": 2.763197012311265e-13,
+    "global_cancellation_error": 9.159339953157541e-16,
+    "rms_difference_from_matrix": 5.566244224229105e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0_r20_64x128",
+    "rms": 3.026784264704099e-14,
+    "maximum": 1.6415488902761053e-12,
+    "global_cancellation_error": 5.030698080332741e-16,
+    "rms_difference_from_matrix": 1.5176440559635384e-15,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0_r20_128x256",
+    "rms": 1.2066894492624465e-13,
+    "maximum": 6.464764092162906e-12,
+    "global_cancellation_error": 9.168013570537425e-16,
+    "rms_difference_from_matrix": 6.869385132715892e-15,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.001_r20_64x128",
+    "rms": 1.1952705645494297e-13,
+    "maximum": 6.325203452019647e-12,
+    "global_cancellation_error": 8.552186736565659e-16,
+    "rms_difference_from_matrix": 1.2317809105305132e-15,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.001_r20_64x128",
+    "relative_error": 3.725289553404002e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.001_r20_128x256",
+    "rms": 1.6776355870015582e-13,
+    "maximum": 8.676945045488937e-12,
+    "global_cancellation_error": 1.0334615108131828e-15,
+    "rms_difference_from_matrix": 1.4605305610509937e-14,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.001_r20_128x256",
+    "relative_error": 3.725289553404002e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.1_r20_64x128",
+    "rms": 1.2980938332561833e-10,
+    "maximum": 9.90009256371026e-09,
+    "global_cancellation_error": 2.3245294578089215e-16,
+    "rms_difference_from_matrix": 2.715363269080829e-17,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.1_r20_64x128",
+    "relative_error": 2.2691983577168866e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.1_r20_128x256",
+    "rms": 1.3467224388651458e-10,
+    "maximum": 1.081443107541382e-08,
+    "global_cancellation_error": 1.5113778284447932e-15,
+    "rms_difference_from_matrix": 7.123981325210983e-17,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.1_r20_128x256",
+    "relative_error": 2.2691983577168866e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.2_r20_64x128",
+    "rms": 1.7113318565067142e-10,
+    "maximum": 1.6208081552455897e-08,
+    "global_cancellation_error": 2.203098814490545e-16,
+    "rms_difference_from_matrix": 1.0941431024251354e-16,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.2_r20_64x128",
+    "relative_error": 2.2556912246352386e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.2_r20_128x256",
+    "rms": 1.9078227964090847e-10,
+    "maximum": 1.9417459986986e-08,
+    "global_cancellation_error": 2.100316448538919e-15,
+    "rms_difference_from_matrix": 9.952580209872128e-18,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.2_r20_128x256",
+    "relative_error": 2.2556912246352386e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.3_r20_64x128",
+    "rms": 3.145028798467437e-10,
+    "maximum": 3.846226030405949e-08,
+    "global_cancellation_error": 4.440892098500626e-16,
+    "rms_difference_from_matrix": 3.079103657233987e-17,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.3_r20_64x128",
+    "relative_error": 2.512724802295049e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.3_r20_128x256",
+    "rms": 4.592437597772364e-10,
+    "maximum": 6.172707813238453e-08,
+    "global_cancellation_error": 1.2598429244281562e-15,
+    "rms_difference_from_matrix": 3.2946334550697706e-17,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.3_r20_128x256",
+    "relative_error": 2.512724802295049e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.3_r10_98x256",
+    "rms": 6.965185341116966e-10,
+    "maximum": 4.6570312550894254e-08,
+    "global_cancellation_error": 8.638922910364499e-16,
+    "rms_difference_from_matrix": 2.2750731613348674e-16,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.3_r10_98x256",
+    "relative_error": 2.512724802295049e-16,
+    "passed": true
+  },
+  {
+    "test": "FV_oriented_face_balance_M0.3_r40_158x256",
+    "rms": 2.4632767753632105e-10,
+    "maximum": 6.630705744104097e-08,
+    "global_cancellation_error": 2.130240428499519e-15,
+    "rms_difference_from_matrix": 3.4295338278668267e-17,
+    "passed": true
+  },
+  {
+    "test": "isentropic_enthalpy_M0.3_r40_158x256",
+    "relative_error": 2.512724802295049e-16,
+    "passed": true
+  }
+]

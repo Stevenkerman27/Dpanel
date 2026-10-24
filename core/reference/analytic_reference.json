@@ -1,0 +1,146 @@
+{
+  "confocal_coordinate": "sum_i(x_i^2/(a_i^2+lambda)) = 1",
+  "depolarization_at_lambda": "L_i(lambda) = abc/2 * integral_lambda_inf ds / ((a_i^2+s)*sqrt(product_j(a_j^2+s)))",
+  "depolarization_factors": [
+    0.10870946505258647,
+    0.4456452674737069,
+    0.4456452674737069
+  ],
+  "ellipsoid_Cp": "1 - dot(V_surface, V_surface) / dot(U, U)",
+  "ellipsoid_exterior_total_potential": "Phi = U dot x + psi; psi = sum_i(U_i*x_i*L_i(lambda)/(1-L_i(0)))",
+  "ellipsoid_surface_checks": {
+    "max_abs_total_potential_normal_derivative": 1.1102230246251565e-16,
+    "max_surface_velocity_error_vs_closed_form": 2.220717083251841e-16,
+    "points": [
+      {
+        "closed_form_tangent_velocity": [
+          0.6049323826200551,
+          -0.4653326020154271,
+          0.3102217346769514
+        ],
+        "normal": [
+          0.6788442333021307,
+          0.6109598099719176,
+          -0.4073065399812784
+        ],
+        "total_potential": 3.1663778470589286,
+        "total_potential_normal_derivative": 1.1102230246251565e-16,
+        "total_velocity": [
+          0.6049323826200552,
+          -0.46533260201542703,
+          0.31022173467695136
+        ],
+        "xyz": [
+          2.8221626051507918,
+          0.28221626051507914,
+          -0.18814417367671946
+        ]
+      },
+      {
+        "closed_form_tangent_velocity": [
+          1.0956467629272328,
+          0.138189681810642,
+          0.09870691557903002
+        ],
+        "normal": [
+          -0.15316791621349676,
+          0.8041315601208577,
+          0.5743796858006127
+        ],
+        "total_potential": -1.419190504633803,
+        "total_potential_normal_derivative": -2.7755575615628914e-17,
+        "total_velocity": [
+          1.0956467629272328,
+          0.13818968181064198,
+          0.09870691557903001
+        ],
+        "xyz": [
+          -1.264911064067352,
+          0.7378647873726218,
+          0.5270462766947299
+        ]
+      },
+      {
+        "closed_form_tangent_velocity": [
+          1.1164552478330823,
+          0.024810116618512942,
+          -0.07443034985553883
+        ],
+        "normal": [
+          0.07009996372327816,
+          -0.3154498367547517,
+          0.9463495102642552
+        ],
+        "total_potential": 0.694333355387633,
+        "total_potential_normal_derivative": 3.469446951953614e-18,
+        "total_velocity": [
+          1.1164552478330825,
+          0.02481011661851294,
+          -0.07443034985553883
+        ],
+        "xyz": [
+          0.618852747755276,
+          -0.309426373877638,
+          0.928279121632914
+        ]
+      },
+      {
+        "closed_form_tangent_velocity": [
+          1.0432339679881923,
+          -0.07873463909344848,
+          -0.2755712368270696
+        ],
+        "normal": [
+          0.2649064714130087,
+          0.26490647141300877,
+          0.9271726499455306
+        ],
+        "total_potential": 2.14071182089241,
+        "total_potential_normal_derivative": 0.0,
+        "total_velocity": [
+          1.0432339679881923,
+          -0.07873463909344848,
+          -0.27557123682706963
+        ],
+        "xyz": [
+          1.9079961840114479,
+          0.211999576001272,
+          0.741998516004452
+        ]
+      }
+    ],
+    "tolerance": 1e-10
+  },
+  "ellipsoid_surface_potential": "sum_i(U_i * x_i / (1 - L_i(0)))",
+  "ellipsoid_surface_velocity": "P_tangent * diag(1/(1-L_i)) * U",
+  "flow_reference": {
+    "U_inf": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "rho": 1.0
+  },
+  "integral": "L_i = abc/2 * integral_0_inf ds / ((a_i^2+s)*sqrt(product_j(a_j^2+s)))",
+  "prolate_ellipsoid_axes": [
+    3.0,
+    1.0,
+    1.0
+  ],
+  "quadrature": "scipy.integrate.quad, epsabs=epsrel=1e-12",
+  "reference_force": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "sphere": {
+    "Cp": "1 - dot(V_surface, V_surface) / dot(U, U)",
+    "force": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "radius": 1.0,
+    "surface_velocity": "1.5 * (U - (U dot n) * n)"
+  }
+}
