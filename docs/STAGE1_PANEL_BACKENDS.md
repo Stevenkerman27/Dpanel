@@ -24,28 +24,36 @@
 
 ## 本地 agent 安装命令
 
-在 Dpanel 仓库根目录执行；环境必须隔离，不污染现有 P2 依赖。
+本地实际回执（PR #2 普通讨论评论，2026-10-24）：VortexAD smoke test 在 Python 3.11.17、VortexAD `ab6493981d5ff19721ba9fc42b6d015310d3d5cd`、CSDL-alpha `d4bf50ec91e722673b31849c4dfdad4c3076c715`、JAX 0.10.2 CPU 环境中 **1 passed，192.89 s**。首次直接 pip 安装失败的两个原因是：VortexAD wheel 未包含 STL/Msh 样例网格；其依赖声明没有安装 JAX（且 CSDL-alpha 依赖声明被注释）。通过源码 checkout 优先于 site-packages 的路径解决了样例数据问题。下方安装步骤针对该已复现结果修正。
+
+在 Dpanel 仓库根目录执行；所有 checkout、环境和输出都留在 gitignored 的 `runs/backend_probes/`。不要覆盖现有 P2 环境。
 
 ```bash
-# VortexAD：独立 Python 环境
-python -m venv .venv-vortexad
-# Linux: source .venv-vortexad/bin/activate
-# Windows: .venv-vortexad\\Scripts\\activate
-python -m pip install -U pip
-python -m pip install 'git+https://github.com/LSDOlab/CSDL_alpha.git'
-python -m pip install 'git+https://github.com/LSDOlab/VortexAD.git'
-python -m pip install pytest
-python -m pytest -q test/test_vortexad_backend.py
+mkdir -p runs/backend_probes/src
+git clone https://github.com/LSDOlab/CSDL_alpha.git runs/backend_probes/src/CSDL_alpha
+git -C runs/backend_probes/src/CSDL_alpha checkout d4bf50ec91e722673b31849c4dfdad4c3076c715
+git clone https://github.com/LSDOlab/VortexAD.git runs/backend_probes/src/VortexAD
+git -C runs/backend_probes/src/VortexAD checkout ab6493981d5ff19721ba9fc42b6d015310d3d5cd
 
-# FLOWPanel：独立 Julia 项目/Depot，保持在仓库内部
-# Linux/macOS shell:
-export JULIA_DEPOT_PATH="$PWD/.julia-depot"
-mkdir -p runs/backend_probes/flowpanel_env runs/backend_probes/julia_depot
-JULIA_DEPOT_PATH="$PWD/runs/backend_probes/julia_depot" julia --project=runs/backend_probes/flowpanel_env -e 'using Pkg; Pkg.add(["FLOWPanel", "GeoIO", "Rotations"]); using FLOWPanel, GeoIO, Rotations; println("FLOWPanel installed")'
-julia --project=runs/backend_probes/flowpanel_env test/probe_flowpanel.jl
+python -m venv .venv-vortexad
+source .venv-vortexad/bin/activate
+python -m pip install -U pip
+python -m pip install "jax[cpu]==0.10.2" pytest
+python -m pip install -e runs/backend_probes/src/CSDL_alpha
+python -m pip install -e runs/backend_probes/src/VortexAD
+python -m pytest -q test/test_vortexad_backend.py -s
+python -m pytest -q test/test_vortexad_mesh_vjp.py -s
 ```
 
-如安装失败，保存完整日志、命令和退出码，不删除环境，不声称通过。第一轮不要下载大量训练数据或运行生成器训练。
+Windows PowerShell 中激活命令改为 `.venv-vortexad\\Scripts\\Activate.ps1`。使用 editable source checkout 是为了确保 `SAMPLE_GEOMETRY_PATH` 能访问上游源码内的样例网格；单纯安装 wheel 当前不满足这个前置条件。若安装/checkout 失败，保存完整日志、命令与退出码，不删除环境，不宣称通过。
+
+FLOWPanel 使用独立 Julia 项目/Depot：
+
+```bash
+mkdir -p runs/backend_probes/flowpanel_env runs/backend_probes/julia_depot
+JULIA_DEPOT_PATH="$PWD/runs/backend_probes/julia_depot" julia --project=runs/backend_probes/flowpanel_env -e 'using Pkg; Pkg.add(["FLOWPanel", "GeoIO", "Rotations"]); using FLOWPanel, GeoIO, Rotations; println("FLOWPanel installed")'
+JULIA_DEPOT_PATH="$PWD/runs/backend_probes/julia_depot" julia --project=runs/backend_probes/flowpanel_env test/probe_flowpanel.jl
+```
 
 ## 验收与交付
 
