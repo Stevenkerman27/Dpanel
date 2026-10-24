@@ -15,9 +15,9 @@ meshreader(file) = GeoIO.load(file).geometry
 # Use the upstream Cessna case's component trailing-edge meshes and definitions.
 meshfiles = [("Airframe", meshfile, true)]
 trailingedges = [
-    ("cessna-TE-leftwing.msh", X -> dot(X, [0, 1, 0]), X -> abs(X[3]) - 0.67, false),
+    ("cessna-TE-leftwing.msh", X -> dot(X, [0, 1, 0]), X -> abs(X[2]) - 0.67, false),
     ("cessna-TE-rightwing.msh", X -> dot(X, [0, 1, 0]), X -> abs(X[3]) - 0.67, false),
-    ("cessna-TE-leftelevator.msh", X -> dot(X, [0, 1, 0]), X -> abs(X[3]) - 0.23, false),
+    ("cessna-TE-leftelevator.msh", X -> dot(X, [0, 1, 0]), X -> abs(X[2]) - 0.23, false),
     ("cessna-TE-rightelevator.msh", X -> dot(X, [0, 1, 0]), X -> abs(X[3]) - 0.23, false),
     ("cessna-TE-rudder.msh", X -> dot(X, [0, 0, 1]), X -> X[3] - 0.65, false),
 ]
