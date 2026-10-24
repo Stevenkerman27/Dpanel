@@ -1,16 +1,16 @@
 diff --git a/VortexAD/core/pm/post_processor.py b/VortexAD/core/pm/post_processor.py
 --- a/VortexAD/core/pm/post_processor.py
 +++ b/VortexAD/core/pm/post_processor.py
-@@
+@@ -203,2 +203,5 @@
 -    Cp_cutoff_exp = csdl.expand(Cp_cutoff, Cp.shape)
 -    Cp = csdl.maximum(Cp, Cp_cutoff_exp, rho=100)
-+    # Preserve the physical pressure coefficient before optional numerical
-+    # clipping. Setting Cp_cutoff=None disables clipping entirely.
++    # Preserve physical pressure coefficient before optional numerical clipping.
 +    Cp_raw = Cp
 +    if Cp_cutoff is not None:
 +        Cp_cutoff_exp = csdl.expand(Cp_cutoff, Cp.shape)
 +        Cp = csdl.maximum(Cp, Cp_cutoff_exp, rho=100)
-@@
+@@ -270,2 +273,3 @@
 -    output_dict['Cp'] = Cp
 +    output_dict['Cp'] = Cp
 +    output_dict['Cp_raw'] = Cp_raw
+     output_dict['panel_forces'] = dF
