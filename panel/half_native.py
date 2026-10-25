@@ -381,21 +381,35 @@ class HalfPanelOperator:
     def _ids(self, start):
         return jax.lax.dynamic_slice_in_dim(self.ids, start, self.block)
 
-    def coefficients(self, rows):
+    def coefficients(self, rows, *, source=False):
         targets = self.center[rows]
-        Sd, Dd = triangle_potential(
-            targets, self.tri, interior_diagonal=True, block_size=0,
-            target_panel_ids=rows, source_panel_ids=self.sources)
-        Si, Di = triangle_potential(targets, self.image, block_size=0)
+        if source:
+            Sd, Dd = triangle_potential(
+                targets, self.tri, interior_diagonal=True, block_size=0,
+                target_panel_ids=rows, source_panel_ids=self.sources)
+            Si, Di = triangle_potential(targets, self.image, block_size=0)
+        else:
+            # GMRES visits this path many times. Avoid evaluating the costly
+            # single-layer source kernel when only D/W are multiplied.
+            Dd = triangle_potential(
+                targets, self.tri, interior_diagonal=True, source=False,
+                block_size=0, target_panel_ids=rows,
+                source_panel_ids=self.sources)
+            Di = triangle_potential(
+                targets, self.image, source=False, block_size=0)
         dw, my = triangle_potential(
             targets, self.wake, source=False, linear_y=True, block_size=0)
         wi, mi = triangle_potential(
             targets, self.wake_image, source=False, linear_y=True, block_size=0)
-        return Sd+Si, Dd+Di, (dw+wi)@self.basis+(my-mi)@self.slope
+        D = Dd+Di
+        W = (dw+wi)@self.basis+(my-mi)@self.slope
+        return (Sd+Si, D, W) if source else (D, W)
 
     def rhs(self):
         def one(start):
-            S, _, _ = jax.checkpoint(self.coefficients)(self._ids(start))
+            S, _, _ = jax.checkpoint(
+                lambda indices: self.coefficients(indices, source=True))(
+                    self._ids(start))
             return S@self.sigma
         body = jax.lax.map(one, self.starts).reshape(-1)[:self.nf]
         return jnp.concatenate((body, jnp.zeros(self.ng, dtype=self.x.dtype)))
@@ -403,7 +417,7 @@ class HalfPanelOperator:
     def matvec(self, state):
         mu, gamma = state[:self.nf], state[self.nf:]
         def one(start):
-            _, D, W = jax.checkpoint(self.coefficients)(self._ids(start))
+            D, W = jax.checkpoint(self.coefficients)(self._ids(start))
             return D@mu+W@gamma
         body = jax.lax.map(one, self.starts).reshape(-1)[:self.nf]
         return jnp.concatenate((body, -self.T@mu+self.M@gamma))
@@ -411,7 +425,7 @@ class HalfPanelOperator:
     def rmatvec(self, seed):
         padded = jnp.pad(seed[:self.nf], (0, self.padding))
         def one(carry, start):
-            _, D, W = jax.checkpoint(self.coefficients)(self._ids(start))
+            D, W = jax.checkpoint(self.coefficients)(self._ids(start))
             v = jax.lax.dynamic_slice_in_dim(padded, start, self.block)
             dm, dg = carry
             return (dm+D.T@v, dg+W.T@v), None
