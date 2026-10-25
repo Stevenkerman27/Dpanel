@@ -93,11 +93,12 @@ def audit_half_surface(surface, *, relative_tolerance=1e-10):
     lower = np.asarray(surface["lower_te_faces"], dtype=np.int64)
     tags = np.asarray(surface["component_ids"], dtype=np.int64)
     y = np.asarray(surface["gamma_stations"], dtype=np.float64)
+    dofs = np.asarray(surface["gamma_station_dof"], dtype=np.int64)
     if (x.ndim != 2 or x.shape[1] != 3 or len(x) == 0 or
             len(faces) == 0 or len(wake) == 0 or
             te.ndim != 2 or te.shape[1] != 2 or len(te) != len(upper) or
             len(te) != len(lower) or len(tags) != len(faces) or
-            y.ndim != 1 or len(y) < 2):
+            y.ndim != 1 or len(y) < 2 or dofs.shape != y.shape):
         raise ValueError("Invalid surface array shapes")
     for label, ids in (("faces", faces), ("wake_faces", wake), ("trailing_edges", te)):
         if np.min(ids) < 0 or np.max(ids) >= len(x):
@@ -158,10 +159,27 @@ def audit_half_surface(surface, *, relative_tolerance=1e-10):
     spair = np.argmin(sdist, axis=1)
     valid_station = sdist[np.arange(len(y)), spair] <= tol
     station_ok = bool(valid_station.all() and np.array_equal(spair[spair], np.arange(len(y))))
+    # The station coordinates may mirror perfectly while the circulation
+    # basis labels do not. Verify a bijective, involutive pairing of all DOFs.
+    partner = {}
+    dof_ok = station_ok
+    if station_ok:
+        for a, b in zip(dofs, dofs[spair]):
+            a, b = int(a), int(b)
+            if (a < 0) != (b < 0):
+                dof_ok = False
+            if a >= 0:
+                if a in partner and partner[a] != b:
+                    dof_ok = False
+                partner[a] = b
+        if not all(partner.get(b) == a for a, b in partner.items()):
+            dof_ok = False
     result["stations"] = {
         "count": int(len(y)), "mirror_compatible": station_ok,
         "paired": int(valid_station.sum()),
         "max_reflection_error": float(sdist[np.arange(len(y)), spair].max()),
+        "circulation_dof_mirror_compatible": bool(dof_ok),
+        "circulation_dof_count": int(len(np.unique(dofs[dofs >= 0]))),
     }
     te_good = 0
     te_missed = []
@@ -228,6 +246,8 @@ def audit_half_surface(surface, *, relative_tolerance=1e-10):
         reasons.append("Wake normals are not mirror equivariant")
     if not station_ok:
         reasons.append("Circulation stations are not exactly mirrored")
+    if not dof_ok:
+        reasons.append("Circulation DOF labels do not form a mirror involution")
     if te_good != len(te):
         reasons.append("TE edges and upper/lower banks are not mirror matched (or unauditable)")
     if not component_ok:
