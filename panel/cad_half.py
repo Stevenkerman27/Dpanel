@@ -205,16 +205,25 @@ def _build(args, stage):
             raise ValueError("No physical wetted wall faces matched source CAD")
         # A symmetry-plane face cannot match a curved/full original source
         # wall; require explicit evidence before excluding it from the mesh.
-        plane_faces = []
+        # OCC inflates the bounding box of a trimmed planar face by the
+        # shape tolerance: on the real NACA4412 wing STEP the exact y=0
+        # cap reports |y| <= 5.0e-06 even though every generated node lies
+        # exactly on y=0. Identify candidate caps by surface kind plus a
+        # bbox window far below any physical gap, and then require the
+        # generated nodes themselves to be exactly on the plane below.
+        plane_candidates = []
         for dim, tag in gmsh.model.getBoundary(
                 fluid, combined=False, oriented=False):
             if dim != 2:
                 continue
-            bbox = np.asarray(occ.getBoundingBox(2, int(tag)), dtype=float)
-            if max(abs(bbox[1]), abs(bbox[4])) < 1e-7:
-                plane_faces.append(int(tag))
-        if not plane_faces:
+            tag = int(tag)
+            bbox = np.asarray(occ.getBoundingBox(2, tag), dtype=float)
+            if (max(abs(bbox[1]), abs(bbox[4])) < 1e-5
+                    and gmsh.model.getType(2, tag) == "Plane"):
+                plane_candidates.append(tag)
+        if not plane_candidates:
             raise ValueError("Half fluid has no explicit y=0 symmetry boundary")
+        plane_faces = plane_candidates
         if set(plane_faces) & set(wall_surfaces):
             raise ValueError("Artificial symmetry cap classified as real wetted wall")
         contact_intervals, contact_diag = cad_contact.discover_contact_intervals(
@@ -281,6 +290,22 @@ def _build(args, stage):
     wake = _mesh_triangles(gmsh, wake_surfaces, index)
     if not len(wall) or not len(wake):
         raise ValueError("Positive-half OCC mesh has no physical wall/wake triangles")
+    # Strict plane and sign checks on the generated nodes, not on the
+    # inflated OCC bounding boxes: the artificial cap must be exactly on
+    # y=0 and no physical wall/wake node may cross to the negative side.
+    wall_nodes = np.unique(wall)
+    wake_nodes = np.unique(wake)
+    if points[wall_nodes, 1].min() < -1e-12 or points[wake_nodes, 1].min() < -1e-12:
+        raise ValueError("Positive-half mesh has a physical node below y=0")
+    cap_nodes = []
+    for tag in plane_faces:
+        _, cap_node_tags = gmsh.model.mesh.getElementsByType(2, tag)
+        cap_nodes.extend(index[int(node)] for node in cap_node_tags)
+    if cap_nodes:
+        cap_y = points[np.unique(np.asarray(cap_nodes, dtype=int)), 1]
+        if float(np.max(np.abs(cap_y))) > 1e-12:
+            raise ValueError(
+                "Artificial symmetry cap nodes are not exactly on y=0")
     # The Gmsh arrays are normalized; convert once to physical SI.
     physical_points = points*chord + origin
     physical_te = te*chord + origin
