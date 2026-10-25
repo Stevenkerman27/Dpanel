@@ -68,6 +68,7 @@ def test_load_reference_point_and_circulation_integral():
         "origin": [0., 0., 0.],
     }
     assert probe.circulation_cl(fixture, np.array([2.])) == pytest.approx(2.)
+    assert probe.circulation_cl(fixture, np.array([2.]), span_factor=1.5) == pytest.approx(3.)
 
 
 def test_opt_in_quadratic_fit_recovers_gradient_of_exact_quadratic_potential():
