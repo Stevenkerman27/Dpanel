@@ -1,6 +1,6 @@
 # OCC 正半域半模 CAD 网格：从 STEP 直接到 half-native
 
-**状态：已提交独立 CAD 网格实现，尚待 Windows/Gmsh 真实 STEP 算例验收。** 依赖 Dpanel PR #21 中已经本地通过 8 项测试的右半模积分核；本分支不修改旧全模 `panel/cad.py`、`panel/build_surface.py`、`panel/solve.py` 或 GRASS 默认气动。
+**状态：NACA4412 单翼真实 STEP 正半域已经通过本地 Windows/Gmsh 4.15.2 网格和半模 LU/GMRES 验收；带机身的 OCC 并集、真实几何 VJP、镜像全模同离散精确对照仍待执行。** 依赖 Dpanel PR #21 中已经本地通过 8 项测试的右半模积分核；本分支不修改旧全模 `panel/cad.py`、`panel/build_surface.py`、`panel/solve.py` 或 GRASS 默认气动。
 
 ## 路线
 
@@ -57,6 +57,72 @@ python -m panel.cad_half `
 
 ## 主要未验证项
 
-当前云端执行环境没有 Gmsh，**没有真正运行 STEP→半域 OCC→Gmsh 的端到端测试**；新代码必须取得本地真实报告后才能宣称半域 CAD 通过。尤其要关注半域对称截面边界的 OCC 面分类、因机身而产生的 `smooth_wall_contact`、与真实外露 TE 的对应以及严格共形的 Gmsh 节点，不能为了让其通过而按几何距离把不同节点焊起来。
+云端执行环境仍没有 Gmsh，**但本地 agent 已在 Gmsh 4.15.2 上将 NACA4412 单翼 STEP→OCC 正半域→Gmsh→半模 LU/GMRES 真正跑通**。该实测严格限定于无机身单翼，不能将它外推为整机翼身几何成功；尤其要关注半域对称截面边界的 OCC 面分类、因机身而产生的 `smooth_wall_contact`、与真实外露 TE 的对应以及严格共形的 Gmsh 节点，不能为了让其通过而按几何距离把不同节点焊起来。
 
 另外，本模块**不对 OCC Boolean/重新网格本身求导**；只有生成后的合法固定拓扑半模点坐标可通过 PR #21 的 JAX 求解器求导。半模 root/contact 合法域、完整翼身共形几何和压力精度仍需单独证据。GMRES 当前仍可能比 LU 慢，`physical_accuracy_accepted=false` 始终保留，不启动正式 GRASS 整机训练。
+
+## 本地第一轮真实 CAD 验收（2026-10-25，来源 PR #22 普通评论）
+
+环境：Windows 10、Python 3.11.17、JAX 0.10.2 CPU/x64、Gmsh 4.15.2、
+NumPy 2.4.6、SciPy 1.17.1。新 `test/test_half_surface_mesh.py` 与原生半模测试
+合计 **14 passed，0 skipped**（原/修复后均通过，18.2 s）。
+
+首次半域 CAD 在原 PR22 提交 `be433602` 上失败：
+`Half fluid has no explicit y=0 symmetry boundary`。
+原因是 OCC 返回的真实平面 cap 包围盒带了 `±5e-6` 的形状容差膨胀，
+而网格节点全为精确 `y=0`。
+本地 `c46328f` 的两项已验收修复已由本 PR **`e59dfba`**
+选择性合入：
+
+- 初步识别：`gmsh.model.getType(2, tag) == "Plane"` 且
+  `max(abs(y_bbox)) < 1e-5`，只作为候选条件；
+- 网格生成后严格校核 **真实节点**：壁面与 wake `y >= -1e-12`，
+  人工 cap 上所有 Gmsh 节点 `|y| <= 1e-12`。
+  不把扩大候选 bbox 当成降低实际几何验收精度。
+
+单翼成功的独立产物（本地 `runs/half_cad_wing_only_v2`）：
+**276** 右壁面、**360** 右尾迹、**48** 条真实 TE、
+**8** 条且全部位于 `y=0` 的开放根部缝边、
+**0** 非流形边、**15** 个精确中面节点；
+`gamma_stations` 长度 25、独立 gamma 24、首站 DOF=0、翼尖 DOF=-1，
+半模总状态数 300。
+
+在同一新半侧 CAD 网格上：
+LU 真实残差 `1.799e-15`、`CL=0.5120946880723137`、
+热求解 0.04545 s、峰值工作集 398.0 MB；
+CPU 流式 PGMRES 30 次迭代、真实残差 `2.793e-11`、
+`CL=0.5120946881028932`、热求解 1.267 s、峰值 817.2 MB。
+**当前 300 状态规模没有 GMRES 速度或内存优势**。
+
+注意：原全模 Gmsh 对同一 STEP 独立剖分为 488 个壁面，
+其 `CL≈0.52246`，而新半模为 276 半侧壁面，其对应镜像全模
+应有 **552** 个壁面。这是**不同离散**，原 Gmsh 全模数值不能
+作为半模投影算子 `RAE` 的精确验收，也不能单凭 CL 的约 2% 差异
+推断半模公式误差。
+
+## 本轮新增：相同离散上的测试专用镜像全模
+
+`panel/verify_half_mirror.py` 不生成新 CAD，也不改变半模求解。
+它直接读取已保存的 `dpanel.half_planar_cut.v1`，仅用于验证构造
+**严格反射的测试专用全模**：真实 wall/wake 共用中面索引、左侧面片反向绕序、
+上/下 TE 对应、镜像 circulation basis 及根部共享 DOF。
+对照包括 `A_half` vs `A_full[R,:]E`、RHS、μ/γ、原始逐面
+Cp、局部压力力/矩、全机 CL/CM；可选 `--derivatives` 验证保持
+镜像的节点/站位变形在半 LU 和 full LU 上的 VJP/三档 FD。
+
+```powershell
+python -m pytest -q test/test_half_mirror_oracle.py
+
+python -m panel.verify_half_mirror `
+  --surface runs/half_cad_wing_only_v2/surface.json `
+  --out runs/half_cad_wing_mirror_v1.json `
+  --derivatives --max-half-panels 1000
+```
+
+该测试只验证**同一新离散的精确镜像等价**，不是与不同 Gmsh 网格
+或者实验升阻力数据的物理精度验收。大网格会创建整机稠密 LU，
+因此必须显式限制 wall 面元并在独立进程记录内存峰值。
+
+下一项本地 **带机身真实 CAD** 直接复用上述已验收的 cap 修复代码，
+往 `panel.cad_half` 增加 `--body-cad`，将首次失败的
+`stage/failure.json/gmsh.log` 提交 PR #22 讨论。
