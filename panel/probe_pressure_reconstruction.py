@@ -104,8 +104,10 @@ def normalized_pressure_loads(cp, centers, normal, area, alpha, reference, sref)
     }
 
 
-def circulation_cl(surface, gamma):
+def circulation_cl(surface, gamma, *, span_factor=1.0):
     """Trapezoidal integral of the exported wake-station circulation hat map."""
+    if not np.isfinite(span_factor) or span_factor <= 0:
+        raise ValueError("Span scaling must be finite and positive")
     chord = float(surface["reference_chord"])
     origin = np.asarray(surface["origin"], dtype=np.float64)
     y = (np.asarray(surface["gamma_stations"], dtype=np.float64) - origin[1]) / chord
@@ -119,7 +121,7 @@ def circulation_cl(surface, gamma):
     value = np.zeros(len(y))
     value[dof >= 0] = gamma[dof[dof >= 0]]
     sref = float(surface["reference_area"]) / chord**2
-    return float(2.0 * np.sum(0.5 * (value[1:] + value[:-1]) * np.diff(y)) / sref)
+    return float(2.0 * span_factor * np.sum(0.5 * (value[1:] + value[:-1]) * np.diff(y)) / sref)
 
 
 def main():
@@ -180,7 +182,9 @@ def main():
     if not np.isclose(baseline["CM_y"], result["CM"][1], rtol=1e-9, atol=1e-10):
         raise ValueError("Saved Cp, geometry and result.json disagree on CM_y")
 
-    cl_gamma = circulation_cl(surface, data["gamma"])
+    cl_gamma = circulation_cl(
+        surface, data["gamma"], span_factor=float(result["parameters"]["span_factor"])
+    )
     report = {
         "source_run": str(args.run), "source_sha256": result.get("source_sha256"),
         "physical_accuracy_accepted": result.get("physical_accuracy_accepted", False),
