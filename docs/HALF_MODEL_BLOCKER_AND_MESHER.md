@@ -98,3 +98,34 @@ python -m panel.audit_half_mesh \
 **本分支不改变 CAD/Gmsh 网格，不宣称 half unblocked，也不启动训练。**
 半域 OCC 剖分加镜像装配应作为下一独立 PR，在其之前保留全模 LU 或
 已经数值验证过的全模矩阵无关方案。
+
+## 5. 从现有固定 fixture 直接复核的分层数据
+
+2026-10-25 直接读取 `local/panel-jax-20261025@430d5646` 上的
+`cases/panel_cut/{single_wing,two_bodies_coarse,forward_body}.json`（原始文件分别为
+`29f41e0`、`43c43e3`、`9e5d9c6`）。
+对 **y=0** 的坐标反射按全节点 `1e-10·max(1,几何跨度)` 进行最近伙伴检查；
+“精确三角”必须每个顶点有容差内镜像节点且三角的三个镜像索引构成已存在的整片三角。
+以下是**只读几何索引统计**，不是本地 JAX solver 结果：
+
+| fixture | 镜像节点/总节点 | 完整镜像 wall 三角 | wall 跨平面 | 真正全在 y=0 的 wall 三角 | 完整镜像 wake 三角 | 镜像 TE 线段/总 TE | 同时保持上/下 bank 的 TE |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| single_wing | 399/531 | 26/484 | 17 | 0 | 268/600 | 80/80 | 52/80 |
+| two_bodies_coarse | 345/649 | 56/616 | 18 | 0 | 148/708 | 72/72 | 9/72 |
+| forward_body | 406/637 | 72/696 | 30 | 0 | 268/600 | 80/80 | 52/80 |
+
+- 旧 Issue #16 的 `forward_body` “74/696”依据重心最近配对；
+  此处“72/696”要求**镜像后的三个顶点组成完全相同的三角**，所以两种数字不矛盾。
+- 三例都没有三个顶点全部位于 y=0 的 wall cap，
+  但确有 17–30 个三角**跨过**中心平面；
+  因此修网格时最关键的是先正确切割跨平面面元，而不是盲目删除“7 个 cap”。
+- 真实 TE 线段本身都能找到镜像伙伴（80/80 或 72/72），
+  **失败的是相邻三角的上/下 bank 对应**，不是 TE 中心线不对称。
+  旧 `matrix_free.py` upper→lower 判据造成的“64/80”不能继续当作独立几何事实。
+- 尾迹三角同样由全模 Gmsh 分别剖分，必须和壁面一起重建；只镜像壁面还不能解除
+  `including wake nodes` 的报错。
+
+新审核器 `panel.audit_half_mesh` 专门输出 `partial_exact_face_pairs`、
+`geometry_edges_reflected_even_if_unpaired_mesh` 和 `partial_exact_banks`，
+即使整张网格尚不支持合法的全局镜像置换，也可定位哪个层级已配对。
+这些“partial”仅作诊断，绝不能替代严格 full symmetry gate。
