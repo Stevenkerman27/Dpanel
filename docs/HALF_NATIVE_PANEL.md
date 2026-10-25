@@ -58,4 +58,6 @@ python -m panel.run_half_native \
 3. 在同一个半网格上先运行 `solve_half_fields`，再检查半流式 `HalfPanelOperator`/GMRES；只在**测试时**镜像生成全模并与 full LU 的 state/Cp/forces/moments/VJP 比较。旧的左右独立 Gmsh 网格是不同离散，不可逐面强行对拍。
 4. 所有通过后再把 CPU GMRES 的显式 `Aᵀ` 与 `jax.custom_vjp` 接成完全可微迭代的生产候选，最后才接 GRASS CST/机身几何生成器。初期禁止越过 `physical_accuracy_accepted=false` 的物理精度门槛。
 
-**本次代码没有修改 GRASS 或现有 Dpanel 生产 solve/训练入口，没有真实机身 CAD 半域网格或 GPU 吞吐验收。**
+**后续堆叠 PR #22 已提交 `panel/cad_half.py`，实现从原始 STEP + OCC 正半域 fluid-cut 到 Gmsh 半侧 wall/wake + `dpanel.half_planar_cut.v1`。当前仍等待本地真实 Gmsh/STEP 跑通。** 它在 `docs/HALF_CAD_MESH.md` 中有完整单翼与翼身 CAD 命令，结果不是旧全模网格的裁切。新的半域 schema 要求显式 `cut_edges`，以确保 wake 与机身接触处的压力邻接被正确切断。
+
+**本次代码没有修改 GRASS 或现有 Dpanel 生产 solve/训练入口；真实机身 CAD 半域、物理精度和 GPU 吞吐均未验收。**
