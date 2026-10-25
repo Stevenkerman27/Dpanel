@@ -285,3 +285,32 @@ def test_right_half_json_contract_matches_inline_fixture():
         np.testing.assert_allclose(getattr(loaded["topology"], name),
                                    getattr(ref["topology"], name),
                                    rtol=0., atol=0.)
+
+
+def test_streamed_half_action_does_not_trace_full_square_aic():
+    inputs = half_wing()
+    op = HalfPanelOperator(inputs["vertices"], inputs["station_y"],
+                           inputs["topology"], inputs["freestream"], block_size=7)
+    traced = jax.make_jaxpr(op.matvec)(jnp.zeros(op.state_size))
+    shapes = []
+    def scan(value):
+        if hasattr(value, "jaxpr"):
+            scan(value.jaxpr)
+        elif hasattr(value, "eqns"):
+            for eqn in value.eqns:
+                for var in eqn.outvars:
+                    aval = getattr(var, "aval", None)
+                    if hasattr(aval, "shape"):
+                        shapes.append(tuple(aval.shape))
+                for item in eqn.params.values():
+                    scan(item)
+        elif isinstance(value, (tuple, list)):
+            for item in value:
+                scan(item)
+        elif isinstance(value, dict):
+            for item in value.values():
+                scan(item)
+    scan(traced)
+    assert (op.nf, op.nf) not in shapes
+    assert (2*op.nf, 2*op.nf) not in shapes
+    # Traced-shape absence is NOT a GPU/CPU peak-memory measurement.
