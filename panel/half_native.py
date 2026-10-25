@@ -136,6 +136,19 @@ def prepare_half_topology(vertices, faces, wake_faces, te_edges, upper_te,
     if (np.any(x[f].mean(axis=1)[:, 1] <= tol)
             or np.any(x[w].mean(axis=1)[:, 1] <= tol)):
         raise ValueError("Wall/wake triangles must lie on the positive side")
+    # Every trailing edge must be a *real* common upper/lower wall edge,
+    # attached to the fluid-side wake, not an invented projected line.
+    wake_edge_keys = {
+        tuple(sorted((int(a), int(b))))
+        for tri_ids in w for a, b in zip(tri_ids, np.roll(tri_ids, -1))
+    }
+    for k, edge_ids in enumerate(e):
+        actual = set(map(int, edge_ids))
+        if (not actual.issubset(set(map(int, f[up[k]])))
+                or not actual.issubset(set(map(int, f[lo[k]])))
+                or tuple(sorted(actual)) not in wake_edge_keys
+                or up[k] == lo[k]):
+            raise ValueError("TE upper/lower banks must share a real wake-attached edge")
     wake_tri = x[w]
     if np.ptp(wake_tri[:, :, 2]) > tol:
         raise ValueError("Only a constant-z planar wake is supported")
