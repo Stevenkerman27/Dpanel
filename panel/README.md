@@ -50,3 +50,14 @@ changes. Surface Cp comes from tangent least squares on a fixed, geometry-ranked
 stencil. This reconstruction cannot verify physical no-penetration: use the
 independent field audit. There is no Cp clipping, matrix regularization, singular
 value truncation or collocation displacement.
+
+`triangle_potential` evaluates targets in fixed-size blocks (`PANEL_KERNEL_BLOCK`,
+default 64) with rematerialisation, so panel assembly memory grows like
+O(panels x block) instead of O(panels^2). On the 1976-panel contact case this
+cuts peak RSS from 2768 MB to 631 MB for a forward solve and from 9147 MB to
+1200 MB with `--derivatives`, at a 3-6% wall-clock cost. `PANEL_KERNEL_BLOCK=0`
+restores the unblocked path; `PANEL_KERNEL_CHECKPOINT=0` drops the
+rematerialisation (only advisable for forward-only runs, since reverse mode then
+keeps every block residual). The dense system matrix and its LU factors are not
+blocked: at 23536 panels they still need about 8.9 GB, so the next limit is the
+solver, not the kernel. See [memory measurements](../docs/KERNEL_MEMORY_BLOCKING.md).
