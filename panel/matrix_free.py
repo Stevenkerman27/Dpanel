@@ -295,9 +295,17 @@ def mirror_gate(op, tol=1e-9, station_tol=1e-6, station_scale=None, freestream=N
     spair = np.argmin(sdiff, axis=1)
     sunpaired = int(np.sum(sdiff[np.arange(len(op.station_y)), spair] > stol))
     sinvolution = bool(np.all(spair[spair] == np.arange(len(op.station_y))))
-    te_mirror = pair[op.upper]
-    lower_set = set(op.lower.tolist())
-    te_paired = int(sum(1 for j in te_mirror if j in lower_set))
+    # XZ reflection flips y only. The z-based upper/lower TE bank labels
+    # remain unchanged: mirrored upper -> upper, mirrored lower -> lower.
+    # Test the paired bank *together*, not two independent set memberships.
+    upper_lookup = {}
+    for edge_id, face in enumerate(op.upper):
+        upper_lookup.setdefault(int(face), []).append(edge_id)
+    te_paired = int(sum(
+        any(int(pair[lower_face]) == int(op.lower[j])
+            for j in upper_lookup.get(int(pair[upper_face]), ()))
+        for upper_face, lower_face in zip(op.upper, op.lower)
+    ))
     reasons = []
     if unpaired:
         reasons.append("%d/%d panels have no exact mirror partner (tol %.1e)" % (unpaired, op.nf, atol))
@@ -305,8 +313,8 @@ def mirror_gate(op, tol=1e-9, station_tol=1e-6, station_scale=None, freestream=N
         reasons.append("mirror map is not injective (%d distinct partners)" % len(set(pair.tolist())))
     if not involution:
         reasons.append("mirror map is not an involution")
-    if straddling:
-        reasons.append("%d centreline panel(s) would need a self-mirror, which changes the unknown count" % straddling)
+    if self_panels:
+        reasons.append("%d self-mirror wall panel(s); current half reducer requires fixed-point-free wall pairs" % self_panels)
     if sunpaired:
         reasons.append("%d/%d circulation stations have no mirror partner (tol %.1e)" % (sunpaired, len(op.station_y), stol))
     if not sinvolution:
