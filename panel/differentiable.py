@@ -111,6 +111,23 @@ def solve_fields(vertices, station_y, topology, freestream, density,
     state = linear_solve(matrix, rhs)
     mu, gamma = state[:nf], state[nf:]
 
+    out = recover_loads(vertices, topology, flow, density, reference_area,
+                        reference_chord, reference_point, mu)
+    out.update(mu=mu, gamma=gamma, sigma=sigma, matrix=matrix, rhs=rhs,
+               wake_basis=basis, wake_slope=slope, te_basis=te_basis,
+               linear_residual=matrix @ state - rhs)
+    return out
+
+
+def recover_loads(vertices, topology, flow, density, reference_area,
+                  reference_chord, reference_point, mu):
+    """Shared unchanged raw-pressure/force ledger for LU and iterative states."""
+    t = topology
+    tri = vertices[t.faces]
+    av = jnp.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]) / 2
+    area = jnp.linalg.norm(av, axis=1)
+    normal = av / area[:, None]
+    center = tri.mean(axis=1)
     # Same 2-column unweighted fit as legacy CLI; candidates from PR #10 rejected.
     l = tri[:, 1] - tri[:, 0]
     l = l / jnp.linalg.norm(l, axis=1)[:, None]
@@ -144,9 +161,6 @@ def solve_fields(vertices, station_y, topology, freestream, density,
         CL=force @ lift_axis/(q*reference_area),
         CD_pressure=force @ drag_axis/(q*reference_area),
         CM=moment/(q*reference_area*reference_chord),
-        mu=mu, gamma=gamma, sigma=sigma, matrix=matrix, rhs=rhs,
-        wake_basis=basis, wake_slope=slope, te_basis=te_basis,
-        linear_residual=matrix @ state - rhs,
         tangent_determinant=determinant,
     )
 
