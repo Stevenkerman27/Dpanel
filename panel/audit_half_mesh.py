@@ -141,6 +141,19 @@ def audit_half_surface(surface, *, relative_tolerance=1e-10):
     result["wall"] = wall
     result["wake"] = wake_report
 
+    # Partial exact matches remain useful on broken meshes, but never turn a
+    # non-bijective vertex map into an accepted global symmetry map.
+    def partial_exact_triangles(triangles):
+        lookup = {tuple(sorted(map(int, face))): i for i, face in enumerate(triangles)}
+        return int(sum(
+            all(paired[k] for k in face)
+            and tuple(sorted(int(pair[k]) for k in face)) in lookup
+            for face in triangles
+        ))
+
+    wall["partial_exact_face_pairs"] = partial_exact_triangles(faces)
+    wake_report["partial_exact_face_pairs"] = partial_exact_triangles(wake)
+
     sdist = np.abs(y[:, None] + y[None, :])
     spair = np.argmin(sdist, axis=1)
     valid_station = sdist[np.arange(len(y)), spair] <= tol
@@ -164,7 +177,32 @@ def audit_half_surface(surface, *, relative_tolerance=1e-10):
                 te_good += 1
             else:
                 te_missed.append(int(i))
+    # Report geometry-only TE counterparts even when the *full* vertex/wall
+    # reflection is invalid, to separate bad banks from missing edge geometry.
+    te_lookup_partial = {tuple(sorted(map(int, edge))): i for i, edge in enumerate(te)}
+    wall_lookup_partial = {tuple(sorted(map(int, face))): i for i, face in enumerate(faces)}
+    te_edge_geometry = 0
+    te_edge_banks_partial = 0
+    for i, edge in enumerate(te):
+        if not all(paired[k] for k in edge):
+            continue
+        reflected_edge = tuple(sorted(int(pair[k]) for k in edge))
+        j = te_lookup_partial.get(reflected_edge)
+        if j is None:
+            continue
+        te_edge_geometry += 1
+        uface, lface = faces[upper[i]], faces[lower[i]]
+        if not all(paired[k] for k in (*uface, *lface)):
+            continue
+        reflected_upper = tuple(sorted(int(pair[k]) for k in uface))
+        reflected_lower = tuple(sorted(int(pair[k]) for k in lface))
+        if (wall_lookup_partial.get(reflected_upper) == upper[j]
+                and wall_lookup_partial.get(reflected_lower) == lower[j]):
+            te_edge_banks_partial += 1
+
     result["trailing_edges"] = {
+        "geometry_edges_reflected_even_if_unpaired_mesh": int(te_edge_geometry),
+        "partial_exact_banks": int(te_edge_banks_partial),
         "count": int(len(te)),
         "paired_with_same_upper_lower_banks": int(te_good),
         "full_pairing_auditable": bool(vertex_valid and wall_map is not None and np.all(wall_map >= 0)),
