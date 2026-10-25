@@ -37,7 +37,7 @@ def load_half_surface(path, *, stencil_rings=2):
         fixture["trailing_edges"], fixture["upper_te_faces"],
         fixture["lower_te_faces"], station_y,
         fixture["gamma_station_dof"], fixture["component_ids"],
-        stencil_rings=stencil_rings,
+        stencil_rings=stencil_rings, cut_edges=fixture["cut_edges"],
     )
     point = np.asarray(fixture["moment_reference"], dtype=np.float64)
     freestream = np.asarray(fixture["freestream"], dtype=np.float64)
