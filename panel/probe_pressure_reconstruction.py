@@ -22,7 +22,7 @@ def reconstruct_gradients(centers, mu, neighbors, tangent_l, tangent_m, *, metho
     The stencil contains only face IDs from the real, cut-aware adjacency in
     panel/solve.py. A repeated self-ID is padding and contributes no equation.
     """
-    if method not in ("affine_qr", "weighted_affine_qr"):
+    if method not in ("affine_qr", "weighted_affine_qr", "quadratic_qr"):
         raise ValueError("Unknown diagnostic method")
     centers = np.asarray(centers, dtype=np.float64)
     mu = np.asarray(mu, dtype=np.float64)
@@ -43,12 +43,16 @@ def reconstruct_gradients(centers, mu, neighbors, tangent_l, tangent_m, *, metho
     relative_residual = np.empty(n, dtype=np.float64)
     for i in range(n):
         faces = neighbors[i][neighbors[i] != i]
-        if len(faces) < 2 or len(np.unique(faces)) != len(faces):
+        required = 5 if method == "quadratic_qr" else 2
+        if len(faces) < required or len(np.unique(faces)) != len(faces):
             raise ValueError(f"Insufficient or duplicated tangent neighbors at face {i}")
         delta = centers[faces] - centers[i]
         X = np.column_stack((delta @ tangent_l[i], delta @ tangent_m[i]))
         y = mu[faces] - mu[i]
-        distance = np.linalg.norm(X, axis=1)
+        if method == "quadratic_qr":
+            u, v = X[:, 0], X[:, 1]
+            X = np.column_stack((u, v, 0.5 * u**2, u * v, 0.5 * v**2))
+        distance = np.linalg.norm(X[:, :2], axis=1)
         if np.any(distance == 0) or not np.isfinite(distance).all():
             raise ValueError(f"Coincident or nonfinite tangent stencil at face {i}")
         if method == "weighted_affine_qr":
@@ -62,8 +66,9 @@ def reconstruct_gradients(centers, mu, neighbors, tangent_l, tangent_m, *, metho
         if ratios[i] <= np.finfo(np.float64).eps * max(design.shape):
             raise ValueError(f"Numerically rank-deficient tangent stencil at face {i}")
         Q, R = np.linalg.qr(design, mode="reduced")
-        gradients[i] = np.linalg.solve(R, Q.T @ target)
-        relative_residual[i] = np.linalg.norm(X @ gradients[i] - y) / max(np.linalg.norm(y), 1e-300)
+        fit = np.linalg.solve(R, Q.T @ target)
+        gradients[i] = fit[:2]
+        relative_residual[i] = np.linalg.norm(X @ fit - y) / max(np.linalg.norm(y), 1e-300)
     return gradients, {
         "minimum_singular_ratio": float(ratios.min()),
         "median_singular_ratio": float(np.median(ratios)),
@@ -120,6 +125,7 @@ def circulation_cl(surface, gamma):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--run", type=Path, required=True, help="Existing panel/solve.py output directory")
+    p.add_argument("--quadratic", action="store_true", help="Also test unregularized 5-term quadratic QR; fails if any stencil is rank-deficient")
     p.add_argument("--out", type=Path, required=True, help="New JSON report path; never overwrite")
     args = p.parse_args()
     if args.out.exists():
@@ -189,7 +195,8 @@ def main():
         "experimental": {},
     }
     original_force = baseline["force_normalized"]
-    for method in ("affine_qr", "weighted_affine_qr"):
+    methods = ("affine_qr", "weighted_affine_qr") + (("quadratic_qr",) if args.quadratic else ())
+    for method in methods:
         gradients, conditioning = reconstruct_gradients(
             center, data["mu"], data["neighbor_indices"],
             data["panel_x_dir"], data["panel_y_dir"], method=method,
