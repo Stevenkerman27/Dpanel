@@ -25,7 +25,7 @@ def symmetric_fixture():
                 component_ids=[10,10,10,10],
                 trailing_edges=[[1,2],[1,5]],
                 upper_te_faces=[0,2], lower_te_faces=[1,3],
-                gamma_stations=[-1.,0.,1.])
+                gamma_stations=[-1.,0.,1.], gamma_station_dof=[-1,0,-1])
 
 
 def test_perfect_reflection_matches_vertices_wall_wake_te_and_banks():
@@ -83,3 +83,12 @@ def test_unordered_stations_rejected():
     f["gamma_stations"] = [0,1,-1]
     with pytest.raises(ValueError, match="unordered"):
         audit_half_surface(f)
+
+
+def test_circulation_stations_can_mirror_while_dof_labels_do_not():
+    f = symmetric_fixture()
+    f["gamma_station_dof"] = [-1,0,1]
+    result = audit_half_surface(f)
+    assert result["stations"]["mirror_compatible"]
+    assert not result["stations"]["circulation_dof_mirror_compatible"]
+    assert result["status"] == "blocked"
