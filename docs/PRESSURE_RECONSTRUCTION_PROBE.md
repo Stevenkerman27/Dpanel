@@ -34,6 +34,8 @@ python panel/probe_pressure_reconstruction.py \\
 
 输出记录：原生产 CL / CM_y、环量 CL（**不是外部物理真值**）、候选 CL / CM_y、压力 RMS 和局部面力 L2 差，局部切向模板奇异值比，以及变化最大的 5 个面元。候选 CL、CM_y 采用 `panel/solve.py` 同样的无量纲参考面积、坐标中心、法向和升力轴。
 
+环量 CL 从 gamma_stations / gamma_station_dof 对应的分段线性 Γ 积分重算。积分在求解器的归一化几何坐标中进行，使用 result.json 的 span_factor 调整变形后展向积分长度；特别是 span_factor!=1 的保存案例不能沿用变形前的站位长度。
+
 ## 本地验证顺序
 
 1. 先跑不依赖 JAX 的 5 项单测：已知二维线性势在局部坐标精确恢复；全共线模板必须报错；作用点与参考点移动后的压力力矩公式正确；环量站位积分正确。
