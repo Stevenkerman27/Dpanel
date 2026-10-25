@@ -41,7 +41,7 @@ def _mirror_triangles(triangles):
     return triangles[:, (0, 2, 1), :] * _REFLECT
 
 
-def _pressure_neighbors_from_half(vertices, faces, te_edges, rings):
+def _pressure_neighbors_from_half(vertices, faces, te_edges, rings, cut_edges=()):
     """Virtual O(N) connectivity for pressure stencils, not mirrored DOFs.
 
     Virtual left triangles share the exact y=0 seam IDs. Only right-side face
@@ -75,8 +75,13 @@ def _pressure_neighbors_from_half(vertices, faces, te_edges, rings):
     av = np.cross(tri[:, 1]-tri[:, 0], tri[:, 2]-tri[:, 0])/2
     if np.sum(np.einsum("ij,ij->i", tri.mean(axis=1), av))/3 <= 0:
         raise ValueError("Public wall must have positive outward volume")
-    cuts = {tuple(sorted(map(int, e))) for e in te_edges}
-    cuts.update(tuple(sorted(map(int, mirror[e]))) for e in te_edges)
+    # The wake may touch the wetted body away from the exposed TE.
+    # These contact edges must also be cut when estimating surface Cp:
+    # joining both pressure banks across the wake would be unphysical.
+    cuts = {tuple(sorted(map(int, edge)))
+            for edge in list(te_edges) + list(cut_edges)}
+    cuts.update(tuple(sorted(map(int, mirror[list(edge)])))
+                for edge in list(te_edges) + list(cut_edges))
     adjacent = [set() for _ in virtual]
     for edge, (i, j) in edges.items():
         if edge not in cuts:
@@ -101,7 +106,7 @@ def _pressure_neighbors_from_half(vertices, faces, te_edges, rings):
 
 def prepare_half_topology(vertices, faces, wake_faces, te_edges, upper_te,
                           lower_te, station_y, station_dof, component_ids,
-                          *, stencil_rings=2):
+                          *, stencil_rings=2, cut_edges=()):
     """Construct frozen index maps from an already conforming right-half mesh.
 
     This is a host-only, discrete operation. It does not create or persist
@@ -176,7 +181,15 @@ def prepare_half_topology(vertices, faces, wake_faces, te_edges, upper_te,
             or np.any(wake_tri[:, :, 1].min(axis=1) < ys[wi]-tol)
             or np.any(wake_tri[:, :, 1].max(axis=1) > ys[wi+1]+tol)):
         raise ValueError("Wake/TE left the fixed circulation strips")
-    neighbors = _pressure_neighbors_from_half(x, f, e, stencil_rings)
+    # Explicit fluid-side contact cuts belong to the fixed topology, not to
+    # the differentiable geometry or any Cp-dependent stencil selection.
+    all_edges = {tuple(sorted(map(int, (a, b))))
+                 for face in f for a, b in zip(face, np.roll(face, -1))}
+    additional = np.asarray(cut_edges, dtype=np.int64).reshape(-1, 2)
+    if any(tuple(sorted(map(int, pair))) not in all_edges
+           for pair in additional):
+        raise ValueError("Contact cut edge is not a real wall edge")
+    neighbors = _pressure_neighbors_from_half(x, f, e, stencil_rings, cut_edges)
     return HalfTopology(*(jnp.asarray(a) for a in
         (f, w, e, up, lo, hat, wi, ti, neighbors, tags)))
 
