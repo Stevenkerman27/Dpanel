@@ -135,13 +135,22 @@ def _build(args, stage):
             gmsh, roles["wing"], te, 1e-7)
         (args.out/f"te_check_{attempt}.json").write_text(
             json.dumps(te_check, indent=2), encoding="utf-8")
-        for solids in roles.values():
+        for role, solids in roles.items():
+            bounds = []
             for dim, tag in solids:
                 bbox = np.asarray(occ.getBoundingBox(dim, tag), dtype=float)
                 if np.max(abs(bbox)) >= args.radius-1e-7:
                     raise ValueError("Source CAD solid must lie strictly inside full farfield")
                 if occ.getMass(dim, tag) <= 0:
                     raise ValueError("Invalid source CAD volume")
+                bounds.append(bbox)
+            # This is a necessary (not sufficient) symmetry guard. Exact
+            # CAD symmetry of shape, not just bounding box, is still
+            # a separate geometric/physical validation responsibility.
+            bottom = min(item[1] for item in bounds)
+            top = max(item[4] for item in bounds)
+            if bottom >= 0 or top <= 0 or abs(bottom+top) > 1e-6:
+                raise ValueError(f"{role} source solid does not span a symmetric y extent")
 
         reference_copies = cad_components.copy_source_solids(gmsh, roles)
         union = [solid for collection in roles.values() for solid in collection]
@@ -224,6 +233,10 @@ def _build(args, stage):
         if attempt == 0:
             contacts = contact_intervals
             for endpoint in contacts.ravel():
+                # The root station must remain EXACTLY y=0 for the
+                # half-native circulation basis; OCC contact curves
+                # within its tolerance are attached to this fixed root.
+                endpoint = 0. if abs(endpoint) < 1e-7 else float(endpoint)
                 nearest = int(np.argmin(abs(stations-endpoint)))
                 if abs(stations[nearest]-endpoint) < 1e-7:
                     stations[nearest] = endpoint
@@ -233,7 +246,8 @@ def _build(args, stage):
         if contacts.shape != contact_intervals.shape or (
                 len(contacts) and np.max(abs(contacts-contact_intervals)) > 1e-7):
             raise ValueError("Contact span intervals changed after refinement")
-        contacts = contact_intervals
+        contacts = contact_intervals.copy()
+        contacts[np.abs(contacts) < 1e-7] = 0.
         removal = cad_components.remove_source_copies_before_mesh(
             gmsh, fluid, reference_copies)
         stale_wake = [(2, tag) for tag in candidates if tag not in wake_surfaces]
