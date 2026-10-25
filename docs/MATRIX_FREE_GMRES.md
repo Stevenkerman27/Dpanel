@@ -36,7 +36,11 @@ Dpanel 本地 `d3a1d6` 的目标块+checkpoint已通过对应回归：1976壁面
 
 复用公开`jax.scipy.sparse.linalg.gmres`和`jax.lax.custom_linear_solve`；后者要求数值正向/转置解真正满足方程。两次求解都直接检查原方程残差，未达阈值返回NaN，验收驱动拒绝结果，不回退LU冒充成功。
 
-JAX0.9.0.1在自动转置部分带闭包的分块循环时触发`ValAccum`/scan错误。因此`linear_action`显式登记已验证的分块转置，并用custom JVP保留几何导数；不是将非对称系统标为symmetric=True。本地JAX0.10/0.12须独立回归。当前只验收一阶VJP；不宣称任意高阶导数。
+JAX0.9.0.1在自动转置部分带闭包的分块循环时触发`ValAccum`/scan错误。因此原生路径的`linear_action`显式登记已验证的分块转置，并用custom JVP保留几何导数；不是将非对称系统标为symmetric=True。
+
+**2026-10-25 JAX 0.10.2 兼容修复**：本地实测该版本不存在公开的`jax.custom_transpose`模块，原PR在pytest collection就报`ModuleNotFoundError`。现有`panel/iterative.py`采用能力检测：支持`jax.custom_transpose`的版本仍使用原生JAX GMRES/custom_linear_solve；没有该公开接口的版本在**CPU**上改由`jax.pure_callback`运行SciPy GMRES，调用同一流式JAX `Av/Aᵀv`与`P⁻¹/P⁻ᵀ`，并由`jax.custom_vjp`完成一阶隐式伴随。伴随对`A(X)u`做真正的几何VJP，rhs几何导数从求解函数的独立输入自动回传；**拓扑索引固定、不求导**。该兼容路径不形成稠密AIC、不对矩阵设对称、不把预条件器当真实算子，但包含Python主机回调/向量拷贝、额外编译和重算，不能等价宣称JAX原生速度或GPU能力。
+
+若SciPy GMRES未收敛或真残差超出阈值，兼容路径返回NaN供外层拒绝；不自动切换LU、不放宽容差。不支持正向模式JVP和高阶导数。新增`test/test_iterative_jax010_compat.py`可以在有/没有公开custom_transpose的JAX环境中强制走CPU兼容路径，验证全模、半模状态/转置伴随及几何VJP。**提交不等于本地JAX0.10.2已跑通；必须取得本地真实回执。**
 
 JAX GMRES的info不是可移植的实际迭代计数。驱动的`--count`额外调用SciPy GMRES，使用完全相同的JIT解析算子/预条件，以回调记录迭代和matvec；它是**另一条计数诊断**，不能把其迭代数写成JAX内部计数，也不能混入JAX核心时延。
 
@@ -51,7 +55,7 @@ Python3.13.5 / JAX0.9.0.1 / NumPy2.3.5 / SciPy1.17.0 / CPU Float64：`python -m 
 先在独立工作树、现有JAX CPU Float64环境（无需CAD/新依赖）：
 
 ```bash
-python -m pytest -q test/test_iterative_panel.py test/test_differentiable_panel_fields.py
+python -m pytest -q test/test_iterative_jax010_compat.py test/test_iterative_panel.py test/test_differentiable_panel_fields.py
 ```
 
 实际已有单翼484面、双机身616面、前置机身696面，分别在新进程/新输出目录运行：
