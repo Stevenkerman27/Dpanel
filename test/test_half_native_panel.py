@@ -269,3 +269,19 @@ def test_half_rejects_sideslip_reference_out_of_plane_and_unclosed_mesh():
             data["vertices"], f, t.wake_faces, t.te_edges, t.upper_te,
             t.lower_te, data["station_y"], [0, 1, -1],
             [10]*len(f), stencil_rings=2)
+
+
+def test_right_half_json_contract_matches_inline_fixture():
+    from pathlib import Path
+    from panel.run_half_native import load_half_surface
+    source = Path(__file__).resolve().parents[1] / "cases" / "panel_half" / "thick_wing_two_strip.json"
+    loaded = load_half_surface(source)
+    ref = half_wing()
+    for name in ("vertices", "station_y", "freestream", "density",
+                 "reference_area", "reference_chord", "reference_point"):
+        np.testing.assert_allclose(loaded[name], ref[name], rtol=0., atol=0.)
+    for name in ("faces", "wake_faces", "te_edges", "upper_te", "lower_te",
+                 "hat_map", "wake_interval", "te_interval", "component_ids"):
+        np.testing.assert_allclose(getattr(loaded["topology"], name),
+                                   getattr(ref["topology"], name),
+                                   rtol=0., atol=0.)
