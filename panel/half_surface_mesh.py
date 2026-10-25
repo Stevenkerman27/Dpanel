@@ -56,6 +56,11 @@ def _orient_open_half_wall(x, faces, tol):
         raise ValueError("Expected an open symmetry-plane seam, not a capped half CAD solid")
     if np.any(abs(x[boundary, 1]) > tol):
         raise ValueError("Physical right wall has an open edge away from symmetry plane")
+    # A true half-surface cut has closed seam loops; a detached slit or
+    # broken Gmsh curve produces endpoints of degree != 2.
+    boundary_degrees = np.bincount(boundary.ravel(), minlength=len(x))
+    if np.any(boundary_degrees[boundary_degrees > 0] != 2):
+        raise ValueError("Half symmetry seam has dangling or branching boundary vertices")
     if np.any(np.all(abs(x[faces, 1]) <= tol, axis=1)):
         raise ValueError("Artificial symmetry cap must not be included in physical wall")
     if np.any((x[faces, 1].min(axis=1) < -tol)):
@@ -151,6 +156,12 @@ def build_half_surface(points, wall_faces, wall_tags, wake_faces, *,
     if not np.any(ynear):
         raise ValueError("Half CAD wall has no symmetry seam nodes")
     wall, seam, volumes = _orient_open_half_wall(xyz, wall, tol)
+    wall_xyz = xyz[wall]
+    areas_twice = np.linalg.norm(np.cross(
+        wall_xyz[:, 1]-wall_xyz[:, 0],
+        wall_xyz[:, 2]-wall_xyz[:, 0]), axis=1)
+    if np.any(areas_twice <= 0):
+        raise ValueError("Degenerate wall triangle after exact symmetry-plane snapping")
     wake_tri = xyz[wake]
     av = np.cross(wake_tri[:, 1]-wake_tri[:, 0],
                   wake_tri[:, 2]-wake_tri[:, 0])
