@@ -119,9 +119,9 @@ def main():
                 calls=[0];history=[]
                 def product(v):
                     calls[0]+=1
-                    return np.asarray(fn(jnp.asarray(v)))
+                    return np.array(fn(jnp.asarray(v)), copy=True)
                 A=LinearOperator(plan.shape,matvec=product,dtype=np.float64)
-                M=None if apply is None else LinearOperator(plan.shape,matvec=lambda v:np.asarray(apply(jnp.asarray(v))),dtype=np.float64)
+                M=None if apply is None else LinearOperator(plan.shape,matvec=lambda v:np.array(apply(jnp.asarray(v)), copy=True),dtype=np.float64)
                 t=time.perf_counter();state,info=gmres(A,b,M=M,rtol=args.tol,atol=1e-13,
                     restart=args.restart,maxiter=args.cycles,callback=history.append,callback_type='pr_norm')
                 duration=time.perf_counter()-t
