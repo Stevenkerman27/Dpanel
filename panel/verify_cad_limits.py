@@ -1,4 +1,5 @@
 """Probe CAD contact transitions as an ellipsoid aft tip crosses the TE."""
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -15,7 +16,15 @@ runtime = project / "audit" / "runtime" / "python"
 sys.path.insert(0, str(runtime))
 import gmsh
 
-out = project / "runs" / "panel_cad_limits_v1"
+parser = argparse.ArgumentParser()
+parser.add_argument("--out", default="runs/panel_cad_limits_v1")
+parser.add_argument("--radius", type=float, default=5.)
+parser.add_argument("--size", default=".3")
+parser.add_argument("--far-size", default="1.5")
+parser.add_argument("--ncpu", type=int, default=8)
+args = parser.parse_args()
+
+out = project / args.out
 assert not out.exists(), "Preserve previous CAD-limit attempts"
 out.mkdir(parents=True)
 source_case = project / "lifting3d" / "results" / "cad_inputs_v1" / "naca0012_wing"
@@ -93,11 +102,11 @@ for case in case_specs:
         "--wing-cad", str(case["input_dir"] / "wing.step"),
         "--body-cad", str(case["body_path"]),
         "--trailing-edge", str(case["input_dir"] / "trailing_edge.json"),
-        "--size", ".3",
-        "--far-size", "1.5",
-        "--radius", "5",
+        "--size", args.size,
+        "--far-size", args.far_size,
+        "--radius", repr(args.radius),
         "--wake-strips", "8",
-        "--ncpu", "8",
+        "--ncpu", str(args.ncpu),
         "--out", str(cad_out),
     ]
     case_started = time.perf_counter()
@@ -156,6 +165,7 @@ manifest = {
         "verify_cad_limits_py": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     },
     "body_semiaxes": semiaxes,
+    "farfield_radius": args.radius,
     "cad_tolerance": 1e-7,
     "geometric_offsets_are_not_welded": True,
     "threads": 8,
