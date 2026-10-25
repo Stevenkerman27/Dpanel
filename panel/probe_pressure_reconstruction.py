@@ -130,7 +130,7 @@ def main():
         data = {key: f[key] for key in (
             "panel_center", "mu", "neighbor_indices", "panel_x_dir",
             "panel_y_dir", "panel_normal", "panel_area", "Cp_raw", "gamma",
-            "component_ids"
+            "component_ids", "panel_forces"
         )}
     chord = float(surface["reference_chord"])
     sref = float(surface["reference_area"]) / chord**2
@@ -139,6 +139,36 @@ def main():
     center, normal, area = data["panel_center"], data["panel_normal"], data["panel_area"]
     raw = np.asarray(data["Cp_raw"], dtype=np.float64)
     baseline = normalized_pressure_loads(raw, center, normal, area, alpha, reference, sref)
+    # The saved pressure/force ledger must close before a reconstruction study.
+    baseline_panel_forces = baseline["force_normalized"]
+    np.testing.assert_allclose(
+        baseline_panel_forces, data["panel_forces"], rtol=1e-9, atol=1e-10,
+        err_msg="Saved Cp and panel_forces disagree",
+    )
+    np.testing.assert_allclose(
+        baseline_panel_forces.sum(axis=0) * chord**2,
+        np.asarray(result["force"]), rtol=1e-9, atol=1e-10,
+        err_msg="Saved total pressure force is inconsistent with panels",
+    )
+    np.testing.assert_allclose(
+        baseline["moment_normalized"].sum(axis=0) * chord**3,
+        np.asarray(result["moment"]), rtol=1e-9, atol=1e-10,
+        err_msg="Saved total pressure moment is inconsistent with panel arms",
+    )
+    for name, mask in (("wing", data["component_ids"] != 20),
+                       ("body", data["component_ids"] == 20)):
+        np.testing.assert_allclose(
+            baseline_panel_forces[mask].sum(axis=0) * chord**2,
+            np.asarray(result["components"][name]["force"]),
+            rtol=1e-9, atol=1e-10,
+            err_msg=f"Saved {name} force does not close",
+        )
+        np.testing.assert_allclose(
+            baseline["moment_normalized"][mask].sum(axis=0) * chord**3,
+            np.asarray(result["components"][name]["moment"]),
+            rtol=1e-9, atol=1e-10,
+            err_msg=f"Saved {name} moment does not close",
+        )
     if not np.isclose(baseline["CL"], result["CL"], rtol=1e-9, atol=1e-10):
         raise ValueError("Saved Cp, geometry and result.json disagree on CL; do not compare reconstructions")
     if not np.isclose(baseline["CM_y"], result["CM"][1], rtol=1e-9, atol=1e-10):
