@@ -1,0 +1,1735 @@
+{
+  "status": "first_fixed_topology_wingbody_loop_complete",
+  "records": [
+    {
+      "run": "runs\\wingbody_panel_final",
+      "result": {
+        "status": "loop_complete",
+        "surface_sha256": "cce9fbfaac214ba7ba9d4c0a7711b31b432b9375826a35413ba2b7588927411a",
+        "source_sha256": {
+          "test/run_wingbody_panel_loop.py": "ac72ac18b42d4cf0a4bccc629560ed6e7c9466a230cba1721b9057874826abd5",
+          "test/build_wingbody_panel_case.py": "88d2b381bfb005a665ed3bbcc75e5116108f5a85bc971dac5a11c83994cf6502"
+        },
+        "mesh": {
+          "vertices": 350,
+          "panels": 696,
+          "closed_components": 1,
+          "wing_panels": 490,
+          "body_panels": 206,
+          "seam_edges": 16,
+          "te_edges": 80,
+          "volume": 0.9686374743100196,
+          "minimum_triangle_quality": 0.32712956667001836,
+          "subdivision": false,
+          "normalized_vector_area_closure": 4.812481747857319e-17,
+          "exposed_boundary_source": "CAD union fluid boundary; farfield excluded; original_node welding only"
+        },
+        "actual_mesh": {
+          "minimum_triangle_quality": 0.32712956667001836,
+          "minimum_area": 0.001082531754730458,
+          "volume": 0.9686374743100196,
+          "normalized_vector_area_closure": 4.3648586442913506e-17
+        },
+        "ncpu_requested": 8,
+        "environment": {
+          "python": "3.11.17 | packaged by Anaconda, Inc. | (main, Oct  1 2026, 20:16:54) [MSC v.1942 64 bit (AMD64)]",
+          "numpy": "2.4.6",
+          "scipy": "1.17.1",
+          "jax": "0.10.2",
+          "csdl_alpha": "0.1.1",
+          "backend": "D:\\3D\\Projects\\panel\\.tmp\\vortexad_wingbody_repro",
+          "backend_commit": "ab6493981d5ff19721ba9fc42b6d015310d3d5cd",
+          "backend_source_manifest": "backend_source_sha256.json",
+          "csdl_python_source_sha256": "28234a167d091985f7b5bc529da6273b1709d0b56df0dacb45c5821e7950cd2a",
+          "threadpools": [
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+              "version": "0.3.31.188.0",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            },
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-64eda39e79589aedb16f58e5547eb599.dll",
+              "version": "0.3.30",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            }
+          ]
+        },
+        "method": "VortexAD locked source-doublet Dirichlet + fixed freestream-aligned wake; no Cp cutoff",
+        "references": {
+          "area": 4.0,
+          "chord": 1.0,
+          "moment": [
+            0.25,
+            0.0,
+            0.0
+          ],
+          "density": 2.0,
+          "speed": 1.0,
+          "dynamic_pressure": 1.0
+        },
+        "parameters": {
+          "alpha_deg": 5.0,
+          "central_thickness": 0.0,
+          "span_factor": 1.0
+        },
+        "timings": {
+          "graph_seconds": 0.1435642000005828,
+          "compile_and_first_seconds": 0.8293275999994876,
+          "warm_forward_seconds": 0.10002089999943564,
+          "derivative_compile_and_first_seconds": 7.807521499999893
+        },
+        "CL": 0.27166685389155615,
+        "CD_pressure": 0.002206133154520163,
+        "CM": [
+          -0.001327320773117077,
+          0.031875627926394486,
+          0.0005232274882047404
+        ],
+        "force": [
+          -0.0859183531160828,
+          -0.004566668892947234,
+          1.0833014266708623
+        ],
+        "moment": [
+          -0.005309283092468308,
+          0.12750251170557794,
+          0.0020929099528189618
+        ],
+        "components": {
+          "wing": {
+            "force": [
+              -0.10425791037249299,
+              0.00047452252306206237,
+              0.8679569958337902
+            ],
+            "moment": [
+              -0.005427930648004513,
+              -0.04618182291858114,
+              -0.005748619145401301
+            ],
+            "cp_min": -1.043616497772691,
+            "cp_max": 0.6390994492150247
+          },
+          "body": {
+            "force": [
+              0.018339557256410174,
+              -0.005041191416009291,
+              0.21534443083707258
+            ],
+            "moment": [
+              0.00011864755553617912,
+              0.17368433462415897,
+              0.007841529098220262
+            ],
+            "cp_min": -0.553214571246444,
+            "cp_max": 0.48036428217429866
+          }
+        },
+        "cp_min": -1.043616497772691,
+        "cp_max": 0.6390994492150247,
+        "cp_below_minus5": 0,
+        "load_closure": {
+          "exported_panel_force_max_abs": 6.938893903907228e-18,
+          "CL_abs": 3.885780586188048e-16,
+          "CD_pressure_abs": 1.6479873021779667e-17,
+          "CM_max_abs": 2.0816681711721685e-17,
+          "component_force_max_abs": 4.440892098500626e-16,
+          "component_moment_max_abs": 1.1102230246251565e-16
+        },
+        "raw_cp_equal_used_cp": true,
+        "linear_true_relative_residual": 7.157002115619594e-16,
+        "condition_1_estimate": 361.52908382847795,
+        "normalized_source_flux": 6.6686599076003995e-18,
+        "physical_accuracy_accepted": false,
+        "scope": "One fixed-topology joined wing/body family; CAD Boolean/remeshing is not differentiated",
+        "upstream_numerics": "Original fixed collocation offset / kernel small constants retained; not claimed removed",
+        "pressure_reconstruction": {
+          "method": "Unweighted affine least squares in each panel tangent plane",
+          "rings": 2,
+          "max_neighbors": 9,
+          "cutoff": null,
+          "regularization": null,
+          "excluded_edges": "Declared TE only",
+          "stencil_min_neighbors": 4
+        },
+        "objective_values": {
+          "CL": 0.27166685389155654,
+          "wing_Fz": 0.8679569958337913,
+          "body_Fz": 0.21534443083707266,
+          "seam_Fz": 0.08993243987363153,
+          "CM_y": 0.031875627926394465
+        },
+        "geometry_and_angle_derivatives": [
+          {
+            "parameter": "alpha_deg",
+            "step": 0.001,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.05303501180597509,
+              0.17062451288613475,
+              0.042176836978805525,
+              0.017081013777114008,
+              0.006321895853943725
+            ],
+            "fd": [
+              0.053035012001129145,
+              0.17062451263633038,
+              0.04217683804762229,
+              0.017081013757490326,
+              0.006321896188894033
+            ],
+            "abs_error": [
+              1.9515405264014518e-10,
+              2.498043716325782e-10,
+              1.0688167642602941e-09,
+              1.9623681152269867e-11,
+              3.349503079411176e-10
+            ],
+            "relative_error": [
+              3.679721112424802e-09,
+              1.464059105031899e-09,
+              2.5341320990888677e-08,
+              1.1488592778118738e-09,
+              5.298257289894595e-08
+            ],
+            "passed": true
+          },
+          {
+            "parameter": "alpha_deg",
+            "step": 0.0001,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.05303501180597509,
+              0.17062451288613475,
+              0.042176836978805525,
+              0.017081013777114008,
+              0.006321895853943725
+            ],
+            "fd": [
+              0.05303501178277603,
+              0.17062451278859747,
+              0.04217683698445884,
+              0.01708101377541349,
+              0.006321895866558125
+            ],
+            "abs_error": [
+              2.319906072800748e-11,
+              9.753728380523796e-11,
+              5.653318091436432e-12,
+              1.7005181984774964e-12,
+              1.2614399975963142e-11
+            ],
+            "relative_error": [
+              4.3742916119034034e-10,
+              5.716487165611947e-10,
+              1.340384556167004e-10,
+              9.955604630188492e-11,
+              1.995350804156957e-09
+            ],
+            "passed": true
+          },
+          {
+            "parameter": "alpha_deg",
+            "step": 1e-05,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.05303501180597509,
+              0.17062451288613475,
+              0.042176836978805525,
+              0.017081013777114008,
+              0.006321895853943725
+            ],
+            "fd": [
+              0.05303501170728086,
+              0.17062451255767105,
+              0.042176836909102455,
+              0.017081013729824956,
+              0.00632189588282983
+            ],
+            "abs_error": [
+              9.869423334141203e-11,
+              3.2846370068284614e-10,
+              6.970306970499607e-11,
+              4.728905114714799e-11,
+              2.8886105313263855e-11
+            ],
+            "relative_error": [
+              1.8609260181270068e-09,
+              1.9250674778602556e-09,
+              1.6526386210521874e-09,
+              2.768515485334261e-09,
+              4.569215624652236e-09
+            ],
+            "passed": true
+          },
+          {
+            "parameter": "central_thickness",
+            "step": 0.001,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.011654652760241734,
+              0.0521240679930543,
+              -0.006149854146382756,
+              0.01065192596688192,
+              0.005597317034315316
+            ],
+            "fd": [
+              0.011654633188779018,
+              0.05212405108845353,
+              -0.006149917021108786,
+              0.010651923104301741,
+              0.005597295025010912
+            ],
+            "abs_error": [
+              1.9571462716097554e-08,
+              1.6904600774747536e-08,
+              6.287472602978239e-08,
+              2.8625801781062554e-09,
+              2.2009304404164987e-08
+            ],
+            "relative_error": [
+              1.6792832114966945e-06,
+              3.2431468658586143e-07,
+              1.0223775155182221e-05,
+              2.687382720276456e-07,
+              3.932116810470651e-06
+            ],
+            "passed": true
+          },
+          {
+            "parameter": "central_thickness",
+            "step": 0.0001,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.011654652760241734,
+              0.0521240679930543,
+              -0.006149854146382756,
+              0.01065192596688192,
+              0.005597317034315316
+            ],
+            "fd": [
+              0.011654652550263656,
+              0.052124067773107186,
+              -0.0061498547808402915,
+              0.01065192593407982,
+              0.005597316818234388
+            ],
+            "abs_error": [
+              2.0997807832767723e-10,
+              2.1994711607575823e-10,
+              6.344575351202586e-10,
+              3.280209957823299e-11,
+              2.160809283238696e-10
+            ],
+            "relative_error": [
+              1.801667391103997e-08,
+              4.2196843904253e-09,
+              1.0316627354381017e-07,
+              3.079452455848693e-09,
+              3.860437545330169e-08
+            ],
+            "passed": true
+          },
+          {
+            "parameter": "central_thickness",
+            "step": 1e-05,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.011654652760241734,
+              0.0521240679930543,
+              -0.006149854146382756,
+              0.01065192596688192,
+              0.005597317034315316
+            ],
+            "fd": [
+              0.011654652359860405,
+              0.052124066479697355,
+              -0.006149854225867556,
+              0.01065192596211295,
+              0.005597317168787307
+            ],
+            "abs_error": [
+              4.0038132878561505e-10,
+              1.5133569467029595e-09,
+              7.948479981839673e-11,
+              4.768969941171264e-12,
+              1.3447199083416184e-10
+            ],
+            "relative_error": [
+              3.435377587150958e-08,
+              2.903374592529154e-08,
+              1.2924664215841345e-08,
+              4.4770964011565117e-10,
+              2.402436560404889e-08
+            ],
+            "passed": true
+          },
+          {
+            "parameter": "span_factor",
+            "step": 0.001,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.4201116708212798,
+              1.3366010584044226,
+              0.3403420678645814,
+              0.1253581754344139,
+              0.05997210669653565
+            ],
+            "fd": [
+              0.42011164374256005,
+              1.336600954471967,
+              0.34034206390456956,
+              0.12535817176909797,
+              0.05997211046716508
+            ],
+            "abs_error": [
+              2.707871976648235e-08,
+              1.0393245553075303e-07,
+              3.960011818460174e-09,
+              3.6653159396493606e-09,
+              3.7706294267469964e-09
+            ],
+            "relative_error": [
+              6.445600455123262e-08,
+              7.775877093410592e-08,
+              1.1635387430377317e-08,
+              2.923874671075614e-08,
+              6.287305273144274e-08
+            ],
+            "passed": true
+          },
+          {
+            "parameter": "span_factor",
+            "step": 0.0001,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.4201116708212798,
+              1.3366010584044226,
+              0.3403420678645814,
+              0.1253581754344139,
+              0.05997210669653565
+            ],
+            "fd": [
+              0.42011167054323284,
+              1.3366010573417908,
+              0.34034206781982657,
+              0.1253581753944688,
+              0.05997210673618081
+            ],
+            "abs_error": [
+              2.7804697433353454e-10,
+              1.0626317603623647e-09,
+              4.475481096832823e-11,
+              3.9945102781047126e-11,
+              3.964515521426293e-11
+            ],
+            "relative_error": [
+              6.618406334439083e-10,
+              7.950253770043316e-10,
+              1.3149949769399564e-10,
+              3.186477678270452e-10,
+              6.610599059804759e-10
+            ],
+            "passed": true
+          },
+          {
+            "parameter": "span_factor",
+            "step": 1e-05,
+            "objectives": [
+              "CL",
+              "wing_Fz",
+              "body_Fz",
+              "seam_Fz",
+              "CM_y"
+            ],
+            "ad": [
+              0.4201116708212798,
+              1.3366010584044226,
+              0.3403420678645814,
+              0.1253581754344139,
+              0.05997210669653565
+            ],
+            "fd": [
+              0.42011167093181084,
+              1.3366010587656518,
+              0.34034206794070204,
+              0.12535817546441286,
+              0.059972106662004025
+            ],
+            "abs_error": [
+              1.1053102877411902e-10,
+              3.6122926871939853e-10,
+              7.612066532658446e-11,
+              2.9998947770337736e-11,
+              3.453162755739925e-11
+            ],
+            "relative_error": [
+              2.6309916255847163e-10,
+              2.7025960098417e-10,
+              2.2365929020820337e-10,
+              2.393058742788808e-10,
+              5.757948062777325e-10
+            ],
+            "passed": true
+          }
+        ],
+        "derivatives_passed": true
+      },
+      "independent_audit": {
+        "status": "geometry_load_gradient_audited",
+        "stencil_reports": [
+          {
+            "rings": 1,
+            "rank_deficient_panels": 48,
+            "minimum_singular_value_ratio": 0.0,
+            "affine_reproduction_max_abs": 1.6375789613221059e-15
+          },
+          {
+            "rings": 2,
+            "rank_deficient_panels": 0,
+            "minimum_singular_value_ratio": 0.09513390326551494,
+            "affine_reproduction_max_abs": 7.494005416219807e-16
+          }
+        ],
+        "recovered_gradient_max_abs_error": 2.0261570199409107e-15,
+        "independent_field": {
+          "velocity_definition": "U - grad(S)sigma - grad(D)mu - grad(Dwake)mu_wake; exterior self traces",
+          "wall_normal_rms": 0.019715964002230583,
+          "wall_normal_max": 0.21274208726189758,
+          "interior_dirichlet_rms": 6.248535684157452e-06,
+          "independent_field_cp_min": -0.2902189981063894,
+          "independent_field_cp_max": 0.5193947181565419,
+          "surface_reconstruction_cp_vs_field_rms": 0.19650352127346182,
+          "core_strict_centroid_gate_passed": false,
+          "wing": {
+            "normal_rms": 0.021527795620981945,
+            "normal_max": 0.21274208726189758
+          },
+          "body": {
+            "normal_rms": 0.01655957628610308,
+            "normal_max": 0.06268064689829388
+          },
+          "seam": {
+            "normal_rms": 0.023602487173597624,
+            "normal_max": 0.03743024089486709
+          }
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_difference_vs_exterior_trace_rms": 0.0027234420193119296,
+            "wall_normal_rms": 0.02022954500966308
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_difference_vs_exterior_trace_rms": 0.00027260866977401894,
+            "wall_normal_rms": 0.01976534926507323
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_difference_vs_exterior_trace_rms": 2.7262262224296446e-05,
+            "wall_normal_rms": 0.01972088286047328
+          }
+        ],
+        "moment_reference_shift_error": 4.440892098500626e-16,
+        "wing_body_AIC_crossblock_l2": 0.42697236495998103,
+        "pressure_reconstruction_is_not_independent_wall_validation": true,
+        "physical_accuracy_accepted": false,
+        "elapsed_seconds": 4.053981699999895,
+        "source_sha256": "2dbe579870aba772f398a3a55c8e627168488c9a164f251abd1b6fb18c70d94a"
+      },
+      "fields_sha256": "ccf529740390ba45c4190fc5b38b77d0113ae4b7f9dc1efe9f5c715d20664e4d"
+    },
+    {
+      "run": "runs\\wingbody_panel_alpha0",
+      "result": {
+        "status": "forward_complete",
+        "surface_sha256": "cce9fbfaac214ba7ba9d4c0a7711b31b432b9375826a35413ba2b7588927411a",
+        "source_sha256": {
+          "test/run_wingbody_panel_loop.py": "b545bc7fc6d3217d28dd27d2754cefe11ba7d823d40b681a2d102bbc06c26187",
+          "test/build_wingbody_panel_case.py": "758498b51c612d3de67ee2fdd51dce17c75294da716fccb7bfce12186061098d"
+        },
+        "mesh": {
+          "vertices": 350,
+          "panels": 696,
+          "closed_components": 1,
+          "wing_panels": 490,
+          "body_panels": 206,
+          "seam_edges": 16,
+          "te_edges": 80,
+          "volume": 0.9686374743100196,
+          "minimum_triangle_quality": 0.32712956667001836,
+          "subdivision": false,
+          "normalized_vector_area_closure": 4.812481747857319e-17,
+          "exposed_boundary_source": "CAD union fluid boundary; farfield excluded; original_node welding only"
+        },
+        "ncpu_requested": 8,
+        "environment": {
+          "python": "3.11.17 | packaged by Anaconda, Inc. | (main, Oct  1 2026, 20:16:54) [MSC v.1942 64 bit (AMD64)]",
+          "numpy": "2.4.6",
+          "scipy": "1.17.1",
+          "jax": "0.10.2",
+          "csdl_alpha": "0.1.1",
+          "backend": "D:\\3D\\Projects\\panel\\runs\\backend_probes\\src\\VortexAD",
+          "threadpools": [
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+              "version": "0.3.31.188.0",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            },
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-64eda39e79589aedb16f58e5547eb599.dll",
+              "version": "0.3.30",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            }
+          ]
+        },
+        "method": "VortexAD locked source-doublet Dirichlet + fixed freestream-aligned wake; no Cp cutoff",
+        "references": {
+          "area": 4.0,
+          "chord": 1.0,
+          "moment": [
+            0.25,
+            0.0,
+            0.0
+          ],
+          "density": 2.0,
+          "speed": 1.0,
+          "dynamic_pressure": 1.0
+        },
+        "parameters": {
+          "alpha_deg": 0.0,
+          "central_thickness": 0.0,
+          "span_factor": 1.0
+        },
+        "timings": {
+          "graph_seconds": 0.035582099999373895,
+          "compile_and_first_seconds": 0.7471456000002945,
+          "warm_forward_seconds": 0.09719550000045274
+        },
+        "CL": 0.0038862958925413088,
+        "CD_pressure": -0.01915417242386847,
+        "CM": [
+          -0.00043935047196513275,
+          -0.00023820473193896302,
+          0.002166226653408245
+        ],
+        "force": [
+          -0.07661668969547387,
+          -0.005905154466603767,
+          0.015545183570165235
+        ],
+        "moment": [
+          -0.001757401887860531,
+          -0.0009528189277558521,
+          0.00866490661363298
+        ],
+        "components": {
+          "wing": {
+            "force": [
+              -0.09706644536028397,
+              0.00012069365025704597,
+              0.012124094137974484
+            ],
+            "moment": [
+              -0.0018738639555026298,
+              -0.0003251316087372687,
+              0.00010738503313869791
+            ],
+            "cp_min": -0.4512639199206798,
+            "cp_max": 0.6287677753113473
+          },
+          "body": {
+            "force": [
+              0.020449755664810085,
+              -0.006025848116860815,
+              0.0034210894321907537
+            ],
+            "moment": [
+              0.00011646206764219578,
+              -0.0006276873190185711,
+              0.008557521580494255
+            ],
+            "cp_min": -0.31097718860252455,
+            "cp_max": 0.3270734136433087
+          }
+        },
+        "cp_min": -0.4512639199206798,
+        "cp_max": 0.6287677753113473,
+        "cp_below_minus5": 0,
+        "load_closure": {
+          "exported_panel_force_max_abs": 1.734723475976807e-18,
+          "CL_abs": 1.474514954580286e-17,
+          "CD_pressure_abs": 3.469446951953614e-18,
+          "CM_max_abs": 5.074066167232161e-17,
+          "component_force_max_abs": 1.3877787807814457e-17,
+          "component_moment_max_abs": 9.69276742202041e-17
+        },
+        "raw_cp_equal_used_cp": true,
+        "linear_true_relative_residual": 4.3689839999192576e-16,
+        "condition_1_estimate": 360.8212409020172,
+        "normalized_source_flux": 7.780103225533799e-18,
+        "physical_accuracy_accepted": false,
+        "scope": "One fixed-topology joined wing/body family; CAD Boolean/remeshing is not differentiated",
+        "upstream_numerics": "Original fixed collocation offset / kernel small constants retained; not claimed removed",
+        "pressure_reconstruction": {
+          "method": "Unweighted affine least squares in each panel tangent plane",
+          "rings": 2,
+          "max_neighbors": 9,
+          "cutoff": null,
+          "regularization": null,
+          "excluded_edges": "Declared TE only",
+          "stencil_min_neighbors": 4
+        },
+        "objective_values": {
+          "CL": 0.0038862958925413235,
+          "wing_Fz": 0.012124094137974495,
+          "body_Fz": 0.00342108943219076,
+          "seam_Fz": 0.004217327150018182,
+          "CM_y": -0.0002382047319389631
+        }
+      },
+      "independent_audit": {
+        "status": "geometry_load_gradient_audited",
+        "stencil_reports": [
+          {
+            "rings": 1,
+            "rank_deficient_panels": 48,
+            "minimum_singular_value_ratio": 0.0,
+            "affine_reproduction_max_abs": 1.6375789613221059e-15
+          },
+          {
+            "rings": 2,
+            "rank_deficient_panels": 0,
+            "minimum_singular_value_ratio": 0.09513390326551494,
+            "affine_reproduction_max_abs": 7.494005416219807e-16
+          }
+        ],
+        "recovered_gradient_max_abs_error": 1.8041124150158794e-15,
+        "independent_field": {
+          "velocity_definition": "U - grad(S)sigma - grad(D)mu - grad(Dwake)mu_wake; exterior self traces",
+          "wall_normal_rms": 0.017291162537593753,
+          "wall_normal_max": 0.1980217470233316,
+          "interior_dirichlet_rms": 1.3348268232968229e-07,
+          "independent_field_cp_min": -0.1846810797742402,
+          "independent_field_cp_max": 0.42232704672639887,
+          "surface_reconstruction_cp_vs_field_rms": 0.14990520332451387,
+          "core_strict_centroid_gate_passed": false,
+          "wing": {
+            "normal_rms": 0.017899505670237622,
+            "normal_max": 0.1980217470233316
+          },
+          "body": {
+            "normal_rms": 0.01631508514953119,
+            "normal_max": 0.06412150315550257
+          },
+          "seam": {
+            "normal_rms": 0.02360303186083786,
+            "normal_max": 0.03643998664815122
+          }
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_difference_vs_exterior_trace_rms": 0.0018011749534865798,
+            "wall_normal_rms": 0.017887257793826238
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_difference_vs_exterior_trace_rms": 0.0001797572297134122,
+            "wall_normal_rms": 0.01734790398556275
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_difference_vs_exterior_trace_rms": 1.797172218055871e-05,
+            "wall_normal_rms": 0.017296807640913663
+          }
+        ],
+        "moment_reference_shift_error": 1.5135462327897642e-16,
+        "wing_body_AIC_crossblock_l2": 0.42697236495998103,
+        "pressure_reconstruction_is_not_independent_wall_validation": true,
+        "physical_accuracy_accepted": false,
+        "elapsed_seconds": 4.098799800000052,
+        "source_sha256": "2dbe579870aba772f398a3a55c8e627168488c9a164f251abd1b6fb18c70d94a"
+      },
+      "fields_sha256": "172bd7d811c82bb9446712b94079ae605e00fec8a4895c4c01896320fa4c7bf2"
+    },
+    {
+      "run": "runs\\wingbody_panel_alpha_minus5",
+      "result": {
+        "status": "forward_complete",
+        "surface_sha256": "cce9fbfaac214ba7ba9d4c0a7711b31b432b9375826a35413ba2b7588927411a",
+        "source_sha256": {
+          "test/run_wingbody_panel_loop.py": "b545bc7fc6d3217d28dd27d2754cefe11ba7d823d40b681a2d102bbc06c26187",
+          "test/build_wingbody_panel_case.py": "758498b51c612d3de67ee2fdd51dce17c75294da716fccb7bfce12186061098d"
+        },
+        "mesh": {
+          "vertices": 350,
+          "panels": 696,
+          "closed_components": 1,
+          "wing_panels": 490,
+          "body_panels": 206,
+          "seam_edges": 16,
+          "te_edges": 80,
+          "volume": 0.9686374743100196,
+          "minimum_triangle_quality": 0.32712956667001836,
+          "subdivision": false,
+          "normalized_vector_area_closure": 4.812481747857319e-17,
+          "exposed_boundary_source": "CAD union fluid boundary; farfield excluded; original_node welding only"
+        },
+        "ncpu_requested": 8,
+        "environment": {
+          "python": "3.11.17 | packaged by Anaconda, Inc. | (main, Oct  1 2026, 20:16:54) [MSC v.1942 64 bit (AMD64)]",
+          "numpy": "2.4.6",
+          "scipy": "1.17.1",
+          "jax": "0.10.2",
+          "csdl_alpha": "0.1.1",
+          "backend": "D:\\3D\\Projects\\panel\\runs\\backend_probes\\src\\VortexAD",
+          "threadpools": [
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+              "version": "0.3.31.188.0",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            },
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-64eda39e79589aedb16f58e5547eb599.dll",
+              "version": "0.3.30",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            }
+          ]
+        },
+        "method": "VortexAD locked source-doublet Dirichlet + fixed freestream-aligned wake; no Cp cutoff",
+        "references": {
+          "area": 4.0,
+          "chord": 1.0,
+          "moment": [
+            0.25,
+            0.0,
+            0.0
+          ],
+          "density": 2.0,
+          "speed": 1.0,
+          "dynamic_pressure": 1.0
+        },
+        "parameters": {
+          "alpha_deg": -5.0,
+          "central_thickness": 0.0,
+          "span_factor": 1.0
+        },
+        "timings": {
+          "graph_seconds": 0.04564840000057302,
+          "compile_and_first_seconds": 0.7496880999997302,
+          "warm_forward_seconds": 0.09657879999940633
+        },
+        "CL": -0.26349646933800747,
+        "CD_pressure": 0.0021147755655814195,
+        "CM": [
+          -0.0004705811233055294,
+          -0.03200852561691423,
+          0.003313627888949529
+        ],
+        "force": [
+          -0.08343400916181357,
+          -0.0014585397685781178,
+          -1.0507124022223202
+        ],
+        "moment": [
+          -0.0018823244932221176,
+          -0.12803410246765692,
+          0.013254511555798116
+        ],
+        "components": {
+          "wing": {
+            "force": [
+              -0.10167212179042558,
+              0.0004263978443157381,
+              -0.8428411377389119
+            ],
+            "moment": [
+              -0.001985793985292479,
+              0.045927122825919243,
+              0.006762154681407816
+            ],
+            "cp_min": -2.220429037223066,
+            "cp_max": 0.647804243818536
+          },
+          "body": {
+            "force": [
+              0.018238112628612045,
+              -0.0018849376128939107,
+              -0.2078712644834076
+            ],
+            "moment": [
+              0.00010346949207045659,
+              -0.17396122529357616,
+              0.006492356874390264
+            ],
+            "cp_min": -0.5988021788686213,
+            "cp_max": 0.3615139708470705
+          }
+        },
+        "cp_min": -2.220429037223066,
+        "cp_max": 0.647804243818536,
+        "cp_below_minus5": 0,
+        "load_closure": {
+          "exported_panel_force_max_abs": 6.938893903907228e-18,
+          "CL_abs": 1.1102230246251565e-16,
+          "CD_pressure_abs": 2.5153490401663703e-17,
+          "CM_max_abs": 4.3259666682171627e-17,
+          "component_force_max_abs": 6.661338147750939e-16,
+          "component_moment_max_abs": 9.497611030973019e-17
+        },
+        "raw_cp_equal_used_cp": true,
+        "linear_true_relative_residual": 7.5259498362754015e-16,
+        "condition_1_estimate": 362.0038658021137,
+        "normalized_source_flux": 6.6686599076003995e-18,
+        "physical_accuracy_accepted": false,
+        "scope": "One fixed-topology joined wing/body family; CAD Boolean/remeshing is not differentiated",
+        "upstream_numerics": "Original fixed collocation offset / kernel small constants retained; not claimed removed",
+        "pressure_reconstruction": {
+          "method": "Unweighted affine least squares in each panel tangent plane",
+          "rings": 2,
+          "max_neighbors": 9,
+          "cutoff": null,
+          "regularization": null,
+          "excluded_edges": "Declared TE only",
+          "stencil_min_neighbors": 4
+        },
+        "objective_values": {
+          "CL": -0.26349646933800736,
+          "wing_Fz": -0.8428411377389121,
+          "body_Fz": -0.20787126448340765,
+          "seam_Fz": -0.08160433878346166,
+          "CM_y": -0.0320085256169142
+        }
+      },
+      "independent_audit": {
+        "status": "geometry_load_gradient_audited",
+        "stencil_reports": [
+          {
+            "rings": 1,
+            "rank_deficient_panels": 48,
+            "minimum_singular_value_ratio": 0.0,
+            "affine_reproduction_max_abs": 1.6375789613221059e-15
+          },
+          {
+            "rings": 2,
+            "rank_deficient_panels": 0,
+            "minimum_singular_value_ratio": 0.09513390326551494,
+            "affine_reproduction_max_abs": 7.494005416219807e-16
+          }
+        ],
+        "recovered_gradient_max_abs_error": 1.9984014443252818e-15,
+        "independent_field": {
+          "velocity_definition": "U - grad(S)sigma - grad(D)mu - grad(Dwake)mu_wake; exterior self traces",
+          "wall_normal_rms": 0.0198593064179246,
+          "wall_normal_max": 0.1777976688824675,
+          "interior_dirichlet_rms": 9.54628759635408e-06,
+          "independent_field_cp_min": -0.2853760467333981,
+          "independent_field_cp_max": 0.4530315649104487,
+          "surface_reconstruction_cp_vs_field_rms": 0.20185511398280456,
+          "core_strict_centroid_gate_passed": false,
+          "wing": {
+            "normal_rms": 0.02164717885625159,
+            "normal_max": 0.1777976688824675
+          },
+          "body": {
+            "normal_rms": 0.0167537091097978,
+            "normal_max": 0.06506150535655192
+          },
+          "seam": {
+            "normal_rms": 0.02387237049687644,
+            "normal_max": 0.038008035676483864
+          }
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_difference_vs_exterior_trace_rms": 0.0027427992333607563,
+            "wall_normal_rms": 0.02037453656315565
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_difference_vs_exterior_trace_rms": 0.00027455788091624466,
+            "wall_normal_rms": 0.01990884951715224
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_difference_vs_exterior_trace_rms": 2.7457216355895546e-05,
+            "wall_normal_rms": 0.019864240998131423
+          }
+        ],
+        "moment_reference_shift_error": 2.220446049250313e-16,
+        "wing_body_AIC_crossblock_l2": 0.42697236495998103,
+        "pressure_reconstruction_is_not_independent_wall_validation": true,
+        "physical_accuracy_accepted": false,
+        "elapsed_seconds": 4.103495899999871,
+        "source_sha256": "2dbe579870aba772f398a3a55c8e627168488c9a164f251abd1b6fb18c70d94a"
+      },
+      "fields_sha256": "2a98bc5c175fdb606d1e52365c15daa3bbc1d5ae485089edd8f79496940ef56f"
+    },
+    {
+      "run": "runs\\wingbody_panel_thick_wide",
+      "result": {
+        "status": "forward_complete",
+        "surface_sha256": "cce9fbfaac214ba7ba9d4c0a7711b31b432b9375826a35413ba2b7588927411a",
+        "source_sha256": {
+          "test/run_wingbody_panel_loop.py": "b545bc7fc6d3217d28dd27d2754cefe11ba7d823d40b681a2d102bbc06c26187",
+          "test/build_wingbody_panel_case.py": "88d2b381bfb005a665ed3bbcc75e5116108f5a85bc971dac5a11c83994cf6502"
+        },
+        "mesh": {
+          "vertices": 350,
+          "panels": 696,
+          "closed_components": 1,
+          "wing_panels": 490,
+          "body_panels": 206,
+          "seam_edges": 16,
+          "te_edges": 80,
+          "volume": 0.9686374743100196,
+          "minimum_triangle_quality": 0.32712956667001836,
+          "subdivision": false,
+          "normalized_vector_area_closure": 4.812481747857319e-17,
+          "exposed_boundary_source": "CAD union fluid boundary; farfield excluded; original_node welding only"
+        },
+        "ncpu_requested": 8,
+        "environment": {
+          "python": "3.11.17 | packaged by Anaconda, Inc. | (main, Oct  1 2026, 20:16:54) [MSC v.1942 64 bit (AMD64)]",
+          "numpy": "2.4.6",
+          "scipy": "1.17.1",
+          "jax": "0.10.2",
+          "csdl_alpha": "0.1.1",
+          "backend": "D:\\3D\\Projects\\panel\\runs\\backend_probes\\src\\VortexAD",
+          "threadpools": [
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+              "version": "0.3.31.188.0",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            },
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-64eda39e79589aedb16f58e5547eb599.dll",
+              "version": "0.3.30",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            }
+          ]
+        },
+        "method": "VortexAD locked source-doublet Dirichlet + fixed freestream-aligned wake; no Cp cutoff",
+        "references": {
+          "area": 4.0,
+          "chord": 1.0,
+          "moment": [
+            0.25,
+            0.0,
+            0.0
+          ],
+          "density": 2.0,
+          "speed": 1.0,
+          "dynamic_pressure": 1.0
+        },
+        "parameters": {
+          "alpha_deg": 5.0,
+          "central_thickness": 0.2,
+          "span_factor": 1.1
+        },
+        "timings": {
+          "graph_seconds": 0.037225199999738834,
+          "compile_and_first_seconds": 0.7605618999996295,
+          "warm_forward_seconds": 0.09817459999976563
+        },
+        "CL": 0.3169157119802456,
+        "CD_pressure": 0.0028456168251944102,
+        "CM": [
+          -0.0013760620955234203,
+          0.039156531852672205,
+          0.0018792008574657136
+        ],
+        "force": [
+          -0.0991449434879275,
+          -0.008609633586086473,
+          1.2638310554586656
+        ],
+        "moment": [
+          -0.005504248382093681,
+          0.15662612741068882,
+          0.007516803429862854
+        ],
+        "components": {
+          "wing": {
+            "force": [
+              -0.1269081020888427,
+              0.0004133852866829006,
+              1.0154004289497642
+            ],
+            "moment": [
+              -0.005659004263063401,
+              -0.053848736023205036,
+              -0.007382680879413062
+            ],
+            "cp_min": -1.1348051796314576,
+            "cp_max": 0.6705331371367294
+          },
+          "body": {
+            "force": [
+              0.027763158600915196,
+              -0.009023018872769406,
+              0.2484306265089006
+            ],
+            "moment": [
+              0.00015475588096961336,
+              0.21047486343389396,
+              0.014899484309275868
+            ],
+            "cp_min": -0.5911695016031494,
+            "cp_max": 0.5864908868485023
+          }
+        },
+        "cp_min": -1.1348051796314576,
+        "cp_max": 0.6705331371367294,
+        "cp_below_minus5": 0,
+        "load_closure": {
+          "exported_panel_force_max_abs": 6.938893903907228e-18,
+          "CL_abs": 5.551115123125783e-17,
+          "CD_pressure_abs": 2.905661822261152e-17,
+          "CM_max_abs": 2.7755575615628914e-17,
+          "component_force_max_abs": 6.661338147750939e-16,
+          "component_moment_max_abs": 1.1102230246251565e-16
+        },
+        "raw_cp_equal_used_cp": true,
+        "linear_true_relative_residual": 7.163377493289629e-16,
+        "condition_1_estimate": 366.03927506620306,
+        "normalized_source_flux": 4.967843623328119e-18,
+        "physical_accuracy_accepted": false,
+        "scope": "One fixed-topology joined wing/body family; CAD Boolean/remeshing is not differentiated",
+        "upstream_numerics": "Original fixed collocation offset / kernel small constants retained; not claimed removed",
+        "pressure_reconstruction": {
+          "method": "Unweighted affine least squares in each panel tangent plane",
+          "rings": 2,
+          "max_neighbors": 9,
+          "cutoff": null,
+          "regularization": null,
+          "excluded_edges": "Declared TE only",
+          "stencil_min_neighbors": 4
+        },
+        "objective_values": {
+          "CL": 0.31691571198024554,
+          "wing_Fz": 1.0154004289497647,
+          "body_Fz": 0.24843062650890055,
+          "seam_Fz": 0.10495389052912771,
+          "CM_y": 0.03915653185267223
+        }
+      },
+      "independent_audit": {
+        "status": "geometry_load_gradient_audited",
+        "stencil_reports": [
+          {
+            "rings": 1,
+            "rank_deficient_panels": 48,
+            "minimum_singular_value_ratio": 0.0,
+            "affine_reproduction_max_abs": 8.604228440844963e-16
+          },
+          {
+            "rings": 2,
+            "rank_deficient_panels": 0,
+            "minimum_singular_value_ratio": 0.0866190019182684,
+            "affine_reproduction_max_abs": 4.996003610813204e-16
+          }
+        ],
+        "recovered_gradient_max_abs_error": 2.9976021664879227e-15,
+        "independent_field": {
+          "velocity_definition": "U - grad(S)sigma - grad(D)mu - grad(Dwake)mu_wake; exterior self traces",
+          "wall_normal_rms": 0.021193000655584535,
+          "wall_normal_max": 0.24264080036179714,
+          "interior_dirichlet_rms": 6.174471249658035e-06,
+          "independent_field_cp_min": -0.31644728108618314,
+          "independent_field_cp_max": 0.5888801970256767,
+          "surface_reconstruction_cp_vs_field_rms": 0.20880426814171643,
+          "core_strict_centroid_gate_passed": false,
+          "wing": {
+            "normal_rms": 0.0227333856315415,
+            "normal_max": 0.24264080036179714
+          },
+          "body": {
+            "normal_rms": 0.0187085099538665,
+            "normal_max": 0.0694714621635786
+          },
+          "seam": {
+            "normal_rms": 0.02662109536379213,
+            "normal_max": 0.040073227320151686
+          }
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_difference_vs_exterior_trace_rms": 0.0028462291615800085,
+            "wall_normal_rms": 0.021790216599516413
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_difference_vs_exterior_trace_rms": 0.00028486607067189536,
+            "wall_normal_rms": 0.021250529619472443
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_difference_vs_exterior_trace_rms": 2.8487864700611546e-05,
+            "wall_normal_rms": 0.021198731585976915
+          }
+        ],
+        "moment_reference_shift_error": 2.220446049250313e-16,
+        "wing_body_AIC_crossblock_l2": 0.43902140011424073,
+        "pressure_reconstruction_is_not_independent_wall_validation": true,
+        "physical_accuracy_accepted": false,
+        "elapsed_seconds": 3.7437397999992754,
+        "source_sha256": "2dbe579870aba772f398a3a55c8e627168488c9a164f251abd1b6fb18c70d94a"
+      },
+      "fields_sha256": "1cb5ddacbac6c8a831d77056e5b4c6d073863126387daf639bd3056c87ce6fdb"
+    },
+    {
+      "run": "runs\\wingbody_panel_thin_narrow",
+      "result": {
+        "status": "forward_complete",
+        "surface_sha256": "cce9fbfaac214ba7ba9d4c0a7711b31b432b9375826a35413ba2b7588927411a",
+        "source_sha256": {
+          "test/run_wingbody_panel_loop.py": "b545bc7fc6d3217d28dd27d2754cefe11ba7d823d40b681a2d102bbc06c26187",
+          "test/build_wingbody_panel_case.py": "88d2b381bfb005a665ed3bbcc75e5116108f5a85bc971dac5a11c83994cf6502"
+        },
+        "mesh": {
+          "vertices": 350,
+          "panels": 696,
+          "closed_components": 1,
+          "wing_panels": 490,
+          "body_panels": 206,
+          "seam_edges": 16,
+          "te_edges": 80,
+          "volume": 0.9686374743100196,
+          "minimum_triangle_quality": 0.32712956667001836,
+          "subdivision": false,
+          "normalized_vector_area_closure": 4.812481747857319e-17,
+          "exposed_boundary_source": "CAD union fluid boundary; farfield excluded; original_node welding only"
+        },
+        "ncpu_requested": 8,
+        "environment": {
+          "python": "3.11.17 | packaged by Anaconda, Inc. | (main, Oct  1 2026, 20:16:54) [MSC v.1942 64 bit (AMD64)]",
+          "numpy": "2.4.6",
+          "scipy": "1.17.1",
+          "jax": "0.10.2",
+          "csdl_alpha": "0.1.1",
+          "backend": "D:\\3D\\Projects\\panel\\runs\\backend_probes\\src\\VortexAD",
+          "threadpools": [
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+              "version": "0.3.31.188.0",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            },
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-64eda39e79589aedb16f58e5547eb599.dll",
+              "version": "0.3.30",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            }
+          ]
+        },
+        "method": "VortexAD locked source-doublet Dirichlet + fixed freestream-aligned wake; no Cp cutoff",
+        "references": {
+          "area": 4.0,
+          "chord": 1.0,
+          "moment": [
+            0.25,
+            0.0,
+            0.0
+          ],
+          "density": 2.0,
+          "speed": 1.0,
+          "dynamic_pressure": 1.0
+        },
+        "parameters": {
+          "alpha_deg": 5.0,
+          "central_thickness": -0.2,
+          "span_factor": 0.9
+        },
+        "timings": {
+          "graph_seconds": 0.04536050000024261,
+          "compile_and_first_seconds": 0.8330777000001035,
+          "warm_forward_seconds": 0.09843009999985952
+        },
+        "CL": 0.22847117109287723,
+        "CD_pressure": 0.0017194114154560308,
+        "CM": [
+          -0.001210855013998987,
+          0.025025215738221297,
+          -0.0005184989697428642
+        ],
+        "force": [
+          -0.07279882430844513,
+          -0.0013230048561017121,
+          0.911006503554157
+        ],
+        "moment": [
+          -0.004843420055995948,
+          0.10010086295288519,
+          -0.0020739958789714567
+        ],
+        "components": {
+          "wing": {
+            "force": [
+              -0.08432549079837799,
+              0.0005211260187099935,
+              0.72784064851414
+            ],
+            "moment": [
+              -0.004935764438270263,
+              -0.03880102418121581,
+              -0.004352106483585408
+            ],
+            "cp_min": -0.9518719437876686,
+            "cp_max": 0.6025641791766997
+          },
+          "body": {
+            "force": [
+              0.01152666648993284,
+              -0.0018441308748117042,
+              0.18316585504001684
+            ],
+            "moment": [
+              9.234438227424653e-05,
+              0.13890188713410098,
+              0.002278110604613911
+            ],
+            "cp_min": -0.515052794122595,
+            "cp_max": 0.3559468666364212
+          }
+        },
+        "cp_min": -0.9518719437876686,
+        "cp_max": 0.6025641791766997,
+        "cp_below_minus5": 0,
+        "load_closure": {
+          "exported_panel_force_max_abs": 3.469446951953614e-18,
+          "CL_abs": 5.551115123125783e-17,
+          "CD_pressure_abs": 1.951563910473908e-18,
+          "CM_max_abs": 8.673617379884035e-18,
+          "component_force_max_abs": 2.220446049250313e-16,
+          "component_moment_max_abs": 6.938893903907228e-17
+        },
+        "raw_cp_equal_used_cp": true,
+        "linear_true_relative_residual": 7.406804280248918e-16,
+        "condition_1_estimate": 377.7585871952346,
+        "normalized_source_flux": 3.774925317252596e-18,
+        "physical_accuracy_accepted": false,
+        "scope": "One fixed-topology joined wing/body family; CAD Boolean/remeshing is not differentiated",
+        "upstream_numerics": "Original fixed collocation offset / kernel small constants retained; not claimed removed",
+        "pressure_reconstruction": {
+          "method": "Unweighted affine least squares in each panel tangent plane",
+          "rings": 2,
+          "max_neighbors": 9,
+          "cutoff": null,
+          "regularization": null,
+          "excluded_edges": "Declared TE only",
+          "stencil_min_neighbors": 4
+        },
+        "objective_values": {
+          "CL": 0.22847117109287718,
+          "wing_Fz": 0.7278406485141399,
+          "body_Fz": 0.18316585504001692,
+          "seam_Fz": 0.07570930493260256,
+          "CM_y": 0.025025215738221293
+        }
+      },
+      "independent_audit": {
+        "status": "geometry_load_gradient_audited",
+        "stencil_reports": [
+          {
+            "rings": 1,
+            "rank_deficient_panels": 48,
+            "minimum_singular_value_ratio": 0.0,
+            "affine_reproduction_max_abs": 1.0824674490095276e-15
+          },
+          {
+            "rings": 2,
+            "rank_deficient_panels": 0,
+            "minimum_singular_value_ratio": 0.10549016859595017,
+            "affine_reproduction_max_abs": 5.551115123125783e-16
+          }
+        ],
+        "recovered_gradient_max_abs_error": 2.4424906541753444e-15,
+        "independent_field": {
+          "velocity_definition": "U - grad(S)sigma - grad(D)mu - grad(Dwake)mu_wake; exterior self traces",
+          "wall_normal_rms": 0.018440018261835407,
+          "wall_normal_max": 0.18367055824710574,
+          "interior_dirichlet_rms": 7.29491664210709e-06,
+          "independent_field_cp_min": -0.2676855875752018,
+          "independent_field_cp_max": 0.43882138564749895,
+          "surface_reconstruction_cp_vs_field_rms": 0.18502067287510854,
+          "core_strict_centroid_gate_passed": false,
+          "wing": {
+            "normal_rms": 0.020479436326130973,
+            "normal_max": 0.18367055824710574
+          },
+          "body": {
+            "normal_rms": 0.01455582190862966,
+            "normal_max": 0.056338632125671445
+          },
+          "seam": {
+            "normal_rms": 0.02072174843668104,
+            "normal_max": 0.03820973757738605
+          }
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_difference_vs_exterior_trace_rms": 0.0026324158563899537,
+            "wall_normal_rms": 0.018865005225897423
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_difference_vs_exterior_trace_rms": 0.0002635369537863837,
+            "wall_normal_rms": 0.018480842867616705
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_difference_vs_exterior_trace_rms": 2.6355244625447615e-05,
+            "wall_normal_rms": 0.018444084189459007
+          }
+        ],
+        "moment_reference_shift_error": 1.6653345369377348e-16,
+        "wing_body_AIC_crossblock_l2": 0.4104715977221527,
+        "pressure_reconstruction_is_not_independent_wall_validation": true,
+        "physical_accuracy_accepted": false,
+        "elapsed_seconds": 3.4896184999997786,
+        "source_sha256": "2dbe579870aba772f398a3a55c8e627168488c9a164f251abd1b6fb18c70d94a"
+      },
+      "fields_sha256": "167ac3c52bfbc58049f066fe20588a9d408e6ae2ee6a39e9136f3e3d7a7ca4ca"
+    },
+    {
+      "run": "runs\\wingbody_panel_refined",
+      "result": {
+        "status": "forward_complete",
+        "surface_sha256": "77a54cf8c07a569338c89a578664beae500ba6aff48874207e05115a3014c316",
+        "source_sha256": {
+          "test/run_wingbody_panel_loop.py": "b545bc7fc6d3217d28dd27d2754cefe11ba7d823d40b681a2d102bbc06c26187",
+          "test/build_wingbody_panel_case.py": "88d2b381bfb005a665ed3bbcc75e5116108f5a85bc971dac5a11c83994cf6502"
+        },
+        "mesh": {
+          "vertices": 1394,
+          "panels": 2784,
+          "closed_components": 1,
+          "wing_panels": 1960,
+          "body_panels": 824,
+          "seam_edges": 32,
+          "te_edges": 160,
+          "volume": 1.0346414389105336,
+          "minimum_triangle_quality": 0.32711429826076,
+          "subdivision": true,
+          "normalized_vector_area_closure": 4.595143182542011e-17,
+          "exposed_boundary_source": "CAD union fluid boundary; farfield excluded; original_node welding only"
+        },
+        "ncpu_requested": 8,
+        "environment": {
+          "python": "3.11.17 | packaged by Anaconda, Inc. | (main, Oct  1 2026, 20:16:54) [MSC v.1942 64 bit (AMD64)]",
+          "numpy": "2.4.6",
+          "scipy": "1.17.1",
+          "jax": "0.10.2",
+          "csdl_alpha": "0.1.1",
+          "backend": "D:\\3D\\Projects\\panel\\runs\\backend_probes\\src\\VortexAD",
+          "threadpools": [
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+              "version": "0.3.31.188.0",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            },
+            {
+              "user_api": "blas",
+              "internal_api": "openblas",
+              "num_threads": 8,
+              "prefix": "libscipy_openblas",
+              "filepath": "D:\\3D\\Projects\\panel\\.conda_env\\Lib\\site-packages\\scipy.libs\\libscipy_openblas-64eda39e79589aedb16f58e5547eb599.dll",
+              "version": "0.3.30",
+              "threading_layer": "pthreads",
+              "architecture": "SkylakeX"
+            }
+          ]
+        },
+        "method": "VortexAD locked source-doublet Dirichlet + fixed freestream-aligned wake; no Cp cutoff",
+        "references": {
+          "area": 4.0,
+          "chord": 1.0,
+          "moment": [
+            0.25,
+            0.0,
+            0.0
+          ],
+          "density": 2.0,
+          "speed": 1.0,
+          "dynamic_pressure": 1.0
+        },
+        "parameters": {
+          "alpha_deg": 5.0,
+          "central_thickness": 0.0,
+          "span_factor": 1.0
+        },
+        "timings": {
+          "graph_seconds": 0.113075199999912,
+          "compile_and_first_seconds": 2.529364300000452,
+          "warm_forward_seconds": 1.7010563000003458
+        },
+        "CL": 0.33825005181323314,
+        "CD_pressure": 0.0037633504321132214,
+        "CM": [
+          -0.0018762000110174562,
+          0.04672783516076005,
+          -0.0004059835672916814
+        ],
+        "force": [
+          -0.1029256190107349,
+          -0.0008580969040959378,
+          1.3491636233909265
+        ],
+        "moment": [
+          -0.007504800044069825,
+          0.1869113406430402,
+          -0.0016239342691667256
+        ],
+        "components": {
+          "wing": {
+            "force": [
+              -0.12500786216497295,
+              0.00019822287802796106,
+              1.1297965023932002
+            ],
+            "moment": [
+              -0.007542685199246264,
+              0.003745658171883848,
+              -0.0044161426836420315
+            ],
+            "cp_min": -1.5082715605032835,
+            "cp_max": 0.61827823729203
+          },
+          "body": {
+            "force": [
+              0.022082243154238186,
+              -0.0010563197821239006,
+              0.21936712099772948
+            ],
+            "moment": [
+              3.788515517648923e-05,
+              0.18316568247115564,
+              0.002792208414475289
+            ],
+            "cp_min": -0.8422784530671032,
+            "cp_max": 0.6545763139731838
+          }
+        },
+        "cp_min": -1.5082715605032835,
+        "cp_max": 0.6545763139731838,
+        "cp_below_minus5": 0,
+        "load_closure": {
+          "exported_panel_force_max_abs": 1.734723475976807e-18,
+          "CL_abs": 9.43689570931383e-16,
+          "CD_pressure_abs": 6.505213034913027e-17,
+          "CM_max_abs": 2.2898349882893854e-16,
+          "component_force_max_abs": 3.1086244689504383e-15,
+          "component_moment_max_abs": 7.216449660063518e-16
+        },
+        "raw_cp_equal_used_cp": true,
+        "linear_true_relative_residual": 9.09275403468878e-16,
+        "condition_1_estimate": 1662.0043478433784,
+        "normalized_source_flux": -1.4815514102019623e-17,
+        "physical_accuracy_accepted": false,
+        "scope": "One fixed-topology joined wing/body family; CAD Boolean/remeshing is not differentiated",
+        "upstream_numerics": "Original fixed collocation offset / kernel small constants retained; not claimed removed",
+        "pressure_reconstruction": {
+          "method": "Unweighted affine least squares in each panel tangent plane",
+          "rings": 2,
+          "max_neighbors": 9,
+          "cutoff": null,
+          "regularization": null,
+          "excluded_edges": "Declared TE only",
+          "stencil_min_neighbors": 5
+        },
+        "objective_values": {
+          "CL": 0.3382500518132341,
+          "wing_Fz": 1.129796502393201,
+          "body_Fz": 0.2193671209977294,
+          "seam_Fz": 0.046437965840476235,
+          "CM_y": 0.046727835160759824
+        }
+      },
+      "independent_audit": {
+        "status": "geometry_load_gradient_audited",
+        "stencil_reports": [
+          {
+            "rings": 1,
+            "rank_deficient_panels": 0,
+            "minimum_singular_value_ratio": 0.07750245223465307,
+            "affine_reproduction_max_abs": 5.551115123125783e-16
+          },
+          {
+            "rings": 2,
+            "rank_deficient_panels": 0,
+            "minimum_singular_value_ratio": 0.1405086726559144,
+            "affine_reproduction_max_abs": 9.71445146547012e-16
+          }
+        ],
+        "recovered_gradient_max_abs_error": 2.7755575615628914e-15,
+        "independent_field": {
+          "velocity_definition": "U - grad(S)sigma - grad(D)mu - grad(Dwake)mu_wake; exterior self traces",
+          "wall_normal_rms": 0.0173910042428804,
+          "wall_normal_max": 0.30164008516758817,
+          "interior_dirichlet_rms": 1.1442273220935534e-05,
+          "independent_field_cp_min": -0.46325984207139737,
+          "independent_field_cp_max": 0.7331848756555686,
+          "surface_reconstruction_cp_vs_field_rms": 0.2097171454327276,
+          "core_strict_centroid_gate_passed": false,
+          "wing": {
+            "normal_rms": 0.019220175659624635,
+            "normal_max": 0.30164008516758817
+          },
+          "body": {
+            "normal_rms": 0.014227398225997412,
+            "normal_max": 0.08313471536531841
+          },
+          "seam": {
+            "normal_rms": 0.025358539702039554,
+            "normal_max": 0.05023792978520672
+          }
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_difference_vs_exterior_trace_rms": 0.0028775587750624783,
+            "wall_normal_rms": 0.017810999846187458
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_difference_vs_exterior_trace_rms": 0.0002879912917575667,
+            "wall_normal_rms": 0.017432264500554788
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_difference_vs_exterior_trace_rms": 2.880002432726386e-05,
+            "wall_normal_rms": 0.017395123160097718
+          }
+        ],
+        "moment_reference_shift_error": 4.440892098500626e-16,
+        "wing_body_AIC_crossblock_l2": 0.6626538819355006,
+        "pressure_reconstruction_is_not_independent_wall_validation": true,
+        "physical_accuracy_accepted": false,
+        "elapsed_seconds": 12.451165700000274,
+        "source_sha256": "2dbe579870aba772f398a3a55c8e627168488c9a164f251abd1b6fb18c70d94a"
+      },
+      "fields_sha256": "a3178cad83bc2970cf5bccc08f52ec277d1089344e490ddc11fc8741a13855d0"
+    }
+  ],
+  "failure_comparison": {
+    "run": "runs/wingbody_panel_upstream",
+    "nonfinite_cp_panels": 25,
+    "unchanged_global_fields_max_abs": {
+      "AIC_mu": 0.0,
+      "AIC_sigma": 0.0,
+      "mu": 0.0,
+      "sigma": 0.0
+    }
+  },
+  "scalar_derivative_comparisons": 45,
+  "physical_accuracy_accepted": false,
+  "source_sha256": "d8efaeb5f895478de262f936a5837d6a86992937c0d54ea4eb2e66863cfbd8c2"
+}

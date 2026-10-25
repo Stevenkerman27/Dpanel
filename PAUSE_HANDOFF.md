@@ -1,4 +1,87 @@
-# 暂停交接：2026-10-24
+# 暂停交接：2026-10-25
+
+**当前状态：已按用户要求收尾并暂停。完整鲁棒求解器目标尚未完成，恢复必须由用户明确提出。** 本地子任务已收尾；云端协同与 `Dpanel GitHub只读监听` 自动任务均暂停。没有提交、push、merge或对外评论。
+
+## 恢复先读
+
+- 最新方法、构型表及保留误差：[PANEL_ROBUSTNESS.md](docs/PANEL_ROBUSTNESS.md)。
+- 紧凑证据及原始字段哈希：[summary.json](docs/panel_robustness_evidence_v2/summary.json)。
+- 实际入口及依赖：[panel/README.md](panel/README.md)。
+- 路线和总体状态：[SOLVER_ROUTE.md](SOLVER_ROUTE.md)、[DEVELOPMENT.md](DEVELOPMENT.md)。
+- 前阶段VortexAD闭环：[WINGBODY_PANEL_LOOP.md](docs/WINGBODY_PANEL_LOOP.md)。
+
+用户优先级仍是几何鲁棒性、速度、方法可解释性；不优先追逐局部精度，但必须如实报告原始误差。研究脚本保持线性、命令式，先完成后完善。NCPU请求8。禁止用压力裁剪、隐藏正则化、SVD截断、涡核或假后缘掩盖故障。
+
+## 本轮已完成
+
+新增独立 `panel/` JAX源/偶极子面元求解器，支持真实CAD公共外表面、机身跨后缘、带接触边界的流体侧尾迹、粗机身与双机身。VortexAD保留作前置机身参考；旧P2全势路径保留作独立对照，没有改写其历史失败。
+
+1. `panel/kernel.py`：float64解析三角源/偶极势，自面内侧迹-1/2，解析线性wake一次矩；7项独立面积积分及几何导数检查通过。
+2. `panel/cad.py`：复用OCC布尔与两遍接触站位，只生成表面网格；壁面按邻接一致绕序及正体积确定外向，不生成/优化体网格。双机身616/1646壁面，粗机身824壁面均成功。
+3. `panel/build_surface.py`：读取旧P2或新surface-only NPZ，导出 `dpanel.planar_cut.v1`；保存真实TE、接触cut、流体wake及Gamma等价映射。公开夹具位于 `cases/panel_cut/`。
+4. `panel/solve.py`：联合势方程、解析线性尾迹、真实外露TE弱势跳跃闭合、接触区仍未知的常量Gamma、无正则表面势重构、原始Cp及翼/身/接缝力和力矩。AD涵盖迎角、中心厚度与展长，固定拓扑。
+5. 几何门禁：闭合/绕序/正体积，真实wall/wake交边与上下bank，TE条带积分和支持，接触图重新推导的约束，有向边相消与自由边界分类，面心绕数及wall-plane交线穿wake开内部检查。
+6. `panel/audit.py`：独立NumPy/Numba核、真实外场速度、面内点、外侧趋近、接触/TE势跳跃及QR梯度审计。真实外场和切平面压力重构分开记录。
+7. `aero.py` 新增显式 `panel-cut` 分支，`panel/run_case.py` 保存命令和manifest；`panel/export.py` 导出真实表面和wake的VTU，保留原始Cp与部件标签。旧入口沿原路径运行。
+
+## 验证与产物
+
+| 产物 | 已核实状态 |
+|---|---|
+| `runs/panel_robust_matrix_v1/summary.json` | 37/37项主检查；14个构型/工况解、3个尺度/参考点解、13个无效输入拒绝；四组AD/FD共180/180标量比较 |
+| `runs/panel_topology_matrix_v1/summary.json` | 10/10；8个公开夹具接受，小闭体穿wake与悬空自由边界明确拒绝 |
+| `runs/panel_kernel_v1/checks.json` | 7/7核与核导数检查 |
+| `runs/panel_cli_two_final/` | 最终求解源码完成统一入口、45项导数及表面/wake VTU；CL=0.263212956 |
+| `runs/panel_cli_cad_v1/` | 从CAD到表面网格、求解及VTU全流程通过 |
+| `runs/panel_surface_cad_two_v1/`、`panel_surface_cad_two_fine_v1/` | 双机身粗/细表面CAD产物与完整日志 |
+| `runs/panel_surface_cad_thick_v1/` | 半径0.6粗机身与NACA4412表面CAD产物 |
+| `runs/panel_cad_limits_v1/` | 4个近相切CAD探针，只有aft=1.0001建网格成功；其余被farfield包围盒检查阻挡，尚未完成近相切验证 |
+
+JIT后一次前向0.050～0.427秒，不含CAD、编译和进程启动。0.001/1000倍同拓扑尺度和平移后Cp最大差5.12e-12/3.91e-14；力矩参考点变换误差6.66e-16。不得据此宣称任意CAD、任意wake或实际八线程加速。
+
+主矩阵使用新增交线门禁前的源码快照；补强门禁有独立10项验证，最终双机身入口另有完整导数和导出。`cad.py`最后只改了bounds阶段名和失败信息，尚未重跑CAD。不同源码哈希与批次保留，不伪称所有实验都由同一最终源码执行。
+
+## 未完成与准确诊断
+
+**物理精度全部仍为false。** 双机身粗/细CL为0.263213/0.312072，相差约18.6%；全域真实壁面法向RMS分别0.02846/0.04388 U，细化没有整体单调改善。跨后缘粗例法向峰值达3.61692 U。重构Cp有限、切平面速度法向为零及线性真残差约1e-15都不能冒充真实无穿透。
+
+后缘下块是弱势跳跃闭合，不是直接速度Kutta条件；尚无独立尾缘速度精度验收。尾迹长度30Cref，截断模型显式保留。接触条件使用y投影和流向恒定Gamma，尚未认证重叠投影分量的独立环量、一般三维旋转、非平面/自由尾迹、自交壁面或跨CAD拓扑变化的导数。
+
+近相切探针的三个首轮失败来自 **OCC保守包围盒超出radius=5**；旧failure记录的stage误写为TE验证阶段，traceback才是准确定位。当前代码已改为 `cad_bounds_pass_*` 并附包围盒/radius。不能将这些失败解释为近相切几何不可分辨或TE声明无效。尚未增大radius重试。aft=1.0001只有表面网格，接触展向长度0.00699991，未做面元求解。
+
+少量 `.conda_env` 进程向 `cases/` 创建新文件时有PermissionError，Anaconda生成器和PowerShell文件复制可正常操作；本轮未改ACL，历史失败保留。`runs/`输出正常。旧6504壁面 `two_bodies.json`太密，恢复时优先用 `two_bodies_coarse.json`，不要直接拿它做稠密JAX基准。
+
+## 恢复时的实际起点
+
+以下是待办，暂停后不得自动执行：
+
+1. 先以新目录、较大farfield（例如radius8）复核4个CADlimits输入，排除OCC保守包围盒干扰，再判断真实近相切故障；保留原radius5失败。
+2. 对aft=1.0001的真实接触表面完成独立几何检查、面元解、原始场与载荷；不可仅凭生成网格计作全流程通过。
+3. 继续扩大几何/接触矩阵并明确支持域；依用户优先级控制成本。进一步研究精度时，先分离表面几何变化、离散误差、势重构与尾缘条件，不靠裁剪或平滑。
+4. 再决定是否推广非平面wake、接触图或更高阶表面势表示。保守全势/P2及WBCAero公开方法研究保留，整体反编译继续暂停。
+
+## 复现环境与命令
+
+工作目录 `D:\3D\Projects\panel`。主环境 `.conda_env/python.exe`：Python3.11.17、NumPy2.4.6、SciPy1.17.1、JAX/JAXlib0.10.2、threadpoolctl3.7.0；无Numba/Torch。独立审计 `C:/Users/zyx20/anaconda3/python.exe`：Python3.13.9、NumPy2.3.5、SciPy1.16.3、Numba0.62.1。本地Gmsh4.15.2位于 `audit/runtime/python/`。
+
+```powershell
+.\.conda_env\python.exe aero.py --case cases/panel_two_bodies.json --out runs/NEW_TWO --export-surface
+.\.conda_env\python.exe aero.py --case cases/panel_cad_wingbody.json --out runs/NEW_CAD --export-surface
+.\.conda_env\python.exe panel/verify.py --out runs/NEW_MATRIX --audit-python C:/Users/zyx20/anaconda3/python.exe
+.\.conda_env\python.exe panel/verify_topology.py --out runs/NEW_TOPOLOGY
+C:/Users/zyx20/anaconda3/python.exe panel/audit.py runs/NEW_TWO/solution --off-surface
+C:/Users/zyx20/anaconda3/python.exe panel/report.py --matrix runs/NEW_MATRIX --topology runs/NEW_TOPOLOGY --out docs/NEW_EVIDENCE
+```
+
+所有输出使用新目录。工作区仍有大量先前未提交内容与本地环境，不要清理、覆盖或回退。没有为本次工作创建提交。公开JSON夹具可脱离历史体网格复现。
+
+GitHub只能经 `http://192.168.3.9:7890`；代理失败停止并告知，不排查、不改直连。本轮只读轮询无新事件。自动任务ID `dpanel-github` 已置PAUSED；原15分钟配置与只读提示保留。恢复目标不等于授权push、评论或恢复云端协同。
+
+---
+
+## 历史交接原文：2026-10-24
+
+以下保留旧阶段原文，不代表最新状态；独立原始归档见 `docs/PAUSE_HANDOFF_2026-10-24.md`。
 
 总目标已按用户要求暂停，尚未完成整体验收。本次整理没有启动新实验或继续修改求解代码；检查时没有 Python 实验进程运行。恢复须由用户明确提出。
 

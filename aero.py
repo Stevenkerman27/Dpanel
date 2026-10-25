@@ -14,6 +14,12 @@ parser.add_argument("--out", type=Path, required=True)
 parser.add_argument("--export-surface", action="store_true", help="Export raw lifting surface samples and Tri6 geometry as VTU")
 args = parser.parse_args()
 root = Path(__file__).resolve().parent
+if json.loads(args.case.read_text(encoding="utf-8")).get("method") == "panel-cut":
+    command = [sys.executable, str(root / "panel" / "run_case.py"), "--case", str(args.case.resolve()),
+               "--out", str(args.out.resolve())]
+    if args.export_surface:
+        command.append("--export-surface")
+    sys.exit(subprocess.run(command, cwd=root).returncode)
 assert not args.out.exists() or not any(args.out.iterdir()), "Output directory must be empty"
 args.out.mkdir(parents=True, exist_ok=True)
 started = time.perf_counter()

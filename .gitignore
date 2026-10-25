@@ -29,6 +29,9 @@ node_modules/
 Thumbs.db
 desktop.ini
 
+# GitHub 监听的本地状态与日志
+monitor/state/
+
 # Generated solver output and meshes
 runs/
 **/results/**
@@ -58,6 +61,19 @@ runs/
 upgrade/
 OpenVSP-3.52.1-win64/
 WBCAERO/
+.tools/
+.conda_env/
+.pip-cache/
+.localappdata/
+.tmp/
+pip-*/
+runs-acl-backup.xml
+.conda_log.txt
+.pip_log*.txt
+.imp_log*.txt
+.probe-gitconfig
+.install_jax*.bat
+.run_*.bat
 
 # Build products and downloaded archives
 build/

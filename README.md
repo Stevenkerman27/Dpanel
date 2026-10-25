@@ -1,6 +1,8 @@
 # 快速势流求解器研究实现
 
-截至 2026-10-24，开发目标已按用户要求暂停，尚未完成整体验收。已完成工作、失败记录与恢复起点见 [PAUSE_HANDOFF.md](PAUSE_HANDOFF.md)。当前可复现二维翼型、三维闭体及固定平面尾迹的参数化/CAD 升力原型；三维局部物理精度、复杂尾迹及跨声速尚未验收。总体状态见 [DEVELOPMENT.md](DEVELOPMENT.md)，路线选择见 [SOLVER_ROUTE.md](SOLVER_ROUTE.md)。
+截至 2026-10-25，已按用户要求收尾并暂停本地执行，云端协同与GitHub监听自动任务均暂停。**已完成机身跨后缘、粗机身与双机身的可微面元实现及公开矩阵**：37项主检查、10项补充拓扑检查和180项AD/中心差分通过。最新方法、原始误差与复现命令见 [PANEL_ROBUSTNESS.md](docs/PANEL_ROBUSTNESS.md)，恢复起点见 [PAUSE_HANDOFF.md](PAUSE_HANDOFF.md)。
+
+新 `panel/` 求解器采用解析源/偶极子、真实流体侧尾迹、线性势跳跃及接触相容基；纯表面CAD流程避开体网格优化。没有压力裁剪或矩阵正则化。完整通用求解器尚未验收，独立壁面误差与粗细载荷差仍显著，`physical_accuracy_accepted=false`。此前仅支持前置机身的VortexAD闭环保留于 [WINGBODY_PANEL_LOOP.md](docs/WINGBODY_PANEL_LOOP.md)；总体状态见 [DEVELOPMENT.md](DEVELOPMENT.md)，路线选择见 [SOLVER_ROUTE.md](SOLVER_ROUTE.md)。
 
 当前开发优先级为几何鲁棒性：厚翼身连接、机身越过后缘、接近相切时的网格拓扑和明确失败诊断。暂缓昂贵的精度加密；原始压力、壁面误差和所有旧失败记录继续保留。
 
@@ -9,6 +11,8 @@
 在已有 NumPy、SciPy、threadpoolctl 的 Python 环境中：
 
 ```powershell
+python aero.py --case cases/panel_two_bodies.json --out runs/my_panel --export-surface
+python aero.py --case cases/panel_cad_wingbody.json --out runs/my_panel_cad --export-surface
 python aero.py --case cases/naca0012.json --out runs/my_naca
 python aero.py --case cases/wing_initial.json --out runs/my_wing
 python aero.py --case cases/wing_strips.json --out runs/my_compressible_wing
@@ -20,7 +24,7 @@ python aero.py --case cases/cad_sphere.json --out runs/my_cad_body
 python aero.py --case cases/cad_wingbody.json --out runs/my_lifting_cad --export-surface
 ```
 
-输出目录必须为空。入口保存输入副本、mesh/solve 原始命令、完整日志、输入/代码哈希、阶段耗时和 `manifest.json`。网格与解保存在 `mesh/` 和 `solution/`；已有网格则直接引用原路径。`numerically_converged` 只表示离散方程收敛，`validation` 字段另行说明精度证据，不能将它解释为任意算例已通过物理验收。
+`panel-cut`入口需要JAX环境（本机 `.conda_env/python.exe`），使用公开表面JSON夹具时不需要CAD依赖；其余入口沿用原NumPy/SciPy环境。输出目录必须为空。入口保存输入副本、mesh/solve 原始命令、完整日志、输入/代码哈希、阶段耗时和 `manifest.json`。网格与解保存在 `mesh/` 和 `solution/`；已有网格则直接引用原路径。数值收敛或几何门禁通过均不能解释为任意算例已通过物理验收。
 
 当前机器的 Python 为 `C:/Users/zyx20/anaconda3/python.exe`。Gmsh 4.15.2 API/DLL 位于 `audit/runtime/python/`，网格脚本显式加载这个本地依赖；原 OpenVSP/WBCAero 二进制保持原样。默认请求 NCPU=8；SciPy SuperLU 的稀疏直接分解不能因此宣称使用8线程。
 
@@ -34,6 +38,7 @@ python aero.py --case cases/cad_wingbody.json --out runs/my_lifting_cad --export
 
 | 路径 | 方法与当前范围 | 验证记录 |
 |---|---|---|
+| `panel/solve.py`、`panel/cad.py` | 可微低速源/偶极子、纯表面CAD、跨后缘接触尾迹、分部件载荷 | [方法与证据](docs/PANEL_ROBUSTNESS.md)、[使用](panel/README.md)；物理精度未验收 |
 | `potential/solve_airfoil_log.py` | 共享面通量的对数径向 FV，解析映射翼型，严格亚声速 | [LOG_RESULTS.md](potential/LOG_RESULTS.md) |
 | `airfoil2d/solve.py` | 一般二维曲面P2、环量基、Kutta，严格亚声速 | [RESULTS.md](airfoil2d/RESULTS.md)、[追加失败报告](airfoil2d/EXTRA_RESULTS.md) |
 | `volume/solve_p2.py` | 三维闭体曲面P2，无升力尾迹 | `volume/results/`，[P2_PROTOCOL.md](volume/P2_PROTOCOL.md) |

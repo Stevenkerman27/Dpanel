@@ -1,0 +1,1068 @@
+{
+  "status": "paused_before_general_acceptance",
+  "matrix_checks": [
+    {
+      "test": "valid_single_wing",
+      "passed": true
+    },
+    {
+      "test": "AD_FD_single_wing",
+      "scalar_comparisons": 45,
+      "passed": true
+    },
+    {
+      "test": "valid_forward_body",
+      "passed": true
+    },
+    {
+      "test": "valid_aft_body",
+      "passed": true
+    },
+    {
+      "test": "AD_FD_aft_body",
+      "scalar_comparisons": 45,
+      "passed": true
+    },
+    {
+      "test": "valid_cambered_body",
+      "passed": true
+    },
+    {
+      "test": "valid_swept_tapered",
+      "passed": true
+    },
+    {
+      "test": "valid_thick_body",
+      "passed": true
+    },
+    {
+      "test": "valid_two_bodies_coarse",
+      "passed": true
+    },
+    {
+      "test": "AD_FD_two_bodies_coarse",
+      "scalar_comparisons": 45,
+      "passed": true
+    },
+    {
+      "test": "valid_aft_negative_alpha",
+      "passed": true
+    },
+    {
+      "test": "valid_aft_zero_alpha",
+      "passed": true
+    },
+    {
+      "test": "valid_aft_bulge_span",
+      "passed": true
+    },
+    {
+      "test": "AD_FD_aft_bulge_span",
+      "scalar_comparisons": 45,
+      "passed": true
+    },
+    {
+      "test": "valid_aft_thin_wide",
+      "passed": true
+    },
+    {
+      "test": "valid_thick_negative_alpha",
+      "passed": true
+    },
+    {
+      "test": "valid_two_bodies_zero_alpha",
+      "passed": true
+    },
+    {
+      "test": "valid_two_bodies_fine",
+      "passed": true
+    },
+    {
+      "test": "scale_small_translate",
+      "max_cp_error": 5.122346991015547e-12,
+      "max_force_scaling_error": 2.7000623958883807e-13,
+      "max_moment_transform_error": 3.3151779932349967e-13,
+      "passed": true
+    },
+    {
+      "test": "scale_large_translate",
+      "max_cp_error": 3.907985046680551e-14,
+      "max_force_scaling_error": 4.440892098500626e-16,
+      "max_moment_transform_error": 1.6445178552260131e-15,
+      "passed": true
+    },
+    {
+      "test": "moment_reference",
+      "max_cp_error": 0.0,
+      "max_force_scaling_error": 0.0,
+      "max_moment_transform_error": 6.661338147750939e-16,
+      "passed": true
+    },
+    {
+      "test": "reject_open_wall",
+      "passed": true
+    },
+    {
+      "test": "reject_duplicate_wall",
+      "passed": true
+    },
+    {
+      "test": "reject_flipped_wall",
+      "passed": true
+    },
+    {
+      "test": "reject_wrong_te_banks",
+      "passed": true
+    },
+    {
+      "test": "reject_missing_cut",
+      "passed": true
+    },
+    {
+      "test": "reject_wrong_te_list",
+      "passed": true
+    },
+    {
+      "test": "reject_nonplanar_wake",
+      "passed": true
+    },
+    {
+      "test": "reject_wake_inside_solid",
+      "passed": true
+    },
+    {
+      "test": "reject_missing_contact_constraint",
+      "passed": true
+    },
+    {
+      "test": "reject_unsupported_gamma",
+      "passed": true
+    },
+    {
+      "test": "reject_collapsed_panel",
+      "passed": true
+    },
+    {
+      "test": "reject_collapsed_span",
+      "passed": true
+    },
+    {
+      "test": "reject_nonfinite_parameter",
+      "passed": true
+    },
+    {
+      "test": "independent_audit_aft_body",
+      "passed": true
+    },
+    {
+      "test": "independent_audit_thick_body",
+      "passed": true
+    },
+    {
+      "test": "independent_audit_two_bodies_coarse",
+      "passed": true
+    }
+  ],
+  "topology_checks": [
+    {
+      "test": "single_wing",
+      "expected": "accept",
+      "passed": true,
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\single_wing",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "forward_body",
+      "expected": "accept",
+      "passed": true,
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\cases\\panel_cut\\forward_body.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\forward_body",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "aft_body",
+      "expected": "accept",
+      "passed": true,
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\cases\\panel_cut\\aft_body.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\aft_body",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "cambered_body",
+      "expected": "accept",
+      "passed": true,
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\cases\\panel_cut\\cambered_body.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\cambered_body",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "swept_tapered",
+      "expected": "accept",
+      "passed": true,
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\cases\\panel_cut\\swept_tapered.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\swept_tapered",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "thick_body",
+      "expected": "accept",
+      "passed": true,
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\cases\\panel_cut\\thick_body.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\thick_body",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "two_bodies_coarse",
+      "expected": "accept",
+      "passed": true,
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\cases\\panel_cut\\two_bodies_coarse.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\two_bodies_coarse",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "two_bodies_fine",
+      "expected": "accept",
+      "passed": true,
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\cases\\panel_cut\\two_bodies_fine.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\two_bodies_fine",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "small_solid_piercing_wake",
+      "expected": "Wake triangle interior intersects the solid wall slice",
+      "passed": true,
+      "failure": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Wake triangle interior intersects the solid wall slice",
+        "elapsed_seconds": 0.10545540000020992
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\small_solid_piercing_wake.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\small_solid_piercing_wake",
+        "--validate-only"
+      ]
+    },
+    {
+      "test": "unclassified_free_wake_boundary",
+      "expected": "Unclassified free wake boundary",
+      "passed": true,
+      "failure": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Unclassified free wake boundary; require TE/contact, wingtip or downstream truncation",
+        "elapsed_seconds": 0.0848571999995329
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\unclassified_free_wake_boundary.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_topology_matrix_v1\\unclassified_free_wake_boundary",
+        "--validate-only"
+      ]
+    }
+  ],
+  "derivative_scalar_comparisons": 180,
+  "runs": [
+    {
+      "name": "single_wing",
+      "CL": 0.24153441844346338,
+      "Cp_min": -1.0090564605376313,
+      "Cp_max": 0.553093058408037,
+      "wall_panels": 484,
+      "wake_panels": 600,
+      "warm_seconds": 0.06144489999860525,
+      "residual": 1.0121365097171576e-15,
+      "condition_1": 272.18343832542473,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "8277136ddfbd796767236c68ff3ce83e0cb761eee58f8c58e13fbaf257da9c31",
+      "fields_sha256": "cfa35be75f4c2fd705d9c73e35721e5952fc86c79b49f95c7b5846a3c37789be",
+      "derivatives_passed": true,
+      "independent_audit": null
+    },
+    {
+      "name": "forward_body",
+      "CL": 0.2690429274736884,
+      "Cp_min": -1.0283337072482874,
+      "Cp_max": 0.6555100931665461,
+      "wall_panels": 696,
+      "wake_panels": 600,
+      "warm_seconds": 0.10407479999958014,
+      "residual": 8.600322908904753e-16,
+      "condition_1": 417.5537573762293,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "552fc21bd0f1e94b40c0c9d7215cf0091c0699d11e587ceb9c2e5edc7e51c31c",
+      "fields_sha256": "e38bfb089386294e07d979983b580d63f6e9be479217a33654fbb3526c1523ae",
+      "derivatives_passed": null,
+      "independent_audit": null
+    },
+    {
+      "name": "aft_body",
+      "CL": 0.25785722847787035,
+      "Cp_min": -1.0331370027030258,
+      "Cp_max": 0.5263034119341978,
+      "wall_panels": 694,
+      "wake_panels": 748,
+      "warm_seconds": 0.11162630000035278,
+      "residual": 7.735994971699012e-16,
+      "condition_1": 3948.2171915266067,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+      "fields_sha256": "ce6e7ca09d978a83e52cfb4ea6e1c4f305133611f33dfa33af07678e1d58d9a0",
+      "derivatives_passed": true,
+      "independent_audit": {
+        "status": "independently_audited",
+        "kernel_max_abs_errors": {
+          "single": 8.326672684688674e-17,
+          "doublet": 2.1538326677728037e-14,
+          "linear_wake_moment": 3.3650924928518844e-17,
+          "constant_wake": 7.355227538141662e-16
+        },
+        "gradient_qr_max_abs_error": 2.4424906541753444e-15,
+        "affine_reproduction_max_abs_error": 6.106226635438361e-16,
+        "independent_field": {
+          "wall_normal_rms": 0.02889503713953908,
+          "wall_normal_max": 3.6169158529032233,
+          "interior_dirichlet_rms": 5.52057415778648e-17,
+          "independent_field_cp_min": -13.063801249360063,
+          "independent_field_cp_max": 0.7232965570840608,
+          "reconstructed_vs_field_cp_rms": 0.18956270813956272,
+          "strict_centroid_gate_passed": false,
+          "contact_jump_rms": 0.0021268127940440224,
+          "exposed_te_jump_rms": 0.0041523769474068155,
+          "wing": {
+            "normal_rms": 0.02947572127476873,
+            "normal_max": 3.6169158529032233
+          },
+          "body": {
+            "normal_rms": 0.02826016391677177,
+            "normal_max": 0.17575077837852238
+          },
+          "seam": {
+            "normal_rms": 0.06983003988297555,
+            "normal_max": 3.6169158529032233
+          },
+          "off_surface_in_face_normal_rms": 0.06460355262697146,
+          "off_surface_in_face_normal_max": 6.448450004936038
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_vs_exterior_trace_rms": 0.0070473430930236905
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_vs_exterior_trace_rms": 0.000745978812040702
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_vs_exterior_trace_rms": 7.463788352739638e-05
+          }
+        ],
+        "physical_accuracy_accepted": false,
+        "source_sha256": "cc9963251313f742c00bf4228b35f132e45d6898b7b5fe43f30997fb42225bf0",
+        "elapsed_seconds": 6.041703200000484
+      }
+    },
+    {
+      "name": "cambered_body",
+      "CL": 0.5176863062038815,
+      "Cp_min": -3.1725288656219117,
+      "Cp_max": 0.847795393407702,
+      "wall_panels": 746,
+      "wake_panels": 646,
+      "warm_seconds": 0.12596810000104597,
+      "residual": 8.589696108519076e-16,
+      "condition_1": 1288.87409163015,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "fe96d68a512d04075fc5408ec12711403e11da099f4fd215a2a411e7fc6ac56a",
+      "fields_sha256": "4a2d2ea3d04fdb5a268c5d8ba640387f36f0c844e8bb44e1a75e8d33684c98b1",
+      "derivatives_passed": null,
+      "independent_audit": null
+    },
+    {
+      "name": "swept_tapered",
+      "CL": 0.5208219442749447,
+      "Cp_min": -4.548741147509187,
+      "Cp_max": 0.5690965026972201,
+      "wall_panels": 436,
+      "wake_panels": 600,
+      "warm_seconds": 0.050300199998673634,
+      "residual": 2.11322378269535e-15,
+      "condition_1": 269.2560398800508,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "133a64b903c0d081aa2e3c81c7c998b4ed52c9e6a43f67d61292f51f393640fd",
+      "fields_sha256": "4ef38c41847f69be03955c59176bd1dc0554fbcc85e47ed06228bdc61475d2b7",
+      "derivatives_passed": null,
+      "independent_audit": null
+    },
+    {
+      "name": "thick_body",
+      "CL": 0.5278180729356303,
+      "Cp_min": -3.1920951409427056,
+      "Cp_max": 0.9228602100723371,
+      "wall_panels": 824,
+      "wake_panels": 646,
+      "warm_seconds": 0.13512590000027558,
+      "residual": 6.375472089166579e-16,
+      "condition_1": 4232.655782639336,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "aaa4ddaf34adca68c44caa3896d387edd253762e8bb60ba6bca42761b5c18ef5",
+      "fields_sha256": "6df638949d8ad51719184e50d39f46f7c84610f5062986df769341d76ada36cc",
+      "derivatives_passed": null,
+      "independent_audit": {
+        "status": "independently_audited",
+        "kernel_max_abs_errors": {
+          "single": 5.898059818321144e-17,
+          "doublet": 1.0574874309554616e-14,
+          "linear_wake_moment": 4.028149883962551e-17,
+          "constant_wake": 1.0408340855860843e-15
+        },
+        "gradient_qr_max_abs_error": 7.771561172376096e-15,
+        "affine_reproduction_max_abs_error": 8.604228440844963e-16,
+        "independent_field": {
+          "wall_normal_rms": 0.027127504012440042,
+          "wall_normal_max": 2.1361484818054275,
+          "interior_dirichlet_rms": 1.0418524868882087e-16,
+          "independent_field_cp_min": -4.525414657840198,
+          "independent_field_cp_max": 0.9286534442655437,
+          "reconstructed_vs_field_cp_rms": 0.25269216039392023,
+          "strict_centroid_gate_passed": false,
+          "contact_jump_rms": 0.00859609178385963,
+          "exposed_te_jump_rms": 0.007192932740938254,
+          "wing": {
+            "normal_rms": 0.0373586246529308,
+            "normal_max": 2.1361484818054275
+          },
+          "body": {
+            "normal_rms": 0.01976915376405049,
+            "normal_max": 0.2242871533118152
+          },
+          "seam": {
+            "normal_rms": 0.053917542082251184,
+            "normal_max": 2.1361484818054275
+          },
+          "off_surface_in_face_normal_rms": 0.07291713383573327,
+          "off_surface_in_face_normal_max": 3.7737859267391847
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_vs_exterior_trace_rms": 0.0047067814708968495
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_vs_exterior_trace_rms": 0.00048059506149621866
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_vs_exterior_trace_rms": 4.806933150951832e-05
+          }
+        ],
+        "physical_accuracy_accepted": false,
+        "source_sha256": "cc9963251313f742c00bf4228b35f132e45d6898b7b5fe43f30997fb42225bf0",
+        "elapsed_seconds": 6.5806074000010994
+      }
+    },
+    {
+      "name": "two_bodies_coarse",
+      "CL": 0.2632129557938185,
+      "Cp_min": -1.4130590726750363,
+      "Cp_max": 0.956617684166626,
+      "wall_panels": 616,
+      "wake_panels": 708,
+      "warm_seconds": 0.08846319999975094,
+      "residual": 1.1182557193997123e-15,
+      "condition_1": 721.2023432697856,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "a56a76fb2595e746c10927a76251807040eb0c7af2ac8d2297658abe85c50d1a",
+      "fields_sha256": "71ce32d64abb2462bf820e203dfcb4d2cf10b6c8e69f63395e020d433533cb67",
+      "derivatives_passed": true,
+      "independent_audit": {
+        "status": "independently_audited",
+        "kernel_max_abs_errors": {
+          "single": 6.245004513516506e-17,
+          "doublet": 4.107825191113079e-15,
+          "linear_wake_moment": 1.2587756629146157e-17,
+          "constant_wake": 1.457167719820518e-16
+        },
+        "gradient_qr_max_abs_error": 2.0539125955565396e-15,
+        "affine_reproduction_max_abs_error": 8.049116928532385e-16,
+        "independent_field": {
+          "wall_normal_rms": 0.028461085618772267,
+          "wall_normal_max": 0.18013312761307587,
+          "interior_dirichlet_rms": 5.3750252730521694e-17,
+          "independent_field_cp_min": -0.30608661874849075,
+          "independent_field_cp_max": 0.9852767719818482,
+          "reconstructed_vs_field_cp_rms": 0.23851207231581753,
+          "strict_centroid_gate_passed": false,
+          "contact_jump_rms": 0.0054002974584933874,
+          "exposed_te_jump_rms": 0.004197748289205863,
+          "wing": {
+            "normal_rms": 0.02175836021844443,
+            "normal_max": 0.15442678902139195
+          },
+          "body": {
+            "normal_rms": 0.035784483024272506,
+            "normal_max": 0.18013312761307587
+          },
+          "seam": {
+            "normal_rms": 0.0357697447779512,
+            "normal_max": 0.18013312761307587
+          },
+          "off_surface_in_face_normal_rms": 0.07339840522385262,
+          "off_surface_in_face_normal_max": 0.6224723887450204
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_vs_exterior_trace_rms": 0.00355286244418137
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_vs_exterior_trace_rms": 0.0003552157885920436
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_vs_exterior_trace_rms": 3.551766238596412e-05
+          }
+        ],
+        "physical_accuracy_accepted": false,
+        "source_sha256": "cc9963251313f742c00bf4228b35f132e45d6898b7b5fe43f30997fb42225bf0",
+        "elapsed_seconds": 5.536632999999711
+      }
+    },
+    {
+      "name": "aft_negative_alpha",
+      "CL": -0.24629897901448256,
+      "Cp_min": -2.1446315203902473,
+      "Cp_max": 0.6123740814310061,
+      "wall_panels": 694,
+      "wake_panels": 748,
+      "warm_seconds": 0.10439279999991413,
+      "residual": 8.818932062676906e-16,
+      "condition_1": 3948.2171915266067,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+      "fields_sha256": "f6fd5290c08b7fc0931aec71fd384235907eb41d1d33e6c44e49e1a208a594f2",
+      "derivatives_passed": null,
+      "independent_audit": null
+    },
+    {
+      "name": "aft_zero_alpha",
+      "CL": 0.005616745436908829,
+      "Cp_min": -0.38577001915103093,
+      "Cp_max": 0.5632056795167548,
+      "wall_panels": 694,
+      "wake_panels": 748,
+      "warm_seconds": 0.09954979999929492,
+      "residual": 4.445932858177352e-16,
+      "condition_1": 3948.217191526606,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+      "fields_sha256": "d3b9431273cf715dd957abdf61240da5402c31f5482596291a028708c883f57e",
+      "derivatives_passed": null,
+      "independent_audit": null
+    },
+    {
+      "name": "aft_bulge_span",
+      "CL": 0.1425883047149741,
+      "Cp_min": -0.8853605430990241,
+      "Cp_max": 0.49381820196394766,
+      "wall_panels": 694,
+      "wake_panels": 748,
+      "warm_seconds": 0.10931850000088161,
+      "residual": 7.517080077400556e-16,
+      "condition_1": 2524.1180596940367,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+      "fields_sha256": "70e81c8df929b3ecbc8dae2419676f725d65315de13273b967eb97ceae36e7b6",
+      "derivatives_passed": true,
+      "independent_audit": null
+    },
+    {
+      "name": "aft_thin_wide",
+      "CL": 0.4053495968488345,
+      "Cp_min": -1.3931550619141189,
+      "Cp_max": 0.6645829667145442,
+      "wall_panels": 694,
+      "wake_panels": 748,
+      "warm_seconds": 0.10613179999927524,
+      "residual": 1.1194345022749456e-15,
+      "condition_1": 6121.285503258134,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+      "fields_sha256": "c21c1a09853202e0aa14982aa2cf1d3c1c5a3e575a8143d97a10af674007e52f",
+      "derivatives_passed": null,
+      "independent_audit": null
+    },
+    {
+      "name": "thick_negative_alpha",
+      "CL": -0.19586004147343006,
+      "Cp_min": -2.6773574913726743,
+      "Cp_max": 0.9407184725227054,
+      "wall_panels": 824,
+      "wake_panels": 646,
+      "warm_seconds": 0.12931770000068354,
+      "residual": 6.339592166873583e-16,
+      "condition_1": 4232.655782639336,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "aaa4ddaf34adca68c44caa3896d387edd253762e8bb60ba6bca42761b5c18ef5",
+      "fields_sha256": "d90bdee32fd033588391d7c8dce8a9bdea7adb74213cb75392bdebd86d0deb82",
+      "derivatives_passed": null,
+      "independent_audit": null
+    },
+    {
+      "name": "two_bodies_zero_alpha",
+      "CL": 0.011739532150067468,
+      "Cp_min": -1.3602529678163102,
+      "Cp_max": 0.994679510775351,
+      "wall_panels": 616,
+      "wake_panels": 708,
+      "warm_seconds": 0.08658629999990808,
+      "residual": 5.568133748291377e-16,
+      "condition_1": 721.2023432697858,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "a56a76fb2595e746c10927a76251807040eb0c7af2ac8d2297658abe85c50d1a",
+      "fields_sha256": "c9f8f728fe00101499cb1e4c1874bd78419cd9b315424183967fb75c02dc73d0",
+      "derivatives_passed": null,
+      "independent_audit": null
+    },
+    {
+      "name": "two_bodies_fine",
+      "CL": 0.31207165365785566,
+      "Cp_min": -1.693907177000828,
+      "Cp_max": 0.5183374254420223,
+      "wall_panels": 1646,
+      "wake_panels": 992,
+      "warm_seconds": 0.4273511999999755,
+      "residual": 1.0083220426021035e-15,
+      "condition_1": 1967.3725697522793,
+      "source_sha256": {
+        "solve.py": "f6520efeb3c1064dfc9e3938d20cafe100505a9a263584a9f8f149881537c808",
+        "kernel.py": "8e9c3c5dfb54e54bc6eae66f251f3b3e2871dd1899e210cb65279b737d529014",
+        "build_surface.py": "d50e53d3cbb37f862abb2f4b653b0c39515c5f1a0eefe37a1bc29634c5d6f6fe"
+      },
+      "surface_sha256": "af01f5a8a4927732dcb068706fee8ba1a760e454305f8505fe59bfc2c02e38d2",
+      "fields_sha256": "562a0f0ff8932056754988af73e5c6622ac5266414c833d5f5afcb6a3fc27af0",
+      "derivatives_passed": null,
+      "independent_audit": {
+        "status": "independently_audited",
+        "kernel_max_abs_errors": {
+          "single": 1.235990476633475e-16,
+          "doublet": 1.9886869928598117e-14,
+          "linear_wake_moment": 1.6670878951385512e-17,
+          "constant_wake": 3.469446951953614e-16
+        },
+        "gradient_qr_max_abs_error": 1.3322676295501878e-15,
+        "affine_reproduction_max_abs_error": 7.216449660063518e-16,
+        "independent_field": {
+          "wall_normal_rms": 0.04388446283941393,
+          "wall_normal_max": 0.6503304723682057,
+          "interior_dirichlet_rms": 7.857865403036538e-17,
+          "independent_field_cp_min": -0.46432403215035833,
+          "independent_field_cp_max": 0.689964467400765,
+          "reconstructed_vs_field_cp_rms": 0.17524260332177446,
+          "strict_centroid_gate_passed": false,
+          "contact_jump_rms": 0.004454537152881556,
+          "exposed_te_jump_rms": 0.003942588715389482,
+          "wing": {
+            "normal_rms": 0.018577031843207883,
+            "normal_max": 0.20510676260641025
+          },
+          "body": {
+            "normal_rms": 0.05508858641138107,
+            "normal_max": 0.6503304723682057
+          },
+          "seam": {
+            "normal_rms": 0.012823691000827826,
+            "normal_max": 0.03770323688540472
+          },
+          "off_surface_in_face_normal_rms": 0.09168304869788613,
+          "off_surface_in_face_normal_max": 1.636101817924993
+        },
+        "exterior_approach": [
+          {
+            "offset_sqrt_area": 0.01,
+            "velocity_vs_exterior_trace_rms": 0.007667566241367466
+          },
+          {
+            "offset_sqrt_area": 0.001,
+            "velocity_vs_exterior_trace_rms": 0.0007622585941745654
+          },
+          {
+            "offset_sqrt_area": 0.0001,
+            "velocity_vs_exterior_trace_rms": 7.613351415179945e-05
+          }
+        ],
+        "physical_accuracy_accepted": false,
+        "source_sha256": "cc9963251313f742c00bf4228b35f132e45d6898b7b5fe43f30997fb42225bf0",
+        "elapsed_seconds": 21.069414000001416
+      }
+    }
+  ],
+  "rejections": [
+    {
+      "name": "open_wall",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Wall must be a closed two-manifold",
+        "elapsed_seconds": 0.02822310000010475
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_open_wall.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_open_wall",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "duplicate_wall",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Duplicate wall panels",
+        "elapsed_seconds": 0.01973329999964335
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_duplicate_wall.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_duplicate_wall",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "flipped_wall",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Inconsistent wall winding",
+        "elapsed_seconds": 0.02856679999968037
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_flipped_wall.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_flipped_wall",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "wrong_te_banks",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "TE bank pairing disagrees with the actual cut",
+        "elapsed_seconds": 0.021447099999932107
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_wrong_te_banks.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_wrong_te_banks",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "missing_cut",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Declared cut must equal the actual wall/wake boundary intersection",
+        "elapsed_seconds": 0.03078099999947881
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_missing_cut.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_missing_cut",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "wrong_te_list",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "TE list disagrees with the cut",
+        "elapsed_seconds": 0.021456799999214127
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_wrong_te_list.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_wrong_te_list",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "nonplanar_wake",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Wake must have positive-z planar orientation",
+        "elapsed_seconds": 0.029970600000524428
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_nonplanar_wake.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_nonplanar_wake",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "wake_inside_solid",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Wake contains face centers inside a solid",
+        "elapsed_seconds": 0.08308899999974528
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_wake_inside_solid.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_wake_inside_solid",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "missing_contact_constraint",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Smooth contact must have constant unknown jump",
+        "elapsed_seconds": 0.09399029999985942
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_missing_contact_constraint.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_missing_contact_constraint",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "unsupported_gamma",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Every circulation unknown needs actual exposed TE support",
+        "elapsed_seconds": 0.08559380000042438
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_unsupported_gamma.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_unsupported_gamma",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "collapsed_panel",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Degenerate wall panels",
+        "elapsed_seconds": 0.027332200001183082
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_collapsed_panel.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_collapsed_panel",
+        "--validate-only"
+      ]
+    },
+    {
+      "name": "collapsed_span",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "",
+        "elapsed_seconds": 0.020535199999358156
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_collapsed_span.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_collapsed_span",
+        "--validate-only",
+        "--span",
+        "0"
+      ]
+    },
+    {
+      "name": "nonfinite_parameter",
+      "diagnostic": {
+        "status": "input_rejected",
+        "stage": "input_validation",
+        "exception": "AssertionError",
+        "message": "Finite flow and deformation parameters required",
+        "elapsed_seconds": 0.018329099999391474
+      },
+      "command": [
+        "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+        "D:\\3D\\Projects\\panel\\panel\\solve.py",
+        "--surface",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_nonfinite_parameter.json",
+        "--out",
+        "D:\\3D\\Projects\\panel\\runs\\panel_robust_matrix_v1\\invalid_nonfinite_parameter",
+        "--validate-only",
+        "--alpha",
+        "nan"
+      ]
+    }
+  ],
+  "physical_accuracy_accepted": false,
+  "interpretation": "Geometry gates and discrete derivatives passed; independent physical errors and mesh sensitivity remain."
+}
