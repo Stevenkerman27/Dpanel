@@ -17,10 +17,13 @@ _CHECKPOINT = os.environ.get("PANEL_KERNEL_CHECKPOINT", "1") != "0"
 
 
 def triangle_potential(targets, triangles, interior_diagonal=False, source=True,
-                       linear_y=False, block_size=None):
+                       linear_y=False, block_size=None, row_offset=0, row_index=None):
     """Return single- and double-layer potentials of triangles at targets.
 
     block_size defaults to PANEL_KERNEL_BLOCK (256); 0 disables blocking.
+    row_offset is the index of targets[0] in the full target set; it only
+    affects the interior-diagonal trace, so callers can evaluate a slice of
+    rows of a larger operator without changing the arithmetic.
     """
     block = _BLOCK if block_size is None else int(block_size)
     count = targets.shape[0]
@@ -78,8 +81,12 @@ def triangle_potential(targets, triangles, interior_diagonal=False, source=True,
         single = (edge_sum - height * omega) / (4 * jnp.pi)
         return (single, doublet)
 
+    if row_index is not None:
+        block = 0
     if block <= 0 or count <= block:
-        values = evaluate(targets, jnp.arange(count))
+        rows = (row_offset + jnp.arange(count) if row_index is None
+                else jnp.asarray(row_index))
+        values = evaluate(targets, rows)
     else:
         padding = (-count) % block
         padded = targets if padding == 0 else jnp.concatenate(
@@ -87,7 +94,7 @@ def triangle_potential(targets, triangles, interior_diagonal=False, source=True,
         padded_count = padded.shape[0]
 
         def one_block(start):
-            rows = start + jnp.arange(block)
+            rows = row_offset + start + jnp.arange(block)
             return evaluate(jax.lax.dynamic_slice_in_dim(padded, start, block, axis=0), rows)
 
         body = jax.checkpoint(one_block) if _CHECKPOINT else one_block

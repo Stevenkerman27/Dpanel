@@ -61,3 +61,18 @@ rematerialisation (only advisable for forward-only runs, since reverse mode then
 keeps every block residual). The dense system matrix and its LU factors are not
 blocked: at 23536 panels they still need about 8.9 GB, so the next limit is the
 solver, not the kernel. See [memory measurements](../docs/KERNEL_MEMORY_BLOCKING.md).
+The dense solve can be replaced by an explicit matrix-free operator
+(`panel/matrix_free.py`): `matvec`/`rmatvec` evaluate blocks and contract them
+immediately, so neither the wall AIC, the source matrix nor the wall-wake matrix
+is ever formed. A near-field block preconditioner (frozen spatial bisection,
+block-diagonal doublet blocks plus the Kutta row and the circulation mass matrix)
+gives P^-1 and P^-T; restarted GMRES stops on the true residual and the adjoint
+reuses the same transpose operator. On 4911 unknowns this lowers peak RSS from
+2178 MB (dense AIC + LU) to 1817 MB and linear-algebra working set from 531 MB to
+121 MB, but a matrix-vector product is still O(N^2) and costs about 1.6 s, so the
+dense LU (0.26 s) stays faster - the matrix-free path buys memory, not speed.
+Strict mirror reduction (R A E, transpose E^T A^T R^T) is implemented and refuses
+non-mirrored triangulations, centreline panels, unmatched TE edges and sideslip;
+the Gmsh meshes in this repository are not mirror-symmetric, so half-model runs
+are reported as blocked rather than silently symmetrised. See
+[matrix-free measurements](../docs/ISSUE16_MATRIX_FREE.md).
