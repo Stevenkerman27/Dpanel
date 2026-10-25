@@ -65,6 +65,24 @@ python -m pytest -q test/test_torch_panel_kernels.py test/test_torch_panel_symme
 
 记录 SHA、Torch CUDA/CPU、dtype、命令/退出码、首个 traceback、全部误差。不要修改已有 `aero.py`、Dpanel P2 模块或正在执行的 PR #5 基准。异常报告先诊断数学符号、自面跳跃和边/角落数值问题，不要通过隐含涡核、裁剪压力或扩大容差掩盖。
 
+## 本地验证记录（2026-10-25，PR #7 回执）
+
+本地在 head `db9fb193` 上单独运行了 5 个迁移测试文件，**总计 16 passed / 0 failed / 0 skipped**。环境：Windows 10、Python 3.11.17、PyTorch 2.14.1+cpu、NumPy 2.4.6、Numba 0.68.0、pytest 9.1.1；CPU float64，无 CUDA。
+
+| 文件 | 结果 | 墙钟 |
+| --- | --- | ---: |
+| `test_torch_panel_kernels.py` | 3 passed | 2.8 s |
+| `test_torch_panel_symmetry.py` | 5 passed | 1.6 s |
+| `test_torch_panel_nonlifting.py` | 1 passed | 1.7 s |
+| `test_torch_panel_validation.py` | 6 passed | 1.7 s |
+| `test_torch_panel_vs_numba.py` | 1 passed | 10.2 s |
+
+这个结果仅为**独立模块提取和基础单元数学对照已验收（CPU）**；CUDA、千级面元批量内存与算速、对真实翼型设计变量的 VJP、尾迹与 Kutta、整机载荷仍未验收。
+
+本地特殊环境观察：`core/triangle_kernel.py` 的 Numba `@njit(cache=True)` 首次 import 曾因系统 TMP 路径不可访问而长期卡住。将 TMP、TEMP、TMPDIR 和 NUMBA_CACHE_DIR 指到项目内普通可写目录后，Numba 交叉测试运行 10.2 秒。属于环境问题，不对核函数源码进行规避性修改。
+
+回执：https://github.com/Stevenkerman27/Dpanel/pull/7#issuecomment-6393770089 。
+
 ## 后续步骤
 
 1. **源代码分离验收**：必须证明 Dpanel 的 Torch 包能在完全不安装 GRASS 的环境导入；原测试与 NumPy/Numba 交叉测试通过，许可证与源追踪完整。
