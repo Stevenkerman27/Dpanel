@@ -68,3 +68,23 @@ def test_load_reference_point_and_circulation_integral():
         "origin": [0., 0., 0.],
     }
     assert probe.circulation_cl(fixture, np.array([2.])) == pytest.approx(2.)
+
+
+def test_opt_in_quadratic_fit_recovers_gradient_of_exact_quadratic_potential():
+    x, y = np.meshgrid(np.linspace(-1, 1, 5), np.linspace(-1, 1, 5))
+    centers = np.column_stack((x.ravel(), y.ravel(), np.zeros(25)))
+    l = np.tile([1., 0., 0.], (25, 1))
+    m = np.tile([0., 1., 0.], (25, 1))
+    neighbors = np.tile(np.arange(25), (25, 1))
+    mu = 1. + 2*centers[:, 0] - 3*centers[:, 1] + (
+        2*centers[:, 0]**2 - 2*centers[:, 0]*centers[:, 1] + 3*centers[:, 1]**2
+    )
+    expected = np.column_stack((
+        2. + 4*centers[:, 0] - 2*centers[:, 1],
+        -3. - 2*centers[:, 0] + 6*centers[:, 1],
+    ))
+    gradient, diagnostic = probe.reconstruct_gradients(
+        centers, mu, neighbors, l, m, method="quadratic_qr"
+    )
+    np.testing.assert_allclose(gradient, expected, rtol=1e-12, atol=1e-12)
+    assert diagnostic["minimum_singular_ratio"] > 0
