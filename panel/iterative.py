@@ -14,9 +14,14 @@ import jax
 import jax.numpy as jnp
 import jax.scipy.linalg as jla
 from jax.scipy.sparse.linalg import gmres
-from jax.custom_transpose import custom_transpose
+try:
+    # Available in JAX 0.9.x; absent in the pinned local JAX 0.10.2.
+    from jax.custom_transpose import custom_transpose
+except ImportError:
+    custom_transpose = None
 import numpy as np
 from scipy.spatial import cKDTree
+from scipy.sparse.linalg import LinearOperator as HostLinearOperator, gmres as host_gmres
 
 from .kernel import triangle_potential
 from .differentiable import recover_loads, validate_configuration
@@ -271,6 +276,8 @@ class PanelOperator:
         avoids asking JAX to transpose a rematerialized loop with linear
         closed-over carry (unsupported in some JAX releases).
         """
+        if custom_transpose is None:
+            raise RuntimeError("JAX lacks custom_transpose; use solve_state CPU compatibility path")
         plan = self.plan
         def raw(res, vector, reverse):
             x, y, t, flow = res
@@ -344,6 +351,92 @@ class PanelOperator:
         return apply,transpose
 
 
+
+def _cpu_gmres_compat(operator, rhs, *, tolerance, absolute_tolerance,
+                      restart, max_cycles, preconditioned):
+    """JAX 0.10 CPU compatibility for matrix-free first-order reverse mode.
+
+    JAX 0.10.2 removed the public custom_transpose module needed by the
+    native streamed action. SciPy's GMRES acts on exactly the same JAX Av
+    and explicit A^T v; a custom VJP uses the true residual geometry derivative.
+    Pure callbacks copy small vectors across the host boundary. This is NOT a
+    native-JAX GMRES speed claim, and does not support forward-mode AD.
+    """
+    if jax.default_backend() != "cpu":
+        raise NotImplementedError("JAX 0.10 GMRES compatibility is CPU-only")
+    plan = operator.plan
+    shape = jax.ShapeDtypeStruct(rhs.shape, rhs.dtype)
+
+    def host_solve(x_host, y_host, flow_host, topology_host, b_host, transpose):
+        op = PanelOperator(jnp.asarray(x_host), jnp.asarray(y_host),
+                           topology_host, jnp.asarray(flow_host), plan)
+        matvec = jax.jit(op.rmatvec if transpose else op.matvec)
+        b = np.array(b_host, dtype=np.float64, copy=True)
+        n = len(b)
+
+        def apply(v):
+            # SciPy may modify Arnoldi residuals in place: never return a
+            # read-only NumPy view of JAX device memory.
+            return np.array(matvec(jnp.asarray(v)), dtype=np.float64, copy=True)
+
+        matvec(jnp.asarray(b)).block_until_ready()
+        A = HostLinearOperator((n, n), matvec=apply, dtype=np.float64)
+        M = None
+        if preconditioned:
+            p, pt = op.preconditioner()
+            pfun = jax.jit(pt if transpose else p)
+            pfun(jnp.asarray(b)).block_until_ready()
+            M = HostLinearOperator(
+                (n, n),
+                matvec=lambda v: np.array(pfun(jnp.asarray(v)),
+                                          dtype=np.float64, copy=True),
+                dtype=np.float64,
+            )
+        solution, info = host_gmres(
+            A, b, M=M, rtol=tolerance, atol=absolute_tolerance,
+            restart=restart, maxiter=max_cycles,
+        )
+        true_error = np.linalg.norm(apply(solution) - b)
+        threshold = max(tolerance * np.linalg.norm(b), absolute_tolerance)
+        if (info != 0 or not np.isfinite(true_error)
+                or true_error > threshold):
+            return np.full_like(b, np.nan)
+        return np.array(solution, dtype=np.float64, copy=True)
+
+    def callback(x, y, flow, topology, b, *, transpose):
+        return jax.pure_callback(
+            lambda xx, yy, ff, tt, bb: host_solve(
+                xx, yy, ff, tt, bb, transpose),
+            shape, x, y, flow, topology, b,
+        )
+
+    @jax.custom_vjp
+    def implicit(x, y, flow, topology, b):
+        return callback(x, y, flow, topology, b, transpose=False)
+
+    def implicit_fwd(x, y, flow, topology, b):
+        state = callback(x, y, flow, topology, b, transpose=False)
+        return state, (x, y, flow, topology, state)
+
+    def implicit_bwd(saved, state_cotangent):
+        x, y, flow, topology, state = saved
+        lam = callback(x, y, flow, topology, state_cotangent,
+                       transpose=True)
+        # The preconditioner is not the physical operator. Differentiate
+        # the *exact* streamed Av at fixed state, not the SciPy iterations.
+        _, pullback = jax.vjp(
+            lambda xx, yy, ff: PanelOperator(
+                xx, yy, topology, ff, plan).matvec(
+                    jax.lax.stop_gradient(state)),
+            x, y, flow,
+        )
+        gx, gy, gflow = pullback(-lam)
+        # rhs is separately differentiated upstream; topology is discrete.
+        return gx, gy, gflow, None, lam
+
+    implicit.defvjp(implicit_fwd, implicit_bwd)
+    return implicit(operator.x, operator.y, operator.flow, operator.t, rhs)
+
 def solve_state(operator, rhs, *, tolerance, absolute_tolerance, restart,
                 max_cycles, preconditioned):
     """Implicit AD through exact matvec. Nonconverged solves return NaN (fail closed).
@@ -354,6 +447,12 @@ def solve_state(operator, rhs, *, tolerance, absolute_tolerance, restart,
     """
     if not 0 < tolerance < 1 or absolute_tolerance < 0 or min(restart,max_cycles) < 1:
         raise ValueError("Invalid GMRES tolerances or iteration limits")
+    if custom_transpose is None:
+        return _cpu_gmres_compat(
+            operator, rhs, tolerance=tolerance,
+            absolute_tolerance=absolute_tolerance, restart=restart,
+            max_cycles=max_cycles, preconditioned=preconditioned,
+        )
     forward_pc,transpose_pc = operator.preconditioner() if preconditioned else (None,None)
     def checked(mv,b,pc):
         x,_ = gmres(mv,b,tol=tolerance,atol=absolute_tolerance,
