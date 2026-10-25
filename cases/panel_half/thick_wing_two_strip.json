@@ -268,5 +268,19 @@
     0.25,
     0,
     0
+  ],
+  "cut_edges": [
+    [
+      2,
+      6
+    ],
+    [
+      6,
+      10
+    ]
+  ],
+  "cut_kind": [
+    "trailing_edge",
+    "trailing_edge"
   ]
 }
