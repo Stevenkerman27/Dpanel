@@ -26,19 +26,23 @@ from .half_native import (
 from .half_native_gmres import HalfNearFieldPreconditioner, solve_half_gmres
 
 
-def load_half_surface(path, *, stencil_rings=2):
+def load_half_surface(path, *, stencil_rings=2,
+                      max_stencil_rings=6, return_stencil_audit=False):
     fixture = json.loads(Path(path).read_text(encoding="utf-8"))
     if fixture.get("schema") != "dpanel.half_planar_cut.v1":
         raise ValueError("Expected dpanel.half_planar_cut.v1")
     vertices = np.asarray(fixture["coordinates"], dtype=np.float64)
     station_y = np.asarray(fixture["gamma_stations"], dtype=np.float64)
-    topology = prepare_half_topology(
+    built = prepare_half_topology(
         vertices, fixture["faces"], fixture["wake_faces"],
         fixture["trailing_edges"], fixture["upper_te_faces"],
         fixture["lower_te_faces"], station_y,
         fixture["gamma_station_dof"], fixture["component_ids"],
         stencil_rings=stencil_rings, cut_edges=fixture["cut_edges"],
+        max_stencil_rings=max_stencil_rings,
+        return_stencil_audit=return_stencil_audit,
     )
+    topology, stencil_audit = built if return_stencil_audit else (built, None)
     point = np.asarray(fixture["moment_reference"], dtype=np.float64)
     freestream = np.asarray(fixture["freestream"], dtype=np.float64)
     validate_half_configuration(vertices, station_y, topology, freestream, point)
@@ -48,7 +52,7 @@ def load_half_surface(path, *, stencil_rings=2):
     if (min(area, chord, density) <= 0 or
             not np.isfinite([area, chord, density]).all()):
         raise ValueError("Positive SI reference values and density required")
-    return dict(
+    fields = dict(
         vertices=jnp.asarray(vertices),
         station_y=jnp.asarray(station_y),
         topology=topology,
@@ -58,6 +62,7 @@ def load_half_surface(path, *, stencil_rings=2):
         reference_chord=jnp.asarray(chord),
         reference_point=jnp.asarray(point),
     )
+    return (fields, stencil_audit) if return_stencil_audit else fields
 
 
 def main():
@@ -68,6 +73,7 @@ def main():
     p.add_argument("--block", type=int, default=32)
     p.add_argument("--near", type=int, default=32)
     p.add_argument("--rings", type=int, default=2)
+    p.add_argument("--max-stencil-rings", type=int, default=6)
     p.add_argument("--tol", type=float, default=1e-10)
     p.add_argument("--restart", type=int, default=40)
     p.add_argument("--cycles", type=int, default=20)
@@ -82,7 +88,11 @@ def main():
         JAX=jax.__version__, platform=platform.platform(),
         physical_accuracy_accepted=False)
     try:
-        inputs = load_half_surface(args.surface, stencil_rings=args.rings)
+        inputs, stencil_audit = load_half_surface(
+            args.surface, stencil_rings=args.rings,
+            max_stencil_rings=args.max_stencil_rings,
+            return_stencil_audit=True)
+        report["pressure_stencil_audit"] = stencil_audit
         nf = len(inputs["topology"].faces)
         report["right_wall_panels"] = nf
         report["right_wake_panels"] = len(inputs["topology"].wake_faces)
