@@ -1,0 +1,95 @@
+{
+  "purpose": "PR32 local acceptance evidence: regional drag/load budget around a fixed geometric feature point",
+  "module": {
+    "path": "panel/pressure_region_budget.py",
+    "sha256": "25f0f117e7e8a8af07d35a16cb1fd6d0dfc906f626e4d19f84c28f80a00be152",
+    "bytes": 17105
+  },
+  "pr_head": "d5f93f96303284ed5cb7cd940b38cf03209315d3",
+  "read_only": "replay of PR29 artifacts only; no solve, no remesh, no production file changed",
+  "command_template": "python -m panel.pressure_region_budget --recovery-run runs/pr29_rec/recovery_<n>_v1 --out runs/region_<n>_v1 --feature-point 1.0 2.0 0.0",
+  "feature_point_source": "trailing_edges vertices of every surface_input.json (x=1, z=0, y in [0.2315032397181942, 2.0]); identical in all three cases",
+  "python": "3.11.17",
+  "numpy": "2.4.6",
+  "component_names": "Unverified: numeric CAD component IDs retained (20 fuselage side, 30 wing)",
+  "cases": {
+    "396": {
+      "report_sha256": "666210643f1f86cc10458e4bbc502ec517aca6295f709577ac790fef1b23d73a",
+      "report_bytes": 112062,
+      "regional_fields_sha256": "9e08da2dc3a7a8f4fc9c56405a30bd87b838ddac6477692d0f7e885715f8e0b8",
+      "regional_fields_bytes": 57454,
+      "regional_fields_sha256_reported": "9e08da2dc3a7a8f4fc9c56405a30bd87b838ddac6477692d0f7e885715f8e0b8",
+      "wall_seconds_measured": 0.21,
+      "peak_rss_mb": 35.4,
+      "surface_sha256": "d04e439cddb2a80ff9d376257ed9a57d5613f538e111a0ba97f3fbb5f6405d5a",
+      "frozen_state_hash": "d554f4f739a3eb9d5291b3ac5a517c5e0647ee2fbc286d37a1f35faab77b907d",
+      "code_sha256": "25f0f117e7e8a8af07d35a16cb1fd6d0dfc906f626e4d19f84c28f80a00be152",
+      "exit_code": 0,
+      "status": "read_only_partition_not_physical_validation",
+      "physical_accuracy_accepted": false,
+      "radii_over_chord": [
+        0.025,
+        0.05,
+        0.1,
+        0.2
+      ],
+      "feature_point": [
+        1.0,
+        2.0,
+        0.0
+      ]
+    },
+    "1205": {
+      "report_sha256": "a929af448c89648b8ce9062cb89da8e8796666d9148dd26bed6bf18b690ea43c",
+      "report_bytes": 112514,
+      "regional_fields_sha256": "63ac9507a088ec25ff9de97c0e33520b2b342d0ac815fe58b77be0e71d7a1139",
+      "regional_fields_bytes": 170814,
+      "regional_fields_sha256_reported": "63ac9507a088ec25ff9de97c0e33520b2b342d0ac815fe58b77be0e71d7a1139",
+      "wall_seconds_measured": 0.2,
+      "peak_rss_mb": 37.0,
+      "surface_sha256": "034c216906e6f13b7a38f878ffa065f62dd6638e8f9198dc49d300bacec0a846",
+      "frozen_state_hash": "d61af885625f1d839440d894497fcf13ec51569421e8bc5c48fed05c7421f9a7",
+      "code_sha256": "25f0f117e7e8a8af07d35a16cb1fd6d0dfc906f626e4d19f84c28f80a00be152",
+      "exit_code": 0,
+      "status": "read_only_partition_not_physical_validation",
+      "physical_accuracy_accepted": false,
+      "radii_over_chord": [
+        0.025,
+        0.05,
+        0.1,
+        0.2
+      ],
+      "feature_point": [
+        1.0,
+        2.0,
+        0.0
+      ]
+    },
+    "1966": {
+      "report_sha256": "29a98b78aec116576d3c3de317a1bc2725f847070bab21418d6fca920543bb3c",
+      "report_bytes": 112358,
+      "regional_fields_sha256": "c971d36439e8632928f6d2e96f788f6178447527b018f32e57c3cf3110973b36",
+      "regional_fields_bytes": 277189,
+      "regional_fields_sha256_reported": "c971d36439e8632928f6d2e96f788f6178447527b018f32e57c3cf3110973b36",
+      "wall_seconds_measured": 0.22,
+      "peak_rss_mb": 37.5,
+      "surface_sha256": "6b772c9a39d397b779d6d81ba23002b85c3c5b931669989e30eb08b8df12fe9a",
+      "frozen_state_hash": "a582b3a59b33a88c12598b366fd9d29657cffc26758f57e4e45d7fb15675a746",
+      "code_sha256": "25f0f117e7e8a8af07d35a16cb1fd6d0dfc906f626e4d19f84c28f80a00be152",
+      "exit_code": 0,
+      "status": "read_only_partition_not_physical_validation",
+      "physical_accuracy_accepted": false,
+      "radii_over_chord": [
+        0.025,
+        0.05,
+        0.1,
+        0.2
+      ],
+      "feature_point": [
+        1.0,
+        2.0,
+        0.0
+      ]
+    }
+  }
+}
