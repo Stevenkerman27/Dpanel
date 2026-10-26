@@ -196,6 +196,8 @@ def main():
     p.add_argument("--rings", type=int, default=2)
     p.add_argument("--max-stencil-rings", type=int, default=6)
     p.add_argument("--derivatives", action="store_true")
+    p.add_argument("--checkpoint-kernel", action="store_true",
+                   help="Rematerialize analytic target blocks in Torch backward")
     args = p.parse_args()
     if args.out.exists():
         raise FileExistsError("Output exists; do not overwrite archived runs")
@@ -208,7 +210,8 @@ def main():
                              rtol=args.rtol, atol=args.atol,
                              derivatives=args.derivatives,
                              stencil_rings=args.rings,
-                             max_stencil_rings=args.max_stencil_rings))
+                             max_stencil_rings=args.max_stencil_rings,
+                             checkpoint_kernel=args.checkpoint_kernel))
     except BaseException as exc:
         report.update(status="failed", exception=type(exc).__name__, error=str(exc))
         args.out.write_text(json.dumps(report, indent=2, allow_nan=False)+"\n",
