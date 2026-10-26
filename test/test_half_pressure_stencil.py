@@ -85,3 +85,27 @@ def test_original_small_half_wing_stencils_need_no_adaptive_changes():
     assert not report["expanded_faces"]
     assert report["initial_stencil_rings"] == 2
     assert report["maximum_stencil_rings"] == 6
+
+
+def test_expanding_one_face_keeps_all_other_two_ring_neighbors():
+    # The adaptive row needs an extra BFS shell, but the other row must not
+    # acquire any new source panels; only self-padding aligns JAX static width.
+    centers = np.array([
+        [0., 0., 0.], [10., 0., 0.], [1., 0., 0.],
+        [2., 0., 0.], [2., 1., 0.], [3., 0., 0.],
+        [11., 0., 0.], [10., 1., 0.],
+    ])
+    offsets = np.array([[-.04, -.04, 0.], [.08, -.04, 0.],
+                        [-.04, .08, 0.]])
+    tri = centers[:, None]+offsets[None]
+    adjacent = [
+        {2}, {6, 7}, {0, 3}, {2, 4, 5},
+        {3}, {3}, {1}, {1},
+    ]
+    indices, info = adaptive_pressure_neighbors(
+        centers, tri, adjacent, 2, initial_rings=2,
+        max_rings=6, min_singular_ratio=1e-6)
+    assert info["expanded_faces"] == [0]
+    assert info["selected_ring_depth"] == [3, 2]
+    np.testing.assert_array_equal(indices[0], [2, 3, 4, 5])
+    np.testing.assert_array_equal(indices[1], [6, 7, 1, 1])
