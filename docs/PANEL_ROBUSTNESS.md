@@ -97,4 +97,4 @@ W_linear = D_constant wake_basis + M_y wake_slope
 C:/Users/zyx20/anaconda3/python.exe panel/report.py --matrix runs/NEW_MATRIX --topology runs/NEW_TOPOLOGY --out docs/NEW_EVIDENCE
 ```
 
-`runs/panel_cli_two_final/` 使用补强门禁后的最终求解源码完成入口、45项导数和VTU导出；`runs/panel_cli_cad_v1/` 已完成从CAD到求解及导出。主矩阵保留的是补强交线门禁前的源码快照，新增门禁另有10项验证；不能把不同源码哈希悄悄混作同一个全量批次。所有失败、中间常值wake版本和旧P2产物保留。
+`runs/panel_cli_two_final/` 使用补强门禁后的最终求解源码完成入口、45项导数和VTU导出；`runs/panel_cli_cad_v1/` 已完成从CAD到求解及导出。（2026-10-26：这两个早期算例目录已归档到 `archive/runs-2026-10-26/`。）主矩阵保留的是补强交线门禁前的源码快照，新增门禁另有10项验证；不能把不同源码哈希悄悄混作同一个全量批次。所有失败、中间常值wake版本和旧P2产物保留。
