@@ -126,3 +126,70 @@ python -m panel.verify_half_mirror `
 下一项本地 **带机身真实 CAD** 直接复用上述已验收的 cap 修复代码，
 往 `panel.cad_half` 增加 `--body-cad`，将首次失败的
 `stage/failure.json/gmsh.log` 提交 PR #22 讨论。
+
+## 翼身交界压力模板退化：本轮修复（2026-10-26）
+
+本地真实 wing+body STEP `runs/half_cad_wingbody_v1/surface.json` 已通过
+OCC 半域网格导出：396 右壁面、385 尾迹、44 TE、6 条非 TE contact cut、
+22 个环量自由度；但半模数值求解在**后处理前**被
+`validate_half_configuration` 拒绝，原因是切平面仿射压力梯度
+最小二乘模板退化，**不是矩阵不可逆或 GMRES 不收敛**：
+
+- face 238（body/wing-contact TE 附近），两列奇异值 `[0.0714,0]`；
+- face 359，同为细小 sliver，奇异值 `[0.0714,0]`；
+- 两者每个 9 槽模板里仅有 4 个互异邻居，其余是自填充，
+  有效邻居沿一条展向直线；其余 394 面的奇异值比中位约 0.663。
+
+新增 `panel/pressure_stencil.py` 与半模拓扑准备阶段的
+**有界、自适应、保留真实切边的邻域扩展**：
+
+1. 保留原始 `stencil_rings=2` 的连通图，仅在翼身交界等
+   **秩不满**的面元上扩展相邻面片 BFS 搜索环；
+2. 邻接图**先排除**真实 exposed TE 与
+   `smooth_wall_contact` 的 `cut_edges`，新路径绝不
+   **直接穿过被切断的边**，不凭距离把不连通面片拼接起来；
+3. 每一环用原来的两个切平面切向基、**未加权 2 列仿射
+   拟合设计矩阵**检查 `s_min/s_max >= 1e-6`，
+   首次满秩即冻结节点索引，其余面元原邻域完全不变；
+4. 默认最多六环，可用 `--max-stencil-rings` 指定更严格的
+   上限；达到上限仍共线就明确报面元 ID、奇异比、邻居数、深度，
+   **拒绝**求解，不生成不完整梯度、不用伪逆或正则化、
+   不恢复跨真实流体接触切边的邻接；
+5. `run_half_native` 的 `report.json.pressure_stencil_audit`
+   记录 `initial_rank_deficient_faces`、`expanded_faces`、
+   每个面元实际采用的环数及最终奇异比，供本地验证是否
+   正好只扩展 238 和 359。
+
+**物理边界**：这只修复局部原始 Cp 重构的几何可解性，
+不改变 JAX 源/偶极子积分或 Kutta/尾迹装配，不会修复
+已有低阶压力恢复模型本身的物理误差。如果所需额外邻域
+过远或跨过实际压力不连续区，应反过来改善 wing/body-contact
+后缘细条网格，或另立物理一致的单侧局部重构方案，不得
+仅因线性系统能算完就让 `physical_accuracy_accepted=true`。
+
+本地使用**新的**独立输出目录，不覆盖首次失败证据：
+
+```powershell
+git fetch origin
+git switch feature/occ-half-domain-cad-mesh
+python -m pytest -q test/test_half_pressure_stencil.py test/test_half_surface_mesh.py test/test_half_native_panel.py test/test_half_mirror_oracle.py
+
+# 禁用自适应环扩展复现原有秩退化，保留失败诊断
+python -m panel.run_half_native `
+  --surface runs/half_cad_wingbody_v1/surface.json `
+  --out runs/half_wingbody_reject_two_ring_v1 `
+  --mode lu --rings 2 --max-stencil-rings 2
+
+# 在不跨物理切边的邻接图上只修复退化的模板
+python -m panel.run_half_native `
+  --surface runs/half_cad_wingbody_v1/surface.json `
+  --out runs/half_wingbody_adaptive_lu_v1 `
+  --mode lu --rings 2 --max-stencil-rings 6
+```
+
+如果六环仍不满秩，报告第一个 `face=...` 和
+`last_ratio`，可在**另一个**新目录内用 `--max-stencil-rings 8`
+做诊断性上界扫描，但这不是自动放宽物理验收；要同时审计扩展邻域
+跨越的表面区域和拟合尺度。只有确认真实翼身 LU 数值残差、
+`Cp_raw` 极值、面力和矩均有限且合理后，再对比半模 PGMRES
+并运行相同网格生成的全模镜像 oracle/VJP。
