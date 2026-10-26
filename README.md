@@ -1,10 +1,27 @@
 # 快速势流求解器研究实现
 
-截至 2026-10-25，已按用户要求收尾并暂停本地执行，云端协同与GitHub监听自动任务均暂停。**已完成机身跨后缘、粗机身与双机身的可微面元实现及公开矩阵**：37项主检查、10项补充拓扑检查和180项AD/中心差分通过。最新方法、原始误差与复现命令见 [PANEL_ROBUSTNESS.md](docs/PANEL_ROBUSTNESS.md)，恢复起点见 [PAUSE_HANDOFF.md](PAUSE_HANDOFF.md)。
+截至 2026-10-26，本地执行与云端协同都在进行中（GitHub 监听常驻，云端按 issue/PR 下验收契约）。**已完成机身跨后缘、粗机身与双机身的可微面元实现及公开矩阵**：37项主检查、10项补充拓扑检查和180项AD/中心差分通过；在此基础上完成了顶点/站位几何 VJP、Torch↔JAX 桥、核函数分块内存改造、矩阵无关 GMRES 与近场预条件、以及 OCC 正半域镜像半模。方法、原始误差与复现命令见 [docs/README.md](docs/README.md)（文档索引），最新鲁棒性证据见 [PANEL_ROBUSTNESS.md](docs/PANEL_ROBUSTNESS.md)，`panel/` 入口见 [panel/README.md](panel/README.md)。
 
 新 `panel/` 求解器采用解析源/偶极子、真实流体侧尾迹、线性势跳跃及接触相容基；纯表面CAD流程避开体网格优化。没有压力裁剪或矩阵正则化。完整通用求解器尚未验收，独立壁面误差与粗细载荷差仍显著，`physical_accuracy_accepted=false`。此前仅支持前置机身的VortexAD闭环保留于 [WINGBODY_PANEL_LOOP.md](docs/WINGBODY_PANEL_LOOP.md)；总体状态见 [DEVELOPMENT.md](DEVELOPMENT.md)，路线选择见 [SOLVER_ROUTE.md](SOLVER_ROUTE.md)。
 
 当前开发优先级为几何鲁棒性：厚翼身连接、机身越过后缘、接近相切时的网格拓扑和明确失败诊断。暂缓昂贵的精度加密；原始压力、壁面误差和所有旧失败记录继续保留。
+
+## 目录结构
+
+| 路径 | 内容 | 入口文档 |
+| --- | --- | --- |
+| `panel/` | JAX 可微面元求解器（CAD→网格→源/偶极子→尾迹/Kutta→载荷→AD/VJP→矩阵无关→半模） | [panel/README.md](panel/README.md) |
+| `torch_panel/` | 从 GRASS 提取的可微 Torch 面元内核 | [torch_panel/README.md](torch_panel/README.md) |
+| `core/` `potential/` `volume/` `airfoil2d/` `lifting3d/` | 旧一代求解器与研究方法（保留对照与溯源） | 各目录 `README.md` |
+| `test/` | 后端探针与迁移测试（VortexAD、线性求解器、torch 迁移、翼身回路） | [test/README.md](test/README.md) |
+| `cases/` | 公开表面/CAD 夹具（`dpanel.planar_cut.v1` 等） | [panel/README.md](panel/README.md) |
+| `monitor/` | GitHub 监听（commit/PR/issue/discussions）与发评论脚本 | [monitor/README.md](monitor/README.md) |
+| `docs/` | 跨模块设计文档、云端验收报告、证据快照 | [docs/README.md](docs/README.md) |
+| `runs/` | 可复现运行产物（`_logs/` 控制台日志、`_bench_kernel/` 分块基准、各验收算例、git worktree） | 各 `runs/<case>/report.json` |
+| `archive/` | 被取代的文档副本、一次性调试脚本、安装日志（不入库） | [archive/README.md](archive/README.md) |
+| `audit/` `upgrade/` `OpenVSP-3.52.1-win64/` `WBCAERO/` `.tools/` | 外部工具链与上游调研快照（不入库） | [audit/REPORT.md](audit/REPORT.md) |
+
+`runs/` 只放运行产物，不放入库文档；一次性脚本已归档到 `archive/scripts/oneoff/`，仍被文档引用的 27 个脚本留在 `runs/` 根目录。
 
 ## 单算例入口
 

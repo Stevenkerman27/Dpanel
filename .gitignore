@@ -105,3 +105,4 @@ dist/
 !lifting3d/results/cad_inputs_v1/naca4412_wing_body/wing.step
 !lifting3d/results/cad_inputs_v1/naca4412_wing_body/body.step
 !lifting3d/results/cad_inputs_v1/naca4412_wing_body/trailing_edge.json
+archive/
