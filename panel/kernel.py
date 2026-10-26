@@ -3,7 +3,7 @@
 No collocation displacement, vortex core, cutoff, or small denominator is used.
 The diagonal double-layer trace is the analytic interior value -1/2.
 
-Targets are evaluated in fixed-size blocks (PANEL_KERNEL_BLOCK, default 256)
+Targets are evaluated in fixed-size blocks (PANEL_KERNEL_BLOCK, default 64)
 so the temporary r array is O(block*panels*3*3) instead of O(panels^2*9).
 The arithmetic per target is unchanged; only the loop structure differs.
 """
@@ -17,13 +17,11 @@ _CHECKPOINT = os.environ.get("PANEL_KERNEL_CHECKPOINT", "1") != "0"
 
 
 def triangle_potential(targets, triangles, interior_diagonal=False, source=True,
-                       linear_y=False, block_size=None, row_offset=0, row_index=None):
+                       linear_y=False, block_size=None, linear_direction=None):
     """Return single- and double-layer potentials of triangles at targets.
 
-    block_size defaults to PANEL_KERNEL_BLOCK (256); 0 disables blocking.
-    row_offset is the index of targets[0] in the full target set; it only
-    affects the interior-diagonal trace, so callers can evaluate a slice of
-    rows of a larger operator without changing the arithmetic.
+    block_size defaults to PANEL_KERNEL_BLOCK (64); 0 disables blocking.
+    linear_direction is a per-triangle material-coordinate gradient.
     """
     block = _BLOCK if block_size is None else int(block_size)
     count = targets.shape[0]
@@ -32,6 +30,9 @@ def triangle_potential(targets, triangles, interior_diagonal=False, source=True,
     area_vector = jnp.cross(edge1, edge2)
     normals = area_vector / jnp.linalg.norm(area_vector, axis=1)[:, None]
     triangle_index = jnp.arange(triangles.shape[0])
+    if linear_direction is not None:
+        linear_y = True
+    direction = jnp.array([0., 1., 0.]) if linear_direction is None else linear_direction
 
     def evaluate(block_targets, rows):
         r = triangles[None] - block_targets[:, None, None, :]
@@ -71,22 +72,18 @@ def triangle_potential(targets, triangles, interior_diagonal=False, source=True,
             gap = 2 * plus / (radius[:, :, k] + radius[:, :, q] + length[None])
             line_integral = jnp.log1p(2 * length[None] / gap)
             edge_sum += jnp.sum(r[:, :, k] * outward[None], axis=2) * line_integral
-            gradient_y -= outward[None, :, 1] * line_integral
+            gradient_y -= jnp.sum(outward * direction, axis=1)[None] * line_integral
         if linear_y:
-            # Integral (y_source-y_centroid)*dG/dn = (y_target-y_centroid)*D + h*dS/dy.
-            # Wake normals are +z, so dS/dy is purely tangential.
-            moment_y = (block_targets[:, None, 1] - triangles.mean(axis=1)[None, :, 1]) * doublet
-            moment_y += height * gradient_y / (4 * jnp.pi)
+            # M_eta = ((target-centroid).grad_eta)*D + h*(grad_S.grad_eta).
+            relative = block_targets[:, None] - triangles.mean(axis=1)[None]
+            moment_y = jnp.sum(relative * direction, axis=2) * doublet
+            moment_y += height * (gradient_y / (4 * jnp.pi) - jnp.sum(normals * direction, axis=1)[None] * doublet)
             return (doublet, moment_y)
         single = (edge_sum - height * omega) / (4 * jnp.pi)
         return (single, doublet)
 
-    if row_index is not None:
-        block = 0
     if block <= 0 or count <= block:
-        rows = (row_offset + jnp.arange(count) if row_index is None
-                else jnp.asarray(row_index))
-        values = evaluate(targets, rows)
+        values = evaluate(targets, jnp.arange(count))
     else:
         padding = (-count) % block
         padded = targets if padding == 0 else jnp.concatenate(
@@ -94,7 +91,7 @@ def triangle_potential(targets, triangles, interior_diagonal=False, source=True,
         padded_count = padded.shape[0]
 
         def one_block(start):
-            rows = row_offset + start + jnp.arange(block)
+            rows = start + jnp.arange(block)
             return evaluate(jax.lax.dynamic_slice_in_dim(padded, start, block, axis=0), rows)
 
         body = jax.checkpoint(one_block) if _CHECKPOINT else one_block

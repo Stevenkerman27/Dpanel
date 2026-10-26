@@ -9,13 +9,19 @@ import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("run", type=Path)
+parser.add_argument("--out", type=Path, help="New directory for a revised audit; keep previous audits intact")
 parser.add_argument("--ncpu", type=int, default=8)
 parser.add_argument("--off-surface", action="store_true")
+parser.add_argument("--wake-samples", type=int, default=0, help="0 skips; -1 evaluates every wake face")
 args = parser.parse_args()
 args.run = args.run.resolve()
+audit_out = args.run if args.out is None else args.out.resolve()
+if args.out is not None:
+    assert not audit_out.exists()
+    audit_out.mkdir(parents=True)
 for key in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMBA_NUM_THREADS"):
     os.environ[key] = str(args.ncpu)
-os.environ["NUMBA_CACHE_DIR"] = str(args.run / "numba_cache")
+os.environ["NUMBA_CACHE_DIR"] = str(audit_out / "numba_cache")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "core"))
 import numpy as np
 from numba import set_num_threads
@@ -38,7 +44,10 @@ assert np.max(abs(normals - data["panel_normal"])) < 1e-12
 assert np.max(abs(area - data["panel_area"])) < 1e-12
 mu, sigma, gamma = data["mu"], data["sigma"], data["gamma"]
 wake = np.ascontiguousarray(coordinates[data["wake_faces"]])
-wake_normals = np.tile([0., 0., 1.], (len(wake), 1))
+wake_cross = np.cross(wake[:, 1] - wake[:, 0], wake[:, 2] - wake[:, 0])
+wake_area = np.linalg.norm(wake_cross, axis=1) / 2
+wake_normals = wake_cross / (2 * wake_area[:, None])
+direction = data["wake_linear_direction"] if "wake_linear_direction" in data else np.tile([0., 1., 0.], (len(wake), 1))
 wc = wake.mean(axis=1)
 wake_mu, wake_slope = data["wake_basis"] @ gamma, data["wake_slope"] @ gamma
 alpha = np.deg2rad(result["parameters"]["alpha_deg"])
@@ -51,9 +60,10 @@ def evaluate(targets, trace):
     db, gd = influence(targets, triangles, normals, trace, 1)
     sw, gsw = influence(targets, wake, wake_normals, np.full(len(targets), -1, dtype=np.int64), 0)
     dw, gdw = influence(targets, wake, wake_normals, np.full(len(targets), -1, dtype=np.int64), 1)
-    relative_y = targets[:, None, 1] - wc[None, :, 1]
-    height = targets[:, None, 2] - wc[None, :, 2]
-    moment = relative_y * dw + height * gsw[:, :, 1]
+    relative_y = np.sum((targets[:, None] - wc[None]) * direction[None], axis=2)
+    height = np.sum((targets[:, None] - wc[None]) * wake_normals[None], axis=2)
+    source_gradient = np.sum(gsw * direction[None], axis=2)
+    moment = relative_y * dw + height * source_gradient
     hessian_y = np.zeros(gsw.shape)
     for k, q in ((0, 1), (1, 2), (2, 0)):
         edge = wake[:, q] - wake[:, k]
@@ -66,10 +76,10 @@ def evaluate(targets, trace):
         opposite = dot < 0
         plus[opposite] = np.sum(np.cross(r0, r1)**2, axis=2)[opposite] / (product - dot)[opposite]
         gradient_log = length[None, :, None] / plus[:, :, None] * (r0 / rad0[:, :, None] + r1 / rad1[:, :, None])
-        hessian_y -= outward[None, :, 1, None] * gradient_log / (4 * np.pi)
+        hessian_y -= np.sum(outward * direction, axis=1)[None, :, None] * gradient_log / (4 * np.pi)
+    hessian_y -= np.sum(wake_normals * direction, axis=1)[None, :, None] * gdw
     moment_gradient = relative_y[:, :, None] * gdw + height[:, :, None] * hessian_y
-    moment_gradient[:, :, 1] += dw
-    moment_gradient[:, :, 2] += gsw[:, :, 1]
+    moment_gradient += direction[None] * dw[:, :, None] + wake_normals[None] * source_gradient[:, :, None]
     velocity = flow - np.einsum("ijk,j->ik", gs, sigma) + np.einsum("ijk,j->ik", gd, mu)
     velocity += np.einsum("ijk,j->ik", gdw, wake_mu) + np.einsum("ijk,j->ik", moment_gradient, wake_slope)
     perturbation = -sb @ sigma + db @ mu + dw @ wake_mu + moment @ wake_slope
@@ -84,6 +94,17 @@ kernel_error = dict(
     constant_wake=float(np.max(abs(dw - data["wake_doublet"]))),
 )
 assert max(kernel_error.values()) < 1e-10
+material_jump_error = None
+if "wake_material_y" in data:
+    material_stations = (np.asarray(fixture["gamma_stations"]) - np.asarray(fixture["origin"])[1]) / fixture["reference_chord"]
+    material_stations *= result["parameters"]["span_factor"]
+    dof = np.asarray(fixture["gamma_station_dof"])
+    values = np.zeros(len(dof))
+    values[dof >= 0] = gamma[dof[dof >= 0]]
+    expected = np.interp(data["wake_material_y"], material_stations, values)
+    recovered = wake_mu[:, None] + wake_slope[:, None] * np.sum((wake - wc[:, None]) * direction[:, None], axis=2)
+    material_jump_error = float(np.max(abs(expected - recovered)))
+    assert material_jump_error < 1e-11, "Moved wake lost its material circulation label"
 normal_error = np.sum(velocity * normals, axis=1)
 interior_potential = potential - mu
 field_cp = 1 - np.sum(velocity**2, axis=1)
@@ -138,12 +159,67 @@ for factor in (1e-2, 1e-3, 1e-4):
     offsets.append(dict(offset_sqrt_area=factor, velocity_vs_exterior_trace_rms=float(np.sqrt(
         np.average(np.sum((v - velocity)**2, axis=1), weights=area)))))
 assert offsets[-1]["velocity_vs_exterior_trace_rms"] < offsets[0]["velocity_vs_exterior_trace_rms"]
+wake_audit, wake_velocity = None, np.empty((0, 3))
+sample_ids = np.empty(0, dtype=int)
+if args.wake_samples:
+    assert args.wake_samples == -1 or args.wake_samples > 0
+    sample_ids = np.arange(len(wake)) if args.wake_samples == -1 else np.unique(np.linspace(0, len(wake) - 1, min(args.wake_samples, len(wake))).astype(int))
+    sampled, sampled_jump = [], []
+    for factor in (1e-3, 5e-4):
+        delta = factor * np.sqrt(wake_area[sample_ids, None]) * wake_normals[sample_ids]
+        positive, *_ = evaluate(wc[sample_ids] + delta, np.full(len(sample_ids), -1, dtype=np.int64))
+        negative, *_ = evaluate(wc[sample_ids] - delta, np.full(len(sample_ids), -1, dtype=np.int64))
+        sampled.append((positive + negative) / 2)
+        sampled_jump.append(positive - negative)
+    # Offsets define a two-sided principal-value quadrature, not a vortex core.
+    # Keep its approach error visible; never change wall collocation positions.
+    wake_velocity = 2 * sampled[1] - sampled[0]
+    velocity_jump = 2 * sampled_jump[1] - sampled_jump[0]
+    expected_jump = wake_slope[sample_ids, None] * direction[sample_ids]
+    transport = np.sum(wake_velocity * expected_jump, axis=1)
+    pressure_jump = -2 * np.sum(wake_velocity * velocity_jump, axis=1)
+    probe = wc[sample_ids[:3]] + .13 * np.sqrt(wake_area[sample_ids[:3], None]) * wake_normals[sample_ids[:3]]
+    probe_trace = np.full(len(probe), -1, dtype=np.int64)
+    probe_velocity, *_ = evaluate(probe, probe_trace)
+    derivative_fd = np.empty_like(probe)
+    for column in range(3):
+        shift = np.zeros(3)
+        shift[column] = 1e-5
+        _, plus, *_ = evaluate(probe + shift, probe_trace)
+        _, minus, *_ = evaluate(probe - shift, probe_trace)
+        derivative_fd[:, column] = (plus - minus) / 2e-5 + flow[column]
+    field_derivative_error = float(np.max(abs(probe_velocity - derivative_fd)))
+    assert field_derivative_error < 1e-6, "Independent analytic velocity differs from its potential derivative"
+    flux = np.sum(wake_velocity * wake_normals[sample_ids], axis=1)
+    approach = np.linalg.norm(sampled[1] - sampled[0], axis=1)
+    wake_audit = dict(samples=len(sample_ids), velocity_definition="Two-sided average, linear zero-offset extrapolation",
+                      offsets_sqrt_area=[1e-3, 5e-4],
+                      velocity_vs_potential_fd_max_error=field_derivative_error,
+                      material_advection_rms=float(np.sqrt(np.average(transport**2, weights=wake_area[sample_ids]))),
+                      steady_pressure_jump_rms=float(np.sqrt(np.average(pressure_jump**2, weights=wake_area[sample_ids]))),
+                      velocity_jump_vs_material_gradient_rms=float(np.sqrt(np.average(
+                          np.sum((velocity_jump - expected_jump)**2, axis=1), weights=wake_area[sample_ids]))),
+                      total_normal_rms=float(np.sqrt(np.average(flux**2, weights=wake_area[sample_ids]))),
+                      total_normal_max=float(np.max(abs(flux))),
+                      extrapolation_change_rms=float(np.sqrt(np.average(approach**2, weights=wake_area[sample_ids]))),
+                      freestream_normal_rms=float(np.sqrt(np.average((wake_normals[sample_ids] @ flow)**2, weights=wake_area[sample_ids]))))
+    hinge = result.get("wake_model", {}).get("hinge_x_normalized")
+    for name, mask in (("near", wc[sample_ids, 0] <= (hinge if hinge is not None else 5.)),
+                       ("far", wc[sample_ids, 0] > (hinge if hinge is not None else 5.))):
+        if mask.any():
+            wake_audit[name] = dict(samples=int(mask.sum()), total_normal_rms=float(np.sqrt(
+                np.average(flux[mask]**2, weights=wake_area[sample_ids[mask]]))),
+                material_advection_rms=float(np.sqrt(np.average(transport[mask]**2, weights=wake_area[sample_ids[mask]]))),
+                steady_pressure_jump_rms=float(np.sqrt(np.average(pressure_jump[mask]**2, weights=wake_area[sample_ids[mask]]))))
 audit = dict(status="independently_audited", kernel_max_abs_errors=kernel_error,
+             material_vertex_jump_max_error=material_jump_error,
              gradient_qr_max_abs_error=gradient_error, affine_reproduction_max_abs_error=affine_error,
-             independent_field=field, exterior_approach=offsets, physical_accuracy_accepted=False,
+             independent_field=field, exterior_approach=offsets, wake_tangency=wake_audit, physical_accuracy_accepted=False,
              source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
              elapsed_seconds=time.perf_counter() - started)
-(args.run / "independent_audit.json").write_text(json.dumps(audit, indent=2, allow_nan=False) + "\n", encoding="utf-8")
-np.savez_compressed(args.run / "independent_field.npz", velocity=velocity, normal_error=normal_error, cp=field_cp,
-                    cut_jump_error=cut_jump_error, interior_potential=interior_potential)
+(audit_out / "independent_audit.json").write_text(json.dumps(audit, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+(audit_out / "audit.py.snapshot").write_bytes(Path(__file__).read_bytes())
+np.savez_compressed(audit_out / "independent_field.npz", velocity=velocity, normal_error=normal_error, cp=field_cp,
+                    cut_jump_error=cut_jump_error, interior_potential=interior_potential,
+                    wake_sample_ids=sample_ids, wake_mean_velocity=wake_velocity)
 print(json.dumps(audit, indent=2), flush=True)

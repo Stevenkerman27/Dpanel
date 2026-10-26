@@ -32,7 +32,7 @@ try:
     flow, numerics = case.get("flow", {}), case.get("numerics", {})
     assert not set(flow) - {"alpha", "mach"}
     assert flow.get("mach", 0.) == 0., "This panel method solves incompressible Laplace flow"
-    assert not set(numerics) - {"ncpu", "central-thickness", "span-factor", "derivatives"}
+    assert not set(numerics) - {"ncpu", "central-thickness", "span-factor", "derivatives", "wake-mode"}
     ncpu = numerics.get("ncpu", 8)
     assert isinstance(ncpu, int) and ncpu > 0
     commands = []
@@ -62,7 +62,8 @@ try:
     command = [sys.executable, str(root / "panel" / "solve.py"), "--surface", str(surface.resolve()),
                "--out", str(target), "--alpha", str(flow.get("alpha", 5.)), "--ncpu", str(ncpu),
                "--bulge", str(numerics.get("central-thickness", 0.)),
-               "--span", str(numerics.get("span-factor", 1.))]
+               "--span", str(numerics.get("span-factor", 1.)),
+               "--wake-mode", str(numerics.get("wake-mode", "fixed"))]
     if numerics.get("derivatives", False):
         command.append("--derivatives")
     commands.append(("solve", command))

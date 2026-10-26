@@ -56,6 +56,29 @@ for kind in ("single", "doublet", "linear_moment"):
     fd = float((evaluate(1. + 1e-5) - evaluate(1. - 1e-5)) / 2e-5)
     checks.append(dict(test=kind + "_geometry_derivative", ad=ad, fd=fd, error=abs(ad - fd),
                        passed=bool(abs(ad - fd) < 1e-9)))
+for label, rotation in (
+        ("tilted", np.array([[1., 0., 0.], [0., np.cos(.4), -np.sin(.4)], [0., np.sin(.4), np.cos(.4)]])),
+        ("general", np.linalg.qr(np.array([[1., .4, -.2], [.3, 1., .5], [.7, -.2, 1.]]))[0])):
+    tri = triangles @ rotation.T + [.2, -.4, .7]
+    target = targets @ rotation.T + [.2, -.4, .7]
+    point = sample @ rotation.T + [.2, -.4, .7]
+    n = normal @ rotation.T
+    r = target[:, None, None] - point[None]
+    rad = np.linalg.norm(r, axis=3)
+    for direction in (np.array([[0., 1., 0.]]), np.array([[.3, -.6, .8]])):
+        density = np.sum((point - tri.mean(axis=1)[0]) * direction[0], axis=2)
+        nr = r @ n
+        quad = np.sum(measure[None] * density[None] * nr / rad**3, axis=(1, 2)) / (4 * np.pi)
+        gradient_quad = np.sum((measure * density)[None, :, :, None] * (
+            n / rad[:, :, :, None]**3 - 3 * r * nr[:, :, :, None] / rad[:, :, :, None]**5), axis=(1, 2)) / (4 * np.pi)
+        def potential_at(p):
+            return triangle_potential(p, jnp.asarray(tri), source=False, linear_direction=jnp.asarray(direction))[1].sum()
+        value = np.asarray(triangle_potential(jnp.asarray(target), jnp.asarray(tri), source=False,
+                                             linear_direction=jnp.asarray(direction))[1])[:, 0]
+        gradient_ad = np.asarray(jax.grad(potential_at)(jnp.asarray(target)))
+        error = max(float(np.max(abs(value - quad))), float(np.max(abs(gradient_ad - gradient_quad))))
+        checks.append(dict(test=label + "_material_moment_and_velocity", direction=direction.tolist(),
+                           error=error, passed=error < 1e-12))
 (args.out / "checks.json").write_text(json.dumps(checks, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 print(json.dumps(checks, indent=2), flush=True)
 assert all(row["passed"] for row in checks)

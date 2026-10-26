@@ -1,12 +1,12 @@
 # 完整求解器开发与验收状态
 
-更新：2026-10-25。已按用户最新要求收尾并暂停本地目标、子任务与GitHub监听自动任务，云端协同保持暂停；完整求解器尚未整体验收。新 `panel/` 路线完成机身跨后缘、粗机身、双机身、解析线性尾迹及纯表面CAD流程，37项主检查、10项拓扑检查和180项导数比较通过。最新方法与保留误差见 [PANEL_ROBUSTNESS.md](docs/PANEL_ROBUSTNESS.md)，恢复起点见 [PAUSE_HANDOFF.md](PAUSE_HANDOFF.md)。前阶段VortexAD闭环见 [WINGBODY_PANEL_LOOP.md](docs/WINGBODY_PANEL_LOOP.md)。
+更新：2026-10-26。用户已恢复本地目标，当前研究尾迹与准确性；云端协同和 GitHub 自动任务仍暂停，只通过指定代理只读查询 GitHub。完整求解器尚未整体验收。根目录面元入口已增加处方尾迹方向、广义物质坐标线性偶极矩和独立尾迹总场审计；局部总流驱动原型保留所有迭代，不宣称物理收敛。最新进展见 [WAKE_ACCURACY.md](docs/WAKE_ACCURACY.md) 和 [PAUSE_HANDOFF.md](PAUSE_HANDOFF.md)。
 
-本轮实现了 `panel-cut` 统一入口与原始Cp/组件载荷VTU导出。近相切新探针尚未完成：三个失败来自保守CAD包围盒超出radius=5，不可归为TE或接触不可分辨；aft=1.0001仅建表面网格。双机身粗细CL相差约18.6%，独立外场严格门限未通过，仍为 `physical_accuracy_accepted=false`。后文旧P2双机身“仅建网格”的描述属于该历史后端，不代表新面元分支的当前能力。
+`panel-cut` 统一入口和原始Cp/组件载荷VTU已实现。近相切 radius8 复核已完成于 `runs/panel_error_budget_v2/`，见 [ERROR_SEPARATION.md](docs/ERROR_SEPARATION.md)，不再列作未运行。物理精度仍为 false。后文旧P2的阶段状态属于历史后端；半模和矩阵无关证据主要来自隔离工作副本，不能当作根目录已集成。
 
 ## 当前优先级
 
-用户最新要求是优先几何鲁棒性，暂缓高成本的局部压力精度改进。近期按“有效几何、CAD布尔、相容网格、正确拓扑、有限流场与载荷”顺序验收，重点覆盖厚翼身、机身跨越后缘和近相切接触。各项原始误差继续输出；旧精度失败仍保留，不放宽旧门限后声称通过。
+当前在保留几何鲁棒性的基础上研究准确性。尾迹须同时检查局部总流切向条件、环量输运和压力连续性；固定拓扑 AD 通过不代表非线性自由尾迹导数通过。壁面/Gamma/尾迹截断误差分开细化，保留全部失败，不放宽旧门限后声称通过。
 
 暂停前最新阶段已从参数化对称几何进入完整体网格升力 CAD：9 个配置完成五阶段流程；双机身首次优化失败、曲率约束重试只完成建网格。固定网格尺度变换和四种无效后缘拒绝检查也已完成。详情见 [CAD_ROBUSTNESS_RESULTS.md](lifting3d/CAD_ROBUSTNESS_RESULTS.md)；自适应最小 Jacobian 检查仍只是待办，未实现。
 

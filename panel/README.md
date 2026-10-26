@@ -1,9 +1,9 @@
 # Explicit fluid-cut differentiable panels
 
-Status on 2026-10-25: local work paused at the user's request. Geometry and
-discrete derivative matrices pass in the declared scope; general robustness and
-physical accuracy remain unaccepted. See [handoff](../PAUSE_HANDOFF.md) and
-[method and evidence](../docs/PANEL_ROBUSTNESS.md).
+Status on 2026-10-26: local work resumed; cloud collaboration remains paused.
+Wake direction and material-wake experiments are active. Geometry and discrete
+derivative checks do not establish physical accuracy. See
+[wake method and evidence](../docs/WAKE_ACCURACY.md) and [handoff](../PAUSE_HANDOFF.md).
 
 From the repository root, using a Python environment with JAX, NumPy, SciPy and
 threadpoolctl:
@@ -37,7 +37,7 @@ unmodified cell Cp, component labels, pressure forces and moments. `wake.vtu`
 contains the actual fluid-side sheet and its centroid jump.
 
 The model solves incompressible Laplace flow on closed, consistently oriented
-triangle walls. The wake lies in normalized z=0; TE is explicitly declared,
+triangle walls. The input wake lies in normalized z=0; TE is explicitly declared,
 piecewise linear x(y), and monotone in y. Wake triangles conform to circulation
 strips. Jump is constant downstream and piecewise linear across span; contact
 projections impose equal unknown coefficients. The only fixed zero circulation
@@ -46,7 +46,8 @@ The finite wake ends 30 reference chords beyond the last TE station.
 
 AD covers angle, an explicit thickness bulge and span scaling at fixed topology.
 It does not differentiate CAD Boolean operations, remeshing or contact topology
-changes. Surface Cp comes from tangent least squares on a fixed, geometry-ranked
+changes. Supplied research wake offsets are frozen during AD; derivatives of a
+converged free wake are not implemented. Surface Cp comes from tangent least squares on a fixed, geometry-ranked
 stencil. This reconstruction cannot verify physical no-penetration: use the
 independent field audit. There is no Cp clipping, matrix regularization, singular
 value truncation or collocation displacement.
@@ -62,7 +63,7 @@ keeps every block residual). The dense system matrix and its LU factors are not
 blocked: at 23536 panels they still need about 8.9 GB, so the next limit is the
 solver, not the kernel. See [memory measurements](../docs/KERNEL_MEMORY_BLOCKING.md).
 The dense solve can be replaced by an explicit matrix-free operator
-(`panel/matrix_free.py`): `matvec`/`rmatvec` evaluate blocks and contract them
+(in an isolated PR checkout, not root `panel/matrix_free.py`): `matvec`/`rmatvec` evaluate blocks and contract them
 immediately, so neither the wall AIC, the source matrix nor the wall-wake matrix
 is ever formed. A near-field block preconditioner (frozen spatial bisection,
 block-diagonal doublet blocks plus the Kutta row and the circulation mass matrix)
@@ -76,3 +77,22 @@ non-mirrored triangulations, centreline panels, unmatched TE edges and sideslip;
 the Gmsh meshes in this repository are not mirror-symmetric, so half-model runs
 are reported as blocked rather than silently symmetrised. See
 [matrix-free measurements](../docs/ISSUE16_MATRIX_FREE.md).
+
+The default remains `--wake-mode fixed`. `freestream` tilts a contact-free
+sheet from its actual TE; `far-freestream` changes only the extension beyond the
+wall. Full contact-sheet rotation is rejected until its CAD fluid cut is rebuilt.
+`--wake-offset` accepts normalized research offsets with exactly fixed wall nodes.
+The affine material coordinate is transported with each triangle, including
+spanwise motion and tip roll-up. None of these options certifies a free wake.
+
+```powershell
+python panel/verify_wake.py --out runs/NEW_WAKE_PAIRS --audit-python C:/Users/zyx20/anaconda3/python.exe
+python panel/relax_wake.py --surface cases/panel_cut/single_wing.json --out runs/NEW_WAKE --alpha 5 --update face-lsq --iterations 8 --audit-python C:/Users/zyx20/anaconda3/python.exe
+python panel/audit.py runs/NEW_WAKE/iteration_08 --wake-samples -1
+```
+
+The research iteration solves the wall system again at every step. Its `line`
+and `face-lsq` updates are explicit alternatives, all velocities come from the
+independent field evaluator, and each run retains raw geometry and residuals.
+The audit reports total-flow tangency, material advection and two-sided pressure
+jump. A nonzero residual or exhausted iteration budget is not physical acceptance.

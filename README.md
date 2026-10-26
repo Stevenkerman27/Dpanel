@@ -1,10 +1,10 @@
 # 快速势流求解器研究实现
 
-截至 2026-10-26，本地执行与云端协同都在进行中（GitHub 监听常驻，云端按 issue/PR 下验收契约）。**已完成机身跨后缘、粗机身与双机身的可微面元实现及公开矩阵**：37项主检查、10项补充拓扑检查和180项AD/中心差分通过；在此基础上完成了顶点/站位几何 VJP、Torch↔JAX 桥、核函数分块内存改造、矩阵无关 GMRES 与近场预条件、以及 OCC 正半域镜像半模。方法、原始误差与复现命令见 [docs/README.md](docs/README.md)（文档索引），最新鲁棒性证据见 [PANEL_ROBUSTNESS.md](docs/PANEL_ROBUSTNESS.md)，`panel/` 入口见 [panel/README.md](panel/README.md)。
+截至 2026-10-26，用户已恢复本地工作，当前推进尾迹与计算准确性；云端协同和 GitHub 自动任务保持暂停，GitHub 经指定代理手动只读同步。**已完成机身跨后缘、粗机身与双机身的可微面元实现及公开矩阵**：37项主检查、10项补充拓扑检查和180项AD/中心差分通过。核分块已在根目录；几何 VJP、Torch 桥、矩阵无关算子及 OCC 半模的后续证据主要来自隔离 PR 工作副本，不应视为根目录入口的已集成能力。方法与复现命令见 [docs/README.md](docs/README.md)，最新尾迹研究见 [WAKE_ACCURACY.md](docs/WAKE_ACCURACY.md)，入口见 [panel/README.md](panel/README.md)。
 
 新 `panel/` 求解器采用解析源/偶极子、真实流体侧尾迹、线性势跳跃及接触相容基；纯表面CAD流程避开体网格优化。没有压力裁剪或矩阵正则化。完整通用求解器尚未验收，独立壁面误差与粗细载荷差仍显著，`physical_accuracy_accepted=false`。此前仅支持前置机身的VortexAD闭环保留于 [WINGBODY_PANEL_LOOP.md](docs/WINGBODY_PANEL_LOOP.md)；总体状态见 [DEVELOPMENT.md](DEVELOPMENT.md)，路线选择见 [SOLVER_ROUTE.md](SOLVER_ROUTE.md)。
 
-当前开发优先级为几何鲁棒性：厚翼身连接、机身越过后缘、接近相切时的网格拓扑和明确失败诊断。暂缓昂贵的精度加密；原始压力、壁面误差和所有旧失败记录继续保留。
+当前在保留几何检查的基础上提高准确性：区分固定尾迹、沿来流处方尾迹和局部总流驱动的物质尾迹；同步检查无穿透、环量输运及压力连续性。原始压力、壁面误差和所有旧失败继续保留。
 
 ## 目录结构
 

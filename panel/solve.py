@@ -20,6 +20,8 @@ parser.add_argument("--span", type=float, default=1.)
 parser.add_argument("--ncpu", type=int, default=8)
 parser.add_argument("--derivatives", action="store_true")
 parser.add_argument("--validate-only", action="store_true")
+parser.add_argument("--wake-mode", choices=("fixed", "freestream", "far-freestream"), default="fixed")
+parser.add_argument("--wake-offset", type=Path, help="Research wake offsets in normalized body coordinates; frozen during AD")
 args = parser.parse_args()
 args.out = args.out.resolve()
 assert not args.out.exists(), "Preserve earlier experiments"
@@ -39,6 +41,7 @@ from threadpoolctl import threadpool_limits, threadpool_info
 import jax
 import jax.numpy as jnp
 from kernel import triangle_potential
+from wake_geometry import check_wake_geometry
 
 jax.config.update("jax_enable_x64", True)
 threadpool_limits(args.ncpu)
@@ -228,6 +231,45 @@ for label in np.unique(contact_labels[contact_edges.ravel()]):
     assert np.all(station_dof[selected] == station_dof[selected][0]) and station_dof[selected][0] >= 0, "Smooth contact must have constant unknown jump"
     contact_intervals.append([float(left), float(right)])
 
+wake_node_ids = np.unique(wake_faces)
+wall_node_ids = np.unique(faces)
+wake_motion_x = np.zeros(len(xyz))
+wake_hinge_x = None
+if args.wake_mode != "fixed":
+    assert abs(args.alpha) < 80, "Prescribed x-monotone wake requires |alpha| < 80 degrees"
+    if args.wake_mode == "freestream":
+        assert not len(contact_edges), "Full freestream wake with body contact requires a new CAD fluid cut; use fixed or far-freestream"
+        root_nodes = np.unique(te_edges)
+        root_nodes = root_nodes[np.argsort(xyz[root_nodes, 1])]
+        root_x = np.interp(xyz[:, 1], xyz[root_nodes, 1], xyz[root_nodes, 0])
+        wake_motion_x[wake_node_ids] = xyz[wake_node_ids, 0] - root_x[wake_node_ids]
+        assert np.min(wake_motion_x) > -1e-10
+    else:
+        end_x = xyz[wake_node_ids, 0].max()
+        wake_hinge_x = float(xyz[wake_node_ids, 0][xyz[wake_node_ids, 0] < end_x - 1e-10].max())
+        assert wake_hinge_x > xyz[wall_node_ids, 0].max(), "Far-wake hinge must be beyond the entire wall"
+        wake_motion_x[wake_node_ids] = np.maximum(xyz[wake_node_ids, 0] - wake_hinge_x, 0.)
+    assert np.max(abs(wake_motion_x[wall_node_ids])) < 1e-10, "Wake motion would move wall/contact nodes"
+    wake_motion_x[wall_node_ids] = 0.
+if args.wake_offset is not None:
+    offsets = np.load(args.wake_offset, allow_pickle=False)
+    wake_offset = np.asarray(offsets["offset"])
+    assert wake_offset.shape == xyz.shape and np.isfinite(wake_offset).all()
+    assert np.max(abs(wake_offset[wall_node_ids])) == 0., "Preserve wall and contact nodes exactly"
+    assert np.max(abs(wake_offset[np.setdiff1d(np.arange(len(xyz)), wake_node_ids)]), initial=0.) == 0.
+    (args.out / "wake_offset.npz").write_bytes(args.wake_offset.read_bytes())
+else:
+    wake_offset = np.zeros_like(xyz)
+if args.wake_mode != "fixed" or args.wake_offset is not None:
+    moved = xyz.copy()
+    moved[:, 1] *= args.span
+    moved[:, 2] *= 1 + args.bulge * np.exp(-(xyz[:, 1] / .5)**2)
+    moved[:, 2] += np.tan(np.deg2rad(args.alpha)) * wake_motion_x
+    moved += wake_offset
+    moved_wake_geometry = check_wake_geometry(moved, faces, wake_faces, require_positive_z=args.wake_offset is None)
+else:
+    moved_wake_geometry = None
+
 # Adapt only the discrete stencil, using a dimensionless geometric rank budget.
 # No potential, pressure, or load enters this decision.
 adjacency = [set() for _ in faces]
@@ -270,7 +312,8 @@ validation = dict(status="input_accepted", wall_components=int(components), wall
                   plane_tolerance_normalized=plane_tolerance,
                   intersection_barycentric_tolerance=barycentric_tolerance,
                   base_tangent_minimum_singular_ratio=min(ratios),
-                  limitations="Closed oriented piecewise-planar wall and planar wake; arbitrary wall self-intersection not certified")
+                  prescribed_wake_mode=args.wake_mode, moved_wake_geometry=moved_wake_geometry,
+                  limitations="Planar input cut; actual moved triangle wake checked separately. No wall self-intersection or complete wake overlap/touch certificate")
 (args.out / "validation.json").write_text(json.dumps(validation, indent=2) + "\n", encoding="utf-8")
 if args.validate_only:
     print(json.dumps(validation, indent=2), flush=True)
@@ -278,7 +321,8 @@ if args.validate_only:
 seam_faces = np.asarray(fixture["seam_faces"], dtype=int)
 body_mask, wing_mask = tags == 20, tags != 20
 source_hashes = {}
-for path in (Path(__file__), Path(__file__).with_name("kernel.py"), Path(__file__).with_name("build_surface.py")):
+for path in (Path(__file__), Path(__file__).with_name("kernel.py"), Path(__file__).with_name("build_surface.py"),
+             Path(__file__).with_name("wake_geometry.py")):
     content = path.read_bytes()
     source_hashes[path.name] = hashlib.sha256(content).hexdigest()
     (args.out / (path.name + ".snapshot")).write_bytes(content)
@@ -298,10 +342,19 @@ def solve_model(parameters):
     center = tri.mean(axis=1)
     angle = alpha * jnp.pi / 180
     flow = jnp.array([jnp.cos(angle), 0., jnp.sin(angle)])
+    if args.wake_mode != "fixed":
+        coordinates = coordinates.at[:, 2].add(jnp.tan(angle) * wake_motion_x)
+    coordinates = coordinates + jnp.asarray(wake_offset)
     sigma = -normal @ flow
     single, doublet = triangle_potential(center, tri, interior_diagonal=True)
     wake = coordinates[wake_faces]
-    wake_doublet, wake_linear_moment = triangle_potential(center, wake, source=False, linear_y=True)
+    wake_av = jnp.cross(wake[:, 1] - wake[:, 0], wake[:, 2] - wake[:, 0])
+    wake_area2 = jnp.linalg.norm(wake_av, axis=1)
+    wake_normal = wake_av / wake_area2[:, None]
+    material_y = jnp.asarray(xyz[wake_faces, 1]) * span
+    wake_direction = ((material_y[:, 1] - material_y[:, 0])[:, None] * jnp.cross(wake[:, 2] - wake[:, 0], wake_normal)
+                      + (material_y[:, 2] - material_y[:, 0])[:, None] * jnp.cross(wake_normal, wake[:, 1] - wake[:, 0])) / wake_area2[:, None]
+    wake_doublet, wake_linear_moment = triangle_potential(center, wake, source=False, linear_direction=wake_direction)
     wake_operator = wake_doublet @ wake_basis + wake_linear_moment @ (wake_slope / span)
     te_length = jnp.linalg.norm(coordinates[te_edges[:, 1]] - coordinates[te_edges[:, 0]], axis=1)
     weights = jnp.broadcast_to(te_length[:, None] / 2, te_basis.shape[:2])
@@ -339,6 +392,7 @@ def solve_model(parameters):
                 matrix=matrix, rhs=rhs, panel_x_dir=l, panel_y_dir=m, ql=gl, qm=gm,
                 tangent_determinant=determinant, tangent_singular_ratio=jnp.sqrt(ratio_squared), surface_velocity=surface_velocity,
                 single=single, doublet=doublet, wake_doublet=wake_doublet,
+                wake_linear_direction=wake_direction, wake_material_y=material_y,
                 wake_linear_moment=wake_linear_moment, wake_operator=wake_operator,
                 jump_mass=jump_mass, tested_jump=tested_jump)
 
@@ -353,6 +407,13 @@ output = jax.tree.map(np.asarray, simulate(parameters))
 warm_seconds = time.perf_counter() - t0
 output.update(faces=faces, component_ids=tags, wake_faces=wake_faces, wake_basis=wake_basis,
               wake_slope=wake_slope / args.span, neighbor_indices=neighbor_ids, te_basis=te_basis)
+wake_cross_actual = np.cross(output["coordinates"][wake_faces[:, 1]] - output["coordinates"][wake_faces[:, 0]],
+                             output["coordinates"][wake_faces[:, 2]] - output["coordinates"][wake_faces[:, 0]])
+wake_area_actual = np.linalg.norm(wake_cross_actual, axis=1) / 2
+wake_normal_actual = wake_cross_actual / (2 * wake_area_actual[:, None])
+wake_flux = wake_normal_actual @ np.array([np.cos(np.deg2rad(args.alpha)), 0., np.sin(np.deg2rad(args.alpha))])
+output.update(wake_normal=wake_normal_actual, wake_area=wake_area_actual,
+              wake_freestream_normal_velocity=wake_flux)
 np.savez_compressed(args.out / "fields.npz", **output)
 assert all(np.isfinite(value).all() for value in output.values()), "Nonfinite raw fields retained"
 assert np.all(output["tangent_determinant"] > 0)
@@ -389,6 +450,15 @@ result = dict(
                                  rings_min=min(ring_counts), rings_max=max(ring_counts), max_neighbors=width,
                                  base_minimum_singular_ratio=min(ratios), regularization=None, cutoff=None),
     input_validation=validation,
+    wake_model=dict(mode=args.wake_mode, hinge_x_normalized=wake_hinge_x,
+                    offset_sha256=hashlib.sha256(args.wake_offset.read_bytes()).hexdigest() if args.wake_offset else None,
+                    circulation_coordinate="Transported vertex material label; affine gradient on each actual triangle",
+                    angle_tracks_alpha=args.wake_mode != "fixed",
+                    fully_freestream_aligned=args.wake_mode == "freestream" and args.wake_offset is None,
+                    freestream_normal_rms=float(np.sqrt(np.average(wake_flux**2, weights=wake_area_actual))),
+                    freestream_normal_max=float(np.max(abs(wake_flux))),
+                    local_flow_tangency_solved=False,
+                    derivative="Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"),
     geometry_robustness_accepted=True, physical_accuracy_accepted=False,
     references=dict(area=sref * chord**2, chord=chord, moment=fixture["moment_reference"],
                     origin=fixture["origin"], density=2., speed=1., dynamic_pressure=1.),
@@ -396,7 +466,7 @@ result = dict(
     source_sha256=source_hashes, surface_sha256=hashlib.sha256(args.surface.read_bytes()).hexdigest(),
     environment=dict(python=sys.version, numpy=np.__version__, scipy=scipy.__version__, jax=jax.__version__,
                      threadpools=threadpool_info()),
-    scope="Explicit conforming planar fluid cut, streamwise-constant jump, fixed topology deformations; no CAD derivative",
+    scope="Conforming planar input cut, transported material wake jump, fixed topology deformations; no CAD or converged free-wake derivative",
 )
 (args.out / "result.json").write_text(json.dumps(result, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 print(json.dumps(result, indent=2, allow_nan=False), flush=True)
