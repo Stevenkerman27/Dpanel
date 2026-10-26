@@ -1,6 +1,6 @@
 # 多几何鲁棒性矩阵（后掠翼 / 椭圆翼 / BWB / 常规布局）
 
-本文件由 `runs/geom_robust/report.py` 从 `runs/geom_robust/{mesh,solve,peaks}` 的落盘产物程序化生成，全部数字来自本机实际运行（Windows 10，Python 3.11.17，JAX 0.10.2 CPU，稠密 LU）。
+本文件由 `tools/geom_robust/report.py` 从 `runs/geom_robust/{mesh,solve,peaks}` 与 `runs/geom_robust/alpha_<case>.json` 的落盘产物程序化生成，全部数字来自本机实际运行（Windows 10，Python 3.11.17，JAX 0.10.2 CPU，稠密 LU，迎角 5 度除非另注）。
 
 判定口径沿用项目既有约定：`physical_accuracy_accepted=false`。近场压力阻力 CD_p 与俯仰力矩 CM_y 不作为物理精度声明，只有积分升力 CL 与网格细化趋势可比较。
 
@@ -13,7 +13,7 @@
 | bwb | blended wing body, root t/c 0.22, LE crank 0.35 abs(y) | 1.00 | 1.241497 | 1 | 10 |
 | conv | fuselage + low wing + T-tail + centreline fin | 1.60 | 2.400000 | 2 | 20, 30 |
 
-CAD 全部由 `runs/geom_robust/make_cases.py` 用 gmsh OCC 生成（闭合实体 STEP + TE 声明 JSON + import 回验），根弦均为 1.0，网格尺寸 `--size` 即根弦比例。
+CAD 全部由 `tools/geom_robust/make_cases.py` 用 gmsh OCC 生成（闭合实体 STEP + TE 声明 JSON + import 回验），根弦均为 1.0，网格尺寸 `--size` 即根弦比例。
 
 ## 2. 网格与求解矩阵（迎角 5 度，粗 -> 细）
 
@@ -33,7 +33,7 @@ CAD 全部由 `runs/geom_robust/make_cases.py` 用 gmsh OCC 生成（闭合实�
 | conv | 0.100 | 1911 | 787 | 9 | 1920 | 0.473854 | 6.626401e-05 | -0.212714 | 1.58e-15 | 622.5 MB | 14.56 | 1.1205 |
 | conv | 0.075 | 3112 | 1134 | 9 | 3121 | 0.481804 | 5.144319e-04 | -0.213059 | 1.94e-15 | 1047.6 MB | 14.78 | 2.9725 |
 
-## 3. 相邻网格档的变化（粗 -> 细；判据：CL 相邻相对差不超过 5%）
+## 3. 相邻网格档的变化（粗 -> 细；5% 只是比较带，不是收敛证明）
 
 | 案例 | 档位链（壁面数） | CL 相邻相对差 | CD_p 相邻绝对差 | CM_y 相邻绝对差 | 全部相邻差 <= 5% |
 | --- | --- | --- | --- | --- | --- |
@@ -41,6 +41,8 @@ CAD 全部由 `runs/geom_robust/make_cases.py` 用 gmsh OCC 生成（闭合实�
 | elliptic | 570 -> 1028 -> 1610 | +8.55%, +2.80% | +4.19e-04, -3.49e-04 | +2.73e-03, +1.73e-03 | 否 |
 | bwb | 435 -> 530 -> 651 -> 1227 | +4.40%, +3.11%, +1.03% | +3.61e-03, -3.06e-03, +1.57e-03 | -1.92e-03, -1.64e-03, -1.72e-03 | 是 |
 | conv | 976 -> 1911 -> 3112 | +7.22%, +1.68% | -3.40e-03, +4.48e-04 | -4.90e-03, -3.45e-04 | 否 |
+
+相邻两档落在同一带内只说明该差值小于 5%，不构成网格无关声明：序列仍可能按更高阶或更慢的速率继续漂移，且每档来自独立生成的网格，没有做同族网格的 Richardson 外推。
 
 ## 4. 压力模板审计（切边/角点邻域的自动扩环）
 
@@ -69,34 +71,59 @@ CAD 全部由 `runs/geom_robust/make_cases.py` 用 gmsh OCC 生成（闭合实�
 | bwb | 1227 | 689 | 427.4 MB | 0.597 | 1.19 |
 | conv | 3112 | 1134 | 1047.6 MB | 2.972 | 3.80 |
 
-## 6. 与升力线理论的量级核对
+## 6. 固定网格多迎角与中心差分斜率
 
-Helmbold 低展弦比升力线斜率 a = 2 pi AR / (AR + 2)，AR = b^2 / Sref。只有椭圆翼（无弯度、无后掠）是可直接对照的干净案例；其余案例带弯度或后掠，只能看量级。
+每个案例的最细一档保持壁面、后缘、尾迹与 Gamma 自由度不变，只把来流方向绕 +y 旋转到 -5 / -2.5 / 0 / +2.5 / +5 度（同速、零侧滑）。斜率为中心差分 `[CL(+h) - CL(-h)] / (2 h_rad)`，在 h = 2.5 度与 h = 5 度各算一次；`CL(5 deg)/alpha_rad` 只作旧口径对照列出，它不是导数。
 
-| 案例 | AR | CL 斜率（/rad） | Helmbold | 比值 | 可对照性 |
-| --- | --- | --- | --- | --- | --- |
-| swept30 | 5.3333 | 5.7589 | 4.5696 | 1.2603 | cambers + 30 deg sweep: magnitude only |
-| elliptic | 5.0437 | 4.3970 | 4.4991 | 0.9773 | symmetric, unswept: directly comparable |
-| bwb | 3.2219 | 4.6430 | 3.8767 | 1.1977 | thick cambered section + LE crank: magnitude only |
-| conv | 4.2667 | 5.5211 | 4.2779 | 1.2906 | camber + fuselage, T-tail has no Kutta: magnitude only |
+| 案例 | 壁面 | CL(-5) | CL(-2.5) | CL(0) | CL(+2.5) | CL(+5) | 单点旧口径 | dCL/da (h=2.5) | dCL/da (h=5) | 两者一致 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| swept30 | 1382 | -0.220284 | -0.041568 | +0.139526 | +0.321431 | +0.502560 | 5.7589 | 4.1597 | 4.1416 | 0.44% |
+| elliptic | 1610 | -0.382759 | -0.192044 | +0.000373 | +0.192842 | +0.383712 | 4.3970 | 4.4105 | 4.3916 | 0.43% |
+| bwb | 1227 | -0.209088 | -0.055737 | +0.098465 | +0.252457 | +0.405182 | 4.6430 | 3.5316 | 3.5195 | 0.34% |
+| conv | 3112 | -0.233172 | -0.055902 | +0.123415 | +0.303186 | +0.481804 | 5.5211 | 4.1148 | 4.0965 | 0.45% |
 
-椭圆翼在三档上的比值为 0.8757、0.9507、0.9773（粗 -> 细），细化时单调贴近理论值，说明近场求解在升力上是对的。
+零迎角升力 `CL(0)` 就是弯度与有限网格偏置的直接读数：对称剖面的椭圆翼是 3.7e-4，带弯度的后掠翼 0.1395、BWB 0.0985；因此单点 `CL(5 deg)/alpha` 在后两者上分别高估约 39% 与 31%，这正是 issue #38 指出的口径问题。
 
-## 7. 语义解读
+## 7. 与两条经验升力线近似并列核对
 
-- CL 由环量主导，四种几何在细化中全部单调变化并趋于稳定；这是本矩阵里唯一可作收敛声明的气动系数。
-- CD_p 由壁面压力投影的正负强相消得到，净值是微小残差：常规布局在 0.100 档降到 6.6e-05、0.075 档回升到 5.1e-04；BWB 在 0.100 档出现 7.6e-03 的尖峰。净阻力不随网格单调，不能作为精度指标。
+Prandtl 式 `2*pi*AR/(AR+2)`，Helmbold 薄翼低速式 `2*pi*AR/(2+sqrt(AR^2+4))`，AR = b^2/Sref。两者都是单张孤立无后掠翼的低速经验近似，**都不是物理真值，也不是 5% 精度接受条件**；带后掠、弯度、机身或平尾的案例只能看量级，常规布局的 T 尾没有 Kutta 条件，属 `unsupported_lifting_surface`，其 CL/alpha 不能当整机斜率。
+
+| 案例 | AR | 中心差分 dCL/da | Prandtl | Prandtl 差 | Helmbold | Helmbold 差 | 可对照性 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| swept30 | 5.3333 | 4.1597 | 4.5696 | -8.97% | 4.3543 | -4.47% | cambered + 30 deg sweep: order of magnitude only |
+| elliptic | 5.0437 | 4.4105 | 4.4991 | -1.97% | 4.2677 | +3.35% | symmetric, unswept, single lifting surface: the only clean comparison |
+| bwb | 3.2219 | 3.5316 | 3.8767 | -8.90% | 3.4950 | +1.05% | thick cambered section + LE crank: order of magnitude only |
+| conv | 4.2667 | 4.1148 | 4.2779 | -3.81% | 3.9940 | +3.03% | cambered wing plus fuselage; the T-tail has no Kutta condition, so CL(alpha) here is not a complete-aircraft slope (unsupported_lifting_surface) |
+
+只有椭圆翼这一行是干净对照：它对称、无后掠、单张升力面，中心差分 4.4105 落在 Prandtl 4.4991 与 Helmbold 4.2677 之间，差值 -2.0% 与 +3.3%。这不是精度通过，只是量级相符。
+
+## 8. 语义解读（含未验证归因）
+
+- CL 在四种几何上随细化单调变化，最细一对的相邻差多在 5% 带内；这只说明该差值小，**不证明网格无关**（见第 3 节）。
+- CD_p 由壁面压力投影的正负强相消得到，净值是微小残差：常规布局在 0.100 档降到 6.6e-05、0.075 档回升到 5.1e-04；BWB 在 0.100 档出现 7.6e-03 的尖峰。连同一份固定网格对迎角的扫描（CD_p 从 +2.9e-03 一路到 -1.7e-02），净阻力既不正定也不随网格单调，**不能作为精度指标**。
 - CM_y 绝对量小且对装配细节敏感（椭圆翼 570 面 -0.0016，1610 面 +0.0028，跨零），百分比变化无意义，只列绝对差。
-- 四种几何都没有触发压力模板失秩拒绝（初始失秩面 0，扩环面 0，环深恒 2），说明自动扩环在真实 CAD 切边上足够；但角点尖峰（PR29 已诊断）仍在，属几何奇性而非实现缺陷。
+- 四种几何都没有触发压力模板失秩拒绝（初始失秩面 0，扩环面 0，环深恒 2），说明自动扩环在真实 CAD 切边上够用。
+- **未验证归因 1**：图上后缘附近 Cp 整体偏正，机制上与前缘吸力相邻的强相消、以及切平面仿射切线梯度不含法向分量一致，但没有外部定量真值证明偏差全由重构造成。
+- **未验证归因 2**：翼尖/后缘角点的 Cp 尖峰（PR29 诊断的 max|dCp| 位置）与几何角点奇性一致，但同样没有外部真值证明它不是实现缺陷；要区分，需要独立折角分侧重构或解析角点解作基准。
 
-## 8. 契约限制（本轮实测触发）
+## 9. 契约限制（本轮实测触发）
 
 1. 尾迹面在 OCC 中固定于 z=0（`panel/cad_half.py:172-180`），因此只有 TE 落在 z=0 的升力面能拿到 Kutta 条件；上单翼或抬高的平尾无法表达。
 2. TE 声明必须精确落在 CAD 的 trimmed TE 曲线上，容差 1e-7；z 偏 0.06 时实测报 `Declared TE does not lie on a trimmed wing boundary curve: segment 0 start has distance 0.059820851, tolerance=1e-07`。
-3. 只支持一个尾迹片（单一 TE 多值函数 x(y)），两个升力面无法各自拿到 Kutta 条件；本轮常规布局因此只让机翼带 Kutta，T 尾仅作 Dirichlet 壁面（其升力被低估）。
+3. 只支持一个尾迹片（单一 TE 多值函数 x(y)），两个升力面无法各自拿到 Kutta 条件；本轮常规布局因此只让机翼带 Kutta，T 尾仅作 Dirichlet 壁面（其升力被低估，故标 `unsupported_lifting_surface`）。
 4. y=0 上若整片三角面被归入物理壁面会被显式拒绝：`Artificial symmetry cap must not be included in physical wall`（`runs/pr34_git/panel/half_surface_mesh.py:65`）。抬高的平尾根部必须整体埋入垂尾（T 尾）或机身，否则根部端面暴露在 y=0 上——本轮首版正是因此失败。
+5. 固定网格迎角扫描只旋转来流方向，z=0 尾迹保持在网格生成时的位置，因此非零迎角下尾迹与当地总流不切向，其运动学残差是模型限制，不是离散误差（与 issue #28 的双侧通量结论同一来源）。
 
-## 9. 结论
+## 10. Erratum（2026-10-26）
+
+旧版本文中以下四处表述已被更正，旧运行记录与旧表原样保留，不回写：
+
+1. **single-point slope named a slope**：earlier revisions of this file called CL(5 deg)/alpha the CL slope and compared it with the Helmbold estimate. That quotient contains CL(0) and is not dCL/dalpha; it is now reported as a single-point legacy number and the slope comes from a central difference over the fixed mesh.
+2. **Helmbold formula**：earlier revisions labelled 2*pi*AR/(AR+2) as Helmbold. That expression is the Prandtl lifting-line style estimate; the Helmbold thin-wing low-speed form is 2*pi*AR/(2+sqrt(AR^2+4)). Both are now listed side by side.
+3. **adjacent-grid agreement read as convergence**：a small change between the last two sizes was described as asymptotic convergence. Two adjacent levels cannot establish grid independence; the wording now states only that the change is below the 5 percent band.
+4. **attribution without external evidence**：the positive near-trailing-edge Cp and the wing-tip corner spike were described as established artefacts of pressure recovery and of geometric corner singularity. Both are plausible mechanisms supported by internal diagnostics, but there is no external quantitative truth value for these cases, so they are now listed as unverified attributions.
+
+## 11. 结论
 
 - swept30：壁面 368 -> 796 -> 1382，CL 0.4720 -> 0.5026，相邻相对差 +3.57%, +2.80%；最细一对 +2.80%，最粗一对 +3.57%。
 - elliptic：壁面 570 -> 1028 -> 1610，CL 0.3438 -> 0.3837，相邻相对差 +8.55%, +2.80%；最细一对 +2.80%，最粗一对 +8.55%。
@@ -105,11 +132,11 @@ Helmbold 低展弦比升力线斜率 a = 2 pi AR / (AR + 2)，AR = b^2 / Sref。
 - 四种几何全部完成网格与 LU 求解，无失秩拒绝、无内存拒绝；峰值内存最高 1047.6 MB（conv_s075，3112 壁面）。
 - 推荐网格：纯翼案例 `--size 0.075`（1227-1610 壁面），带机身案例 `--size 0.075`（3112 壁面）；`--size 0.100` 已可用于粗筛，但最粗一档的 CL 相对差仍大于 5%。
 
-## 10. 上表面压力可视化
+## 12. 上表面压力可视化
 
 ![上表面 Cp](geometry_robustness/fig16_geometry_matrix.png)
 
 图为右半解镜像后的整机俯视，只画外法向 z>0 的面片；色标裁剪到 [-1.5, 0.5]，真实 Cp 极小值在每格标题里（swept30 -7.82、elliptic -2.90、bwb -5.99、conv -6.44，都落在翼尖/后缘角点）。
 
-Cp 由切平面仿射切线梯度恢复，不含法向分量，因此**后缘附近整体偏正属于已知重构伪影**（与 issue #28 的双侧 DeltaCp 结论一致：近段 DeltaCp RMS 约 1e-2、远段约 2e-5）。这张图只用来看前缘吸力峰的位置与展向分布，不作为压力幅值的物理声明。
+Cp 由切平面仿射切线梯度恢复，不含法向分量；后缘附近整体偏正与这一重构口径一致，但如第 8 节所述，这仍属待验证归因。这张图只用来看前缘吸力峰的位置与展向分布，不作为压力幅值的物理声明。
 
