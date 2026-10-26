@@ -54,6 +54,7 @@
 | `PR24_TORCH_CHECKPOINT_LOCAL.md` | PR #24：Torch 解析核可选 rematerialization 的 CUDA 显存 A/B（5655→438 MB @1988 未知量） |
 | `ISSUE16_MATRIX_FREE.md` | issue #16：矩阵无关算子、近场预条件、严格镜像归约 |
 | `ISSUE18_INDEPENDENT_SYMMETRY_AUDIT.md` | issue #18：独立对称性审计（伪配对问题） |
+| [ISSUE39_SHED_GROUPS_V2.md](ISSUE39_SHED_GROUPS_V2.md) | issue #39 Step A：`shed_groups` v2 契约（多升力面/分组 Gamma 与 Kutta/拒绝规则/小夹具验收协议），PR #40；字段示例见 `issue39_schema_example_v2.json` |
 
 ### 证据快照
 
