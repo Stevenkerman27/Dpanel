@@ -90,3 +90,4 @@ kernel 内存修好后，1976 面元的剩余占用主要是**稠密 AIC 矩阵�
 `panel/kernel.py`（改动）；`runs/kernel_ab.py`（逐位 A/B）、`runs/kernel_scale.py`（扩展性）、
 `runs/solve_peak.py`（生产峰值 RSS wrapper）、`runs/vjp_peak.py`（VJP wrapper）、`runs/compare_prod.py`（fields 对比）；
 验证输出 `runs/panel_verify_block64/`；配置扫描 `runs/cfg_64_ck{0,1}_{fwd,deriv}/`。
+（2026-10-26 清理：这两类输出已移到 `archive/runs-2026-10-26/` 与 `archive/runs-2026-10-26/_bench_kernel/`，可用 `panel/verify.py` 与 `runs/kernel_scale.py` 重新生成。）

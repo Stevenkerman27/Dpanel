@@ -9,7 +9,7 @@
 - 几何：`lifting3d/results/cad_inputs_v1/naca0012_wing` 的翼 + Gmsh OCC 生成的椭球机身（半轴 2 / 0.35 / 0.35），平移机身使尾尖落在 x = 0.9999（离缝 1e-4）、1.0（精确相切）、1.0001（侵入 1e-4）。
 - 网格：`--radius 8`（radius 5 的保守包围盒会拒绝近相切工况，见 `runs/panel_cad_limits_r8`），h = 0.3 / 0.2 / 0.15；接触工况跑全部三档，另两个 aft 只跑 h = 0.3。
 - 每算例：`cad.py` → `solve.py` → `panel/audit.py`（独立 numba 核，不调用 JAX 求解器）。
-- 产物：`runs/panel_error_budget_v2/`（`*/record.json`、`*/solve/fields.npz`、`*/solve/independent_audit.json`、`summary.json`）。`runs/panel_error_budget_v1/` 是同代码的重复实验，用于检查可重复性。
+- 产物：`runs/panel_error_budget_v2/`（`*/record.json`、`*/solve/fields.npz`、`*/solve/independent_audit.json`、`summary.json`）。`runs/panel_error_budget_v1/` 是同代码的重复实验，用于检查可重复性（2026-10-26 已归档到 `archive/runs-2026-10-26/`）。
 
 两条互相独立的升力通道，用来交叉校验：
 
