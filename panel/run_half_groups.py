@@ -128,11 +128,22 @@ def groups_from_spec(path, surface):
         if missing:
             raise ValueError(f"Shed group {item.get('group_id')!r} is missing {missing}")
         wall = item.get("wall_faces")
+        # The v2 declaration stores wake triangles two ways: an explicit (n, 3)
+        # connectivity block, or 1-D indices into surface["wake_faces"].
+        reference = np.asarray(item["wake_faces"], dtype=np.int32)
+        if reference.ndim == 1:
+            pool = np.asarray(surface["raw"]["wake_faces"],
+                            dtype=np.int32).reshape(-1, 3)
+            if reference.size and int(reference.max()) >= len(pool):
+                raise ValueError("Shed group wake index out of range")
+            wake = pool[reference]
+        else:
+            wake = reference.reshape(-1, 3)
         groups.append(ShedGroup(
             group_id=str(item["group_id"]),
             wall_faces=(surface["faces"] if wall is None
                         else np.asarray(wall, dtype=np.int32)),
-            wake_faces=np.asarray(item["wake_faces"], dtype=np.int32),
+            wake_faces=wake,
             shed_edges=np.asarray(item["shed_edges"], dtype=np.int32),
             upper_te=np.asarray(item["upper_te"], dtype=np.int32),
             lower_te=np.asarray(item["lower_te"], dtype=np.int32),
@@ -440,7 +451,8 @@ def run(surface_path, *, groups_path=None, full_oracle=False,
                      root_condition=g.root_condition,
                      wake_faces=int(len(g.wake_faces)),
                      shed_edges=int(len(g.shed_edges)),
-                     circulation_unknowns=int(len(g.stations)),
+                     stations=int(len(g.stations)),
+                     circulation_unknowns=int(g.ng),
                      wake_z=g.wake_z) for g in topology.groups],
         validation=dict(topology.audit),
         solve=dict(unknowns=int(out["unknowns"]), wall_panels=int(out["wall_panels"]),

@@ -216,6 +216,9 @@ $py = 'D:\3D\Projects\panel\.conda_env\python.exe'
 ## 9. 下一步
 
 1. 把第 5 节与 8.4 的差异同步回契约（PR #40）。
-2. `cad_half.py` 侧：给抬高平尾生成第二组水平尾迹（先只支持常数 z 的平行尾迹）。
-3. 真实网格上跑两组（396 / 1205 档）只读对照，仍然 `physical_accuracy_accepted=False`。
+2. 真实 CAD 两片独立尾迹：**已完成**，见 `docs/SHED_GROUPS_CAD.md`
+   （新增 `panel/wake_group_declaration.py`、`panel/cad_half_groups.py`、
+   `panel/half_group_surface.py` 与两片 z = 0 / z = 0.24 尾迹的真实 STEP 夹具；
+   全套 37 passed；两档实测 CL 0.285245 -> 0.298993，近场 CD_p 仍为负）。
+3. 把两片尾迹的声明与 manifest 字段补进契约附录（PR #40）。
 4. 场级双侧指标复用 PR #30 的审计模块，不新建第二套。
