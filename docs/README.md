@@ -32,6 +32,7 @@
 | `STAGE1_SOLVER_EFFICIENCY.md` | 稠密 AIC 上 LU/GMRES/转置求解的基准与方法 |
 | `TORCH_PANEL_EXTRACTION.md` | GRASS PyTorch 面元内核的提取说明 |
 | `HALF_MODEL_SCALING.md` | 半模求解随面元数（396/805/1205）的 LU vs 预条件 GMRES 标度与载荷敏感性 |
+| `MESH_CONVERGENCE.md` | 网格收敛研究（396–4371 壁面）：$C_L$ 与 Trefftz $C_D$ 收敛到 5%，近场 $C_D$/$C_{M,y}$ 不收敛的诊断 |
 | `PAUSE_HANDOFF_2026-10-24.md` | 2026-10-24 暂停交接（历史快照） |
 
 ### 云端协作验收报告（按 PR/issue 编号）
