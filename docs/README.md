@@ -34,6 +34,7 @@
 | `TORCH_PANEL_EXTRACTION.md` | GRASS PyTorch 面元内核的提取说明 |
 | `HALF_MODEL_SCALING.md` | 半模求解随面元数（396/805/1205）的 LU vs 预条件 GMRES 标度与载荷敏感性 |
 | `MESH_CONVERGENCE.md` | 396–4371壁面序列的实际变化；未证明渐近网格无关，理想Trefftz量与近场有限尾迹量分开解释 |
+| [GEOMETRY_ROBUSTNESS.md](GEOMETRY_ROBUSTNESS.md) | 后掠翼/椭圆翼/BWB/常规布局四案例 × 13 档网格的鲁棒性矩阵、CL 收敛与升力线核对（issue #37） |
 | `PAUSE_HANDOFF_2026-10-24.md` | 2026-10-24 暂停交接（历史快照） |
 
 ### 云端协作验收报告（按 PR/issue 编号）
