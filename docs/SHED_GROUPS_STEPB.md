@@ -10,7 +10,10 @@ Step A（契约）在 PR #40，Step B（代码）在本分支，二者不混在�
 | 文件 | 作用 |
 | --- | --- |
 | `panel/shed_groups.py` | v2 组数据结构、D1–D12 校验、稠密装配、求解与逐组报告 |
+| `panel/group_fixture.py` | 研究用夹具构造：单层/两层叠放、抬高尾翼、v2 声明导出 |
+| `panel/run_half_groups.py` | 独立研究驱动入口：哈希、真实 exit、块结构/质量行/镜像/全模 oracle/FD-vs-AD |
 | `test/test_shed_groups_contract.py` | F0–F8 契约测试（小夹具，9 passed / 9.1 s） |
+| `test/test_run_half_groups_entry.py` | 入口契约测试（17 passed / 12.7 s，含真实 CLI 与拒绝路径） |
 
 未改动：`panel/half_native.py`、`panel/kernel.py`、`panel/audit.py`、`panel/cad_half.py`、
 `panel/pressure_stencil.py`、`panel/run_half_native.py`。默认路径仍是 v1，
@@ -28,7 +31,7 @@ Step A（契约）在 PR #40，Step B（代码）在本分支，二者不混在�
 mass_g[i,j]     = sum_{e,q} w_eq B_i(y_eq) B_j(y_eq)
 integral_g[e,i] = sum_q     w_eq B_i(y_eq)
 measure_g[i]    = sum_e integral_g[e,i]              # 每自由度向量，不是标量
-M_g = mass_g / measure_g[:, None]                    # 行和恒为 1
+M_g = mass_g / measure_g[:, None]                    # 行和 = 1 仅当基函数单位分解
 T_g = (integral_g^T @ incidence_g) / measure_g[:, None]
 W_g = (Dd_g + Dd_g^image) @ basis_g + (My_g - My_g^image) @ slope_g
 ```
@@ -126,9 +129,93 @@ Set-Location 'D:\3D\Projects\panel\runs\pr41_git'
 
 环境：Python 3.11.17、JAX 0.10.2 CPU（测试内 `jax_enable_x64=True`）、NumPy 2.4.6。
 
-## 8. 下一步
+## 8. 研究驱动入口 `panel/run_half_groups.py`
 
-1. 把第 5 节的三处差异同步回契约（PR #40）。
+issue #41 要求的不只是数学，还要一个可复现的实验入口。它与 `run_half_native` 并列，
+**不改任何默认**：v1 仍是默认路径，入口只在研究 PR 里被显式调用。
+
+```powershell
+$env:TMP=$env:TEMP=$env:TMPDIR='D:\3D\Projects\panel\runs\pipwork'
+Set-Location 'D:\3D\Projects\panel\runs\pr41_git'
+$py = 'D:\3D\Projects\panel\.conda_env\python.exe'
+& $py runs\peak_wrap.py panel.run_half_groups runs\pr41_verify\peak_selfcheck --self-check --out runs\pr41_verify\selfcheck.json
+& $py -m panel.run_half_groups --surface <surface.json> --groups <groups.json> --out <report.json>
+```
+
+报告 schema `dpanel.half_group_report.v1`，字段：
+
+| 字段 | 内容 |
+| --- | --- |
+| `inputs` | `surface`/`groups` 路径与 SHA-256、声明 schema、源 surface 的 `audit`/`provenance` |
+| `code` | Python/NumPy/JAX/平台 + `panel/{shed_groups,run_half_groups,half_native,kernel}.py` 的 SHA-256 |
+| `groups` / `validation` | 每组 kind/role/根条件/尾迹面数/shed 边数/自由度/尾迹 z；D 规则审计 |
+| `solve` | 未知量、壁面数、组切片、真残差（`||r||/||b||`）、热解秒数、CL/CD_p/CM/Cp 极值 |
+| `group_rows` | 逐组 `gamma`、`gamma_sum`、TE 势跳跃 RMS/max、Kutta 行残差、尾迹常值输运 |
+| `checks` | `block_dimensions`、`circulation_mass_rows`、`kutta_rows`、`operator_mirror`、`v1_equivalence`、`full_oracle`、`lift_slope` |
+
+退出码：成功 0；被拒绝的输入 2（traceback 与 `status="refused"` 写进报告文件）；意外崩溃 1。
+`--out` 已存在时直接 `FileExistsError`，不静默覆盖。
+
+### 8.1 `--self-check` 的四个算例（本机实测，全部 exit 0）
+
+| 算例 | 壁面/尾迹/未知量 | CL | CD_p | CM_y | 真残差 |
+| --- | --- | --- | --- | --- | --- |
+| G0（无尾迹） | 20 / 0 / 20 | 2.5e-16 | 6.2e-17 | −0.023112 | 2.03e-16 |
+| G1（z=0 单组） | 20 / 4 / 22 | 0.083285 | 0.009492 | −0.044459 | 1.98e-16 |
+| G2（叠放 dz=0.4） | 40 / 8 / 44 | 0.124975 | 0.022288 | −0.092605 | 2.51e-16 |
+| G2_tail_z024（抬高尾翼 dz=0.24） | 40 / 8 / 44 | 0.307546 | 0.133417 | −0.279616 | 5.97e-16 |
+
+`G2_tail_z024` 的第二组 `gamma_sum = -0.5812`（第一组 +1.1361）：把"上表面"沉到下方
+组的尾迹里，环量可以整体反号。这也再次证明**叠放对不是对称对**，不能假设两组同值。
+
+### 8.2 块结构、质量行与镜像
+
+| 检查 | G1 | G2 |
+| --- | --- | --- |
+| 矩阵形状 / 未知量 | 22 × 22 | 44 × 44 |
+| 组切片 | `[[20,22]]` | `[[40,42],[42,44]]` |
+| Kutta 行残差 RMS | 9.8e-18 | 0.0 |
+| `M_g = raw_mass/measure` 归一化差 | 0.0 | 0.0 |
+| TE 求积重建差（独立 einsum） | 5.6e-17 | 5.6e-17 |
+| 壁面双层块 vs 公式重建（非对角） | 6.9e-18 | 2.8e-17 |
+| 尾迹算子 vs 显式重建 | 0.0 | 0.0 |
+
+**关于"M 行和恒为 1"的精确化**：行的和等于 1 需要该行所有 TE 求积点上基函数满足单位分解。
+夹具的翼尖站位是 `dof = -1`（环量在翼尖端处收为零），因此最外一段的基函数之和是
+`1 - frac < 1`，实测 `row_sums = [1.0, 0.8333]`、`basis_partition_max_abs_error = 0.7887`。
+报告因此同时给出 `row_sums` 与 `row_sums_where_partition_of_unity`（后者为 `[1.0]`），
+**不把该行强行归一**。契约表格里的"行和为 1"需加这个前提。
+
+### 8.3 全模 oracle 与可微性
+
+- **oracle（G1）**：走已验证的 `make_full_mirror_topology` + `solve_fields`，40 个全模壁面，
+  `mu` 相对峰值差 1.60e-15、`gamma` 2.57e-15。全模的环量未知量是 3 个（半模 2 个 +
+  一个镜像副本），比较时必须取前 `ng` 个；否则报 `operands could not be broadcast (3,) (2,)`。
+  多组不提供 oracle：目前没有多尾迹的全机模型，如实返回 `performed=False`。
+- **梯度**：`dCL/dalpha` 用前向 AD 与中心差分（`h = 1e-4, 1e-5`）对照。G1 0.842831 /rad
+  （0.0147102 /deg），相对差 1.09e-08 / 1.19e-10；G2 0.806895 /rad（0.0140830 /deg），
+  1.09e-08 / 1.06e-10；G2_tail 0.470933 /rad（0.00821933 /deg），1.09e-08 / 6.78e-11。
+  G0 没有环量未知量，CL 恒为 0，梯度检查如实跳过。
+
+### 8.4 与契约初稿的第二批差异
+
+1. **"M 行和为 1" 需加"基函数单位分解"前提**（见 8.2）。
+2. **全模环量未知量编号**：全模在末尾追加镜像副本，只在 `[0, ng)` 上与半模可比；
+   契约的镜像规则 M1–M6 应写明这条切片约定。
+3. **entry 的 `--self-check` 是独立路径**：G0（无尾迹）与 G1（单组）都从同一夹具派生，
+   但 G0 的 surface 没有 `wake_faces` 字段内容，入口因此**显式**构造空组列表，
+   而不是伪造一个空尾迹去骗过校验。
+
+### 8.5 资源与诚实限制
+
+- `--self-check` 四例合计峰值 RSS **1172.4 MB**、墙钟约 2 分钟（四例各自 JIT 编译 +
+  每例一次 AD 与两次差分）。相对 44 个未知量这很高，成本在编译与核评估，不在 LU。
+- 逐例 JIT 缓存没有复用（每个算例都重编译），这是后续可优化点，不影响数值结论。
+- D10 仍只做边-三角形相交；尾迹仍是常数 z；无场级双侧指标；稠密 LU。
+
+## 9. 下一步
+
+1. 把第 5 节与 8.4 的差异同步回契约（PR #40）。
 2. `cad_half.py` 侧：给抬高平尾生成第二组水平尾迹（先只支持常数 z 的平行尾迹）。
 3. 真实网格上跑两组（396 / 1205 档）只读对照，仍然 `physical_accuracy_accepted=False`。
 4. 场级双侧指标复用 PR #30 的审计模块，不新建第二套。

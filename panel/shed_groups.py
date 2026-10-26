@@ -413,7 +413,7 @@ def group_operators(vertices, group, centers):
     # As in v1: an even circulation strip makes the image slope enter negated.
     wake_operator = (dw + di) @ basis + (my - mi) @ slope
     return dict(wake=wake, basis=basis, slope=slope, te_basis=te_basis,
-                kutta=kutta, mass=circulation_mass, measure=measure,
+                weights=weights, kutta=kutta, mass=circulation_mass, measure=measure,
                 integrals=integrals, raw_mass=mass, incidence=incidence,
                 wake_operator=wake_operator)
 
