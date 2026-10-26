@@ -72,10 +72,10 @@ Dpanel JAX求解用**有限长度**的固定三角偶极wake（body、source、w
 新增只读 panel/drag_consistency_audit.py：
 1. 读取原有 dpanel.half_planar_cut.v1，默认最多1600右半壁面，调用已验收的JAX半模LU（不重新CAD）。
 2. 用原始Cp和实际三角面积向量独立重积分全机CD/CL，并与solver原有force做代数核对。
-3. 报告面元正负drag、绝对和/净值的 cancellation factor、Fx与Fz投影、body/wing组件贡献及敏感性预算。
+3. 报告面元正负drag、绝对和/净值的 cancellation factor、Fx与Fz投影、body/wing组件贡献及敏感性预算；另外用面元力臂独立重积分 CM_y，按组件输出力矩贡献、逐面正负力矩相消比并与JAX CM_y交叉核对。
 4. 从gamma_station_dof重建镜像偶对称Gamma，以解析PV区间对数和无截断Sref公式计算**理想**Trefftz CDi，不强迫和近场相等。
 5. 对真实有限wake报告 |Uinfty dot n|/U（只代表自由来流角，不代表总局部wake穿透）。
-6. 记录SHA256、reference、真实数值与physical_accuracy_accepted=false。纯NumPy数学测试已在隔离环境通过（椭圆Gamma/镜像root-contact/压力投影/5°尾迹/坏输入）；项目内JAX小网格端到端需本地再测。
+6. 记录SHA256、reference、真实数值与physical_accuracy_accepted=false。纯NumPy数学原型现已在隔离环境验证8项测试通过（椭圆Gamma/镜像root-contact/压力投影/5°尾迹/坏输入/力矩相消）；项目内JAX小网格端到端需本地再测。
 
 本地命令：
 
