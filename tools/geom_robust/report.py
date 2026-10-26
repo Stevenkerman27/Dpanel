@@ -254,6 +254,19 @@ def main():
         + "（3112 壁面）；" + BT + "--size 0.100" + BT
         + " 已可用于粗筛，但最粗一档的 CL 相对差仍大于 5%。")
     add("")
+    add("## 10. 上表面压力可视化")
+    add("")
+    add("![上表面 Cp](geometry_robustness/fig16_geometry_matrix.png)")
+    add("")
+    add("图为右半解镜像后的整机俯视，只画外法向 z>0 的面片；色标裁剪到 "
+        "[-1.5, 0.5]，真实 Cp 极小值在每格标题里（swept30 -7.82、"
+        "elliptic -2.90、bwb -5.99、conv -6.44，都落在翼尖/后缘角点）。")
+    add("")
+    add("Cp 由切平面仿射切线梯度恢复，不含法向分量，因此**后缘附近整体"
+        "偏正属于已知重构伪影**（与 issue #28 的双侧 DeltaCp 结论一致："
+        "近段 DeltaCp RMS 约 1e-2、远段约 2e-5）。这张图只用来看前缘吸力"
+        "峰的位置与展向分布，不作为压力幅值的物理声明。")
+    add("")
     target = ROOT / "docs" / "GEOMETRY_ROBUSTNESS.md"
     text = chr(10).join(lines) + chr(10)
     target.write_text(text, encoding="utf-8")
