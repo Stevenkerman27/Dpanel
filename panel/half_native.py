@@ -17,6 +17,7 @@ import numpy as np
 
 from .kernel import triangle_potential
 from .differentiable import linear_solve
+from .pressure_stencil import adaptive_pressure_neighbors
 
 
 class HalfTopology(NamedTuple):
@@ -41,7 +42,8 @@ def _mirror_triangles(triangles):
     return triangles[:, (0, 2, 1), :] * _REFLECT
 
 
-def _pressure_neighbors_from_half(vertices, faces, te_edges, rings, cut_edges=()):
+def _pressure_neighbors_from_half(vertices, faces, te_edges, rings, cut_edges=(),
+                                  *, max_rings=6, return_audit=False):
     """Virtual O(N) connectivity for pressure stencils, not mirrored DOFs.
 
     Virtual left triangles share the exact y=0 seam IDs. Only right-side face
@@ -87,26 +89,20 @@ def _pressure_neighbors_from_half(vertices, faces, te_edges, rings, cut_edges=()
         if edge not in cuts:
             adjacent[i].add(j)
             adjacent[j].add(i)
-    stencils = []
-    for i in range(len(f)):
-        seen = {i}
-        frontier = {i}
-        for _ in range(rings):
-            frontier = set().union(*(adjacent[j] for j in frontier)) - seen
-            seen |= frontier
-        stencils.append(sorted(seen-{i}))
-    if any(len(s) < 2 for s in stencils):
-        raise ValueError("Insufficient pressure stencil after TE cut")
-    width = max(map(len, stencils))
-    # Repeated self index pads the row with zero differences; it is not a
-    # source of independent pressure neighbors.
-    return np.asarray([s+[i]*(width-len(s)) for i, s in enumerate(stencils)],
-                      dtype=np.int32)
+    # Preserve the original two-ring stencils on every already-valid face.
+    # Only the cut-adjacent rank-deficient faces receive additional rings.
+    # The graph has NO TE/contact-cut edges, and no interpolation across
+    # pressure banks is introduced by this local repair.
+    neighbors, audit = adaptive_pressure_neighbors(
+        tri.mean(axis=1), tri, adjacent, len(f),
+        initial_rings=rings, max_rings=max_rings, min_singular_ratio=1e-6)
+    return (neighbors, audit) if return_audit else neighbors
 
 
 def prepare_half_topology(vertices, faces, wake_faces, te_edges, upper_te,
                           lower_te, station_y, station_dof, component_ids,
-                          *, stencil_rings=2, cut_edges=()):
+                          *, stencil_rings=2, cut_edges=(),
+                          max_stencil_rings=6, return_stencil_audit=False):
     """Construct frozen index maps from an already conforming right-half mesh.
 
     This is a host-only, discrete operation. It does not create or persist
@@ -189,9 +185,12 @@ def prepare_half_topology(vertices, faces, wake_faces, te_edges, upper_te,
     if any(tuple(sorted(map(int, pair))) not in all_edges
            for pair in additional):
         raise ValueError("Contact cut edge is not a real wall edge")
-    neighbors = _pressure_neighbors_from_half(x, f, e, stencil_rings, cut_edges)
-    return HalfTopology(*(jnp.asarray(a) for a in
+    neighbors, stencil_audit = _pressure_neighbors_from_half(
+        x, f, e, stencil_rings, cut_edges, max_rings=max_stencil_rings,
+        return_audit=True)
+    topology = HalfTopology(*(jnp.asarray(a) for a in
         (f, w, e, up, lo, hat, wi, ti, neighbors, tags)))
+    return (topology, stencil_audit) if return_stencil_audit else topology
 
 
 def validate_half_configuration(vertices, station_y, topology,
