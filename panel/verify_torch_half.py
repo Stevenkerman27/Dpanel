@@ -131,7 +131,8 @@ def verify(surface, *, device, block_size, max_panels, rtol, atol,
         def torch_fun(a):
             return objective(solve_half_torch(
                 **{**ti, "vertices": x0+a*dx,
-                   "station_y": y0+a*dy}, block_size=block_size))
+                   "station_y": y0+a*dy}, block_size=block_size,
+                checkpoint_kernel=checkpoint_kernel))
 
         t0 = time.perf_counter()
         torch_ad = float(torch.autograd.grad(torch_fun(theta), theta)[0].item())
