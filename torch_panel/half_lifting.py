@@ -120,8 +120,16 @@ def _triangle_block(targets, triangles, *, source, linear_y,
 
 def triangle_potential_torch(targets, triangles, *, interior_diagonal=False,
                              source=True, linear_y=False, block_size=32,
-                             target_panel_ids=None, source_panel_ids=None):
-    """Blockwise differentiable triangle influence, returned AIC still dense."""
+                             target_panel_ids=None, source_panel_ids=None,
+                             checkpoint_blocks=False):
+    """Blockwise influence with optional checkpointed analytic intermediates.
+
+    The returned AIC remains dense. With checkpoint_blocks=True, PyTorch
+    recomputes per-chunk analytic intermediates during backward to avoid
+    retaining them from forward. This trades computation for activation
+    memory; it does NOT change the physical kernel or its asymptotic cost.
+    The verified default path remains checkpoint_blocks=False.
+    """
     _check_float64_pair(targets, triangles)
     if (target_panel_ids is None) != (source_panel_ids is None):
         raise ValueError("Supply matching target/source panel IDs")
