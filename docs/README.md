@@ -31,6 +31,7 @@
 | `ERROR_SEPARATION.md` | 误差分离实验：几何/离散/势重构/尾缘四类误差预算 |
 | `STAGE1_SOLVER_EFFICIENCY.md` | 稠密 AIC 上 LU/GMRES/转置求解的基准与方法 |
 | `TORCH_PANEL_EXTRACTION.md` | GRASS PyTorch 面元内核的提取说明 |
+| `HALF_MODEL_SCALING.md` | 半模求解随面元数（396/805/1205）的 LU vs 预条件 GMRES 标度与载荷敏感性 |
 | `PAUSE_HANDOFF_2026-10-24.md` | 2026-10-24 暂停交接（历史快照） |
 
 ### 云端协作验收报告（按 PR/issue 编号）
@@ -45,6 +46,7 @@
 | `PR21_HALF_NATIVE_LOCAL.md` | PR #21：半模原生镜像算子 |
 | `PR22_HALF_CAD_LOCAL.md` | PR #22：OCC 正半域网格与半模求解 |
 | `PR22_MIRROR_ORACLE_LOCAL.md` | PR #22 第二轮：精确镜像 oracle 与真翼身 CAD |
+| `PR22_ADAPTIVE_STENCIL_LOCAL.md` | PR #22 第三轮：自适应压力模板环扩展（失秩面 238/359） |
 | `ISSUE16_MATRIX_FREE.md` | issue #16：矩阵无关算子、近场预条件、严格镜像归约 |
 | `ISSUE18_INDEPENDENT_SYMMETRY_AUDIT.md` | issue #18：独立对称性审计（伪配对问题） |
 
