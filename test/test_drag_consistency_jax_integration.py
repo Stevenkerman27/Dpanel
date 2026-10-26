@@ -31,6 +31,9 @@ def test_same_small_frozen_half_mesh_near_pressure_is_reproducible():
     np.testing.assert_allclose(
         audit["near_pressure"]["CL_pressure"],
         np.asarray(fields["CL"]),rtol=1e-12,atol=1e-12)
+    np.testing.assert_allclose(
+        audit["near_pressure"]["CM_y"],
+        np.asarray(fields["CM"])[1],rtol=1e-12,atol=1e-12)
     assert audit["half_wall_count"]==len(inputs["topology"].faces)
     assert audit["ideal_trefftz_is_not_exact_finite_wake_momentum"]
     assert audit["wake_alignment"]["max_abs_Udotn_over_U"]>0
