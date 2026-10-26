@@ -159,14 +159,23 @@ def verify(surface, *, device, block_size, max_panels, rtol, atol,
     else:
         results["gradient_pass"] = None
 
+    # Preserve individual mismatches in the JSON even when an acceptance
+    # check fails; errors are never silently downgraded to a pass.
+    errors = []
     if residual >= 1e-10:
-        raise AssertionError(f"True LU residual {residual} exceeded 1e-10")
+        errors.append(f"True LU residual {residual} exceeded 1e-10")
     if results["passed_fields"] != len(FIELDS):
         bad = [key for key, value in compare.items() if not value["within_tolerance"]]
-        raise AssertionError(f"Torch half differs from JAX beyond tolerance in {bad}")
+        errors.append(f"Torch/JAX numerical mismatch in {bad}")
     if results["gradient_pass"] is False:
-        raise AssertionError("Torch/JAX/FD half geometry gradient mismatch")
-    results["status"] = "torch_half_numerical_and_gradient_parity_passed"
+        errors.append("Torch/JAX/FD geometry gradient mismatch")
+    results["failure_reasons"] = errors
+    results["status"] = ("torch_half_numerical_and_gradient_parity_passed"
+                         if not errors else "torch_half_parity_failed")
+    if device == "cuda":
+        # Include the backward peak, not only the two forward calls.
+        results["cuda_peak_allocated_bytes"] = torch.cuda.max_memory_allocated()
+        results["cuda_peak_reserved_bytes"] = torch.cuda.max_memory_reserved()
     return results
 
 
@@ -203,6 +212,8 @@ def main():
     args.out.write_text(json.dumps(report, indent=2, allow_nan=False)+"\n",
                         encoding="utf-8")
     print(json.dumps(report, indent=2, allow_nan=False))
+    if report["status"] != "torch_half_numerical_and_gradient_parity_passed":
+        raise RuntimeError("Torch/JAX parity failed; full field diagnostics are in report")
 
 
 if __name__ == "__main__":
