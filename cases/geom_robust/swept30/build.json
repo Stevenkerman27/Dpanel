@@ -1,0 +1,30 @@
+{
+  "name": "swept30",
+  "notes": "LE sweep 30 deg, taper 0.5, AR 5.33, NACA 2412",
+  "solids": 1,
+  "half_span": 2.0,
+  "reference_area": 3.0,
+  "reference_chord": 1.0,
+  "status": "built",
+  "wing_step_validation": {
+    "imported_solid_count": 1,
+    "imported_solid_volumes": [
+      0.19049944820558934
+    ],
+    "matches_expected": true,
+    "positive_volume": true
+  },
+  "te_points": 9,
+  "te_first": [
+    1.7797005383792515,
+    -2.0,
+    0.0
+  ],
+  "te_last": [
+    1.7797005383792515,
+    2.0,
+    0.0
+  ],
+  "wing_step_sha256": "0a323c05b83e8ff65c68c04bc4fa7f9d486e5f225775c684345c0d7fdb4b9c6f",
+  "te_sha256": "95625c9b1dcddb8a87d28051d0039f9b00aff007cfab47fcb972405b3612c0d1"
+}

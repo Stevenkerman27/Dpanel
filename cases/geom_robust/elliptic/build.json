@@ -1,0 +1,30 @@
+{
+  "name": "elliptic",
+  "notes": "elliptical planform, truncated tip chord 0.05, NACA 0012",
+  "solids": 1,
+  "half_span": 2.0,
+  "reference_area": 3.1722548357643863,
+  "reference_chord": 1.0,
+  "status": "built",
+  "wing_step_validation": {
+    "imported_solid_count": 1,
+    "imported_solid_volumes": [
+      0.2203739518699503
+    ],
+    "matches_expected": true,
+    "positive_volume": true
+  },
+  "te_points": 21,
+  "te_first": [
+    0.2875,
+    -2.0,
+    0.0
+  ],
+  "te_last": [
+    0.2875,
+    2.0,
+    0.0
+  ],
+  "wing_step_sha256": "dd254707e840ac38b44f8240bcb052a2f1c75f38d75e8d6f424b87f099fb31bf",
+  "te_sha256": "352370c14d4f6f032b8a1e4a885a15812928cf569c39103b41f802aaf8165471"
+}
