@@ -16,7 +16,7 @@
 | `potential/`（二维势流/跨声速） | [`potential/README.md`](../potential/README.md) | 与 `potential/PROTOCOL.md`、`RESULTS.md` 配套 |
 | `volume/`（体积网格与自适应） | [`volume/README.md`](../volume/README.md) | 与 `volume/MESH.md` 等协议文档配套 |
 | `airfoil2d/`（翼型二维） | [`airfoil2d/README.md`](../airfoil2d/README.md) | 与 `airfoil2d/PROTOCOL.md`、`RESULTS.md` 配套 |
-| `audit/`（后端逆向与验收） | [`audit/REPORT.md`](../audit/REPORT.md) | 外部工具链与上游调研，不入库 |
+| `audit/`（后端逆向与验收） | [`audit/REPORT.md`](../audit/REPORT.md) | 外部工具链与上游调研，不入库；`audit/wbcaero_rea` 是 WBCAero 实现参考，**永久保留不归档** |
 | 仓库总体 | [`../README.md`](../README.md) | 顶层定位与目录说明 |
 
 ## 本目录文档
