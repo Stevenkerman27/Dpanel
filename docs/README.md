@@ -47,6 +47,7 @@
 | `PR22_HALF_CAD_LOCAL.md` | PR #22：OCC 正半域网格与半模求解 |
 | `PR22_MIRROR_ORACLE_LOCAL.md` | PR #22 第二轮：精确镜像 oracle 与真翼身 CAD |
 | `PR22_ADAPTIVE_STENCIL_LOCAL.md` | PR #22 第三轮：自适应压力模板环扩展（失秩面 238/359） |
+| `PR23_TORCH_HALF_LOCAL.md` | PR #23：原生 Torch 半模提升面元 LU（CPU + CUDA 实测） |
 | `ISSUE16_MATRIX_FREE.md` | issue #16：矩阵无关算子、近场预条件、严格镜像归约 |
 | `ISSUE18_INDEPENDENT_SYMMETRY_AUDIT.md` | issue #18：独立对称性审计（伪配对问题） |
 
