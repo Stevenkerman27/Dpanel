@@ -116,6 +116,7 @@ def verify(surface, *, device, block_size, max_panels, rtol, atol,
         fields=compare,
         passed_fields=sum(v["within_tolerance"] for v in compare.values()),
         compared_fields=len(compare), physical_accuracy_accepted=False,
+        checkpoint_kernel=bool(checkpoint_kernel),
     )
     if device == "cuda":
         results.update(cuda_name=torch.cuda.get_device_name(),
