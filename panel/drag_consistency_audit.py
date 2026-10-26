@@ -89,7 +89,8 @@ def symmetric_half_gamma(positive_stations, positive_dofs, gamma_dofs):
 
 
 def pressure_integral_audit(vertices, faces, Cp, freestream,
-                            *, density, reference_area, component_ids=None):
+                            *, density, reference_area, component_ids=None,
+                            reference_point=None, reference_chord=None):
     """Independently integrate raw Cp; decompose cancellation without clipping."""
     x = np.asarray(vertices, dtype=np.float64)
     f = np.asarray(faces, dtype=np.int64)
@@ -129,6 +130,18 @@ def pressure_integral_audit(vertices, faces, Cp, freestream,
                       else np.zeros(len(f), dtype=np.int64))
     if tags.shape != (len(f),):
         raise ValueError("Invalid component IDs")
+    moment_i = None
+    cm_y = None
+    if reference_point is not None or reference_chord is not None:
+        ref = np.asarray(reference_point, dtype=np.float64)
+        if (ref.shape != (3,) or abs(ref[1]) > 1e-12
+                or reference_chord is None or reference_chord <= 0
+                or not np.isfinite(ref).all()):
+            raise ValueError("Symmetric moment reference and positive chord required")
+        centers = tri.mean(axis=1)
+        m = np.cross(centers-ref, force)
+        moment_i = 2*m[:, 1]/(qS*reference_chord)
+        cm_y = float(moment_i.sum())
     by_component = {}
     for tag in np.unique(tags):
         mask = tags == tag
@@ -137,6 +150,7 @@ def pressure_integral_audit(vertices, faces, Cp, freestream,
             CD_pressure=float(face_drag[mask].sum()),
             CL_pressure=float(face_lift[mask].sum()),
             sum_abs_drag=float(np.abs(face_drag[mask]).sum()),
+            CM_y=float(moment_i[mask].sum()) if moment_i is not None else None,
         )
     return dict(
         CD_pressure=cd, CL_pressure=float(face_lift.sum()),
@@ -149,6 +163,10 @@ def pressure_integral_audit(vertices, faces, Cp, freestream,
             (abs(x_part)+abs(z_part))/denom if denom else None),
         max_abs_delta_CD_if_1pct_relative_face_drag_error=.01*abs_sum,
         Cp_raw_min=float(cp.min()), Cp_raw_max=float(cp.max()),
+        CM_y=cm_y,
+        moment_y_cancellation_factor=(
+            float(np.abs(moment_i).sum())/abs(cm_y)
+            if moment_i is not None and cm_y != 0 else None),
         component_summary=by_component,
     )
 
