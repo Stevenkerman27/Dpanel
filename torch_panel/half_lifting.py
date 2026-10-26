@@ -150,10 +150,24 @@ def triangle_potential_torch(targets, triangles, *, interior_diagonal=False,
     chunks = []
     for start in range(0, count, chunk):
         end = min(start+chunk, count)
-        chunks.append(_triangle_block(
-            targets[start:end], triangles, source=source, linear_y=linear_y,
-            target_ids=None if row_ids is None else row_ids[start:end],
-            source_ids=col_ids))
+        # A bound default captures each chunk's self-trace row IDs. This is
+        # essential: otherwise backward checkpoint recomputation would
+        # accidentally use the last iteration's diagonal IDs.
+        selected_rows = None if row_ids is None else row_ids[start:end]
+
+        def one_chunk(block_targets, all_triangles, selected_rows=selected_rows):
+            return _triangle_block(
+                block_targets, all_triangles, source=source,
+                linear_y=linear_y, target_ids=selected_rows,
+                source_ids=col_ids)
+
+        if checkpoint_blocks and torch.is_grad_enabled() and (
+                targets.requires_grad or triangles.requires_grad):
+            chunks.append(checkpoint(
+                one_chunk, targets[start:end], triangles,
+                use_reentrant=False, preserve_rng_state=False))
+        else:
+            chunks.append(one_chunk(targets[start:end], triangles))
     if isinstance(chunks[0], tuple):
         return tuple(torch.cat([item[k] for item in chunks], dim=0)
                      for k in range(len(chunks[0])))
