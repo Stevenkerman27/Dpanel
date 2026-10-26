@@ -322,15 +322,18 @@ def solve_half_torch(vertices, station_y, topology, freestream, density,
     sigma = -(normal@flow)
     center = tri.mean(1)
     direct_S, direct_D = triangle_potential_torch(
-        center, tri, interior_diagonal=True, block_size=block_size)
+        center, tri, interior_diagonal=True, block_size=block_size,
+        checkpoint_blocks=checkpoint_kernel)
     image_S, image_D = triangle_potential_torch(
-        center, mirror_xz(tri), block_size=block_size)
+        center, mirror_xz(tri), block_size=block_size,
+        checkpoint_blocks=checkpoint_kernel)
     wake, basis, slope, T, M, te_basis = _wake_te_geometry(x, y, topology)
     Dw, My = triangle_potential_torch(
-        center, wake, source=False, linear_y=True, block_size=block_size)
+        center, wake, source=False, linear_y=True, block_size=block_size,
+        checkpoint_blocks=checkpoint_kernel)
     Wi, Mi = triangle_potential_torch(
         center, mirror_xz(wake), source=False, linear_y=True,
-        block_size=block_size)
+        block_size=block_size, checkpoint_blocks=checkpoint_kernel)
     W = (Dw+Wi)@basis+(My-Mi)@slope
     D = direct_D+image_D
     S = direct_S+image_S
