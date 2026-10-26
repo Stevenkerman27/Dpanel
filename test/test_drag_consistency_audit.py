@@ -101,3 +101,15 @@ def test_396_panel_projection_matches_local_frozen_force_evidence():
     np.testing.assert_allclose(
         xx+zz,.006167551183545117,rtol=1e-13)
     assert (abs(xx)+abs(zz))/abs(xx+zz)>13.
+
+
+def test_moment_pressure_integration_and_cancellation():
+    x=np.array([[0.,0.,0.],[1.,0.,0.],[0.,1.,0.],
+                [0.,0.,1.],[0.,1.,1.],[1.,0.,1.]])
+    report=pressure_integral_audit(
+        x,[[0,1,2],[3,4,5]],[-.5,.3],[1.,0.,.1],
+        density=1.,reference_area=2.,reference_point=[.25,0.,0.],
+        reference_chord=1.)
+    assert np.isfinite(report["CM_y"])
+    assert report["moment_y_cancellation_factor"] >= 1
+    assert all("CM_y" in x for x in report["component_summary"].values())
