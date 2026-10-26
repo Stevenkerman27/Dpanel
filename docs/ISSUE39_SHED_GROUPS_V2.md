@@ -40,7 +40,8 @@ dpanel.half_shed_groups.v2
 | `geometry.moment_reference` | (3,) float | 是 | 必须在 y=0 对称面上 |
 | `geometry.freestream` | (3,) float | 是 | `v_y==0`（零侧滑）；v2 不表示侧滑 |
 | `wall.faces` | (m,3) int | 是 | 物理湿壁，含机身与所有升力面；右半 |
-| `wall.component_ids` | (m,) int | 是 | CAD 组件号，仅诊断/分部件载荷；**不是**尾迹许可 |
+| `wall.component_ids` | (m,) int | 是 | CAD 组件号，仅诊断/分部件载荷；**不是**尾迹许可（D11 不读它） |
+| `component_roles` | object | 否 | `{组件号: lifting|non_lifting|unclassified}`，只用于与组 `role` 交叉校验和报告；缺省时按拓扑判定 |
 | `contact_cuts` | (c,2) int | 否 | 真实壁面边，切边不参与压力模板邻接 |
 | `shed_groups` | list | 是 | 长度 0..G，见第 2 节 |
 
@@ -57,6 +58,7 @@ G=0 时偶极/质量块整块消失，只剩 `D mu = S sigma`；第 8 节 F0 给
 | `group_id` | string | 是 | 唯一名，报告与诊断用（如 `wing`、`htail`） |
 | `kind` | enum | 是 | `attached_lifting_TE` 或 `prescribed_sharp_separation` |
 | `source_component_ids` | int[] | 是 | 只作出处记录；**不自动授权尾迹** |
+| `role` | enum | 否 | `lifting` / `non_lifting`；缺省时按拓扑判定（D1/D2/D9），**不读组件号**；与顶层 `component_roles` 冲突即拒绝（D11） |
 | `shed_edges` | (e,2) int[] | 是 | 真实网格边，必须同时属于本组 upper/lower bank 各一张面，且被本组尾迹的某条边共享 |
 | `upper_bank_faces` / `lower_bank_faces` | int[] | 是 | 后缘两侧面片索引，长度与 `shed_edges` 相同 |
 | `wake_faces` | (w,3) int | 是 | 本组尾迹三角形（全局节点索引） |
@@ -95,8 +97,15 @@ G 组的 Gamma 全局编号为 `offset_g + 0..ng_g-1`，
   （T 尾根部埋进垂尾）。这一条直接对应 conv 案例。
 - **D10 不穿体**：`W_g` 与任何墙面（除本组 shed 边）不得三角形相交；
   先 AABB 粗筛再显式三角-三角相交测试，只报告不自动修复。
-- **D11 机身不挂 Kutta**：`kind=attached_lifting_TE` 的组若
-  `source_component_ids` 只含机身组件号，直接拒绝。
+- **D11 Kutta 合法性由物理 TE 决定，不由组件号决定**：`kind=attached_lifting_TE`
+  的组必须 (a) 每条 `shed_edges` 都是上下两 bank 共享的真实网格边且被本组尾迹
+  共享（即 D1/D2 已过）、(b) `closure.applicability` 显式声明适用域、(c) 若输入
+  带 `component_roles` 元数据，则组的 `role` 必须与之相符。
+  **不得**用「组件号只含机身」直接拒绝：BWB 的机身组件同样可能有真实锐后缘并
+  合法脱落（`runs/geom_robust/cad/bwb` 就是机体一体、没有独立机翼组件）。
+  要禁止某个实体脱落，必须由 `component_roles`（`lifting` / `non_lifting` /
+  `unclassified`）显式声明，或由组自身 `role=non_lifting` 声明，不用 CAD 组件号
+  20/30 做判据。
 - **D12 尾迹无自交**：`W_g` 的节点-边邻接是 2-流形，无重复三角形、无孤立节点。
 
 ## 4. 线性块方程
@@ -108,8 +117,25 @@ G 组的 Gamma 全局编号为 `offset_g + 0..ng_g-1`，
 ```text
 W_g = (dw_g + dw_g_img) @ basis_g + (my_g - my_g_img) @ slope_g
 T_g = (integral_g^T @ incidence_g) / measure_g        # 弱 Kutta 行
-M_g = (integral_g^T @ integral_g) / measure_g          # 环量质量行
+M_g = mass_g / measure_g[:, None]                      # 环量质量行
 ```
+
+**`M_g` 的精确形式**（照抄 v1 `panel/half_native.py:308-317`，不是近似）：
+
+```text
+mass_g[i,j] = sum_{e,q} w_eq * B_i(y_eq) * B_j(y_eq)      # (ng, ng)
+integral_g[e,i] = sum_q w_eq * B_i(y_eq)                  # (E, ng)
+measure_g[i] = sum_e integral_g[e,i] = sum_{e,q} w_eq B_i(y_eq)   # (ng,) 每自由度
+T_g          = (integral_g^T @ incidence_g) / measure_g[:, None]
+```
+
+`measure_g` 是**每自由度的基函数积分向量**（`integrals.sum(axis=0)`），不是标量。
+写成 `(integral_g^T @ integral_g) / measure_g` 是错的：积分权重必须在两个基函数
+**乘积之后**相乘，`w_eq B_i` 与 `w_eq B_j` 单独求和再相乘会得到
+`w_eq^2 B_i B_j` 类项；非均匀真实后缘上两者差别可达 78%（附录 A），`ng=1` 时
+直接差一个 `measure` 因子（量纲错误），并会破坏第 8 节 F1 的 `G=1` 逐位基线。
+可检验的恒等式：basis 是单位分解（`sum_i B_i = 1`）时 `M_g` 的**行和恒为 1**，
+错误公式不满足。
 
 其中 `basis_g`、`slope_g` 由本组 `gamma_stations` 与尾迹
 形心 y 线性插值；`incidence_g` 在 upper bank 上 +1、lower bank 上 -1。
@@ -176,7 +202,8 @@ M_g = (integral_g^T @ integral_g) / measure_g          # 环量质量行
 | 倾斜/垂直尾迹 | `Only horizontal constant-z wakes are supported in v2` | 新 |
 | 对称 cap 进壁面 | `Artificial symmetry cap must not be included in physical wall` | mesh :65 |
 | 埋根却给了 y=0 根边 | `Buried root must not lie on the symmetry plane` | 新（D9） |
-| 机身单独挂 Kutta | `Attached lifting shed group cannot be declared from body components alone` | 新（D11） |
+| 组缺物理 TE/bank 拓扑 | `Attached lifting shed group requires a verified physical TE and bank topology` | 新（D11） |
+| `role` 与组件角色冲突 | `Shed group role contradicts the declared component roles` | 新（D11） |
 | 尾迹穿体 | `Group wake intersects a wall panel` | 新（D10） |
 | 相同边属于两组 | `Duplicate shed edge across groups` | 新（D4） |
 | 非零侧滑 | `Half model requires y>=0, zero sideslip and reference on symmetry plane` | v1 :207-210 |
@@ -193,10 +220,10 @@ M_g = (integral_g^T @ integral_g) / measure_g          # 环量质量行
 | --- | --- | --- |
 | F0 | `G=0` 纯闭合机身（半球+圆柱）可读取可解 | 真残差 `<1e-12`；报告 `circulation_unknowns=0`；净力只作诊断输出 |
 | F1 | `G=1` 与 v1 逐位相同 | mu/Gamma/Cp/力/矩 相对差 `<1e-14` |
-| F2 | 只改翼 2 局部入射 | `gamma_2` 归一化后变化 `>1e-3`；`gamma_1` 的变化必须等于把 `W_2 gamma_2` 当已知源后的线性响应（残差 `<1e-10` 相对） |
-| F3 | 块对角可检验 | 同时删 `-T_2` 行与 `W_2` 列的子问题解与整系统在 `(mu,gamma_1)` 子空间上一致，`<1e-12` 相对 |
+| F2 | 耦合只经 `mu`（已知强迫子问题） | 取完整解 `(mu,gamma_1,gamma_2)`，以 `b - W_2 gamma_2` 为第一组右端解 `[D,W_1;-T_1,M_1][mu;gamma_1]`，必须复现完整解，`<1e-12` 相对。另报「只改翼 2 入射」时 `gamma_2` 变化 `>1e-3`，`gamma_1` **允许变化**（经 `mu` 耦合），不设「gamma_1 不变」判据 |
+| F3 | 真删组的变化必须可预测 | 真正移除组 2（删 `-T_2` 行与 `W_2` 列）后 `(mu,gamma_1)` **允许**与完整解不同；差值必须等于 `A_1^{-1}[W_2 gamma_2; 0]`，`<1e-12` 相对。**「删组后其余未知量与完整解一致」在数学上不成立**（`D mu + W_1 gamma_1 + W_2 gamma_2 = b` 仍经 `mu` 耦合），不得作判据 |
 | F4 | 镜像映射层 | partner 距离、法向配对、slope 反号、mu 对称、gamma 复制，全部 `<1e-14` |
-| F5 | 秩与拒绝 | 重复 shed 边、两组共享边、埋根挂 y=0 根边、机身单独 Kutta 四种输入必须分别抛出第 7 节对应英文错误 |
+| F5 | 秩与拒绝 | 重复 shed 边、两组共享边、埋根却挂 y=0 根边、`role` 与 `component_roles` 冲突四种输入必须分别抛出第 7 节对应英文错误 |
 | F6 | 两组真实残差 | `norm(Ax-b)/norm(b) < 1e-12`，逐组报后缘势跳跃与 `Delta Cp` |
 | F7 | 尾迹双侧物理量 | 每组报 `Vmean.n/U`、`Vmean.grad(Gamma)/U^2`、两侧 `Delta Cp`，按固定 `x_gap/Cref` 分段（沿用 PR #30 口径） |
 | F8 | 隐式伴随 | `seed . x = adj . b` 到 `1e-12` 相对；两组各自可单独取 VJP |
@@ -222,15 +249,18 @@ M_g = (integral_g^T @ integral_g) / measure_g          # 环量质量行
 1. `panel/shed_groups.py`：v2 读取/校验（D1-D12）、v1 迁移器、拒绝表。
 2. `panel/half_native.py`：新增 `solve_half_groups`，按第 4 节拼 `A`；
    v1 路径不动，`G=1` 必须逐位复现。
-3. `panel/cad_half.py`：允许按组声明尾迹平面高度（去掉硬编码 z=0），
+3. 测试：`test/test_shed_groups_contract.py`（F0-F8）、
+   `test/test_shed_groups_v1_compat.py`；**先在小夹具上完成装配与拒绝规则全绿**，
+   再碰网格。
+4. 之后才改 `panel/cad_half.py`：允许按组声明尾迹平面高度（去掉硬编码 z=0），
    仍只支持水平面，网格仍用 OCC `fragment`。
-4. 测试：`test/test_shed_groups_contract.py`（F0-F8）、
-   `test/test_shed_groups_v1_compat.py`。
 5. 真实几何：固定 conv STEP 重建（新目录），**比较的是两个不同模型**，
    不能逐面强制相等；报告两组 Gamma、平尾局部 Cp/力矩、总壁面无穿透、
    每组尾迹 `Vmean.n` 与 `Delta Cp`。
 6. 退出条件：F0-F8 全绿；v1 12 个既有集成测试零回归；
    `physical_accuracy_accepted=false`；不合并、不训练、不改 GPU 路径。
+7. **不与网格工作混做**：壁面/前缘局部加密与网格收敛是独立 issue/PR；
+   本轮 A/B 只改「尾迹分组与 Gamma 分组」这一个因素，几何/网格冻结。
 
 ## 11. 非目标与风险
 
@@ -252,3 +282,27 @@ GRASS-plane 需要整机几何/载荷，但本契约只覆盖「多升力面的�
 
 字段形状的可机读示例见 `docs/issue39_schema_example_v2.json`（仅示例，
 当前没有任何 loader 读取它）。
+
+## 附录 A：`M_g` 错误公式的反例（非均匀真实后缘）
+
+纯数学反例，不含求解器。取一组后缘边 `y = [0.05, 0.15, 0.35, 0.70, 0.95]`、
+长度 `L = [0.20, 0.05, 0.30, 0.10, 0.25]`（刻意非均匀，模拟真实后缘折线），
+每边 2 点 Gauss（`w_eq = L_e/2`，`B_0 = 1-y`，`B_1 = y`）：
+
+| 量 | 数值 |
+| --- | --- |
+| `measure_g = integrals.sum(axis=0)` | `[0.47, 0.43]` |
+| `mass_g` | `[[0.353, 0.117], [0.117, 0.313]]` |
+| `M_g = mass_g / measure_g[:, None]`（正确） | `[[0.751064, 0.248936], [0.272093, 0.727907]]` |
+| `(integral^T integral) / measure_g`（草案错误式） | `[[0.163803, 0.059069], [0.064564, 0.168576]]` |
+| 最大绝对差 | **0.587261**（占 `max|M|` 的 78.2%） |
+
+自检：正确 `M_g` 的每行和恰为 `1`（`B_0+B_1 = 1` 的单位分解），错误式行和
+`0.2229/0.2331` 不为 1。
+
+`ng=1`（单常值基 `B_0=1`，`measure=0.8`）：正确 `M=1.0`，错误式 `0.425` —— 差一个
+`measure` 因子，纯量纲错误。
+
+这个反例由 `test/test_shed_group_mass_identity.py` 固化为回归测试（纯 NumPy，
+不 import JAX，0.1 s）。
+
