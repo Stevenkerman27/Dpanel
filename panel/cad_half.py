@@ -345,13 +345,14 @@ def _build(args, stage):
         half_fluid_symmetry_caps_excluded=plane_faces,
         physical_wall_surface_tags=wall_surfaces,
         physical_wake_surface_tags=wake_surfaces,
-        feature_sizing=None if sizing_path is None else dict(
+    )
+    if sizing is not None:
+        fixture["provenance"]["feature_sizing"] = dict(
             source=str(sizing_path),
             source_sha256=hashlib.sha256(sizing_path.read_bytes()).hexdigest(),
             feature_names=[name for name, _, _, _ in sizing.features],
             callback="Gmsh model.mesh.setSizeCallback; requests only",
-        ),
-    )
+        )
     surface = args.out/"surface.json"
     surface.write_text(json.dumps(fixture, indent=2, allow_nan=False)+"\n",
                        encoding="utf-8")
