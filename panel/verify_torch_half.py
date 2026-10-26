@@ -64,7 +64,8 @@ def _compare(name, torch_tensor, jax_tensor, *, rtol, atol):
 
 
 def verify(surface, *, device, block_size, max_panels, rtol, atol,
-           derivatives, stencil_rings=2, max_stencil_rings=6):
+           derivatives, stencil_rings=2, max_stencil_rings=6,
+           checkpoint_kernel=False):
     if device == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA explicitly requested but torch.cuda.is_available() is false")
     if device not in ("cpu", "cuda"):
