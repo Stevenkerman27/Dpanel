@@ -79,6 +79,33 @@ def test_single_constant_basis_is_a_unit_scale_error_only():
     assert np.allclose(naive, [[0.425]], rtol=0.0, atol=1e-15)
 
 
+def test_tip_dof_minus_one_breaks_the_row_sum_premise():
+    """A row sum of one needs partition of unity *at every* quadrature point.
+
+    v1/v2 keep the outboard tip station at dof -1, so the outboard interval has
+    only its left basis function and sum_i B_i = 1 - frac < 1 there. Step B
+    measured row_sums = [1.0, 0.833333] on its fixture (basis_partition_max_abs
+    _error = 0.7887); this pins the algebra on a minimal two-interval strip.
+
+    Two quadrature samples, equal weights 0.5:
+      q0 in the inboard interval  -> B = [0.5, 0.5]  (partition of unity)
+      q1 in the outboard interval -> B = [0.5, 0.0]  (tip dof -1 drops B_1)
+    """
+    basis = np.array([[0.5, 0.5], [0.5, 0.0]])
+    w = np.array([0.5, 0.5])
+    mass = np.einsum("q,qi,qj->ij", w, basis, basis)
+    integrals = np.einsum("q,qi->i", w, basis)
+    measure = integrals.copy()
+    m = mass / measure[:, None]
+    row_sums = m.sum(axis=1)
+    # row 0 spans both samples: (0.5*1 + 0.5*0.5)/0.5 = 0.75; row 1 sits at the tip
+    assert np.allclose(row_sums, [0.75, 1.0], rtol=0.0, atol=1e-15)
+    assert row_sums[0] < 1.0 - 1e-12
+    # the row that spans the tip sample is the one that is not a partition of unity
+    partition = basis.sum(axis=1)
+    assert np.allclose(partition, [1.0, 0.5], rtol=0.0, atol=1e-15)
+    assert not np.allclose(row_sums, 1.0)
+
 def test_weak_kutta_row_uses_the_same_per_dof_measure():
     qy = _quadrature(NONUNIFORM_Y, NONUNIFORM_L, _basis)
     edges = NONUNIFORM_Y.size

@@ -95,6 +95,8 @@ G 组的 Gamma 全局编号为 `offset_g + 0..ng_g-1`，
 - **D9 根条件**：`symmetry_plane` 时翼根边必须正好在 y=0 上；
   `buried_in_solid` 时翼根边**不得**在 y=0 上，且整体位于另一实体墙面内部
   （T 尾根部埋进垂尾）。这一条直接对应 conv 案例。
+  Step B 的实况：容纳判据是**包围盒 + 根部节点不在本组壁面上**，属于近似，
+  报告须显式记 `root_containment = "aabb_and_edge_distance"`，不得声称已做严格内外测试。
 - **D10 不穿体**：`W_g` 与任何墙面（除本组 shed 边）不得三角形相交；
   先 AABB 粗筛再显式三角-三角相交测试，只报告不自动修复。
 - **D11 Kutta 合法性由物理 TE 决定，不由组件号决定**：`kind=attached_lifting_TE`
@@ -107,6 +109,10 @@ G 组的 Gamma 全局编号为 `offset_g + 0..ng_g-1`，
   `unclassified`）显式声明，或由组自身 `role=non_lifting` 声明，不用 CAD 组件号
   20/30 做判据。
 - **D12 尾迹无自交**：`W_g` 的节点-边邻接是 2-流形，无重复三角形、无孤立节点。
+  **但不要写成「尾迹必须闭合 2-流形」**：有限尾迹是带边界的薄片。Step B 的实现判据是
+  「内部边恰 2 面 + 边界边只允许落在四类位置」（TE 边、y=0 根线、翼尖站位线、下游截断），
+  旧写法会把合法尾迹判成非法。报错串：`Group wake has a non-manifold interior edge` /
+  `Group wake boundary is not a declared TE, root line, tip line or downstream truncation`。
 
 ## 4. 线性块方程
 
@@ -135,7 +141,12 @@ T_g          = (integral_g^T @ incidence_g) / measure_g[:, None]
 `w_eq^2 B_i B_j` 类项；非均匀真实后缘上两者差别可达 78%（附录 A），`ng=1` 时
 直接差一个 `measure` 因子（量纲错误），并会破坏第 8 节 F1 的 `G=1` 逐位基线。
 可检验的恒等式：basis 是单位分解（`sum_i B_i = 1`）时 `M_g` 的**行和恒为 1**，
-错误公式不满足。
+错误公式不满足。**这条恒等式有前提，必须一起写**：行和 = 1 只在**该行所有 TE 求积点
+都满足单位分解**时成立。v1/v2 的站位自由度约定 `dof[-1] = -1`（环量在翼尖端收为零），
+最外一段的基函数之和是 `1 - frac < 1`，因此该行行和必然小于 1——Step B 实测
+`row_sums = [1.0, 0.833333]`、`basis_partition_max_abs_error = 0.7887`。
+实现与报告必须同时给出 `row_sums` 与 `row_sums_where_partition_of_unity`，
+**不得为了满足「行和 = 1」而把该行强行归一**（归一化质量行等于改动方程）。
 
 其中 `basis_g`、`slope_g` 由本组 `gamma_stations` 与尾迹
 形心 y 线性插值；`incidence_g` 在 upper bank 上 +1、lower bank 上 -1。
@@ -172,9 +183,14 @@ T_g          = (integral_g^T @ incidence_g) / measure_g[:, None]
 - **M4 埋根例外**：`root_condition=buried_in_solid` 的组，其翼根**不是**对称面，
   镜像不会在那里产生新物理面，只复制积分贡献；该组 `gamma_station_dof[0]`
   必须为 `-1`，并在报告里显式记 `root_condition`。
-- **M5 完全镜像 oracle**：v2 验收要求全模两组参考解，但该参考解本身要求 Step B 的
-  全模实现；Step A 阶段只验收**映射层**：partner 距离、法向配对、slope 反号、
-  mu 对称、gamma 复制，全部到 1e-14。
+- **M5 完全镜像 oracle**：v2 验收要求全模参考解。Step B 的实况是——
+  单组（G=1）可以对全模 oracle 做逐值比较：`make_full_mirror_topology` 在末尾追加
+  每个非根环量自由度的镜像副本，所以全模 `gamma` 长度是 `ng + 1`（半模 `ng`），
+  **只有 `full_gamma[:ng]` 与半模可比**，比较其它切片会得到 `ValueError: operands
+  could not be broadcast together with shapes (3,) (2,)`。
+  多组（G≥2）目前**没有**全模参考实现，验收必须如实返回 `performed=False` 并写明
+  "no full-model multi-wake reference"，不得用半模自证。
+  映射层本身仍按 1e-14 验收：partner 距离、法向配对、slope 反号、mu 对称、gamma 复制。
 - **M6 不承诺的对称**：侧滑非零时垂尾气动不对称，半模+镜像给不出；v2 沿用
   `validate_half_configuration` 的零侧滑拒绝（`panel/half_native.py:207-210`）。
 
@@ -188,6 +204,10 @@ T_g          = (integral_g^T @ incidence_g) / measure_g[:, None]
   的风格），且**不得**在缺字段时静默把该组退化成无升力壁面。
 
 ## 7. 拒绝规则表
+
+> 文本差异说明：初稿列过 `Attached lifting shed group requires a verified physical TE and bank topology`。
+> Step B 的实现把这一条拆成更具体的 D1/D2 三条串（真实边 / upper bank 归属 / lower bank 归属），
+> 语义等价但文本不同。若要求逐字对齐，应改本表，**不应放宽判据**。
 
 | 条件 | 报错（英文原文，便于测试断言） | 来源 |
 | --- | --- | --- |
@@ -242,15 +262,42 @@ T_g          = (integral_g^T @ incidence_g) / measure_g[:, None]
 - 分部件载荷优先用真实湿面 `-q Cp n A` 求和；`component_ids`
   未经 CAD 名称证实前只按 ID 报。
 
-## 10. Step B 实施计划（不在本 PR）
+## 10. Step B 交付形态（本 PR 只定义，实现在 PR #45）
 
 范围：只实现**双水平升力面**（主翼 + 抬高平尾）固定拓扑，保留 v1 基线。
 
+### 10.0 驱动入口与报告（Step B 已落地，回写进契约）
+
+实现落点：`panel/shed_groups.py`（校验 + 装配 + 求解）、`panel/run_half_groups.py`
+（独立研究入口）、`panel/group_fixture.py`（夹具）、`test/test_shed_groups_contract.py`
+（F0-F8）、`test/test_run_half_groups_entry.py`（入口契约）。**v1 默认路径不动**：
+`panel/run_half_native.py` 仍是唯一默认 CLI。
+
+```powershell
+& python runs\peak_wrap.py panel.run_half_groups runs\out\peak --self-check --out runs\out\selfcheck.json
+& python -m panel.run_half_groups --surface <surface.json> --groups <groups.json> --out <report.json>
+```
+
+报告 schema `dpanel.half_group_report.v1` 必须包含：`inputs`（surface/groups 路径与
+SHA-256、声明 schema、源 geometry audit/provenance）、`code`（Python/NumPy/JAX 版本 +
+`panel/{shed_groups,run_half_groups,half_native,kernel}.py` 的 SHA-256）、`groups`、
+`validation`（D 规则审计）、`solve`（未知量、组切片、`||r||/||b||`、热解秒数、
+CL/CD_p/CM/Cp 极值）、`group_rows`（逐组 gamma/gamma_sum/TE 势跳跃/Kutta 行残差/尾迹输运）、
+`checks`（block_dimensions / circulation_mass_rows / kutta_rows / operator_mirror /
+v1_equivalence / full_oracle / lift_slope）。
+
+退出码约定：**成功 0；输入被拒绝 2**（同时把 `status="refused"` 与 traceback 写进报告文件）；
+意外崩溃 1。`--out` 已存在时必须 `FileExistsError`，**不得静默覆盖历史结果**。
+缺字段不得退化为无升力壁面（见第 6 节），空 `wake_faces` 的 surface 必须显式走 G=0 分支，
+不允许伪造空尾迹骗过校验。
+
 1. `panel/shed_groups.py`：v2 读取/校验（D1-D12）、v1 迁移器、拒绝表。
-2. `panel/half_native.py`：新增 `solve_half_groups`，按第 4 节拼 `A`；
-   v1 路径不动，`G=1` 必须逐位复现。
-3. 测试：`test/test_shed_groups_contract.py`（F0-F8）、
-   `test/test_shed_groups_v1_compat.py`；**先在小夹具上完成装配与拒绝规则全绿**，
+   **已落地**：校验与装配在 `shed_groups.py`，不新增 `half_native` 入口，
+   以免改动 v1 生产模块。
+2. 装配按第 4 节拼 `A`；v1 路径不动，`G=1` 必须逐位复现
+   （实测 `mu`/`gamma`/`Cp_raw`/`CL`/`CD_p` 相对差全 0.0）。
+3. 测试：`test/test_shed_groups_contract.py`（F0-F8，9 passed）、
+   `test/test_run_half_groups_entry.py`（17 passed）；**先在小夹具上完成装配与拒绝规则全绿**，
    再碰网格。
 4. 之后才改 `panel/cad_half.py`：允许按组声明尾迹平面高度（去掉硬编码 z=0），
    仍只支持水平面，网格仍用 OCC `fragment`。
@@ -280,8 +327,25 @@ GRASS-plane 需要整机几何/载荷，但本契约只覆盖「多升力面的�
 整机配平、总阻力与训练 reward 仍需外部验证与单独的物理接受流程；本条与
 #36/#30 口径一致：先证明装配与诊断正确，再谈物理精度。
 
-字段形状的可机读示例见 `docs/issue39_schema_example_v2.json`（仅示例，
-当前没有任何 loader 读取它）。
+字段形状的可机读示例见 `docs/issue39_schema_example_v2.json`。该文件本身仍只是示例，
+但 v2 声明格式在 Step B 已**有真实 loader**：`panel/run_half_groups.py` 的
+`groups_from_spec()` 读 `dpanel.half_shed_groups.v2`（schema 不符即 `ValueError`），
+再由 `panel/shed_groups.validate_shed_groups()` 执行 D1-D12。
+
+## 附录 B：Step B 实现回写（与初稿的差异，逐条已落到正文）
+
+| # | 初稿写法 | 实现/实测 | 正文位置 |
+| --- | --- | --- | --- |
+| 1 | `M_g` 行和恒为 1 | 仅在基函数单位分解处成立；翼尖 `dof=-1` 使最外行和 `1-frac` | 第 4 节 |
+| 2 | D12 尾迹必须闭合 2-流形 | 有限尾迹是带边界薄片，边界限于 TE/根线/翼尖线/截断 | 第 3 节 D12 |
+| 3 | `buried_in_solid` 严格内外测试 | 实况为包围盒 + 边距近似，报告记 `aabb_and_edge_distance` | 第 3 节 D9 |
+| 4 | 全模 oracle 两组参考解 | 仅 G=1 可得；全模 `gamma` 末位追加镜像副本，只 `[:ng]` 可比 | 第 5 节 M5 |
+| 5 | 入口待定 | `panel/run_half_groups.py`，schema `dpanel.half_group_report.v1`，拒绝退出码 2 | 第 10.0 节 |
+| 6 | 拒绝串 `Attached lifting shed group requires ...` | 由 D1/D2 的具体三条串承担（语义等价、文本不同） | 第 7 节说明 |
+
+证据：PR #45（`local/shed-groups-stepb-20261026`，head `314eb64`）。
+F0-F8 + 入口用例 26 passed；`--self-check` 四例（G0/G1/G2/G2_tail_z024）全部 exit 0；
+`physical_accuracy_accepted=false` 不变。
 
 ## 附录 A：`M_g` 错误公式的反例（非均匀真实后缘）
 
