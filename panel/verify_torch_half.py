@@ -90,13 +90,15 @@ def verify(surface, *, device, block_size, max_panels, rtol, atol,
             torch.cuda.synchronize()
 
     start = time.perf_counter()
-    actual = solve_half_torch(**ti, block_size=block_size)
+    actual = solve_half_torch(
+        **ti, block_size=block_size, checkpoint_kernel=checkpoint_kernel)
     sync()
     torch_cold_sec = time.perf_counter()-start
     compare = {key: _compare(key, actual[key], reference[key],
                              rtol=rtol, atol=atol) for key in FIELDS}
     start = time.perf_counter()
-    actual2 = solve_half_torch(**ti, block_size=block_size)
+    actual2 = solve_half_torch(
+        **ti, block_size=block_size, checkpoint_kernel=checkpoint_kernel)
     sync()
     torch_hot_sec = time.perf_counter()-start
     total_state = torch.cat((actual2["mu_half"], actual2["gamma_half"]))
