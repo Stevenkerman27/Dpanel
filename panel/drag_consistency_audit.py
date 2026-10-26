@@ -204,7 +204,9 @@ def audit_saved_half_state(fixture, fields):
     pressure = pressure_integral_audit(
         fixture["coordinates"], fixture["faces"], fields["Cp_raw_half"],
         flow, density=rho, reference_area=area,
-        component_ids=fixture["component_ids"])
+        component_ids=fixture["component_ids"],
+        reference_point=fixture["moment_reference"],
+        reference_chord=float(fixture["reference_chord"]))
     y, g = symmetric_half_gamma(
         fixture["gamma_stations"], fixture["gamma_station_dof"],
         fields["gamma_half"])
@@ -253,7 +255,7 @@ def main():
     result_fields = jax.jit(solve_half_fields)(**inputs)
     result_fields["CL"].block_until_ready()
     state = {k: np.asarray(v) for k, v in result_fields.items()
-             if k in ("Cp_raw_half", "gamma_half", "mu_half", "force")}
+             if k in ("Cp_raw_half", "gamma_half", "mu_half", "force", "CM")}
     result = audit_saved_half_state(fixture, state)
     result.update(
         source_sha256=hashlib.sha256(args.surface.read_bytes()).hexdigest(),
@@ -267,6 +269,12 @@ def main():
         cd_solver-result["near_pressure"]["CD_pressure"])
     if result["independent_pressure_integration_max_abs_error"] > 1e-10:
         raise AssertionError("Independent Cp force integration differs from solver")
+    cm_solver = float(state["CM"][1])
+    result["CM_y_solver"] = cm_solver
+    result["independent_moment_integration_max_abs_error"] = abs(
+        cm_solver-result["near_pressure"]["CM_y"])
+    if result["independent_moment_integration_max_abs_error"] > 1e-10:
+        raise AssertionError("Independent Cp pitching moment differs from solver")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(
         json.dumps(result, indent=2, allow_nan=False)+"\n",
