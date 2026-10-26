@@ -288,7 +288,8 @@ def _raw_half_loads(x, t, flow, density, area_ref, chord_ref, point, mu):
 
 def solve_half_torch(vertices, station_y, topology, freestream, density,
                      reference_area, reference_chord, reference_point,
-                     *, block_size=32, implicit_adjoint=True):
+                     *, block_size=32, implicit_adjoint=True,
+                     checkpoint_kernel=False):
     """Torch CPU/CUDA Float64 end-to-end half lifting state and raw loads.
 
     Contract: frozen topology and pressure stencils prevalidated on host;
