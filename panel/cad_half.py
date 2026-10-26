@@ -15,6 +15,7 @@ Example (run from repository root, with original unmodified CAD inputs):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -34,6 +35,7 @@ import cad_te
 import gmsh
 
 from .half_surface_mesh import build_half_surface
+from .mesh_feature_size import read_policy
 
 
 def _positive_trailing_edge(te, *, tolerance):
@@ -92,6 +94,12 @@ def _build(args, stage):
             or args.wake_strips < 4 or args.ncpu < 1
             or max(abs(te).ravel()) >= args.radius-args.size):
         raise ValueError("Invalid CAD meshing/flight parameters")
+    sizing_path = getattr(args, "mesh_features", None)
+    sizing = None
+    if sizing_path is not None:
+        sizing_path = Path(sizing_path).resolve()
+        sizing = read_policy(sizing_path, origin=origin, chord=chord,
+                             wall_size=args.size)
     stations = np.unique(np.r_[
         np.linspace(0., te[-1, 1], args.wake_strips+1),
         te[:, 1],
@@ -277,6 +285,8 @@ def _build(args, stage):
     gmsh.model.mesh.field.setNumber(control, "DistMin", .3)
     gmsh.model.mesh.field.setNumber(control, "DistMax", 2.)
     gmsh.model.mesh.field.setAsBackgroundMesh(control)
+    if sizing is not None:
+        gmsh.model.mesh.setSizeCallback(sizing)
     gmsh.model.mesh.generate(2)
     tags, coords, _ = gmsh.model.mesh.getNodes()
     points = np.asarray(coords, dtype=float).reshape(-1, 3)
@@ -335,6 +345,12 @@ def _build(args, stage):
         half_fluid_symmetry_caps_excluded=plane_faces,
         physical_wall_surface_tags=wall_surfaces,
         physical_wake_surface_tags=wake_surfaces,
+        feature_sizing=None if sizing_path is None else dict(
+            source=str(sizing_path),
+            source_sha256=hashlib.sha256(sizing_path.read_bytes()).hexdigest(),
+            feature_names=[name for name, _, _, _ in sizing.features],
+            callback="Gmsh model.mesh.setSizeCallback; requests only",
+        ),
     )
     surface = args.out/"surface.json"
     surface.write_text(json.dumps(fixture, indent=2, allow_nan=False)+"\n",
@@ -349,6 +365,8 @@ def main():
     p.add_argument("--trailing-edge", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--size", type=float, default=.3)
+    p.add_argument("--mesh-features", type=Path,
+                   help="Optional SI feature polylines for local LE/TE/tip refinement")
     p.add_argument("--far-size", type=float, default=1.5)
     p.add_argument("--radius", type=float, default=5.)
     p.add_argument("--wake-strips", type=int, default=8)
