@@ -36,6 +36,7 @@ import gmsh
 
 from .half_surface_mesh import build_half_surface
 from .mesh_feature_size import read_policy
+from .mesh_quality_gate import audit_mesh_quality
 
 
 def _positive_trailing_edge(te, *, tolerance):
@@ -300,6 +301,18 @@ def _build(args, stage):
     wake = _mesh_triangles(gmsh, wake_surfaces, index)
     if not len(wall) or not len(wake):
         raise ValueError("Positive-half OCC mesh has no physical wall/wake triangles")
+    quality_requested = sizing is not None or any(
+        getattr(args, name, None) is not None for name in (
+            "max_wall_panels", "max_wake_panels", "max_total_panels",
+            "min_wall_angle_deg", "max_wall_growth_p99"))
+    quality_report = (audit_mesh_quality(
+        points, wall, wake,
+        max_wall_panels=getattr(args, "max_wall_panels", None),
+        max_wake_panels=getattr(args, "max_wake_panels", None),
+        max_total_panels=getattr(args, "max_total_panels", None),
+        min_wall_angle_deg=getattr(args, "min_wall_angle_deg", None),
+        max_wall_growth_p99=getattr(args, "max_wall_growth_p99", None),
+    ) if quality_requested else None)
     # Strict plane and sign checks on the generated nodes, not on the
     # inflated OCC bounding boxes: the artificial cap must be exactly on
     # y=0 and no physical wall/wake node may cross to the negative side.
@@ -351,8 +364,15 @@ def _build(args, stage):
             source=str(sizing_path),
             source_sha256=hashlib.sha256(sizing_path.read_bytes()).hexdigest(),
             feature_names=[name for name, _, _, _ in sizing.features],
+            requested_features=[dict(name=name, target_ratio=ratio,
+                                     radius_chords=radius,
+                                     polyline_segments=len(parts[0]))
+                                for name, ratio, radius, parts in sizing.features],
+            global_size=args.size, far_size=args.far_size,
             callback="Gmsh model.mesh.setSizeCallback; requests only",
         )
+    if quality_report is not None:
+        fixture["audit"]["mesh_quality"] = quality_report
     surface = args.out/"surface.json"
     surface.write_text(json.dumps(fixture, indent=2, allow_nan=False)+"\n",
                        encoding="utf-8")
@@ -368,6 +388,16 @@ def main():
     p.add_argument("--size", type=float, default=.3)
     p.add_argument("--mesh-features", type=Path,
                    help="Optional SI feature polylines for local LE/TE/tip refinement")
+    p.add_argument("--max-wall-panels", type=int,
+                   help="Reject actual OCC mesh if wall triangle budget is exceeded")
+    p.add_argument("--max-wake-panels", type=int,
+                   help="Reject actual OCC mesh if wake triangle budget is exceeded")
+    p.add_argument("--max-total-panels", type=int,
+                   help="Reject actual OCC mesh if wall plus wake budget is exceeded")
+    p.add_argument("--min-wall-angle-deg", type=float,
+                   help="Reject actual wall triangles below this minimum angle")
+    p.add_argument("--max-wall-growth-p99", type=float,
+                   help="Reject excessive p99 area ratio on adjacent wall triangles")
     p.add_argument("--far-size", type=float, default=1.5)
     p.add_argument("--radius", type=float, default=5.)
     p.add_argument("--wake-strips", type=int, default=8)
