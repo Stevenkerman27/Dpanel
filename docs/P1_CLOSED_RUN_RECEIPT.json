@@ -1,0 +1,47 @@
+{
+ "schema":"dpanel.p1_closed_executed_summary.v1",
+ "physical_accuracy_accepted":false,
+ "tests":{"passed":31,"failed":0,"skipped":0,"seconds":12.68},
+ "environment":{"python":"3.13.5","numpy":"2.3.5","jax":"0.9.0.1","blas_threads":1,"omp_threads":1},
+ "base_commit":"e0ff576f2e5960d034acfa422bd5459f4e503fdc",
+ "upstream_kernel_blob":"93d8f429ae9587f2a01db078c9fdf49d7ef02390",
+ "scope":"isolated actual new-module tests and exact upstream P0 kernel; not full repository regression",
+ "source_files":{
+  "panel/p1_closed_body.py":{"git_blob":"2c4e00fd129a4a9da731df905443141e2452349a","sha256":"38b4c4780e6fc459ff7acc3ec4b258b357e7dcf4a8e22652ba23ea6db100446e","bytes":13983},
+  "panel/p1_closed_jax.py":{"git_blob":"7e66773bd8777e5f0b6b3098ce3a597ccbe7019a","sha256":"8ee0e5c9d716f00e534b60d81ed3304028b439c4d6c430b2483c645e9c2fc0a0","bytes":4721},
+  "panel/run_p1_closed.py":{"git_blob":"6307600e8cae3b35aaabc75342e3930286a7226f","sha256":"5a038bfd0ba401f0c2463232300c3e12ca650f4c2836a83ae8e1a0a2f95d6402","bytes":7881},
+  "test/test_p1_closed_body.py":{"git_blob":"96e057e6171f79b643a9fac334c5be3b8a2ffa30","sha256":"a8f112c485b04c93d3619e51af5095791cebd13041f099c6f1a3769d36f55d40","bytes":7561},
+  "test/test_p1_closed_jax.py":{"git_blob":"06e62e98fcd8ad489ec5f2cbf03677a985ed95da","sha256":"a169052ea07cca56eadde8b42f75cd477dae94d136c55a51f01e0301452ce3a2","bytes":2477}
+ },
+ "benchmark":{"reference":"analytic sphere, not VSPAERO","probe_count":102,"probe_rule":"96 fixed Fibonacci directions plus 6 axis directions","velocity_method":"spatial JAX AD of full solved source-plus-doublet potential, without tangent projection","offsets_over_radius":[0.01,0.02,0.05,0.2],"facet_probe_offset_over_sqrt_area":0.001},
+ "cases":[
+  {
+   "faces":80,"nodes":42,"mesh_sha256":"718b73e366986e9b1a079fbe0caff0055a2e62e49ce04a2d5bacd2f39e2d0c7f",
+   "P0_Cp_RMS":[3.413052952435565,1.2176040543664195,0.36040149997026666,0.06420879958438248],
+   "P1_Cp_RMS":[0.17602189767467039,0.14595933381076215,0.11082622660124569,0.05937778417234309],
+   "P0_facet_normal_RMS":0.03730597925722873,"P1_facet_normal_RMS":0.06377926336404792,
+   "P1_solver":{"n_equations":80,"n_unknowns":42,"matrix_rank":42,"singular_ratio":0.10276571604515743,"constant_density_identity_error":4.440892098500626e-16,"constant_mode_response_norm":8.944271909999161,"gauge_applied":false,"weighted_bie_relative_residual":0.00425658683831129,"qr_stationarity_relative_residual":8.117580626085036e-17},
+   "P1_three_points_Cp_RMS":[0.17926280655279853,0.1510738995963378,0.117251665577014,0.06440571202148027],
+   "P1_three_points_normal_RMS":0.06993258028133492
+  },
+  {
+   "faces":320,"nodes":162,"mesh_sha256":"1f10c16a1d3159c2b939f27540aba38a028a837c7689fb29262eb7d61f27eb11",
+   "P0_Cp_RMS":[1.5491577567353474,0.6038901985539987,0.1722678893501274,0.015362168537101864],
+   "P1_Cp_RMS":[0.07487960384085181,0.053732077720454595,0.03111054011495526,0.01584285606268121],
+   "P0_facet_normal_RMS":0.02194629127104246,"P1_facet_normal_RMS":0.03482117909861847,
+   "P1_solver":{"n_equations":320,"n_unknowns":162,"matrix_rank":162,"singular_ratio":0.047868834527310083,"constant_density_identity_error":1.1102230246251565e-15,"constant_mode_response_norm":17.888543819998322,"gauge_applied":false,"weighted_bie_relative_residual":0.0023293836170719105,"qr_stationarity_relative_residual":5.1589157241092746e-17},
+   "P1_three_points_Cp_RMS":[0.07618544850397953,0.05561139115725709,0.03354599586161871,0.017216106887662175],
+   "P1_three_points_normal_RMS":0.036386197061255135
+  },
+  {
+   "faces":1280,"nodes":642,"mesh_sha256":"2e4e365e51229fd1a117d46a112a674c83aa992e7e5112bb51cb9a07c8d124be",
+   "P0_Cp_RMS":[0.7456274456091321,0.292076938434423,0.05137328493490706,0.0037981657819899173],
+   "P1_Cp_RMS":[0.028693679787303895,0.01595851533418598,0.006840413295875916,0.004051302780717053],
+   "P0_facet_normal_RMS":0.014511803052082767,"P1_facet_normal_RMS":0.018736420686273406,
+   "P1_solver":{"n_equations":1280,"n_unknowns":642,"matrix_rank":642,"singular_ratio":0.028685921046415225,"constant_density_identity_error":2.220446049250313e-15,"constant_mode_response_norm":35.77708763999665,"gauge_applied":false,"weighted_bie_relative_residual":0.0005289899489064364,"qr_stationarity_relative_residual":4.1039532011145746e-17},
+   "P1_three_points_Cp_RMS":[0.028547248695901164,0.01601410820815242,0.007325385265979638,0.004405522207685872],
+   "P1_three_points_normal_RMS":0.019142619131215434
+  }
+ ],
+ "decision":"G0 continuous P1 solve and small geometry VJP work; near-wall sphere Cp improves, true facet normal-velocity residual is WORSE than P0; retain research-only, no G1 or default adoption"
+}
