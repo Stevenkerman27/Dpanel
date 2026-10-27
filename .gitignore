@@ -106,3 +106,9 @@ dist/
 !lifting3d/results/cad_inputs_v1/naca4412_wing_body/body.step
 !lifting3d/results/cad_inputs_v1/naca4412_wing_body/trailing_edge.json
 archive/
+
+# issue #49 evidence archive: the raw solver outputs (.dat tecplot, stdout.log)
+# must be versioned so the 135-entry sha256.json is reproducible from a clean clone.
+!docs/issue49_vspaero/raw/*/*.dat
+!docs/issue49_vspaero/ladders/*/stdout.log
+!docs/issue49_vspaero/raw/*/stdout.log
