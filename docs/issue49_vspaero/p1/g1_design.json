@@ -1,0 +1,95 @@
+{
+  "dof_audits": [
+    {
+      "equations": 418,
+      "error": "P1 wall plus wake system is not square: 235 unknowns, 418 equations",
+      "square": false,
+      "stations": 21,
+      "unknowns": 235,
+      "wake_nodes": 22
+    },
+    {
+      "equations": 440,
+      "error": "P1 wall plus wake system is not square: 257 unknowns, 440 equations",
+      "square": false,
+      "stations": 21,
+      "unknowns": 257,
+      "wake_nodes": 44
+    },
+    {
+      "equations": 781,
+      "error": "P1 wall plus wake system is not square: 598 unknowns, 781 equations",
+      "square": false,
+      "stations": 21,
+      "unknowns": 598,
+      "wake_nodes": 385
+    },
+    {
+      "equations": 1166,
+      "error": "P1 wall plus wake system is not square: 983 unknowns, 1166 equations",
+      "square": false,
+      "stations": 21,
+      "unknowns": 983,
+      "wake_nodes": 770
+    }
+  ],
+  "far_field": {
+    "distances": [
+      10.0,
+      20.0,
+      40.0
+    ],
+    "order": [
+      3.0986660679606826,
+      3.0519050284924085
+    ],
+    "values": [
+      9.166257415735773e-05,
+      1.0700414873516108e-05,
+      1.2902850308392587e-06
+    ]
+  },
+  "in_plane_potential": [
+    0.0,
+    0.0
+  ],
+  "jump_rows": [
+    {
+      "height": 0.01,
+      "max_abs_error": 0.03563923200242736,
+      "mean": 0.971543411170541
+    },
+    {
+      "height": 0.001,
+      "max_abs_error": 0.003568207977423299,
+      "mean": 0.9971518698571029
+    },
+    {
+      "height": 0.0001,
+      "max_abs_error": 0.0003568250920528149,
+      "mean": 0.9997151845094816
+    },
+    {
+      "height": 1e-05,
+      "max_abs_error": 3.5682513499613044e-05,
+      "mean": 0.9999715184484721
+    },
+    {
+      "height": 1e-06,
+      "max_abs_error": 3.568251354280072e-06,
+      "mean": 0.9999971518448447
+    }
+  ],
+  "linear_density_error": 4.835786871826286e-06,
+  "mesh": {
+    "coordinates": 400,
+    "path": "D:\\3D\\Projects\\panel\\runs\\half_cad_wingbody_v1\\surface.json",
+    "referenced_vertices": 213,
+    "unreferenced_vertices": 187,
+    "wall_faces": 396
+  },
+  "mirror_residual": {
+    "flipped_sign": 0.0,
+    "same_sign": 0.0
+  }
+}
