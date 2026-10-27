@@ -1,0 +1,240 @@
+{
+  "levels": [
+    {
+      "level": 1,
+      "nodes": 42,
+      "panels": 80,
+      "cp_rms": 0.1143171199207246,
+      "cp_max": 0.2391779245355259,
+      "area_total": 11.665931391718317,
+      "least_squares_residual": 0.0013218341553768997,
+      "row_sum_mean": -1.0,
+      "offset": {
+        "level": 1,
+        "radius": 1.0,
+        "rows": [
+          {
+            "ratio": 1.2,
+            "max_relative_error": 0.02510453950847889,
+            "max_absolute_error": 0.038842301406174284,
+            "exact_scale": 1.5472222222222223
+          },
+          {
+            "ratio": 1.5,
+            "max_relative_error": 0.014999906868806298,
+            "max_absolute_error": 0.02583317294072196,
+            "exact_scale": 1.7222222222222223
+          },
+          {
+            "ratio": 2.0,
+            "max_relative_error": 0.006884292237099534,
+            "max_absolute_error": 0.01462912100383651,
+            "exact_scale": 2.125
+          },
+          {
+            "ratio": 3.0,
+            "max_relative_error": 0.002131517547788597,
+            "max_absolute_error": 0.006512970284909603,
+            "exact_scale": 3.055555555555556
+          }
+        ]
+      },
+      "load": {
+        "level": 1,
+        "drag_coefficient": 1.6344517113076405e-16,
+        "lift_coefficient": 5.124226986802333e-16,
+        "lateral_coefficient": 1.0458282233840105e-15,
+        "cp_rms": 0.8672244696216599,
+        "area_total": 11.665931391718317,
+        "area_exact": 12.566370614359172
+      },
+      "penetration": {
+        "level": 1,
+        "radius": 1.0,
+        "delta": 0.001,
+        "rows": [
+          {
+            "ratio": 1.02,
+            "max_error_over_speed": 0.15423012677151515,
+            "rms_error_over_speed": 0.0974681135903762,
+            "max_exact_over_speed": 0.05416478116504475
+          },
+          {
+            "ratio": 1.05,
+            "max_error_over_speed": 0.12823210287127296,
+            "rms_error_over_speed": 0.08108373973925932,
+            "max_exact_over_speed": 0.12787191327479075
+          },
+          {
+            "ratio": 1.1,
+            "max_error_over_speed": 0.09950148698423256,
+            "rms_error_over_speed": 0.06276955127679831,
+            "max_exact_over_speed": 0.2335450832959829
+          }
+        ]
+      }
+    },
+    {
+      "level": 2,
+      "nodes": 162,
+      "panels": 320,
+      "cp_rms": 0.03907097263066653,
+      "cp_max": 0.08710322624236855,
+      "area_total": 12.329848595234669,
+      "least_squares_residual": 0.0011249823974994189,
+      "row_sum_mean": -1.0,
+      "offset": {
+        "level": 2,
+        "radius": 1.0,
+        "rows": [
+          {
+            "ratio": 1.2,
+            "max_relative_error": 0.007046067292244654,
+            "max_absolute_error": 0.01090183189383409,
+            "exact_scale": 1.5472222222222223
+          },
+          {
+            "ratio": 1.5,
+            "max_relative_error": 0.004026242145058813,
+            "max_absolute_error": 0.006934083694267956,
+            "exact_scale": 1.7222222222222223
+          },
+          {
+            "ratio": 2.0,
+            "max_relative_error": 0.0018351792082682168,
+            "max_absolute_error": 0.003899755817569961,
+            "exact_scale": 2.125
+          },
+          {
+            "ratio": 3.0,
+            "max_relative_error": 0.0005675760542873705,
+            "max_absolute_error": 0.0017342601658780765,
+            "exact_scale": 3.055555555555556
+          }
+        ]
+      },
+      "load": {
+        "level": 2,
+        "drag_coefficient": 5.030356449328583e-16,
+        "lift_coefficient": 4.298028212125286e-16,
+        "lateral_coefficient": 2.9900527083550247e-16,
+        "cp_rms": 0.8449144826756323,
+        "area_total": 12.329848595234669,
+        "area_exact": 12.566370614359172
+      },
+      "penetration": {
+        "level": 2,
+        "radius": 1.0,
+        "delta": 0.001,
+        "rows": [
+          {
+            "ratio": 1.02,
+            "max_error_over_speed": 0.05788052740707261,
+            "rms_error_over_speed": 0.034418056995917205,
+            "max_exact_over_speed": 0.0568154419675615
+          },
+          {
+            "ratio": 1.05,
+            "max_error_over_speed": 0.038969453354797956,
+            "rms_error_over_speed": 0.023444902366643986,
+            "max_exact_over_speed": 0.1341295785134422
+          },
+          {
+            "ratio": 1.1,
+            "max_error_over_speed": 0.026367653289782744,
+            "rms_error_over_speed": 0.015581038339921964,
+            "max_exact_over_speed": 0.24497407432277907
+          }
+        ]
+      }
+    },
+    {
+      "level": 3,
+      "nodes": 642,
+      "panels": 1280,
+      "cp_rms": 0.014958972398272156,
+      "cp_max": 0.03847947183379152,
+      "area_total": 12.506492733969928,
+      "least_squares_residual": 0.00027620493300423155,
+      "row_sum_mean": -1.0,
+      "offset": {
+        "level": 3,
+        "radius": 1.0,
+        "rows": [
+          {
+            "ratio": 1.2,
+            "max_relative_error": 0.0017766083754494353,
+            "max_absolute_error": 0.0027488079586814873,
+            "exact_scale": 1.5472222222222223
+          },
+          {
+            "ratio": 1.5,
+            "max_relative_error": 0.0010201277402816851,
+            "max_absolute_error": 0.0017568866638184577,
+            "exact_scale": 1.7222222222222223
+          },
+          {
+            "ratio": 2.0,
+            "max_relative_error": 0.0004652458350453431,
+            "max_absolute_error": 0.000988647399471354,
+            "exact_scale": 2.125
+          },
+          {
+            "ratio": 3.0,
+            "max_relative_error": 0.00014388489435491052,
+            "max_absolute_error": 0.000439648288306671,
+            "exact_scale": 3.055555555555556
+          }
+        ]
+      },
+      "load": {
+        "level": 3,
+        "drag_coefficient": 5.128368334043821e-16,
+        "lift_coefficient": 5.0334624597596994e-17,
+        "lateral_coefficient": 9.461597997721764e-16,
+        "cp_rms": 0.8389268913694996,
+        "area_total": 12.506492733969928,
+        "area_exact": 12.566370614359172
+      },
+      "penetration": {
+        "level": 3,
+        "radius": 1.0,
+        "delta": 0.001,
+        "rows": [
+          {
+            "ratio": 1.02,
+            "max_error_over_speed": 0.01828389075719805,
+            "rms_error_over_speed": 0.010730297941235563,
+            "max_exact_over_speed": 0.05746182575860903
+          },
+          {
+            "ratio": 1.05,
+            "max_error_over_speed": 0.00924239417587902,
+            "rms_error_over_speed": 0.0054301718037774935,
+            "max_exact_over_speed": 0.13565555776207106
+          },
+          {
+            "ratio": 1.1,
+            "max_error_over_speed": 0.006158732843708492,
+            "rms_error_over_speed": 0.0035477066235790654,
+            "max_exact_over_speed": 0.24776112068525258
+          }
+        ]
+      }
+    }
+  ],
+  "jump": {
+    "level": 1,
+    "jump_max_error": 0.00016746388452926197,
+    "jump_rms_error": 0.00010281914489203234,
+    "mu_scale": 1.3403263745266454,
+    "offset": 0.0001
+  },
+  "jump_fine": {
+    "level": 1,
+    "jump_max_error": 1.6746388715516147e-05,
+    "jump_rms_error": 1.0281914646401168e-05,
+    "mu_scale": 1.3403263745266454,
+    "offset": 1e-05
+  }
+}
