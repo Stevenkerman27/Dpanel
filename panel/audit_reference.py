@@ -47,6 +47,7 @@ from .half_native import (
     _half_wake_te_geometry, _mirror_triangles, solve_half_fields,
 )
 from .run_half_native import load_half_surface
+from .spanwise_circulation import circulation_lift_measures
 
 WALL_OFFSETS = (1e-4, 1e-3, 1e-2)
 INTERIOR_OFFSET = 1e-3
@@ -313,24 +314,23 @@ def wake_transport(field, *, chord, offset_chords=1e-3):
 
 
 def circulation_lift(field, *, density, area, chord, speed):
-    """Kutta-Joukowski lift implied by the converged gamma distribution.
+    """Physical Kutta-Joukowski spanwise lift; report legacy arc bias.
 
-    The TE fan gives int(hat_j) dy per circulation dof; the half model is
-    doubled about y=0.  L = rho U int_(full span) Gamma dy.
+    Weak Kutta T/M assembly must keep *arclength* weights. Here lift is
+    the y-projection of the line-force, so it uses dy rather than ds.
     """
     ends = _f(field.x[field.t.te_edges])
     if ends.size == 0:
         return {"CL_gamma": None, "note": "no true TE edges in this fixture"}
-    length = np.linalg.norm(ends[:, 1] - ends[:, 0], axis=1)
-    basis = _f(field.te_basis)
-    measure = (0.5 * length[:, None, None] * basis).sum(axis=(0, 1))
     gamma = _f(field.gamma)
-    lift = 2.0 * density * speed * float(measure @ gamma)
-    dynamic = 0.5 * density * speed ** 2
-    return {"CL_gamma": lift / (dynamic * area),
-            "lift": lift,
-            "span_measure": measure.tolist(),
-            "gamma": gamma.tolist()}
+    measured = circulation_lift_measures(
+        _f(field.y), _f(field.t.hat_map), gamma, ends,
+        _f(field.te_basis), density=density, speed=speed,
+        reference_area=area)
+    qS = 0.5 * density * speed ** 2 * area
+    return dict(measured, lift=measured["CL_gamma"] * qS,
+                legacy_lift=measured["CL_gamma_legacy_TE_arclength"] * qS,
+                gamma=gamma.tolist())
 
 
 def nearfield_drag(field, result, *, density, area, chord, speed):
