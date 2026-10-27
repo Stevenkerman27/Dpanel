@@ -1,0 +1,71 @@
+{
+  "conventions": {
+    "collocation": "panel centroids, least squares",
+    "cp_expected": "1 - 2.25 * sin(theta)^2",
+    "freestream": "[speed, 0, 0]",
+    "mu_expected": "1.5 * speed * radius * cos(theta)",
+    "sigma_sign": 0.0
+  },
+  "levels": [
+    {
+      "area_total": 11.665931391718317,
+      "centroid_row_sum": -1.0,
+      "centroid_row_sum_spread": 5.551115123125783e-16,
+      "cp_max": 0.2391779245355259,
+      "cp_nose": 0.7005990242261616,
+      "cp_rms": 0.1143171199207246,
+      "cp_rms_node": 0.1102414704453163,
+      "cp_tail": 0.7005990242261649,
+      "faces": 80,
+      "least_squares_residual": 0.0013218341553768997,
+      "level": 1,
+      "mu_alpha": 1.5135669931507352,
+      "mu_beta": 1.4400842025739495e-16,
+      "vertex_row_sum": -0.8155237062442702,
+      "vertex_row_sum_spread": 0.009407599457504356,
+      "vertices": 42
+    },
+    {
+      "area_total": 12.329848595234669,
+      "centroid_row_sum": -1.0,
+      "centroid_row_sum_spread": 1.2212453270876722e-15,
+      "cp_max": 0.08710322624236855,
+      "cp_nose": 0.9428411010165806,
+      "cp_rms": 0.03907097263066653,
+      "cp_rms_node": 0.030896279202812713,
+      "cp_tail": 0.9428411010165746,
+      "faces": 320,
+      "least_squares_residual": 0.0011249823974994189,
+      "level": 2,
+      "mu_alpha": 1.5039592347287578,
+      "mu_beta": 1.7725979275438518e-15,
+      "vertex_row_sum": -0.9112754186318832,
+      "vertex_row_sum_spread": 0.0062227055331589565,
+      "vertices": 162
+    },
+    {
+      "area_total": 12.506492733969928,
+      "centroid_row_sum": -1.0,
+      "centroid_row_sum_spread": 2.9976021664879227e-15,
+      "cp_max": 0.03847947183379152,
+      "cp_nose": 0.9815711977142242,
+      "cp_rms": 0.014958972398272156,
+      "cp_rms_node": 0.009026502215788115,
+      "cp_tail": 0.9815711977142151,
+      "faces": 1280,
+      "least_squares_residual": 0.00027620493300423155,
+      "level": 3,
+      "mu_alpha": 1.501011872963255,
+      "mu_beta": 1.7457590174412285e-15,
+      "vertex_row_sum": -0.9568787032118312,
+      "vertex_row_sum_spread": 0.005124922413111688,
+      "vertices": 642
+    }
+  ],
+  "source_included_level2": {
+    "cp_nose": 0.9071274768093603,
+    "cp_rms": 1.2923564719751075,
+    "cp_tail": 0.9071274768093565,
+    "mu_alpha": 2.0079184694575134
+  }
+}
