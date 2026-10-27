@@ -26,6 +26,10 @@
 | 文档 | 内容 |
 | --- | --- |
 | [WAKE_ACCURACY.md](WAKE_ACCURACY.md) | 2026-10-26当前研究：VSPAERO自由尾迹源码、同壁面方向对照、物质尾迹原型与双物理残差 |
+| [VSP_TRAPEZOID_CONVERGENCE.md](VSP_TRAPEZOID_CONVERGENCE.md) | 梯形翼 cases/vsp 同几何对比：DPanel 五档（1004–12290 壁面）vs VSPAERO VLM 四档 + 厚面元 panel 四档的网格收敛、尾迹与积分结果、三方法同 mesher 对照、mesh 版本敏感性、两侧展向效率越界 |
+| [VSPAERO_PANEL_POLAR_DIAGNOSIS.md](VSPAERO_PANEL_POLAR_DIAGNOSIS.md) | VSPAERO panel 模式 polar 的 `CLi` 异常：尾迹迭代 history、`trap.lod` 三迎角逐段结构、负对照矩阵、决定性网格交叉、`LECluster = 0.25` 根因与修法 |
+| [VSPAPI.md](VSPAPI.md) | VSP API 代码收敛：新建 `vspapi/` 纯层 + OpenVSP 薄绑定，panel/VLM 模式显式化、聚类门、3.55 vspgeom 布局、与 DEP-OPT 逐字节等价的验收、mesher 版本敏感性与单线程事实 |
+| [issue49_vspaero/README.md](issue49_vspaero/README.md) | issue #49 外部对照证据包：VSPAERO 3.52/3.55 × panel/VLM × 五档阶梯的原始 polar/lod/history/Cp/日志与逐文件 SHA-256，逐条对应回执 6435519407 |
 | `PANEL_ROBUSTNESS.md` | 面元求解器鲁棒性设计与块系统、尾缘闭合、面积积分误差 |
 | `WINGBODY_PANEL_LOOP.md` | 翼身组合回路：几何、接触、压强重构 |
 | `KERNEL_MEMORY_BLOCKING.md` | 核函数分块 + checkpoint 的内存/时间权衡 |
@@ -36,6 +40,7 @@
 | `MESH_CONVERGENCE.md` | 396–4371壁面序列的实际变化；未证明渐近网格无关，理想Trefftz量与近场有限尾迹量分开解释 |
 | [GEOMETRY_ROBUSTNESS.md](GEOMETRY_ROBUSTNESS.md) | 后掠翼/椭圆翼/BWB/常规布局四案例 × 13 档网格的鲁棒性矩阵、CL 收敛与升力线核对（issue #37） |
 | `PAUSE_HANDOFF_2026-10-24.md` | 2026-10-24 暂停交接（历史快照） |
+| [CLEANUP_2026-10-27.md](CLEANUP_2026-10-27.md) | 2026-10-27 项目清理：删除/归档口径、791 MB 真删 + 996 MB 归档清单与重跑命令、证据包重建四步、Deny ACL 待办 |
 
 ### 云端协作验收报告（按 PR/issue 编号）
 
@@ -54,6 +59,7 @@
 | `PR24_TORCH_CHECKPOINT_LOCAL.md` | PR #24：Torch 解析核可选 rematerialization 的 CUDA 显存 A/B（5655→438 MB @1988 未知量） |
 | `ISSUE16_MATRIX_FREE.md` | issue #16：矩阵无关算子、近场预条件、严格镜像归约 |
 | `ISSUE18_INDEPENDENT_SYMMETRY_AUDIT.md` | issue #18：独立对称性审计（伪配对问题） |
+| [ISSUE39_SHED_GROUPS_V2.md](ISSUE39_SHED_GROUPS_V2.md) | issue #39 Step A：`shed_groups` v2 契约（多升力面/分组 Gamma 与 Kutta/拒绝规则/小夹具验收协议），PR #40；字段示例见 `issue39_schema_example_v2.json` |
 
 ### 证据快照
 
