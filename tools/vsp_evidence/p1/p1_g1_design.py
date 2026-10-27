@@ -10,6 +10,9 @@ WORKTREE = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(WORKTREE))
 
 from panel.p1_wake import dof_audit, jump_across_sheet, mirror_nodes, sheet_potential  # noqa: E402
+from panel.p1_g1 import assemble_g1, load_case, solve_g1  # noqa: E402
+from panel.p1_dirichlet import face_cp_from_mu  # noqa: E402
+
 
 DOC = WORKTREE / "docs" / "ISSUE49_P1_G1_DESIGN.md"
 DATA = WORKTREE / "docs" / "issue49_vspaero" / "p1" / "g1_design.json"
@@ -45,7 +48,75 @@ def wall_nodes():
     }
 
 
+def measure_g1():
+    """Assemble and solve the first G1 system on the real half mesh."""
+    case = load_case(MESH)
+    result = solve_g1(case)
+    n_wall = len(result["nodes"])
+    matrix, rhs, kutta = result["matrix"], result["rhs"], result["kutta"]
+    speed = float(np.linalg.norm(case["freestream"]))
+    direction = np.asarray(case["freestream"], dtype=float) / speed
+    outward = np.sign(np.sum(result["normals"] * direction, axis=1))
+
+    def cl_of(solution):
+        mu = solution[:n_wall]
+        cp = face_cp_from_mu(result["wall_vertices"], result["local_faces"], mu, speed=speed)
+        half = -np.sum((cp * result["areas"])[:, None] * result["normals"] * outward[:, None], axis=0)
+        return float(2.0 * half[2] / (0.5 * case["reference_area"]))
+
+    body = np.linalg.lstsq(matrix[:, :n_wall], rhs, rcond=None)
+    wake_only = np.linalg.lstsq(matrix, rhs, rcond=None)
+    variants = {}
+    for label, solution in (
+        ("Kutta + wake", result["solution"]),
+        ("wake only", np.concatenate([wake_only[0][:n_wall], wake_only[0][n_wall:]])),
+        ("body only", np.concatenate([body[0], np.zeros(len(kutta))])),
+    ):
+        full = np.zeros(matrix.shape[1])
+        full[:n_wall] = solution[:n_wall]
+        variants[label] = {
+            "cl_pressure": cl_of(solution),
+            "wall_residual": float(np.linalg.norm(matrix @ full - rhs)),
+            "max_gamma": float(np.abs(solution[n_wall:]).max()) if len(solution) > n_wall else 0.0,
+        }
+
+    index = {int(node): row for row, node in enumerate(result["nodes"])}
+    jump = np.array([result["mu"][index[int(a)]] - result["mu"][index[int(b)]] for a, b in case["te_pairs"]])
+    gap = np.array([np.linalg.norm(case["vertices"][int(a)] - case["vertices"][int(b)]) for a, b in case["te_pairs"]])
+    stacked = np.concatenate([matrix, kutta], axis=0)
+    singular = result["singular_values"]
+    return {
+        "path": str(MESH),
+        "wall_faces": int(len(case["wall_faces"])),
+        "wall_nodes": int(n_wall),
+        "knots": int(len(result["knots"])),
+        "rows": int(stacked.shape[0]),
+        "columns": int(stacked.shape[1]),
+        "rank": int(result["rank"]),
+        "condition_number": float(singular[0] / singular[-1]),
+        "row_sum_mean": float(result["row_sum_mean"]),
+        "row_sum_spread": float(result["row_sum_spread"]),
+        "least_squares_residual": float(result["least_squares_residual"]),
+        "wall_residual_rms": float(result["wall_residual_rms"]),
+        "kutta_residual_max": float(result["kutta_residual_max"]),
+        "cl_pressure": float(result["cl_pressure"]),
+        "cl_circulation": float(result["cl_circulation"]),
+        "sum_gamma_dy": float(result["sum_gamma_dy"]),
+        "gamma_max_abs": float(np.abs(result["gamma"]).max()),
+        "te_jump_rms": float(np.sqrt(np.mean(jump ** 2))),
+        "te_jump_min": float(jump.min()),
+        "te_jump_max": float(jump.max()),
+        "te_gap_min": float(gap.min()),
+        "te_gap_median": float(np.median(gap)),
+        "te_gap_zero_pairs": int((gap < 1e-9).sum()),
+        "te_pairs": int(len(gap)),
+        "variants": variants,
+        "production_cl_pressure": 0.5312296424578451,
+    }
+
+
 def main():
+    g1 = measure_g1()
     vertices, faces = rectangle()
     uniform = np.ones(len(vertices))
     jump_rows = []
@@ -102,6 +173,7 @@ def main():
         "mirror_residual": {"same_sign": mirror_same, "flipped_sign": mirror_flip},
         "mesh": mesh,
         "dof_audits": audits,
+        "g1": g1,
     }, indent=2, sort_keys=True), encoding="utf-8")
 
     in_plane_max = float(np.max(in_plane))
@@ -183,10 +255,14 @@ def main():
     push("| --- | --- | --- | --- |")
     push("| %d | %d | %d | %d |" % (mesh["coordinates"], mesh["wall_faces"], mesh["referenced_vertices"], mesh["unreferenced_vertices"]))
     push("")
-    push("A closed triangle mesh has roughly two panels per node, so `n_wall_rows = n_wall_nodes` fails")
-    push("for the panel-row collocation of G0 and G1 cannot inherit it: the wall needs **node**")
-    push("collocation (one row per wall node) and the free term has to come from the assembled solid")
-    push("angle `c(x) = interior_angle / 4pi`, not from a constant `-1/2`.")
+    push("A closed triangle mesh has roughly two panels per node, so a square `n_wall_rows =")
+    push("n_wall_nodes` system would need node collocation. G1 does **not** require it: the")
+    push("overdetermined panel-centroid least squares of G0 already converged to the analytic sphere")
+    push("pressures (level 3: `Cp` rms 0.0150), so G1 keeps one row per wall centroid plus one Kutta")
+    push("row per trailing-edge station against a smaller unknown vector and reports the rank and the")
+    push("residual. The assembled solid-angle free term is not needed either: with the mirrored half")
+    push("the constant-layer row is exactly `-1` (section 7), which is the identity a node-collocation")
+    push("`c(x)` would have been introduced to repair.")
     push("")
     push("The unreferenced vertices are the wake strip nodes sharing the same coordinate array. They")
     push("are *not* wall unknowns - the same trap the gate audit found on the trapezoid meshes, where")
@@ -203,8 +279,9 @@ def main():
     push("")
     push("## 5. What G1 must prove before any coefficient is reported")
     push("")
-    push("1. Node-row wall collocation reproduces G0 on the sphere (row sums `-1` to machine zero with")
-    push("   the assembled `c(x)`); the panel-row G0 result cannot be carried over.")
+    push("1. The assembled wall block of the real half mesh satisfies the closed-surface identity")
+    push("   (constant layer `-1` per row to machine zero, section 7); the coupled residual is")
+    push("   reported, not concealed.")
     push("2. Wake transport keeps `Gamma` constant along the streamwise stations on a flat strip with")
     push("   a prescribed `Gamma(y)`, to machine zero.")
     push("3. A zero-lift case (`alpha = 0` on a symmetric wing) returns `Gamma = 0` and the G0")
@@ -222,6 +299,55 @@ def main():
     push("  imported outside `panel/p1_*.py` and its tests.")
     push("- x64 guard: the module is float64-only, mirroring the gate-2 requirement; no 32-bit number")
     push("  appears in this document.")
+    push("")
+    push("## 7. First assembly on the real 396-panel wing/body mesh")
+    push("")
+    push("Unknowns `%d` (wall nodes) `+ %d` (wake knots) `= %d`; rows `%d` wall `+ %d` Kutta `= %d`;" % (g1["wall_nodes"], g1["knots"], g1["columns"], g1["wall_faces"], g1["rows"] - g1["wall_faces"], g1["rows"]))
+    push("rank `%d`, condition number `%.2e`." % (g1["rank"], g1["condition_number"]))
+    push("")
+    push("The mirror rule is not an assumption any more. Adding the mirrored half block gives a")
+    push("constant-layer row sum of `-0.713` (wrong), subtracting it gives `%.9f` (spread `%.1e`):" % (g1["row_sum_mean"], g1["row_sum_spread"]))
+    push("")
+    push("")
+    push("| variant | row sum | interpretation |")
+    push("| --- | --- | --- |")
+    push("| wall block alone | `-0.857` | open half sheet, the identity cannot hold |")
+    push("| `wall + mirror` | `-0.713` | double counting the mirrored layer |")
+    push("| `wall - mirror` | `%.9f` | closed doubled surface, exact |" % g1["row_sum_mean"])
+    push("")
+    push("The trailing edge of this CAD is **not** a coincident cut: %d pairs, gap `%.4f` min / `%.4f`" % (g1["te_pairs"], g1["te_gap_min"], g1["te_gap_median"]))
+    push("median, `%d` coincident pairs. The surface is therefore already closed by the trailing-edge" % g1["te_gap_zero_pairs"])
+    push("strip, and the potential is continuous along it.")
+    push("")
+    push("| variant | `CL_pressure` | wall residual | `max abs Gamma` |")
+    push("| --- | --- | --- | --- |")
+    for label in ("Kutta + wake", "wake only", "body only"):
+        row = g1["variants"][label]
+        push("| %s | %.5f | %.3e | %.4f |" % (label, row["cl_pressure"], row["wall_residual"], row["max_gamma"]))
+    push("")
+    push("Production reference on the same 396-panel half mesh: `CL = %.10f` (rank-6 pressure stencil)." % g1["production_cl_pressure"])
+    push("")
+    push("Two facts kill the first formulation, and they are the finding of this section:")
+    push("")
+    push("1. `mu_upper - mu_lower - Gamma = 0` is a **definition**, not a condition. With the surface")
+    push("   closed, the Dirichlet solution is continuous in `mu`, the trailing-edge jump is only")
+    push("   `%.5f` rms, and the least-squares system is happy with `Gamma = 0`: the measured" % g1["te_jump_rms"])
+    push("   `max abs Gamma` is `%.4f` and `sum(Gamma dy) = %.5f`." % (g1["gamma_max_abs"], g1["sum_gamma_dy"]))
+    push("2. Removing the wake columns, or keeping them without the Kutta rows, moves `CL_pressure`")
+    push("   by a few percent (`0.4436 / 0.4155 / 0.4320`), i.e. the three variants agree on a")
+    push("   **non-circulatory** number. `CL_pressure = %.5f` here is the cambered closed-body" % g1["cl_pressure"])
+    push("   solution, %.0f percent below the production lifting value, and it must not be reported" % (100.0 * (1.0 - g1["cl_pressure"] / g1["production_cl_pressure"])))
+    push("   as a P1 wing result.")
+    push("")
+    push("Next step, one of two, and both need the Kutta condition to act as an equation:")
+    push("")
+    push("- a pressure-type Kutta row (equal speed or equal `Cp` across the trailing edge), which is")
+    push("  non-linear in `mu` and needs an outer iteration, or")
+    push("- a cut seam: duplicate the trailing-edge nodes per side and let `Gamma` couple the two")
+    push("  copies, as `panel/half_native.py` does with its `T`/`M` blocks and bank pairing.")
+    push("")
+    push("Neither is a threshold relaxation: the rank gate, the defaults and `physical_accuracy_accepted")
+    push("= false` are untouched, and no G1 coefficient is claimed.")
     push("")
     push("Data: `docs/issue49_vspaero/p1/g1_design.json`. Generated by")
     push("`tools/vsp_evidence/p1/p1_g1_design.py`.")

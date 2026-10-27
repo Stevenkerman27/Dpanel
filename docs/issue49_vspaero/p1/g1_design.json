@@ -49,6 +49,50 @@
       1.2902850308392587e-06
     ]
   },
+  "g1": {
+    "cl_circulation": 0.0037945195225055775,
+    "cl_pressure": 0.4320303299528103,
+    "columns": 239,
+    "condition_number": 727.9814310936748,
+    "gamma_max_abs": 0.1629877112063029,
+    "knots": 26,
+    "kutta_residual_max": 0.00028496783005787694,
+    "least_squares_residual": 0.02454893168652053,
+    "path": "D:\\3D\\Projects\\panel\\runs\\half_cad_wingbody_v1\\surface.json",
+    "production_cl_pressure": 0.5312296424578451,
+    "rank": 239,
+    "row_sum_mean": -1.0,
+    "row_sum_spread": 2.886579864025407e-15,
+    "rows": 440,
+    "sum_gamma_dy": 0.0037945195225055775,
+    "te_gap_median": 0.04999999999999982,
+    "te_gap_min": 0.009248380140902679,
+    "te_gap_zero_pairs": 0,
+    "te_jump_max": 0.0062619216398003275,
+    "te_jump_min": -0.004002857051353059,
+    "te_jump_rms": 0.00228882928806702,
+    "te_pairs": 44,
+    "variants": {
+      "Kutta + wake": {
+        "cl_pressure": 0.4320303299528103,
+        "max_gamma": 0.1629877112063029,
+        "wall_residual": 0.024607176324646846
+      },
+      "body only": {
+        "cl_pressure": 0.4436436565139215,
+        "max_gamma": 0.0,
+        "wall_residual": 0.024138605289999088
+      },
+      "wake only": {
+        "cl_pressure": 0.41550101514488236,
+        "max_gamma": 0.5361945307157728,
+        "wall_residual": 0.02923633140425949
+      }
+    },
+    "wall_faces": 396,
+    "wall_nodes": 213,
+    "wall_residual_rms": 0.0012330914211199232
+  },
   "in_plane_potential": [
     0.0,
     0.0
