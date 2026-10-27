@@ -306,14 +306,23 @@ def _edge_table(faces):
     return edges
 
 
-def node_dof_audit(vertices, faces, *, tolerance=1e-9):
+def node_dof_audit(vertices, faces, *, tolerance=1e-9, n_test_equations=None):
     """Gate 3: nodal unknown bookkeeping, including topologically split nodes.
 
     A nodal (P1) formulation has one unknown per *geometric* node. Meshes that
     duplicate a trailing-edge node give it two unknowns, which silently breaks
     the continuity the basis claims. This audit merges coincident vertices,
-    compares the edge tables before and after merging, and reports whether a
-    gauge is still required (an open surface admits a constant doublet shift).
+    compares the edge tables before and after merging, and counts the unknowns
+    that a nodal discretisation would actually build.
+
+    Every count here is measured from the mesh; nothing is inferred from
+    ``len(vertices)``. A previous version reported ``n_equations = len(vertices)``
+    and ``equations_match_raw_unknowns = bool(len(vertices) == len(vertices))``,
+    which were tautologies (see issue #56). ``n_test_equations`` must be supplied
+    by the caller once the test space is chosen; until then it stays ``None`` and
+    no squareness claim is made. ``gauge_required`` is gone: an open surface does
+    not imply a gauge, and the null space has to be probed on the assembled
+    operator instead.
     """
     verts = np.asarray(vertices, dtype=float)
     tris = np.asarray(faces, dtype=int)
@@ -327,9 +336,12 @@ def node_dof_audit(vertices, faces, *, tolerance=1e-9):
         raise ValueError("tolerance must be positive")
     index_map = _merge_coincident(verts, tolerance)
     merged_faces = index_map[tris]
-    n_merged = int(merged_faces.max()) + 1
+    n_merged = int(len(np.unique(index_map)))
     counts = np.zeros(n_merged, dtype=int)
     np.add.at(counts, merged_faces.ravel(), 1)
+    raw_use = np.zeros(len(verts), dtype=int)
+    np.add.at(raw_use, tris.ravel(), 1)
+    used_merged = np.nonzero(counts > 0)[0]
     raw_edges = _edge_table(tris)
     merged_edges = _edge_table(merged_faces)
     raw_boundary = sorted(key for key, value in raw_edges.items() if value == 1)
@@ -340,16 +352,22 @@ def node_dof_audit(vertices, faces, *, tolerance=1e-9):
         groups.setdefault(int(merged), []).append(original)
     duplicated = {merged: g for merged, g in groups.items() if len(g) > 1}
     used_duplicated = sum(1 for merged in duplicated if counts[merged] > 0)
+    n_wall_used = int(len(used_merged))
+    square = None if n_test_equations is None else bool(int(n_test_equations) == n_wall_used)
     return {"n_vertices": int(len(verts)),
             "n_panels": int(len(tris)),
             "n_unique_vertices": n_merged,
+            "n_wall_used_vertices": n_wall_used,
+            "n_orphan_vertices": int(np.count_nonzero(raw_use == 0)),
+            "n_continuous_node_unknowns": n_wall_used,
+            "n_test_equations": None if n_test_equations is None else int(n_test_equations),
+            "square_system": square,
             "n_duplicated_groups": int(len(duplicated)),
             "n_duplicated_used": int(used_duplicated),
+            "n_distinct_physical_cut_traces": int(used_duplicated),
             "duplicated_vertex_groups": sorted(duplicated.values()),
             "n_unknowns_raw": int(len(verts)),
             "n_unknowns_merged": n_merged,
-            "n_equations": int(len(verts)),
-            "equations_match_raw_unknowns": bool(len(verts) == len(verts)),
             "max_panel_incidence": int(counts.max()),
             "n_edges_raw": len(raw_edges),
             "n_edges_merged": len(merged_edges),
@@ -359,11 +377,17 @@ def node_dof_audit(vertices, faces, *, tolerance=1e-9):
             "nonmanifold_edges": nonmanifold,
             "closed": bool(len(boundary) == 0),
             "split_nodes_present": bool(len(raw_boundary) != len(boundary)),
-            "gauge_required": bool(len(boundary) > 0),
+            "surface_has_boundary": bool(len(boundary) > 0),
+            "nullspace_probe_required": True,
             "tolerance": float(tolerance)}
 
 def assembled_free_terms(vertices, faces, *, tolerance=1e-9):
-    """Per-node sum of panel solid angle fractions (gate 2 applied to a mesh).
+    """Per-node sum of in-plane SECTOR angle fractions -- NOT a free term.
+
+    Deprecated by issue #56: summing in-plane sector angles over the incident fan
+    mixes single-panel normal limits and is not the 3D free term. Use
+    panel.p1_solid_angle.cone_solid_angle for corners and assembled_row_sum for
+    the constant-density identity. Kept for the historical PR54 table only.
 
     A doublet assembly that hard codes ``-0.5`` on the diagonal implicitly
     assumes every node sees ``2 pi`` of panel area. On a mesh with sharp edges
@@ -387,7 +411,8 @@ def assembled_free_terms(vertices, faces, *, tolerance=1e-9):
     used = incidence > 0
     smooth = np.abs(total - 0.5) <= 1e-3
     sharp = used & (total < 0.45)
-    return {"free_terms": total,
+    return {"rule": "sector_angle_not_free_term",
+            "free_terms": total,
             "incidence": incidence,
             "n_referenced": int(used.sum()),
             "n_unused_vertices": int((~used).sum()),

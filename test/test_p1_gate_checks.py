@@ -106,7 +106,10 @@ def test_node_audit_detects_split_shared_nodes():
     assert shared["n_unique_vertices"] == 4
     assert shared["n_unknowns_raw"] == 4
     assert shared["n_boundary_edges"] == 4
-    assert shared["gauge_required"] is True
+    assert shared["surface_has_boundary"] is True
+    assert shared["nullspace_probe_required"] is True
+    assert shared["n_wall_used_vertices"] == 4
+    assert shared["n_continuous_node_unknowns"] == 4
     assert shared["split_nodes_present"] is False
     split_verts = np.vstack([verts, verts[[1, 2]] + 1e-12])
     split_faces = np.array([[0, 1, 2], [4, 3, 5]])
@@ -126,7 +129,10 @@ def test_node_audit_closed_body_needs_no_gauge():
                       [2, 0, 5], [1, 2, 5], [3, 1, 5], [0, 3, 5]])
     report = node_dof_audit(verts, faces)
     assert report["closed"] is True
-    assert report["gauge_required"] is False
+    assert report["surface_has_boundary"] is False
+    assert report["n_wall_used_vertices"] == 6
+    assert report["n_test_equations"] is None
+    assert report["square_system"] is None
     assert report["n_boundary_edges"] == 0
     assert report["nonmanifold_edges"] == []
 
