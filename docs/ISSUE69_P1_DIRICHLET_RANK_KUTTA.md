@@ -58,11 +58,11 @@ the free wake has converged.
 
 In this cloud sandbox (Python 3.13.5, NumPy 2.3.5, SciPy 1.17.0),
 an independently authored reference implementation of the same two-stage
-algorithm was executed with pytest: **8 passed / exit 0**. The tests
+algorithm was executed with pytest: **9 passed / exit 0**. The tests
 exercise exact TE jump, overdetermined wall LS with nonzero optimum,
 analytic pressure Jacobian vs centred difference, independence from
 wall-equation scaling, no wall nullspace, a missing singular gap, nullity
-mismatch and invalid inputs. This is **not** a full DPanel checkout.
+mismatch invalid inputs and near-zero exact-wall-residual growth handling. This is **not** a full DPanel checkout.
 
 The current repository branch also contains its own
 \`test/test_p1_rank_aware_kutta.py\`. It needs full-repository execution;
