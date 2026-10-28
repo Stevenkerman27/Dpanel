@@ -242,7 +242,7 @@ def test_integration_accepted_geometry_is_resolved_and_material_labels_frozen(mo
     monkeypatch.setattr(b2, 'TotalVelocity', SmoothField)
     result = b2.solve_coupled_material_wake(mesh, 5., kutta='signed_speed', iterations=1)
     assert result['history'][0]['outgoing_update']['accepted']
-    assert len(seen) == 3  # canonical fixed solve + iteration 0 + accepted iteration 1
+    assert len(seen) == 2  # canonical iteration 0 reused; accepted iteration 1 re-solved
     np.testing.assert_array_equal(seen[-1], result['mesh'].groups[0].wake_xyz)
     assert not np.array_equal(seen[0], seen[-1])
     np.testing.assert_array_equal(mesh.groups[0].gamma_hat, result['mesh'].groups[0].gamma_hat)
@@ -296,7 +296,9 @@ def mock_coupling(monkeypatch, field):
                     jump_rms=0., pressure_kutta_rms=.001, signed_kutta_rms=.002,
                     linear_constrained_rank=3, linear_singular_min=.1,
                     nonlinear=None, group_results=[])
-    ops = dict(W=np.zeros((1, 1)), J=np.array([[1., 0., 0., 0.]]), K=np.array([[0., 1., 0., 0.]]))
+    ops = dict(A=np.zeros((1, 3)), W=np.zeros((1, 1)),
+               J=np.array([[1., 0., 0., 0.]]), K=np.array([[0., 1., 0., 0.]]),
+               grad=np.zeros((1, 3, 4)))
     g2 = types.ModuleType('panel.p1_lifting_g2')
     g2.assemble_multi = lambda model: ops
     g2.solve_multi = solve
@@ -325,7 +327,7 @@ def test_mock_coupling_resolves_accepted_geometry_and_snapshots_are_aligned(monk
         snapshots.append((arrays['g0_xyz'].copy(), snapshot_hash(arrays), record['state_sha256']))
     result = solve_coupled_material_wake(mesh, iterations=1, save_callback=save)
     assert result['history'][0]['outgoing_update']['accepted']
-    assert len(calls) == 3 and len(snapshots) == 2
+    assert len(calls) == 2 and len(snapshots) == 2
     assert not np.array_equal(calls[0], calls[-1])
     np.testing.assert_array_equal(calls[-1], result['mesh'].groups[0].wake_xyz)
     assert all(actual == recorded for _, actual, recorded in snapshots)
@@ -347,7 +349,7 @@ def test_mock_coupling_cannot_report_frozen_nodes_as_converged(monkeypatch, fail
     result = solve_coupled_material_wake(mesh, iterations=2)
     assert result['status'].startswith('blocked_')
     assert not result['converged'] and not result['kinematic_candidate']
-    assert len(calls) == 2
+    assert len(calls) == 1  # initial canonical solve only
     update = result['history'][0]['outgoing_update']
     assert not update['accepted'] and update['reason_counts'][failure] > 0
 
@@ -370,7 +372,8 @@ def frozen_sample():
     arrays = dict(mu=state['mu'], gamma=state['gamma'], alpha_deg=np.asarray(state['alpha_deg']),
                   wall_xyz=mesh.xyz, wall_faces=mesh.faces, wall_dof_face=mesh.dof_face,
                   g0_xyz=g.wake_xyz, g0_faces=g.wake_faces, g0_gamma_hat=g.gamma_hat,
-                  g0_free_nodes=free, sampling_eps_fraction=np.asarray(.05),
+                  g0_free_nodes=free, sampling_kernel=np.asarray(field.method),
+                  sampling_eps_fraction=np.asarray(.05),
                   sampling_ladder=np.asarray([1., .5]), sampling_order=np.asarray(48))
     arrays.update({'g0_face_'+k: v for k, v in face.items()})
     arrays.update({'g0_node_'+k: v for k, v in nodes.items()})
@@ -387,3 +390,31 @@ def test_frozen_field_replay_is_bitwise_and_rejects_input_tampering():
     arrays['mu'][0] += .01
     with pytest.raises(ValueError, match='SHA mismatch'):
         replay_snapshot(arrays, digest)
+
+
+def test_analytic_total_velocity_does_not_depend_on_legacy_gauss_order():
+    mesh, state = small_field()
+    field = TotalVelocity(mesh, state)
+    assert field.method == "analytic_edges"
+    p = np.array([.38, -.02, .024])
+    np.testing.assert_array_equal(field(p, order=48), field(p, order=96))
+    legacy = TotalVelocity(mesh, state, method="legacy_gauss")
+    far = np.array([.3, -.4, 1.7])
+    np.testing.assert_allclose(field(far), legacy(far, order=96), rtol=1e-10, atol=1e-10)
+
+
+def test_initial_equivalence_is_operator_gate_not_nonlinear_path(monkeypatch):
+    from panel.p1_lifting_g2 import make_conventional_fixture
+    from panel.p1_coupled_material_wake import solve_coupled_material_wake
+    import panel.p1_lifting_g2 as g2
+    mesh = generated_mesh()
+    original = g2.solve_multi
+    calls = []
+    def tracked(model, *args, **kwargs):
+        calls.append(kwargs.get("operators"))
+        return original(model, *args, **kwargs)
+    monkeypatch.setattr(g2, "solve_multi", tracked)
+    run = solve_coupled_material_wake(mesh, 5., kutta="signed_speed", iterations=0)
+    assert len(calls) == 1  # cannot follow two different nonlinear termination paths
+    assert run["initial_equivalence"]["W_relative"] < 1e-12
+    assert run["initial_equivalence"]["CL"] == 0.
