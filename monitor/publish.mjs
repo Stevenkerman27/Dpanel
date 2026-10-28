@@ -72,6 +72,21 @@ function git(args) {
   });
 }
 
+// 记录成功的发布：监听器据此把「我推的提交」与云端同账号的提交区分开。
+// 与 gh_push.mjs 的 recordPush 同一账本、同一条目形状。
+function recordPublish(refspec) {
+  const ledger = path.join(TMP, "own_actions.json");
+  const entry = { kind: "push", refspec: refspec || "", at: new Date().toISOString() };
+  let list = [];
+  try {
+    list = JSON.parse(fs.readFileSync(ledger, "utf8"));
+  } catch {}
+  const cutoff = Date.now() - 3 * 24 * 3600 * 1000;
+  list = list.filter((a) => Date.parse(a.at) > cutoff).concat([entry]);
+  fs.mkdirSync(path.dirname(ledger), { recursive: true });
+  fs.writeFileSync(ledger, JSON.stringify(list, null, 2), "utf8");
+}
+
 async function apiHead(target) {
   const r = await apiJson("/repos/" + target + "/git/ref/heads/" + branch);
   if (r.status !== 200) throw new Error("ref " + r.status + " " + (r.body || "").slice(0, 200));
@@ -120,6 +135,7 @@ if (headSha === remoteSha) {
 for (let i = 0; i < attempts; i++) {
   const p = await git(["push", "origin", "HEAD:refs/heads/" + branch]);
   if (p.code === 0) {
+    recordPublish("refs/heads/" + branch);
     console.log("PUSHED " + headSha.slice(0, 7) + " " + branch + " via git (attempt " + (i + 1) + ")");
     process.exit(0);
   }
@@ -163,6 +179,7 @@ const patch = await apiJson("/repos/" + target + "/git/refs/heads/" + branch, {
   body: { sha: commit.json.sha, force: false },
 });
 if (patch.status !== 200) throw new Error("ref " + patch.status + " " + (patch.body || "").slice(0, 300));
+recordPublish("refs/heads/" + branch);
 const check = await apiHead(target);
 console.log("API_PUSH " + remoteSha.slice(0, 7) + "->" + commit.json.sha.slice(0, 7) + " " + branch +
   " files=" + entries.length + " verified=" + (check === commit.json.sha));
