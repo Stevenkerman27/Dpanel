@@ -233,3 +233,30 @@ will exercise the actual repository function on local checkout. Source-review
 and independent reference evidence both contradict the hypothesis that the
 linear P1 source moment is entirely missing. The cause of the G1 chordwise CL
 collapse remains unproven.
+
+## 8. Mandatory identities if a future Galerkin prototype is built
+
+For a closed outward-oriented body with NO wake and constant physical
+doublet density, the existing collocation operator has the identity
+`A_collocation @ ones = -ones`. A correctly assembled weak operator
+must instead obey the **integrated** counterpart
+
+    A_G @ ones = -M @ ones,
+
+where `M @ ones` is the vector of integrals of the P1 test functions
+over the actual physical wall. This simultaneously detects incorrect
+jump mass, missing geometric DOF scatter, and lost constant mode.
+For a cut TE trial space, use a constant vector across *all* trace DOFs
+as a separate zero-jump test; preserve a distinct test for
+`mu_upper - mu_lower = H Gamma` at the actual cut.
+
+Additional independent matrix acceptance:
+(a) exact local P1 mass,
+(b) constant-doublet BIE identity on a closed wall,
+(c) independent off-sheet LINEAR doublet columns under rotation and
+translation,
+(d) near/shared edge quadrature-order convergence,
+(e) frozen `S,W,Gamma,TE` under grid refinement,
+(f) physical harmonic reference and CL/Cp convergence.
+A successful row count, tiny algebraic stationarity or a small
+weighted residual alone cannot establish the physical Galerkin model.
