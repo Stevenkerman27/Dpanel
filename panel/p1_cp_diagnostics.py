@@ -92,9 +92,9 @@ def compare_p1_to_offsurface(xyz,faces,dof_face,mu,potential,freestream,
     """Report both grad(mu) and U_t+grad(mu) conventions against total-potential FD."""
     grad,q=p1_surface_gradient(xyz,faces,dof_face,mu); U=_a("freestream",freestream).reshape(3)
     n=q["normal"]; ut=U-np.einsum("fi,i->f",n,U)[:,None]*n
-    if local_scale=="edge_min": scale=q["edge_min"]
-    elif local_scale=="sqrt_area": scale=np.sqrt(q["area"])
-    elif local_scale is None: scale=None
+    if local_scale is None: scale=None
+    elif isinstance(local_scale,str) and local_scale=="edge_min": scale=q["edge_min"]
+    elif isinstance(local_scale,str) and local_scale=="sqrt_area": scale=np.sqrt(q["area"])
     else: scale=_a("local_scale",local_scale)
     ladder=off_surface_cp_ladder(potential,q["centroid"],n,U,offsets,step_fraction,offset_sign,scale)
     cp0=cp_from_velocity(grad,np.linalg.norm(U)); cp1=cp_from_velocity(grad+ut,np.linalg.norm(U))
@@ -135,7 +135,9 @@ def pressure_load_diagnostic(cp,areas,normals,centers,reference_area,drag_axis,l
     d,l=_a("drag_axis",drag_axis).reshape(3),_a("lift_axis",lift_axis).reshape(3)
     rp=_a("reference_point",reference_point).reshape(3); sref,cref=float(reference_area),float(reference_chord)
     if n.shape!=c.shape or n.shape!=(len(cp),3) or len(a)!=len(cp) or sref<=0 or cref<=0: raise ValueError("bad load geometry/reference")
-    d,l=d/np.linalg.norm(d),l/np.linalg.norm(l)
+    dn,ln=np.linalg.norm(d),np.linalg.norm(l)
+    if dn<=0 or ln<=0: raise ValueError("drag/lift axes must be nonzero")
+    d,l=d/dn,l/ln
     ff=-(cp*a)[:,None]*n; cd=ff@d/sref; cl=ff@l/sref
     force=ff.sum(axis=0); moment=np.cross(c-rp,ff).sum(axis=0); net=float(cd.sum()); abs_sum=float(np.abs(cd).sum())
     return dict(face_cd_contributions=cd,face_cl_contributions=cl,CL_pressure=float(cl.sum()),CD_pressure=net,
