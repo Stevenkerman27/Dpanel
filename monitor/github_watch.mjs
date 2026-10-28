@@ -257,7 +257,9 @@ async function pollOnce(state, cfg) {
       if (seenCommits.has(c.sha)) continue;
       seenCommits.add(c.sha);
       if (isBaseline) continue;
-      if (isSelfCommit(c, cfg, selfEmails, selfLogins)) continue;
+      // My own commits are reported too, flagged rather than dropped: the cloud
+      // agent pushes with this same account, so dropping by author would hide
+      // exactly the work the ledger is meant to distinguish.
       events.push({
         kind: "commit",
         id: c.sha.slice(0, 7),
@@ -266,6 +268,7 @@ async function pollOnce(state, cfg) {
         url: c.html_url,
         at: c.commit?.author?.date || new Date().toISOString(),
         action: "新提交",
+        self: isSelfCommit(c, cfg, selfEmails, selfLogins),
         ts: new Date().toISOString(),
       });
     }
@@ -440,7 +443,7 @@ function renderEvents(events) {
     lines.push("#### " + (KIND_LABEL[kind] || kind) + "（" + list.length + "）");
     for (const e of list) {
       const author = e.author ? " @" + e.author : "";
-      const tag = e.self ? "（本人账号）" : "";
+      const tag = e.self ? (e.localAction ? "（本人账号·已核对为我的操作）" : "（本人账号·可能是你手动操作）") : "";
       lines.push("- " + e.action + " " + e.id + " " + e.title + author + tag + " — " + e.url);
     }
     lines.push("");
@@ -491,8 +494,10 @@ async function runOnce(cfg, { quiet = false } = {}) {
   try {
     const { events: rawEvents, statuses, isBaseline, commitsCount } = await pollOnce(state, cfg);
     const ownActions = loadOwnActions();
-    const suppressed = rawEvents.filter((e) => e.self && isLocalAction(e, ownActions)).length;
-    const events = rawEvents.filter((e) => !(e.self && isLocalAction(e, ownActions)));
+    // 不再按 actor 静默丢弃：同账号事件照常上报，只用本机 action 账本标注"是否我的操作"。
+    const events = rawEvents.map((e) => (e.self ? { ...e, localAction: isLocalAction(e, ownActions) } : e));
+    const mineEvents = events.filter((e) => e.self);
+    const mineVerified = mineEvents.filter((e) => e.localAction).length;
     state.lastPollAt = started;
     state.failures = 0;
     state.lastError = null;
@@ -508,7 +513,7 @@ async function runOnce(cfg, { quiet = false } = {}) {
     if (!quiet) {
       const head = isBaseline
         ? "[基线] 首次运行，记录当前 " + commitsCount + " 条最近提交，不视为新事件。"
-        : "[轮询] " + new Date().toLocaleString("zh-CN", { hour12: false }) + " 新事件 " + events.length + " 条" + (suppressed ? "（本人操作 " + suppressed + " 条已过滤）" : "") + (events.some((e) => e.self) ? "（含同账号的云端事件）" : "");
+        : "[轮询] " + new Date().toLocaleString("zh-CN", { hour12: false }) + " 新事件 " + events.length + " 条" + (mineEvents.length ? "（本人账号 " + mineEvents.length + " 条，其中 " + mineVerified + " 条已与本地操作核对，其余可能是你手动操作）" : "");
       note(head);
       note("  " + statuses.join("；") + (state.rate ? "；" + fmtRate(state.rate) : ""));
       if (events.length) note("\n" + renderEvents(events));

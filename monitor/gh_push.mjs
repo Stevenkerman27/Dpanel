@@ -128,6 +128,20 @@ function git(args, cwd) {
   });
 }
 
+// 记录成功的 push：监听器据此把「我推的提交」与云端同账号的提交区分开。
+function recordPush(refspec) {
+  const ledger = path.join(HERE, "state", "own_actions.json");
+  const entry = { kind: "push", refspec: refspec || "", at: new Date().toISOString() };
+  let list = [];
+  try {
+    list = JSON.parse(fs.readFileSync(ledger, "utf8"));
+  } catch {}
+  const cutoff = Date.now() - 3 * 24 * 3600 * 1000;
+  list = list.filter((a) => Date.parse(a.at) > cutoff).concat([entry]);
+  fs.mkdirSync(path.dirname(ledger), { recursive: true });
+  fs.writeFileSync(ledger, JSON.stringify(list, null, 2), "utf8");
+}
+
 async function withRetry(cwd, build) {
   const order = routeOrder();
   let last = { code: 1, out: "", err: "no attempt" };
@@ -189,6 +203,7 @@ if (cmd === "push") {
 }
 
 if (res.code === 0) {
+  if (cmd === "push") recordPush(rest[0]);
   if (cmd === "ls-remote") console.log(res.out);
   process.exit(0);
 }

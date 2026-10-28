@@ -100,4 +100,4 @@ node monitor\post_comment.mjs <apiPath> <bodyFile> --delete <commentId>   # 顺�
 
 云端 agent 与本地用的是**同一个 GitHub 账号**，所以只按 actor 过滤会把云端工作一并吞掉。现在的做法：本地每次通过 `post_comment.mjs` / `gh_api.mjs` 做写操作（POST/PUT/PATCH/DELETE）都记一条 `{kind, number, at}` 到账本；监听器看到本人账号的事件时，若 30 分钟内账本里有同号记录，标「已核对为我的操作」，否则标「**可能是你手动操作**」——两种都照常上报，不再静默丢弃。
 
-`gh_api.mjs` 的记录覆盖 PR 创建/合并/关闭、issue 关闭等（`number` 从路径里取）；`git push` 走 `gh_push.mjs`，目前仍按「有 commit 事件即视为自己推的」处理（`kind: "push"` 分支）。
+`gh_api.mjs` 记录 PR 创建/合并/关闭、issue 关闭等（`number` 从路径取）；`gh_push.mjs` 在 push 成功时记一条 `kind: "push"`，监听器把它与 30 分钟内的 commit 事件配对。提交本身**不再按作者丢弃**（同账号，云端也这样推），只是打标签。
