@@ -19,6 +19,7 @@ import https from "node:https";
 import http from "node:http";
 import tls from "node:tls";
 import { fileURLToPath } from "node:url";
+import { apiRequest } from "./net.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -106,6 +107,31 @@ function saveJson(file, obj) {
   fs.renameSync(tmp, file);
 }
 
+// Comments and pushes I make locally are logged to this ledger, because the cloud
+// agent uses the SAME GitHub account: without it every cloud comment would be
+// filtered as "mine", which is exactly how cloud work went unnoticed.
+const OWN_ACTIONS_PATH = path.join(STATE_DIR, "own_actions.json");
+
+function loadOwnActions() {
+  try {
+    return JSON.parse(fs.readFileSync(OWN_ACTIONS_PATH, "utf8"));
+  } catch {
+    return [];
+  }
+}
+
+function isLocalAction(ev, actions) {
+  const num = String(ev.id || "").replace("#", "");
+  const at = Date.parse(ev.at || ev.ts || "");
+  if (!Number.isFinite(at)) return false;
+  return actions.some((a) => {
+    const delta = Math.abs(at - Date.parse(a.at || ""));
+    if (!Number.isFinite(delta) || delta > 30 * 60 * 1000) return false;
+    if (a.kind === "push") return ev.kind === "commit";
+    return a.number != null && String(a.number) === num;
+  });
+}
+
 function appendEvents(events) {
   if (!events.length) return;
   ensureStateDir();
@@ -149,41 +175,9 @@ function trimEventsFile() {
 
 /* ---------------- HTTP ---------------- */
 
-function request(url, headers, timeoutMs = 20000) {
-  return new Promise((resolve) => {
-    const target = new URL(url);
-    const proxy = new URL(loadConfig().proxy);
-    const agent = new https.Agent({ keepAlive: false });
-    agent.createConnection = (_options, callback) => {
-      const connect = http.request({
-        hostname: proxy.hostname, port: Number(proxy.port || 80),
-        method: "CONNECT", path: target.hostname + ":443", timeout: timeoutMs,
-      });
-      connect.on("connect", (res, socket, head) => {
-        if (res.statusCode !== 200) {
-          socket.destroy();
-          callback(new Error("proxy CONNECT HTTP " + res.statusCode));
-          return;
-        }
-        if (head.length) socket.unshift(head);
-        callback(null, tls.connect({ socket, servername: target.hostname }));
-      });
-      connect.on("timeout", () => connect.destroy(new Error("proxy timeout")));
-      connect.on("error", (error) => callback(error));
-      connect.end();
-    };
-    const req = https.get(url, { headers, agent, timeout: timeoutMs }, (res) => {
-      const chunks = [];
-      res.on("data", (c) => chunks.push(c));
-      res.on("end", () =>
-        resolve({ status: res.statusCode || 0, headers: res.headers, body: Buffer.concat(chunks).toString("utf8"), error: null })
-      );
-    });
-    req.on("timeout", () => {
-      req.destroy(new Error("timeout"));
-    });
-    req.on("error", (err) => resolve({ status: 0, headers: {}, body: "", error: err.message }));
-  });
+// 传输统一走 net.mjs：代理/直连自动切换 + 指数退避 + 路由记忆，这里只保留 API 语义。
+function request(url, headers, timeoutMs = 20000, attempts = 6) {
+  return apiRequest(url, { headers, timeoutMs, attempts });
 }
 
 async function apiGet(url, etag, cfg) {
@@ -244,7 +238,7 @@ async function pollOnce(state, cfg) {
 
   // commits
   const commitsRes = await apiGet(base + "/commits?per_page=50", state.etags.commits, cfg);
-  if (commitsRes.error) throw new Error("代理请求失败，停止本轮，不切换直连：" + commitsRes.error);
+  if (commitsRes.error) throw new Error("请求失败（代理与直连均不可用）：" + commitsRes.error);
   let commits = [];
   if (commitsRes.status === 200) {
     commits = JSON.parse(commitsRes.body);
@@ -495,7 +489,10 @@ async function runOnce(cfg, { quiet = false } = {}) {
   let state = loadState() || emptyState();
   const started = new Date().toISOString();
   try {
-    const { events, statuses, isBaseline, commitsCount } = await pollOnce(state, cfg);
+    const { events: rawEvents, statuses, isBaseline, commitsCount } = await pollOnce(state, cfg);
+    const ownActions = loadOwnActions();
+    const suppressed = rawEvents.filter((e) => e.self && isLocalAction(e, ownActions)).length;
+    const events = rawEvents.filter((e) => !(e.self && isLocalAction(e, ownActions)));
     state.lastPollAt = started;
     state.failures = 0;
     state.lastError = null;
@@ -511,7 +508,7 @@ async function runOnce(cfg, { quiet = false } = {}) {
     if (!quiet) {
       const head = isBaseline
         ? "[基线] 首次运行，记录当前 " + commitsCount + " 条最近提交，不视为新事件。"
-        : "[轮询] " + new Date().toLocaleString("zh-CN", { hour12: false }) + " 新事件 " + events.length + " 条";
+        : "[轮询] " + new Date().toLocaleString("zh-CN", { hour12: false }) + " 新事件 " + events.length + " 条" + (suppressed ? "（本人操作 " + suppressed + " 条已过滤）" : "") + (events.some((e) => e.self) ? "（含同账号的云端事件）" : "");
       note(head);
       note("  " + statuses.join("；") + (state.rate ? "；" + fmtRate(state.rate) : ""));
       if (events.length) note("\n" + renderEvents(events));

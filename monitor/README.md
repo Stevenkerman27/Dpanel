@@ -82,3 +82,16 @@ node monitor\post_comment.mjs <apiPath> <bodyFile> --delete <commentId>   # 顺�
 
 - 唤醒依赖 DSH 后台任务存活。DSH 或宿主机重启后进程消失，不会有任何通知；下次用户发消息时用 `--status` 检查并重启即可。
 - 连续 24 次轮询失败（约 6 小时断网）时进程会以退出码 3 结束并打印 `WAKE-ERROR`，同样触发通知，避免静默死亡。
+
+## 网络层（2026-10-28 重写）
+
+代理会周期性 ECONNRESET，而 `api.github.com` 直连往往还通；git 推送还会偶发 `Recv failure: Connection was reset`。传输因此不再各脚本各写一套，统一到两个模块：
+
+| 文件 | 作用 | 用法 |
+|---|---|---|
+| `monitor/net.mjs` | HTTPS 请求：代理/直连自动交替、指数退避（`min(15s, 0.8*2^i)`）、路由记忆 `state/route.json`、ETag/304、`postComment()` | `node monitor/net.mjs --probe`、`node monitor/net.mjs GET <apiPath>`，或 `import { apiJson } from './net.mjs'` |
+| `monitor/gh_push.mjs` | git push/fetch/ls-remote：两条路由（proxy 带 `http.proxy=`，direct 显式清空），`http.sslBackend=openssl`（本机 schannel 报 `SEC_E_NO_CREDENTIALS`），重试 8 次，认证走 `http.extraHeader` | `node monitor/gh_push.mjs fetch runs/integ_git`、`node monitor/gh_push.mjs push runs/x HEAD:branch` |
+
+`github_watch.mjs`、`post_comment.mjs`、`gh_api.mjs` 已全部改为调用 `net.mjs`，不再各自实现 CONNECT 隧道。实测：`--probe` 两条路由都 200；一次 push 中代理 `Recv failure` 后**自动切直连一次成功**；`fetch` 一次拉全 49 个远端分支。
+
+沙箱限制（踩过，写死在这里）：DSH 沙箱禁止 node 用管道捕获子进程输出，`spawn(git)` 默认 `stdio:'pipe'` 直接 EPERM。`gh_push.mjs` 因此把子进程 stdout/stderr 重定向到 `state/git-*.log` 再读回；且 Windows 下 spawn 不走 PATHEXT，必须用 `C:\Program Files\Git\cmd\git.exe` 绝对路径。

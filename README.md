@@ -63,10 +63,13 @@ CAD原生原点是OCC保守包围盒中心，B-spline控制网的包围盒可大
 
 厚翼身全壁面0.5h加密已因内存预算终止，记录为 `resource_rejected`；只生成并检查了网格，没有加密后流场。当前不继续此精度路线。
 
-## P1 continuous research solver (integration branch)
+## P1 continuous research solver
 
-This branch introduces the continuous P1 doublet solver that previously existed only on
-research branches. It is a research path, not a production solver: `physical_accuracy_accepted=false`.
+All research branches were consolidated into this one (`#64`, see
+`docs/BRANCH_CONSOLIDATION.md`); the 23-commit import history lives on the branch
+`consolidat/master` and every former branch tip is kept as a tag `archive/<branch>`.
+The continuous P1 doublet solver is a research path, not a production solver:
+`physical_accuracy_accepted=false`.
 
 Requirements: Python 3.11 with `numpy` and `jax` (CPU is enough). Run from the repository root.
 

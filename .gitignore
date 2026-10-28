@@ -54,6 +54,7 @@ runs/
 *.raw
 
 # Local audit workspace, dependency snapshots, and toolchains
+archive/
 **/audit/
 upgrade/
 OpenVSP-3.52.1-win64/
