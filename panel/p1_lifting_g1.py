@@ -131,15 +131,14 @@ def _interpolation_basis(values, stations):
     return out
 
 
-def from_dpanel_half_surface(path):
-    """Load a true positive-y DPanel half-surface and create a FULL mirrored G1.
+def _from_dpanel_half_surface_edges(path):
+    """Legacy adapter for surfaces that only declare trailing_edges vertex pairs.
 
-    This is deliberately an *experimental geometric adapter*: the source
-    trailing_edges pairing, not a guessed min-x/max-x location, defines TE banks.
-    An exactly shared sharp-TE vertex is split in the P1 POTENTIAL space on its
-    lower bank; CAD vertex coordinates remain untouched. For finite TE gap the
-    physical upper/lower nodes already differ and keep their base geometry.
+    Keep for schemas whose TE banks really are distinct vertex pairs. Surfaces
+    that declare upper_te_faces/lower_te_faces go through the fixed adapter
+    below, which pairs the shared TE edge and splits only the potential trace.
     """
+
     data=json.loads(Path(path).read_text(encoding='utf-8'))
     xyz=np.asarray(data['coordinates'],float)
     faces=np.asarray(data['faces'],int)
@@ -198,6 +197,90 @@ def from_dpanel_half_surface(path):
                 p1_te,te_y,dface,nd,vertices,full_wake,ys,Ghat,chord,
                 float(ys[-1]-ys[0]),f'half CAD mirrored: {Path(path).name}',ref_area,rp)
 
+
+
+def from_dpanel_half_surface(path):
+    """Load a true positive-y DPanel half-surface and create a FULL mirrored G1.
+
+    The cross-TE pairing comes from the declared ``upper_te_faces`` /
+    ``lower_te_faces`` arrays: each pair shares the physical TE edge, so a sharp
+    TE has the same geometric node on both banks and only the P1 POTENTIAL trace
+    is split. ``trailing_edges`` is the TE polyline (a chain of TE edges), not a
+    bank pairing; mistaking the chain for bank pairs leaves the model without a
+    circulation unknown and forces Gamma to its minimum-norm value of zero.
+
+    Surfaces without upper/lower TE face arrays fall back to the legacy
+    trailing_edges adapter.
+    """
+    data=json.loads(Path(path).read_text(encoding='utf-8'))
+    if 'upper_te_faces' not in data or 'lower_te_faces' not in data:
+        return _from_dpanel_half_surface_edges(path)
+    xyz=np.asarray(data['coordinates'],float)
+    faces=np.asarray(data['faces'],int)
+    wake=np.asarray(data['wake_faces'],int)
+    up_te=np.asarray(data['upper_te_faces'],int)
+    lo_te=np.asarray(data['lower_te_faces'],int)
+    half_y=np.asarray(data['gamma_stations'],float)
+    tol=1e-10*max(1.,float(np.ptp(xyz,axis=0).max()))
+    if np.any(xyz[:,1]<-tol) or half_y[0]<-tol or np.any(np.diff(half_y)<=0):
+        raise ValueError('Half surface must have nonnegative y and increasing stations')
+    mirror_map=np.arange(len(xyz),dtype=int)
+    others=np.flatnonzero(xyz[:,1]>tol)
+    mirror_map[others]=len(xyz)+np.arange(len(others))
+    reflected=xyz[others]*np.array([1.,-1.,1.])
+    vertices=np.vstack([xyz,reflected])
+    n_faces=len(faces)
+    full_faces=np.vstack([faces,mirror_map[faces][:,::-1]])
+    full_wake=np.vstack([wake,mirror_map[wake][:,::-1]])
+    tri=vertices[full_faces]
+    normal=np.cross(tri[:,1]-tri[:,0],tri[:,2]-tri[:,0])
+    face_bank=np.where(normal[:,2]>1e-12,1,np.where(normal[:,2]<-1e-12,-1,0))
+    # Mirrored face k is row n_faces+k with reversed winding.
+    up_full=np.concatenate([up_te,up_te+n_faces])
+    lo_full=np.concatenate([lo_te,lo_te+n_faces])
+    nodes=[]
+    for fu,fl in zip(up_full,lo_full):
+        shared=np.intersect1d(full_faces[fu],full_faces[fl])
+        if not len(shared):
+            raise ValueError('upper/lower TE faces share no node at row %d; '
+                             'refusing to guess a TE bank pairing'%int(fu))
+        nodes.extend(int(v) for v in shared)
+    te_nodes=np.unique(np.asarray(nodes,int))
+    ys=np.r_[-half_y[:0:-1],half_y]
+    te_y=vertices[te_nodes,1]
+    order=np.argsort(te_y,kind='stable')
+    te_nodes=te_nodes[order];te_y=te_y[order]
+    if te_y[0]<ys[0]-tol or te_y[-1]>ys[-1]+tol:
+        raise ValueError('TE nodes fall outside the declared gamma station span')
+    used_wall=np.unique(full_faces)
+    compact=np.full(len(vertices),-1,dtype=int)
+    compact[used_wall]=np.arange(len(used_wall))
+    dface=compact[full_faces].copy();nd=len(used_wall)
+    # Gamma is pinned to zero at the ACTUAL TE tips (the extremes of the TE
+    # node set), never at a station extrapolated outside the mesh.
+    tips=[float(ys[0]),float(ys[-1])]
+    inner=(te_y>tips[0]+tol)&(te_y<tips[1]-tol)
+    te_nodes=te_nodes[inner];te_y=te_y[inner]
+    duplicated={}
+    for node in te_nodes:
+        if int(node) not in duplicated:
+            duplicated[int(node)]=nd;nd+=1
+    for f in range(len(full_faces)):
+        if face_bank[f]<0:
+            dface[f]=[duplicated.get(int(v),int(compact[v])) for v in full_faces[f]]
+    te_up=compact[te_nodes]
+    te_down=np.asarray([duplicated[int(v)] for v in te_nodes],int)
+    pair=np.stack([te_up,te_down],axis=1)
+    H=_interpolation_basis(vertices[:,1][np.unique(full_wake)],ys)
+    wids=np.unique(full_wake)
+    Ghat=np.zeros((len(vertices),len(ys)-2))
+    Ghat[wids]=H[:,1:-1]
+    ref_area=float(data.get('reference_area',float(ys[-1]-ys[0])*data['reference_chord']))
+    chord=float(data.get('reference_chord',1.))
+    rp=np.asarray(data.get('reference_point',[0.,0.,0.]),float)
+    return Wing(vertices,full_faces,face_bank,te_nodes,te_up,te_down,pair,te_y,dface,nd,
+                vertices,full_wake,ys,Ghat,chord,float(ys[-1]-ys[0]),
+                f'half CAD mirrored: {Path(path).name}',ref_area,rp)
 
 def _mesh_as_kernel(wing):
     tri=wing.xyz[wing.faces]
