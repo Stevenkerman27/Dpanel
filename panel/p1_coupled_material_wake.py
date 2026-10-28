@@ -51,7 +51,7 @@ class TotalVelocity:
     `order=48` is the existing wake_velocity.sheet_velocity quadrature order.
     No self faces, source terms, or cross-group interactions are omitted.
     """
-    def __init__(self, mesh, state):
+    def __init__(self, mesh, state, *, method="analytic_edges"):
         parts = [(mesh.xyz, mesh.faces, np.asarray(state['mu'])[mesh.dof_face])]
         offset = 0
         for group in mesh.groups:
@@ -75,6 +75,12 @@ class TotalVelocity:
         theta = np.deg2rad(float(state['alpha_deg']))
         self.free = np.array([np.cos(theta), 0., np.sin(theta)])
         self._quadrature = {}
+        self.method = method
+        if method == "analytic_edges":
+            from .p1_analytic_sheet_velocity import AnalyticSheetField
+            self._analytic = AnalyticSheetField(parts, freestream=self.free)
+        elif method != "legacy_gauss":
+            raise ValueError("unknown sheet-velocity integration method")
         if not np.isfinite(self.mu_face).all() or not np.isfinite(self.grad_face).all():
             raise FloatingPointError("nonfinite solved P1 strength")
 
@@ -82,6 +88,10 @@ class TotalVelocity:
         p = np.asarray(point, float)
         if p.shape != (3,) or not np.isfinite(p).all():
             raise ValueError("field point must be a finite (3,) array")
+        if self.method == "analytic_edges":
+            # Analytically integrated edge moments: order is accepted for the
+            # old CLI/snapshot contract, but cannot change the physical value.
+            return self._analytic(p)
         if order not in self._quadrature:
             z, w = np.polynomial.legendre.leggauss(order)
             self._quadrature[order] = ((z+1)/2, w/2)
@@ -148,8 +158,13 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
                 errors[i] = np.linalg.norm(mean-previous)/uref
             previous = mean
         plus[i], minus[i] = up, um
-        refined = (field(p+h*n, order=2*order)+field(p-h*n, order=2*order))/2
-        qerrors[i] = np.linalg.norm(refined-mean)/uref
+        if getattr(field, "method", None) == "analytic_edges":
+            # No edge quadrature exists to refine. Zero is a not-applicable
+            # quadrature estimate, NOT a claim of PV/roundoff convergence.
+            qerrors[i] = 0.
+        else:
+            refined = (field(p+h*n, order=2*order)+field(p-h*n, order=2*order))/2
+            qerrors[i] = np.linalg.norm(refined-mean)/uref
     if not all(np.isfinite(a).all() for a in (plus, minus, errors, qerrors)):
         raise FloatingPointError("nonfinite velocity/epsilon/quadrature diagnostic")
     return dict(plus=plus, minus=minus, mean=(plus+minus)/2,
@@ -387,20 +402,32 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     for iteration in range(iterations+1):
         # Reassemble even iteration 0: explicitly test W-only assembly equivalence.
         ops = reassemble_wake_only(current, static)
-        state = solve_multi(current, alpha_deg, kutta=kutta, max_nfev=max_nfev, operators=ops)
         if iteration == 0:
-            initial_equivalence = {k: float(abs(state[k]-fixed[k])/max(1., abs(fixed[k])))
-                                   for k in load_names}
-            initial_equivalence['W_relative'] = float(np.linalg.norm(ops['W']-static['W'])
-                                                      / max(1., np.linalg.norm(static['W'])))
-            if max(initial_equivalence.values()) > 1e-10:
-                raise RuntimeError('iteration-0 fixed-wake equivalence failed: '+str(initial_equivalence))
+            # Same unchanged geometry: verify that W-only assembly is identical
+            # as an OPERATOR and reuse the canonical fixed-wake state. A second
+            # nonlinear least_squares call may stop at a different nfev even
+            # for a roundoff-sized W change (local receipt: 5 vs 6 nfev).
+            for key in ("A", "J", "K", "grad"):
+                if not np.array_equal(ops[key], static[key]):
+                    raise RuntimeError("iteration-0 fixed operator changed: "+key)
+            w_relative = float(np.linalg.norm(ops['W']-static['W'])
+                               / max(1., np.linalg.norm(static['W'])))
+            if w_relative > 1e-12:
+                raise RuntimeError("iteration-0 wake influence differs: "+str(w_relative))
+            state = fixed
+            initial_equivalence = {k: 0. for k in load_names}
+            initial_equivalence["W_relative"] = w_relative
+            initial_equivalence["method"] = "operator_gate_and_reused_canonical_state"
+        else:
+            state = solve_multi(current, alpha_deg, kutta=kutta,
+                                max_nfev=max_nfev, operators=ops)
         field = TotalVelocity(current, state)
         arrays = dict(mu=state['mu'], gamma=state['gamma'], cp=state['cp'],
                       alpha_deg=np.asarray(alpha_deg), wall_xyz=current.xyz,
                       wall_faces=current.faces, wall_dof_face=current.dof_face,
                       sampling_eps_fraction=np.asarray(eps_fraction),
-                      sampling_ladder=np.asarray(ladder, float), sampling_order=np.asarray(order))
+                      sampling_ladder=np.asarray(ladder, float), sampling_order=np.asarray(order),
+                      sampling_kernel=np.asarray(field.method))
         record = {k: state[k] for k in (*load_names, 'wall_rms', 'jump_rms',
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
@@ -458,7 +485,11 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                       convergence=int((~finite_limit).sum()),
                                       speed=int((finite_limit & ~fast).sum())+tangent_rejections,
                                       rejected=int((~eligible[free_nodes]).sum()))
-            diag.update(area_min=float(area.min()), aspect_p90=float(np.percentile(
+            diag.update(edge_integration=field.method,
+                        edge_quadrature_error_interpretation=(
+                            "not_applicable_exact_straight_edge_integrals"
+                            if field.method == "analytic_edges" else "48_vs_96_gauss"),
+                        area_min=float(area.min()), aspect_p90=float(np.percentile(
                         edges.max(axis=1)/edges.min(axis=1), 90)),
                         fixed_roots=len(mat.roots), node_epsilon_error_max=float(samples['epsilon_error'].max()),
                         node_quadrature_error_max=float(samples['quadrature_error'].max()),
@@ -487,7 +518,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         if candidate:
             status = 'kinematic_candidate_not_physical_acceptance'
         elif not nonlinear_ok:
-            status = 'blocked_nonlinear_solve'
+            status = ("blocked_initial_nonlinear_solve" if iteration == 0
+                      else "blocked_updated_nonlinear_solve")
+            record["nonlinear_failure_phase"] = ("initial_fixed_wake" if iteration == 0
+                                                 else "after_accepted_geometry_update")
         if not stop:
             update = dict(accepted=False, relaxation=None, trial_reasons=[],
                           eligible=counts, displacement_max=0., displacement_rms=0.)
@@ -540,7 +574,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                 kinematic_candidate=history[-1]['kinematic_candidate'],
                 physical_accuracy_accepted=False,
                 method='P1-coupled-rooted-material-arclength-Picard',
-                kernel='Phase-A-equation; finite Gauss edges; epsilon and order checks')
+                kernel='Phase-A-equation; closed-form P1 straight-edge moments and shared-trace cancellation; epsilon checks')
 
 
 def replay_snapshot(arrays, expected_sha):
@@ -562,8 +596,11 @@ def replay_snapshot(arrays, expected_sha):
         raise ValueError("snapshot has no wake groups")
     mesh = SimpleNamespace(xyz=arrays['wall_xyz'], faces=arrays['wall_faces'],
                            dof_face=arrays['wall_dof_face'], groups=tuple(groups))
+    # Legacy snapshots (without sampling_kernel) are intentionally still
+    # replayable using their original 48-point Gauss integration.
+    method = str(arrays['sampling_kernel']) if 'sampling_kernel' in arrays else "legacy_gauss"
     field = TotalVelocity(mesh, dict(mu=arrays['mu'], gamma=arrays['gamma'],
-                                   alpha_deg=float(arrays['alpha_deg'])))
+                                   alpha_deg=float(arrays['alpha_deg'])), method=method)
     kwargs = dict(eps_fraction=float(arrays['sampling_eps_fraction']),
                   ladder=arrays['sampling_ladder'], order=int(arrays['sampling_order']))
     differences = {}
