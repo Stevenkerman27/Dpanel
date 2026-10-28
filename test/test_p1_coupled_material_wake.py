@@ -418,3 +418,41 @@ def test_initial_equivalence_is_operator_gate_not_nonlinear_path(monkeypatch):
     assert len(calls) == 1  # cannot follow two different nonlinear termination paths
     assert run["initial_equivalence"]["W_relative"] < 1e-12
     assert run["initial_equivalence"]["CL"] == 0.
+
+
+def test_high_aspect_260_analytic_is_not_unresolved_48_point_gauss():
+    # This controls the SAME linear doublet strength, geometry and field point;
+    # only the edge integration differs. No viscous core is introduced.
+    tri = np.array([[0., 0., 0.], [26., 0., 0.], [26., .1, 0.]])
+    mesh = NS(xyz=tri, faces=np.array([[0, 1, 2]]),
+              dof_face=np.array([[0, 1, 2]]), groups=())
+    state = dict(mu=np.array([.1, .2, .3]), gamma=np.array([]), alpha_deg=0.)
+    p = tri.mean(axis=0) + np.array([0., 0., .000625])
+    analytic = TotalVelocity(mesh, state, method="analytic_edges")
+    legacy = TotalVelocity(mesh, state, method="legacy_gauss")
+    exact_value = analytic(p, order=48)
+    np.testing.assert_array_equal(exact_value, analytic(p, order=96))
+    # The original 48/96 global-edge Gauss evaluations both miss a near-edge
+    # contribution; increasing the fixed order once does not certify a PV.
+    assert np.linalg.norm(legacy(p, order=48)-exact_value) > .5
+    assert np.linalg.norm(legacy(p, order=96)-exact_value) > .5
+
+
+def test_unconverged_initial_pressure_kutta_is_distinct_from_later_failure(monkeypatch):
+    import sys
+    field = UniformField()
+    mesh, calls = mock_coupling(monkeypatch, field)
+    g2 = sys.modules["panel.p1_lifting_g2"]
+    original = g2.solve_multi
+    def blocked(*args, **kwargs):
+        state = original(*args, **kwargs)
+        state["nonlinear"] = dict(success=False, nfev=80,
+                                  message="maximum evaluations reached")
+        return state
+    monkeypatch.setattr(g2, "solve_multi", blocked)
+    result = solve_coupled_material_wake(mesh, iterations=4)
+    assert result["status"] == "blocked_initial_nonlinear_solve"
+    assert result["iterations"] == 0
+    assert result["history"][0]["nonlinear_failure_phase"] == "initial_fixed_wake"
+    assert result["history"][0]["outgoing_update"] is None
+    assert not result["converged"]
