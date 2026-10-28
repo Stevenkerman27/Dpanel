@@ -161,22 +161,71 @@ async function processOne(entry) {
   });
   if (ok) {
     log("OK " + entry.name + " " + (r.sha || "").slice(0, 7) + " via " + r.route + " verified=" + r.verified);
-    fs.renameSync(entry.file, path.join(DIR.done, fn));
+    moveManifest(entry.file, path.join(DIR.done, fn));
     return true;
   }
   log("FAIL " + entry.name + " exit=" + r.code + " " + String(r.text || "").slice(-200));
-  fs.renameSync(entry.file, path.join(DIR.failed, fn));
+  moveManifest(entry.file, path.join(DIR.failed, fn));
   return false;
 }
 
-async function drain() {
-  const list = pending();
-  if (!list.length) return { total: 0, ok: 0 };
-  let ok = 0;
-  for (const entry of list) {
-    if (await processOne(entry)) ok++;
+// 清单可能在处理过程中被另一个实例（守护 + 手动 --once）搬走 —— 那不是错误。
+function moveManifest(from, to) {
+  try {
+    fs.renameSync(from, to);
+  } catch (e) {
+    if (e.code !== "ENOENT") throw e;
+    log("SKIP manifest moved by another instance: " + path.basename(from));
   }
-  return { total: list.length, ok };
+}
+
+// 单实例锁：守护进程与手动 --once 同时跑会各自读到同一清单，
+// 两个 publish 都会针对同一个远端 HEAD 建 commit，后到的 PATCH 得到
+// 422 "Update is not a fast forward"，看起来像失败其实已经发布成功。
+const LOCK_PATH = path.join(OUTBOX, ".autopublish.lock");
+function acquireLock() {
+  try {
+    fs.writeFileSync(LOCK_PATH, String(process.pid), { flag: "wx" });
+    return true;
+  } catch (e) {
+    if (e.code !== "EEXIST") throw e;
+    let pid = 0;
+    let age = Infinity;
+    try {
+      pid = Number(fs.readFileSync(LOCK_PATH, "utf8").trim()) || 0;
+      age = Date.now() - fs.statSync(LOCK_PATH).mtimeMs;
+    } catch {}
+    const alive = pid > 0 && age < 600000;
+    if (alive) {
+      log("SKIP another autopublish holds the lock (pid " + pid + ", " + Math.round(age / 1000) + "s)");
+      return false;
+    }
+    log("STALE lock (pid " + pid + ", " + Math.round(age / 1000) + "s) removed");
+    try {
+      fs.unlinkSync(LOCK_PATH);
+    } catch {}
+    return acquireLock();
+  }
+}
+function releaseLock() {
+  try {
+    fs.unlinkSync(LOCK_PATH);
+  } catch {}
+}
+
+async function drain() {
+  if (!acquireLock()) return { total: 0, ok: 0, skipped: true };
+  try {
+    const list = pending();
+    if (!list.length) return { total: 0, ok: 0 };
+    let ok = 0;
+    for (const entry of list) {
+      if (await processOne(entry)) ok++;
+    }
+    return { total: list.length, ok };
+  } finally {
+    releaseLock();
+  }
 }
 
 const argv = process.argv.slice(2);
