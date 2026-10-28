@@ -30,7 +30,8 @@ node monitor/publish.mjs <repoDir> <branch> `
 
 步骤：
 1. Copy-Item '<源文件>' '<runs/master_git 下的目标路径>' -Force
-2. 提交信息写文件（PowerShell 不支持 heredoc）：用 Set-Content -Encoding utf8NoBOM 写 [msg 路径]
+2. 提交信息写文件（PowerShell 不支持 heredoc）：用 Set-Content -Encoding utf8 写 [msg 路径]
+   ⚠ 本机是 PowerShell 5.1，没有 `utf8NoBOM` 枚举；`-Encoding utf8` 会写 BOM，`publish.mjs` 会剥掉，所以直接用它即可。要完全避开 BOM 就用 `[System.IO.File]::WriteAllText($p, $t, (New-Object System.Text.UTF8Encoding($false)))`。
 3. Set-Location 'D:\3D\Projects\panel'; $ErrorActionPreference='Continue'
    node monitor\publish.mjs runs/master_git master --paths [路径] --message-file [msg 路径]
 4. 核对：node monitor\gh_api.mjs GET repos/Stevenkerman27/Dpanel/git/ref/heads/[branch]
