@@ -1,0 +1,91 @@
+{
+ "cases": [
+  {
+   "faces": 5120,
+   "freestream": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "radius": 1.0,
+   "samples": {
+    "0.01": {
+     "cp_max_abs_error": 0.34450206549391815,
+     "cp_max_computed": 0.9953933734874337,
+     "cp_max_exact": 0.9950503929846531,
+     "cp_mean_error": 0.20013885797285322,
+     "cp_min_computed": -0.9357561961252892,
+     "cp_min_exact": -1.2061014567411967,
+     "cp_rms_error": 0.21965544161899808,
+     "normal_flux_max": 0.03345866348864899,
+     "normal_flux_rms": 0.01923829163916469,
+     "offset_radius": 0.01
+    },
+    "0.02": {
+     "cp_max_abs_error": 0.15540982756597987,
+     "cp_max_computed": 0.992686845669795,
+     "cp_max_exact": 0.9926705781094431,
+     "cp_mean_error": 0.07526111276078609,
+     "cp_min_computed": -1.072162046237728,
+     "cp_min_exact": -1.1643151800935931,
+     "cp_rms_error": 0.0832010217980729,
+     "normal_flux_max": 0.05949700877477487,
+     "normal_flux_rms": 0.03438987987252725,
+     "offset_radius": 0.02
+    },
+    "0.05": {
+     "cp_max_abs_error": 0.02039935683699401,
+     "cp_max_computed": 0.9773013520929232,
+     "cp_max_exact": 0.9776962871118499,
+     "cp_mean_error": 0.005346357525397092,
+     "cp_min_computed": -1.0446839134555392,
+     "cp_min_exact": -1.0503914476906338,
+     "cp_rms_error": 0.006490792714926348,
+     "normal_flux_max": 0.137528682337556,
+     "normal_flux_rms": 0.079475586515068,
+     "offset_radius": 0.05
+    },
+    "0.1": {
+     "cp_max_abs_error": 0.004570434657600764,
+     "cp_max_computed": 0.934071269223004,
+     "cp_max_exact": 0.9347649481851028,
+     "cp_mean_error": 0.001067138821776613,
+     "cp_min_computed": -0.8910636673857111,
+     "cp_min_exact": -0.8924332834150221,
+     "cp_rms_error": 0.001458257153626046,
+     "normal_flux_max": 0.2498530895372927,
+     "normal_flux_rms": 0.14438450379069373,
+     "offset_radius": 0.1
+    },
+    "0.2": {
+     "cp_max_abs_error": 0.0019943675286200335,
+     "cp_max_computed": 0.8188481419708288,
+     "cp_max_exact": 0.8197589426971622,
+     "cp_mean_error": 0.0006148900639154553,
+     "cp_min_computed": -0.6609553076062193,
+     "cp_min_exact": -0.6624281978738003,
+     "cp_rms_error": 0.0009337277085453336,
+     "normal_flux_max": 0.42198948516535756,
+     "normal_flux_rms": 0.24385841911741069,
+     "offset_radius": 0.2
+    }
+   },
+   "seconds": 162.88779259999865,
+   "source_strength_total": 2.0816681711721685e-17,
+   "subdivisions": 4,
+   "surface": {
+    "cp_max": 0.9969599341898068,
+    "cp_min": -0.5812362645091755,
+    "drag_over_qA": -1.0541972953209235e-16,
+    "force_over_qA": [
+     -1.0541972953209235e-16,
+     -3.3852828583765153e-17,
+     -6.717537567013995e-17
+    ],
+    "sum_abs_face_drag_over_qA": 0.21121087929582466
+   }
+  }
+ ],
+ "physical_accuracy_accepted": false,
+ "schema": "dpanel.analytic_sphere.v1"
+}
