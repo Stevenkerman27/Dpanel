@@ -62,3 +62,40 @@ CAD原生原点是OCC保守包围盒中心，B-spline控制网的包围盒可大
 自适应背景场采用NPZ的 `points/tets/vertex_size`，可经wing case的 `geometry.background-view` 相对case路径传入；与原几何尺寸场取Min。该PostView分支为规避已复现的Gmsh多线程停滞，网格生成使用1线程并记录，流场仍请求8线程。见 `lifting3d/LIFTING_ADAPTATION_PROTOCOL.md`。
 
 厚翼身全壁面0.5h加密已因内存预算终止，记录为 `resource_rejected`；只生成并检查了网格，没有加密后流场。当前不继续此精度路线。
+
+## P1 continuous research solver (integration branch)
+
+This branch introduces the continuous P1 doublet solver that previously existed only on
+research branches. It is a research path, not a production solver: `physical_accuracy_accepted=false`.
+
+Requirements: Python 3.11 with `numpy` and `jax` (CPU is enough). Run from the repository root.
+
+    # 1) analytic sphere (P1 G0, closed body)
+    python -m panel.run_p1_closed --levels 1 2 3 --samples 96 --out /tmp/g0
+
+    # 2) generated single wing with a sharp trailing edge (P1 G1)
+    python -m panel.run_p1_lifting_g1 --chord-panels 4 --span-panels 6 --alpha 5 \
+        --kutta signed_speed --out /tmp/g1
+
+    # 3) real half-model CAD (mirrored to a full wing, TE pairing from upper/lower TE faces)
+    python -m panel.run_p1_lifting_g1 --half-surface cases/half_cad_wingbody_v1/surface.json \
+        --alpha 5 --kutta pressure --out /tmp/g1cad
+
+    # 4) main wing + raised tail (P1 G2, fixed wake)
+    python -m panel.run_p1_lifting_g2 --main-half-surface cases/half_cad_wingbody_v1/surface.json \
+        --tail-span 1.8 --tail-chord .55 --tail-x 1.6 --tail-z .35 --alpha 5 \
+        --kutta pressure --reference-area 4.0 --out /tmp/g2
+
+    # 5) opt-in experimental free wake (NOT converged, see docs/P1_FREE_WAKE_PROBE_FIX.md)
+    python -m panel.run_p1_steady_wake --main-half-surface cases/.../surface.json --alpha 5 \
+        --iterations 4 --relaxation .05 --max-step-chord .01 --probe-floor-fraction .6 --out /tmp/fw
+
+Conventions: input `surface.json` is a positive-y DPanel half model mirrored in y; coordinates
+are in chord units of the case; `reference_area` comes from the surface file (watch the
+declared-vs-planform mismatch documented in `docs/INTEGRATION_P1.md` §5.5); angles are in
+degrees; velocities are dimensionless multiples of the freestream. Every CLI writes
+`report.json` (raw Cp, pressure and circulation loads, wall/Kutta/jump residuals) into the
+`--out` directory, which must not exist yet.
+
+Tests: `pytest test/test_p1_*.py -q -p dsh_tmp_plugin` (62 passed). Full audit, acceptance
+commands, real exit codes and the list of unresolved assumptions: `docs/INTEGRATION_P1.md`.

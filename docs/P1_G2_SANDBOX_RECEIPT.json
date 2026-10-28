@@ -1,0 +1,329 @@
+{
+  "schema": "dpanel.p1_g2.sandbox_receipt.v1",
+  "runtime": {
+    "python": "3.13.5",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "platform": "Linux CPU",
+    "env": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1"
+  },
+  "git_base": "research/p1-g1-te-pairing-fix@4051ee848d859781795c2d63b70086798158f8a9",
+  "tests": {
+    "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m pytest -q -p no:cacheprovider test/test_p1_lifting_g1.py test/test_p1_lifting_g2.py",
+    "result": "8 passed / 2.17s"
+  },
+  "cli_commands": [
+    "python -m panel.run_p1_lifting_g2 --alpha 0 5 --out runs/generated_g2",
+    "python -m panel.run_p1_lifting_g2 --alpha 5 --kutta signed_speed --out runs/generated_g2_linear"
+  ],
+  "reports": {
+    "pressure": {
+      "schema": "dpanel.p1_lifting_g2.research.v1",
+      "physical_accuracy_accepted": false,
+      "source_sha256": null,
+      "components": [
+        {
+          "name": "main_wing",
+          "wall_faces": 112,
+          "wake_triangles": 24,
+          "gamma_dofs": 5,
+          "reference_area": 4.0
+        },
+        {
+          "name": "raised_tail",
+          "wall_faces": 80,
+          "wake_triangles": 16,
+          "gamma_dofs": 3,
+          "reference_area": 0.9900000000000001
+        }
+      ],
+      "n_wall_faces": 192,
+      "n_wall_dofs": 108,
+      "reference_area": 4.99,
+      "reference_chord": 1.0,
+      "kutta": "pressure",
+      "alpha": [
+        {
+          "alpha_deg": 0.0,
+          "kutta": "pressure",
+          "CL": 0.08362297093212274,
+          "CL_gamma": 0.09274179011983291,
+          "CD_pressure": -0.02964577102001813,
+          "CM_y": -0.03989741157624954,
+          "group_results": [
+            {
+              "name": "main_wing",
+              "CL_pressure": 0.09879351584749303,
+              "CL_gamma": 0.10568918532406052,
+              "gamma": [
+                0.08582366814810377,
+                0.072275216911177,
+                0.08175455796954889,
+                0.08901193574120086,
+                0.06667639730526598
+              ],
+              "gamma_y": [
+                -2.0,
+                -1.3333333333333335,
+                -0.6666666666666667,
+                0.0,
+                0.6666666666666665,
+                1.333333333333333,
+                2.0
+              ],
+              "Gamma_integral": 0.263694517383531,
+              "wall_faces": 112,
+              "wake_triangles": 24
+            },
+            {
+              "name": "raised_tail",
+              "CL_pressure": -0.015170544915370334,
+              "CL_gamma": -0.012947395204227614,
+              "gamma": [
+                -0.025054653737913934,
+                -0.02580653485815665,
+                -0.02092492481403585
+              ],
+              "gamma_y": [
+                -0.9,
+                -0.45,
+                0.0,
+                0.45000000000000007,
+                0.9
+              ],
+              "Gamma_integral": -0.0323037510345479,
+              "wall_faces": 80,
+              "wake_triangles": 16
+            }
+          ],
+          "jump_rms": 7.850462293418875e-17,
+          "signed_kutta_rms": 0.013565189349970214,
+          "pressure_kutta_rms": 5.456891803283357e-08,
+          "wall_rms": 0.001734028606157465,
+          "linear_constrained_rank": 100,
+          "linear_singular_min": 0.012864960211925805,
+          "nonlinear": {
+            "success": true,
+            "message": "`gtol` termination condition is satisfied.",
+            "nfev": 6
+          },
+          "physical_accuracy_accepted": false,
+          "derivative": null,
+          "field_npz": "alpha_p000.000.npz"
+        },
+        {
+          "alpha_deg": 5.0,
+          "kutta": "pressure",
+          "CL": 0.36547233020396047,
+          "CL_gamma": 0.34233313568962603,
+          "CD_pressure": -0.017593346735197777,
+          "CM_y": -0.1125727816736119,
+          "group_results": [
+            {
+              "name": "main_wing",
+              "CL_pressure": 0.3605511032330538,
+              "CL_gamma": 0.3381450602877572,
+              "gamma": [
+                0.2853678625179432,
+                0.22714434214433624,
+                0.2784745776025407,
+                0.2950899730811235,
+                0.17943113278098755
+              ],
+              "gamma_y": [
+                -2.0,
+                -1.3333333333333335,
+                -0.6666666666666667,
+                0.0,
+                0.6666666666666665,
+                1.333333333333333,
+                2.0
+              ],
+              "Gamma_integral": 0.8436719254179542,
+              "wall_faces": 112,
+              "wake_triangles": 24
+            },
+            {
+              "name": "raised_tail",
+              "CL_pressure": 0.004921226970906516,
+              "CL_gamma": 0.0041880754018688475,
+              "gamma": [
+                0.027355165147997962,
+                -0.00040294110214889045,
+                -0.0037316726510429055
+              ],
+              "gamma_y": [
+                -0.9,
+                -0.45,
+                0.0,
+                0.45000000000000007,
+                0.9
+              ],
+              "Gamma_integral": 0.010449248127662774,
+              "wall_faces": 80,
+              "wake_triangles": 16
+            }
+          ],
+          "jump_rms": 1.3597399555105182e-16,
+          "signed_kutta_rms": 0.01686775945310873,
+          "pressure_kutta_rms": 1.6760907596394066e-07,
+          "wall_rms": 0.0019177823458160356,
+          "linear_constrained_rank": 100,
+          "linear_singular_min": 0.012864960211925805,
+          "nonlinear": {
+            "success": true,
+            "message": "`gtol` termination condition is satisfied.",
+            "nfev": 5
+          },
+          "physical_accuracy_accepted": false,
+          "derivative": null,
+          "field_npz": "alpha_p005.000.npz"
+        }
+      ],
+      "elapsed_seconds": 0.40786923600012415,
+      "interpretation": "coupled P1 doublet wall, independent Gamma sheet/Kutta per lifting component",
+      "limitations": [
+        "research mode",
+        "no viscous drag",
+        "fixed planar wakes",
+        "G2 is not an experimentally validated aircraft",
+        "no JAX shape VJP yet"
+      ]
+    },
+    "signed_speed": {
+      "schema": "dpanel.p1_lifting_g2.research.v1",
+      "physical_accuracy_accepted": false,
+      "source_sha256": null,
+      "components": [
+        {
+          "name": "main_wing",
+          "wall_faces": 112,
+          "wake_triangles": 24,
+          "gamma_dofs": 5,
+          "reference_area": 4.0
+        },
+        {
+          "name": "raised_tail",
+          "wall_faces": 80,
+          "wake_triangles": 16,
+          "gamma_dofs": 3,
+          "reference_area": 0.9900000000000001
+        }
+      ],
+      "n_wall_faces": 192,
+      "n_wall_dofs": 108,
+      "reference_area": 4.99,
+      "reference_chord": 1.0,
+      "kutta": "signed_speed",
+      "alpha": [
+        {
+          "alpha_deg": 5.0,
+          "kutta": "signed_speed",
+          "CL": 0.3735012653967535,
+          "CL_gamma": 0.35069756806791813,
+          "CD_pressure": -0.016860577446291984,
+          "CM_y": -0.11590523065180904,
+          "group_results": [
+            {
+              "name": "main_wing",
+              "CL_pressure": 0.36983118657100167,
+              "CL_gamma": 0.34762779888751866,
+              "gamma": [
+                0.29392668540364686,
+                0.23562412514770953,
+                0.28608868136416044,
+                0.30026923684148993,
+                0.18508830857953193
+              ],
+              "gamma_y": [
+                -2.0,
+                -1.3333333333333335,
+                -0.6666666666666667,
+                0.0,
+                0.6666666666666665,
+                1.333333333333333,
+                2.0
+              ],
+              "Gamma_integral": 0.8673313582243591,
+              "wall_faces": 112,
+              "wake_triangles": 24
+            },
+            {
+              "name": "raised_tail",
+              "CL_pressure": 0.0036700788257519865,
+              "CL_gamma": 0.0030697691803994896,
+              "gamma": [
+                0.02443814499784791,
+                -0.0021589544671341,
+                -0.005259025852721089
+              ],
+              "gamma_y": [
+                -0.9,
+                -0.45,
+                0.0,
+                0.45000000000000007,
+                0.9
+              ],
+              "Gamma_integral": 0.0076590741050967266,
+              "wall_faces": 80,
+              "wake_triangles": 16
+            }
+          ],
+          "jump_rms": 2.482534153247273e-16,
+          "signed_kutta_rms": 4.3737714791252564e-15,
+          "pressure_kutta_rms": 0.029752303451792434,
+          "wall_rms": 0.001921475060741255,
+          "linear_constrained_rank": 100,
+          "linear_singular_min": 0.012864960211925805,
+          "nonlinear": null,
+          "physical_accuracy_accepted": false,
+          "derivative": {
+            "alpha_deg": 5.0,
+            "dCL_dalpha_rad": 3.1967541623473528,
+            "dCM_y_dalpha_rad": -0.8334005812702805,
+            "dCL_gamma_dalpha_rad": 2.866418607946051,
+            "dCL_gamma_groups_dalpha_rad": {
+              "main_wing": 2.669706305280462,
+              "raised_tail": 0.19671230266558917
+            }
+          },
+          "field_npz": "alpha_p005.000.npz"
+        }
+      ],
+      "elapsed_seconds": 0.32583082400014973,
+      "interpretation": "coupled P1 doublet wall, independent Gamma sheet/Kutta per lifting component",
+      "limitations": [
+        "research mode",
+        "no viscous drag",
+        "fixed planar wakes",
+        "G2 is not an experimentally validated aircraft",
+        "no JAX shape VJP yet"
+      ]
+    }
+  },
+  "independent_5deg": {
+    "main_CL_total_S": 0.3609549875322947,
+    "tail_CL_total_S": 0.05655498768421938,
+    "sum_uncoupled": 0.41750997521651406,
+    "coupled_CL": 0.36547233020396047,
+    "tail_coupled_CL_total_S": 0.004921226970906516
+  },
+  "file_sha256": {
+    "panel/p1_lifting_g2.py": "fe143b7cf9071c1d86524a435b2c027dbc9b0ebaaeb266a739f0565212d197c3",
+    "panel/run_p1_lifting_g2.py": "4f8c265b67abec5161cb68dd3cdca09d4a5d6965f484bd1cbcd6bc926c6c0c58",
+    "test/test_p1_lifting_g2.py": "3e995fa05c0c938173d28c08b2f8b01f96193f795bf2c48e48a44ededbfb17d0",
+    "docs/P1_G2_COUPLED.md": "9830b91a47805305b437a7564d799ae73f22e0f72e4bbe5cee056f9936481f24",
+    "runs/generated_g2/report.json": "32b51132d693a93974599972943b364f4bc87c7dc39aff8bff23730d29ada491",
+    "runs/generated_g2/mesh.npz": "13cd7d2141c1019fabaaf78541e373ab91e37295de0fb506c7d1322e20fa0405",
+    "runs/generated_g2/alpha_p000.000.npz": "ca8be0c7915e215f746e08029f11a1d2d1818fcc9cf3cd32145925510d5526dd",
+    "runs/generated_g2/alpha_p005.000.npz": "e35f8fc96c39381187b1d9ee2ae2eda34884d7000900f67c7c5a4ca259b7e0a3",
+    "runs/generated_g2_linear/report.json": "408e7048b03313070c8a9359ecd4e9fd45a2a5a510fae5cf78b2b6ee2887d902",
+    "runs/generated_g2_linear/mesh.npz": "13cd7d2141c1019fabaaf78541e373ab91e37295de0fb506c7d1322e20fa0405",
+    "runs/generated_g2_linear/alpha_p005.000.npz": "ab982b7e9975f624868fa8cc9c1a1375316709972cd0086d6368e9da7840c368"
+  },
+  "limits": [
+    "G2 synthetic/coupled main wing & raised tail run, not original 396-panel local CAD",
+    "physical_accuracy_accepted=false",
+    "VSPAERO not used as truth"
+  ]
+}
