@@ -173,9 +173,9 @@ It returns `ok`, explicit error codes, counts and
 `pressure_kutta_verified=False`. It never edits the geometry, potential,
 Gamma or original G1/G2 solver.
 
-Cloud sandbox has actually run **14 manufactured/negative tests** in
+Cloud sandbox has actually run **17 manufactured/negative tests (14 TE and 3 P1 operator)** in
 `/mnt/data/dpanel_issue71` (Python 3.13.5, NumPy 2.3.5, pytest):
-`14 passed / exit 0`. The new GitHub test also includes one
+`17 passed / exit 0`. The new GitHub test also includes one
 **full-repository generated-G1 integration test** (NOT run in cloud)
 which checks its three interior TE pairs and four attached seam edges.
 Real CAD data are not in the repo, so NO real-CAD cut validation is claimed.
@@ -209,3 +209,27 @@ Exit: the correct TE topology and analytic self jump are prerequisites;
 they do not solve the observed G1 chordwise CL collapse. Keep
 `physical_accuracy_accepted=false`, PR #68/#70 experimental, and
 production defaults unchanged.
+
+
+## 7. Added independent LINEAR P1 coefficient oracle
+
+`test/test_p1_operator_moment_oracle.py` directly imports the existing
+`p1_lifting_g1._doublet_matrix` to compare each of its THREE P1 nodal
+influence coefficients with an independent 90×90 Duffy quadrature:
+
+```
+point(u,v)=a + u*(b-a) + (1-u)*v*(c-a)
+N=[(1-u)*(1-v), u, (1-u)*v]
+dS=|(b-a) cross (c-a)|*(1-u)*du*dv
+D_j(point)=integral_T N_j(y) * n_y dot (point-y)/(4*pi*|point-y|^3) dS_y
+```
+
+The independent sandbox reference reproduced the existing G1 coefficient
+algebra and passed three additional Duffy tests at off-sheet points,
+including a rotated/noncoplanar triangle, a constant-density column-sum
+identity, and the full barycentric self trace. **This is not a run of the
+byte-exact GitHub implementation**; the newly committed regression file
+will exercise the actual repository function on local checkout. Source-review
+and independent reference evidence both contradict the hypothesis that the
+linear P1 source moment is entirely missing. The cause of the G1 chordwise CL
+collapse remains unproven.
