@@ -96,3 +96,12 @@ def test_bad_controls_and_TE_face_references_are_rejected():
                                   controls=RankControls(wall_rcond=2.))
     with pytest.raises(ValueError):
         pressure_squares(seed,g,[(np.array([22]),np.array([1]))])
+
+
+def test_zero_minimum_wall_residual_does_not_trigger_false_growth():
+    B,b,J,g,pairs,seed=synthetic()
+    b[3]=0.
+    result=solve_wall_nullspace_kutta(B,b,J,g,pairs,seed=seed)
+    assert result["status"]=="pressure_kutta_in_weak_wall_modes_not_physical_acceptance"
+    assert result["wall_rms"]<1e-12
+    assert result["pressure_kutta_rms"]<1e-10
