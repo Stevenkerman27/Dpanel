@@ -417,7 +417,6 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             state = fixed
             initial_equivalence = {k: 0. for k in load_names}
             initial_equivalence["W_relative"] = w_relative
-            initial_equivalence["method"] = "operator_gate_and_reused_canonical_state"
         else:
             state = solve_multi(current, alpha_deg, kutta=kutta,
                                 max_nfev=max_nfev, operators=ops)
@@ -570,6 +569,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         for g in current.groups}
     return dict(mesh=current, state=state, history=history, status=status, trends=trends,
                 iterations=len(history)-1, initial_equivalence=initial_equivalence,
+                initial_equivalence_method="operator_gate_and_reused_canonical_state",
                 seconds=time.perf_counter()-started, converged=False,
                 kinematic_candidate=history[-1]['kinematic_candidate'],
                 physical_accuracy_accepted=False,
