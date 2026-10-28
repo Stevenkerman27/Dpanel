@@ -40,6 +40,9 @@ for (const id of delIds) {
   console.log("delete", id, "->", res.status, res.route || "");
 }
 
+// --delete 是独立动作：删完就退出，避免「删除后又把文件内容重新发一遍」。
+if (delIds.length) process.exit(0);
+
 const bodyPath = bodyFile ? path.resolve(ROOT, bodyFile) : null;
 if (!apiPathRaw || !bodyPath || !fs.existsSync(bodyPath)) {
   if (delIds.length) process.exit(0);

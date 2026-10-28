@@ -32,6 +32,15 @@ if (!repoDir || !branch) {
 }
 const paths = String(arg("paths", "") || "").split(",").map((s) => s.trim()).filter(Boolean);
 const messageFile = arg("message-file", null);
+
+// PowerShell 的 Set-Content -Encoding utf8 会写 UTF-8 BOM，git 会把它当成提交标题的首字符（不可见 U+FEFF）→ 统一剥掉。
+if (messageFile && fs.existsSync(path.resolve(messageFile))) {
+  const raw = fs.readFileSync(path.resolve(messageFile), "utf8");
+  if (raw.charCodeAt(0) === 0xfeff) {
+    fs.writeFileSync(path.resolve(messageFile), raw.replace(/^\uFEFF/, ""), "utf8");
+    console.error("[publish] stripped UTF-8 BOM from " + messageFile);
+  }
+}
 const dryRun = Boolean(arg("dry-run", false));
 const attempts = Number(arg("attempts", 4));
 
