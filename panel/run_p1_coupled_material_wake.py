@@ -42,7 +42,11 @@ def main(argv=None):
     parser.add_argument('--relaxation', type=float, default=.15)
     parser.add_argument('--eps-fraction', type=float, default=.05)
     parser.add_argument('--ladder', type=float, nargs='+', default=[1., .5, .25, .125])
-    parser.add_argument('--quadrature-order', type=int, default=48)
+    parser.add_argument('--quadrature-order', type=int, default=48,
+                        help='Legacy Gauss order; ignored by analytic straight-edge integration')
+    parser.add_argument('--velocity-method', choices=('analytic_edges', 'legacy_gauss'),
+                        default='analytic_edges',
+                        help='Analytic P1 edges by default, legacy finite Gauss as A/B diagnostic')
     parser.add_argument('--epsilon-tol', type=float, default=.02)
     parser.add_argument('--quadrature-tol', type=float, default=.002)
     parser.add_argument('--max-nfev', type=int, default=80)
@@ -111,8 +115,15 @@ def main(argv=None):
                    eps_fraction=args.eps_fraction, ladder=args.ladder,
                    order=args.quadrature_order, epsilon_tol=args.epsilon_tol,
                    quadrature_tol=args.quadrature_tol, max_nfev=args.max_nfev,
-                   save_callback=save)
+                   velocity_method=args.velocity_method, save_callback=save)
         report = {k: v for k, v in result.items() if k not in ('mesh', 'state')}
+        report['negative_pressure_drag_warning'] = (
+            'CD_pressure is a signed near-field pressure integral subject to '
+            'large cancellation and is NOT a validated induced/total drag estimate'
+            if any(row['CD_pressure'] < 0 for row in result['history']) else None)
+        report['physical_validation_note'] = (
+            'No steady-wake claim; a finite epsilon result with rejected nodes '
+            'does not certify a principal-value limit or wall/Kutta consistency')
         _write_json(args.out/'report.json', report)
         # A blocked research run is valid evidence, NOT a successful integration run.
         receipt['exit_code'] = 2 if result['status'].startswith('blocked_') else 0
