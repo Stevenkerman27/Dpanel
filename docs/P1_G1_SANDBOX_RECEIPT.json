@@ -1,0 +1,98 @@
+{
+  "schema": "dpanel.p1_g1_sandbox.receipt.v1",
+  "python": "3.13.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.0",
+  "test": "4 passed",
+  "runs": {
+    "cambered_g1": {
+      "case": "smooth cambered closed TE",
+      "method": "pressure",
+      "faces": 216,
+      "gamma_dofs": 7,
+      "rows": [
+        {
+          "alpha_deg": 0.0,
+          "CL": 0.1418622164940367,
+          "CL_gamma": 0.14753912678725134,
+          "CD_pressure": -0.014734831610780843,
+          "CM_y": -0.08615864744267711,
+          "wall_rms": 0.0015575644907084075,
+          "jump_rms": 1.1102230246251565e-16,
+          "kutta_pressure_rms": 1.82907978552575e-08
+        },
+        {
+          "alpha_deg": 5.0,
+          "CL": 0.38856219403675546,
+          "CL_gamma": 0.3797408544224987,
+          "CD_pressure": -0.004059091324659574,
+          "CM_y": -0.10295959315308348,
+          "wall_rms": 0.0017786671353925449,
+          "jump_rms": 1.18687833744435e-16,
+          "kutta_pressure_rms": 9.86310578569558e-08
+        }
+      ]
+    },
+    "symmetric_g1": {
+      "case": "NACA00 closed TE",
+      "method": "signed_speed",
+      "faces": 112,
+      "gamma_dofs": 5,
+      "rows": [
+        {
+          "alpha_deg": 0.0,
+          "CL": 2.106908397747631e-14,
+          "CL_gamma": 1.8852974736915943e-14,
+          "CD_pressure": -0.031141615967510913,
+          "CM_y": -1.138455649196679e-14,
+          "wall_rms": 0.0018003431419354725,
+          "jump_rms": 2.6272671962866383e-16,
+          "kutta_pressure_rms": null
+        },
+        {
+          "alpha_deg": 5.0,
+          "CL": 0.3211198032679906,
+          "CL_gamma": 0.28377330175853216,
+          "CD_pressure": -0.01329439110799392,
+          "CM_y": -0.049548037861683554,
+          "wall_rms": 0.0021261263809120453,
+          "jump_rms": 9.930136612989092e-17,
+          "kutta_pressure_rms": null
+        }
+      ]
+    },
+    "half_adapter_g1": {
+      "case": "half CAD mirrored: generated_half_wing.json",
+      "method": "pressure",
+      "faces": 80,
+      "gamma_dofs": 3,
+      "rows": [
+        {
+          "alpha_deg": 0.0,
+          "CL": -5.201568342716456e-14,
+          "CL_gamma": -3.631979354167251e-14,
+          "CD_pressure": -0.03563860233408249,
+          "CM_y": 1.8057604023180573e-14,
+          "wall_rms": 0.0019488450875065739,
+          "jump_rms": 0.0,
+          "kutta_pressure_rms": 7.33895769398313e-15
+        },
+        {
+          "alpha_deg": 5.0,
+          "CL": 0.2851091539353705,
+          "CL_gamma": 0.22760658563035807,
+          "CD_pressure": -0.02317022375509668,
+          "CM_y": -0.017665859088183473,
+          "wall_rms": 0.002352680831428683,
+          "jump_rms": 1.2819751242557092e-16,
+          "kutta_pressure_rms": 1.7811232619461465e-07
+        }
+      ]
+    }
+  },
+  "sha256": {
+    "panel/p1_lifting_g1.py": "a35970c02139dc9c025108e88224096105237e82b2ee1e13f641d7d62cded302",
+    "panel/run_p1_lifting_g1.py": "8605a6a33623e4363da2999e29fd00f0cac4bedfa5819a7f5a4c0adb03e078a6",
+    "test/test_p1_lifting_g1.py": "047625aa205803bcb94bd21b693acf3d10d4717b2407bceffc84cdc008784ef9"
+  }
+}
