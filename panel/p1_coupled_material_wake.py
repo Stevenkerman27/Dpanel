@@ -371,7 +371,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 epsilon_tol=.02, quadrature_tol=.002,
                                 geometry_tol=.002, slip_tol=.01,
                                 max_nfev=80, max_backtracks=8, gates=None,
-                                save_callback=None):
+                                velocity_method="analytic_edges", save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -386,6 +386,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             or not all(np.isfinite(v) and v > 0 for v in
                        (epsilon_tol, quadrature_tol, geometry_tol, slip_tol))):
         raise ValueError("invalid iteration or convergence controls")
+    if velocity_method not in ("analytic_edges", "legacy_gauss"):
+        raise ValueError("unsupported P1 wake velocity method")
     gates = GeometryGates() if gates is None else gates
     if (not np.isfinite(gates.max_area_ratio) or gates.max_area_ratio <= 1
             or not 0 < gates.max_fold_deg < 90 or not gates.max_step_fraction > 0
@@ -420,7 +422,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         else:
             state = solve_multi(current, alpha_deg, kutta=kutta,
                                 max_nfev=max_nfev, operators=ops)
-        field = TotalVelocity(current, state)
+        field = TotalVelocity(current, state, method=velocity_method)
         arrays = dict(mu=state['mu'], gamma=state['gamma'], cp=state['cp'],
                       alpha_deg=np.asarray(alpha_deg), wall_xyz=current.xyz,
                       wall_faces=current.faces, wall_dof_face=current.dof_face,
@@ -430,7 +432,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         record = {k: state[k] for k in (*load_names, 'wall_rms', 'jump_rms',
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
-        record.update(iteration=iteration, groups=state['group_results'],
+        record.update(iteration=iteration, velocity_method=velocity_method,
+                      groups=state['group_results'],
                       CLp_minus_CLgamma=float(state['CL']-state['CL_gamma']),
                       CL_relative_gap=float((state['CL']-state['CL_gamma'])/
                                             max(abs(state['CL_gamma']), 1e-12)),
@@ -574,7 +577,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                 kinematic_candidate=history[-1]['kinematic_candidate'],
                 physical_accuracy_accepted=False,
                 method='P1-coupled-rooted-material-arclength-Picard',
-                kernel='Phase-A-equation; closed-form P1 straight-edge moments and shared-trace cancellation; epsilon checks')
+                kernel=("analytic_P1_straight_edges_with_shared_trace_cancellation"
+                        if velocity_method == "analytic_edges" else
+                        "legacy_fixed_order_edge_gauss"),
+                velocity_method=velocity_method)
 
 
 def replay_snapshot(arrays, expected_sha):
