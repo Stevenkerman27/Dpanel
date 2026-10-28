@@ -48,7 +48,8 @@ class TotalVelocity:
     """U + wall + ALL wakes, with actual per-face P1 nodal values.
 
     Arrays are copied so a solved state cannot be mutated underneath an audit.
-    `order=48` is the existing wake_velocity.sheet_velocity quadrature order.
+    Analytic straight-edge P1 integration is the opt-in B2 default; the prior
+    48-point whole-edge Gauss evaluator is preserved for A/B and old snapshots.
     No self faces, source terms, or cross-group interactions are omitted.
     """
     def __init__(self, mesh, state, *, method="analytic_edges"):
@@ -132,7 +133,11 @@ class TotalVelocity:
 
 
 def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
-    """Finite one-sided samples, with independent epsilon/quadrature checks."""
+    """Finite one-sided samples: epsilon sensitivity plus legacy Gauss-order audit.
+
+    In analytic-edge mode, edge quadrature does not exist: its reported
+    quadrature_error is 0 (NOT APPLICABLE), not a PV-convergence certificate.
+    """
     factors = np.asarray(ladder, float)
     if (factors.ndim != 1 or len(factors) < 2 or not np.isfinite(factors).all()
             or np.any(factors <= 0) or np.any(np.diff(factors) >= 0)
