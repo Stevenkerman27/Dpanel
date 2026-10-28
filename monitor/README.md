@@ -101,3 +101,32 @@ node monitor\post_comment.mjs <apiPath> <bodyFile> --delete <commentId>   # 顺�
 云端 agent 与本地用的是**同一个 GitHub 账号**，所以只按 actor 过滤会把云端工作一并吞掉。现在的做法：本地每次通过 `post_comment.mjs` / `gh_api.mjs` 做写操作（POST/PUT/PATCH/DELETE）都记一条 `{kind, number, at}` 到账本；监听器看到本人账号的事件时，若 30 分钟内账本里有同号记录，标「已核对为我的操作」，否则标「**可能是你手动操作**」——两种都照常上报，不再静默丢弃。
 
 `gh_api.mjs` 记录 PR 创建/合并/关闭、issue 关闭等（`number` 从路径取）；`gh_push.mjs` 在 push 成功时记一条 `kind: "push"`，监听器把它与 30 分钟内的 commit 事件配对。提交本身**不再按作者丢弃**（同账号，云端也这样推），只是打标签。
+
+## 发布通道：`publish.mjs`（2026-10-28）
+
+`github.com:443`（git 传输）和 `api.github.com` 会**独立**故障：代理正常时 git 也可能
+`Recv failure: Connection was reset`，而 REST 一直 200。以前每次推送要手拼 `-c` 参数并
+反复重试，现在一条命令：
+
+```powershell
+# 只提交本地已有改动并推送（先走 git，失败自动改走 git data API）
+node monitor/publish.mjs <repoDir> <branch>
+
+# 指定要发布的文件与提交信息（推荐；API 回退只上传这些文件）
+node monitor/publish.mjs runs/master_git master `
+  --paths monitor/publish.mjs,monitor/README.md `
+  --message-file D:/3D/Projects/panel/runs/msg.txt
+```
+
+输出一行机器可读结果：`PUSHED <sha> <branch> via git` 或
+`API_PUSH <old>-><new> <branch> files=N verified=true`；`--dry-run` 只报本地/远端
+HEAD 与将发布的路径。
+
+三条注意：
+
+- 回退路径**只上传 `--paths` 里的文件**（逐个建 blob），所以给它准确的路径，别留空；空
+  `--paths` 时用它推断 `git show --name-only HEAD`。
+- API 回退产生的 commit **父节点是远端 HEAD**，与本地 commit 不是同一个对象（内容相同）。
+  代理恢复后本地分支需要 `git fetch` 才能和远端对齐。
+- 子进程输出必须重定向到文件再读回：沙箱下 node 的 `stdio:'pipe'` 直接 `EPERM`
+  （Windows 上 `spawn` 也不走 `PATHEXT`，所以写死 `C:/Program Files/Git/cmd/git.exe`）。
