@@ -1,0 +1,3073 @@
+{
+  "schema": "dpanel.pressure_region_budget.v1",
+  "status": "read_only_partition_not_physical_validation",
+  "physical_accuracy_accepted": false,
+  "feature_point": [
+    1.0,
+    2.0,
+    0.0
+  ],
+  "reference_chord": 1.0,
+  "classification": "exact triangle/sphere bounds; crossing faces kept separate",
+  "whole": {
+    "half_faces": 1205,
+    "full_mirrored_area": 13.885089065823909,
+    "area_fraction": 1.0,
+    "cp_delta_area_rms": 0.19098399038432662,
+    "cp_delta_abs_max": 8.624469392581545,
+    "adjacent_normal_angle_max_deg": 164.66074038761204,
+    "patch_normal_spread_max_deg": 91.84903421126367,
+    "original_force_N": [
+      -0.10146080475906293,
+      0.0,
+      1.4197755579214713
+    ],
+    "candidate_force_N": [
+      -0.06091109447384443,
+      0.0,
+      1.410283235171363
+    ],
+    "delta_force_N": [
+      0.040549710285218525,
+      0.0,
+      -0.009492322750111455
+    ],
+    "original_moment_Nm": [
+      0.0,
+      -0.04475772582559812,
+      0.0
+    ],
+    "candidate_moment_Nm": [
+      0.0,
+      -0.03721245059928835,
+      0.0
+    ],
+    "delta_moment_Nm": [
+      0.0,
+      0.007545275226309822,
+      0.0
+    ],
+    "quantities": {
+      "CD_pressure": {
+        "original": 0.009251786743067932,
+        "candidate": 0.025402029990253462,
+        "delta": 0.01615024324718553,
+        "positive_delta": 0.021519248857254855,
+        "negative_delta": -0.005369005610069326,
+        "sum_abs_delta": 0.02688825446732418,
+        "original_sum_abs": 0.12093723642530736,
+        "candidate_sum_abs": 0.1192336355954396,
+        "share_of_global_abs_delta": 1.0000000000000004
+      },
+      "CL_pressure": {
+        "original": 0.580904397991907,
+        "candidate": 0.5756022177003367,
+        "delta": -0.005302180291570288,
+        "positive_delta": 0.03984535083859219,
+        "negative_delta": -0.04514753113016248,
+        "sum_abs_delta": 0.08499288196875468,
+        "original_sum_abs": 0.6377118664135307,
+        "candidate_sum_abs": 0.646574830366198,
+        "share_of_global_abs_delta": 1.0000000000000009
+      },
+      "CM_y": {
+        "original": -0.018268459520652335,
+        "candidate": -0.015188755346648333,
+        "delta": 0.0030797041740040104,
+        "positive_delta": 0.018226348976782627,
+        "negative_delta": -0.015146644802778615,
+        "sum_abs_delta": 0.033372993779561246,
+        "original_sum_abs": 0.21325828686329032,
+        "candidate_sum_abs": 0.22084190993163613,
+        "share_of_global_abs_delta": 1.000000000000001
+      }
+    }
+  },
+  "partitions": [
+    {
+      "radius_over_chord": 0.025,
+      "regions": {
+        "inside": {
+          "half_faces": 0,
+          "full_mirrored_area": 0.0,
+          "area_fraction": 0.0,
+          "cp_delta_area_rms": null,
+          "cp_delta_abs_max": null,
+          "adjacent_normal_angle_max_deg": null,
+          "patch_normal_spread_max_deg": null,
+          "original_force_N": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "candidate_force_N": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "delta_force_N": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "original_moment_Nm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.0,
+              "candidate": 0.0,
+              "delta": 0.0,
+              "positive_delta": 0.0,
+              "negative_delta": 0.0,
+              "sum_abs_delta": 0.0,
+              "original_sum_abs": 0.0,
+              "candidate_sum_abs": 0.0,
+              "share_of_global_abs_delta": 0.0
+            },
+            "CL_pressure": {
+              "original": 0.0,
+              "candidate": 0.0,
+              "delta": 0.0,
+              "positive_delta": 0.0,
+              "negative_delta": 0.0,
+              "sum_abs_delta": 0.0,
+              "original_sum_abs": 0.0,
+              "candidate_sum_abs": 0.0,
+              "share_of_global_abs_delta": 0.0
+            },
+            "CM_y": {
+              "original": 0.0,
+              "candidate": 0.0,
+              "delta": 0.0,
+              "positive_delta": 0.0,
+              "negative_delta": 0.0,
+              "sum_abs_delta": 0.0,
+              "original_sum_abs": 0.0,
+              "candidate_sum_abs": 0.0,
+              "share_of_global_abs_delta": 0.0
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            },
+            "30": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            }
+          }
+        },
+        "crossing": {
+          "half_faces": 5,
+          "full_mirrored_area": 0.02698521380591254,
+          "area_fraction": 0.0019434671018663213,
+          "cp_delta_area_rms": 3.5417192148295378,
+          "cp_delta_abs_max": 8.624469392581545,
+          "adjacent_normal_angle_max_deg": 164.39354655675436,
+          "patch_normal_spread_max_deg": 91.36801140616902,
+          "original_force_N": [
+            0.0006122970408594308,
+            0.0,
+            0.00203400695998525
+          ],
+          "candidate_force_N": [
+            0.0008135012709395162,
+            0.0,
+            -0.006398251440090481
+          ],
+          "delta_force_N": [
+            0.00020120423008008532,
+            0.0,
+            -0.008432258400075731
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.0014105336490580938,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            0.0045315849792253666,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.00594211862828346,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.00032132345025014304,
+              "candidate": 0.00010316787610346248,
+              "delta": -0.00021815557414668057,
+              "positive_delta": 0.00018375007929140002,
+              "negative_delta": -0.0004019056534380806,
+              "sum_abs_delta": 0.0005856557327294806,
+              "original_sum_abs": 0.00033971334855685043,
+              "candidate_sum_abs": 0.0006558721311203132,
+              "share_of_global_abs_delta": 0.02178109900890726
+            },
+            "CL_pressure": {
+              "original": 0.0008052660187921299,
+              "candidate": -0.0026305328445595548,
+              "delta": -0.0034357988633516847,
+              "positive_delta": 0.0005225461881887702,
+              "negative_delta": -0.003958345051540455,
+              "sum_abs_delta": 0.004480891239729225,
+              "original_sum_abs": 0.001050896578873617,
+              "candidate_sum_abs": 0.004789081368658744,
+              "share_of_global_abs_delta": 0.05272078244595244
+            },
+            "CM_y": {
+              "original": -0.0005757280200237117,
+              "candidate": 0.001849626522132803,
+              "delta": 0.002425354542156515,
+              "positive_delta": 0.0027896503017365874,
+              "negative_delta": -0.00036429575958007277,
+              "sum_abs_delta": 0.00315394606131666,
+              "original_sum_abs": 0.0007528415432528846,
+              "candidate_sum_abs": 0.003354469714851855,
+              "share_of_global_abs_delta": 0.09450593741003382
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            },
+            "30": {
+              "half_faces": 5,
+              "full_mirrored_area": 0.02698521380591254,
+              "area_fraction": 0.0019434671018663213,
+              "cp_delta_area_rms": 3.5417192148295378,
+              "cp_delta_abs_max": 8.624469392581545,
+              "adjacent_normal_angle_max_deg": 164.39354655675436,
+              "patch_normal_spread_max_deg": 91.36801140616902,
+              "original_force_N": [
+                0.0006122970408594308,
+                0.0,
+                0.00203400695998525
+              ],
+              "candidate_force_N": [
+                0.0008135012709395162,
+                0.0,
+                -0.006398251440090481
+              ],
+              "delta_force_N": [
+                0.00020120423008008532,
+                0.0,
+                -0.008432258400075731
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.0014105336490580938,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0045315849792253666,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.00594211862828346,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.00032132345025014304,
+                  "candidate": 0.00010316787610346248,
+                  "delta": -0.00021815557414668057,
+                  "positive_delta": 0.00018375007929140002,
+                  "negative_delta": -0.0004019056534380806,
+                  "sum_abs_delta": 0.0005856557327294806,
+                  "original_sum_abs": 0.00033971334855685043,
+                  "candidate_sum_abs": 0.0006558721311203132,
+                  "share_of_global_abs_delta": 0.02178109900890726
+                },
+                "CL_pressure": {
+                  "original": 0.0008052660187921299,
+                  "candidate": -0.0026305328445595548,
+                  "delta": -0.0034357988633516847,
+                  "positive_delta": 0.0005225461881887702,
+                  "negative_delta": -0.003958345051540455,
+                  "sum_abs_delta": 0.004480891239729225,
+                  "original_sum_abs": 0.001050896578873617,
+                  "candidate_sum_abs": 0.004789081368658744,
+                  "share_of_global_abs_delta": 0.05272078244595244
+                },
+                "CM_y": {
+                  "original": -0.0005757280200237117,
+                  "candidate": 0.001849626522132803,
+                  "delta": 0.002425354542156515,
+                  "positive_delta": 0.0027896503017365874,
+                  "negative_delta": -0.00036429575958007277,
+                  "sum_abs_delta": 0.00315394606131666,
+                  "original_sum_abs": 0.0007528415432528846,
+                  "candidate_sum_abs": 0.003354469714851855,
+                  "share_of_global_abs_delta": 0.09450593741003382
+                }
+              }
+            }
+          }
+        },
+        "outside": {
+          "half_faces": 1200,
+          "full_mirrored_area": 13.858103852017997,
+          "area_fraction": 0.9980565328981338,
+          "cp_delta_area_rms": 0.11009098698123171,
+          "cp_delta_abs_max": 3.532380974920513,
+          "adjacent_normal_angle_max_deg": 164.66074038761204,
+          "patch_normal_spread_max_deg": 91.84903421126367,
+          "original_force_N": [
+            -0.10207310179992236,
+            0.0,
+            1.417741550961486
+          ],
+          "candidate_force_N": [
+            -0.06172459574478395,
+            0.0,
+            1.4166814866114534
+          ],
+          "delta_force_N": [
+            0.040348506055138435,
+            0.0,
+            -0.001060064350035723
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.04334719217654004,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            -0.04174403557851371,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.001603156598026366,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.00893046329281779,
+              "candidate": 0.02529886211415,
+              "delta": 0.01636839882133221,
+              "positive_delta": 0.021335498777963455,
+              "negative_delta": -0.004967099956631246,
+              "sum_abs_delta": 0.0263025987345947,
+              "original_sum_abs": 0.1205975230767505,
+              "candidate_sum_abs": 0.11857776346431931,
+              "share_of_global_abs_delta": 0.9782189009910932
+            },
+            "CL_pressure": {
+              "original": 0.5800991319731149,
+              "candidate": 0.5782327505448962,
+              "delta": -0.001866381428218605,
+              "positive_delta": 0.03932280465040342,
+              "negative_delta": -0.04118918607862203,
+              "sum_abs_delta": 0.08051199072902546,
+              "original_sum_abs": 0.6366609698346571,
+              "candidate_sum_abs": 0.6417857489975392,
+              "share_of_global_abs_delta": 0.9472792175540485
+            },
+            "CM_y": {
+              "original": -0.017692731500628632,
+              "candidate": -0.017038381868781136,
+              "delta": 0.0006543496318474951,
+              "positive_delta": 0.015436698675046039,
+              "negative_delta": -0.014782349043198542,
+              "sum_abs_delta": 0.03021904771824458,
+              "original_sum_abs": 0.21250544532003746,
+              "candidate_sum_abs": 0.2174874402167843,
+              "share_of_global_abs_delta": 0.9054940625899671
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 542,
+              "full_mirrored_area": 6.771772583798986,
+              "area_fraction": 0.4877010548291478,
+              "cp_delta_area_rms": 0.0335736433880881,
+              "cp_delta_abs_max": 0.4203065017088248,
+              "adjacent_normal_angle_max_deg": 87.04024420418345,
+              "patch_normal_spread_max_deg": 91.84903421126367,
+              "original_force_N": [
+                -0.0010046719345918487,
+                0.0,
+                0.23544572200976602
+              ],
+              "candidate_force_N": [
+                -0.0010700514209086122,
+                0.0,
+                0.23612016066504168
+              ],
+              "delta_force_N": [
+                -6.537948631676958e-05,
+                0.0,
+                0.0006744386552755417
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.10751762674448789,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.10883978838133741,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0013221616368494188,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.007967182826105236,
+                  "candidate": 0.00796459119520954,
+                  "delta": -2.5916308956965006e-06,
+                  "positive_delta": 0.002141312578657701,
+                  "negative_delta": -0.0021439042095533975,
+                  "sum_abs_delta": 0.0042852167882110985,
+                  "original_sum_abs": 0.029586523192523154,
+                  "candidate_sum_abs": 0.03046096715148814,
+                  "share_of_global_abs_delta": 0.1593713267411497
+                },
+                "CL_pressure": {
+                  "original": 0.09577034403395468,
+                  "candidate": 0.09604690338508284,
+                  "delta": 0.00027655935112817147,
+                  "positive_delta": 0.007465182913028643,
+                  "negative_delta": -0.007188623561900471,
+                  "sum_abs_delta": 0.014653806474929114,
+                  "original_sum_abs": 0.12418591093331971,
+                  "candidate_sum_abs": 0.12416592926659414,
+                  "share_of_global_abs_delta": 0.17241216129506234
+                },
+                "CM_y": {
+                  "original": 0.04388474560999508,
+                  "candidate": 0.04442440342095403,
+                  "delta": 0.0005396578109589467,
+                  "positive_delta": 0.005913803738861033,
+                  "negative_delta": -0.005374145927902086,
+                  "sum_abs_delta": 0.011287949666763119,
+                  "original_sum_abs": 0.10334520852891531,
+                  "candidate_sum_abs": 0.10343501369594113,
+                  "share_of_global_abs_delta": 0.3382360522200515
+                }
+              }
+            },
+            "30": {
+              "half_faces": 658,
+              "full_mirrored_area": 7.086331268219009,
+              "area_fraction": 0.5103554780689858,
+              "cp_delta_area_rms": 0.15041573999147162,
+              "cp_delta_abs_max": 3.532380974920513,
+              "adjacent_normal_angle_max_deg": 164.66074038761204,
+              "patch_normal_spread_max_deg": 91.84903421126367,
+              "original_force_N": [
+                -0.1010684298653305,
+                0.0,
+                1.1822958289517216
+              ],
+              "candidate_force_N": [
+                -0.060654544323875355,
+                0.0,
+                1.180561325946411
+              ],
+              "delta_force_N": [
+                0.040413885541455204,
+                0.0,
+                -0.001734503005311264
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.15086481892102818,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                -0.1505838239598511,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.00028099496117694296,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0009632804667125527,
+                  "candidate": 0.01733427091894046,
+                  "delta": 0.01637099045222791,
+                  "positive_delta": 0.019194186199305754,
+                  "negative_delta": -0.0028231957470778476,
+                  "sum_abs_delta": 0.022017381946383602,
+                  "original_sum_abs": 0.09101099988422735,
+                  "candidate_sum_abs": 0.08811679631283117,
+                  "share_of_global_abs_delta": 0.8188475742499435
+                },
+                "CL_pressure": {
+                  "original": 0.48432878793916023,
+                  "candidate": 0.48218584715981344,
+                  "delta": -0.0021429407793467775,
+                  "positive_delta": 0.031857621737374775,
+                  "negative_delta": -0.03400056251672155,
+                  "sum_abs_delta": 0.06585818425409633,
+                  "original_sum_abs": 0.5124750589013375,
+                  "candidate_sum_abs": 0.5176198197309451,
+                  "share_of_global_abs_delta": 0.774867056258986
+                },
+                "CM_y": {
+                  "original": -0.06157747711062371,
+                  "candidate": -0.06146278528973516,
+                  "delta": 0.00011469182088854821,
+                  "positive_delta": 0.009522894936185005,
+                  "negative_delta": -0.009408203115296457,
+                  "sum_abs_delta": 0.018931098051481462,
+                  "original_sum_abs": 0.10916023679112213,
+                  "candidate_sum_abs": 0.11405242652084316,
+                  "share_of_global_abs_delta": 0.5672580103699156
+                }
+              }
+            }
+          }
+        }
+      },
+      "coefficient_closure_absolute": {
+        "CD_pressure": {
+          "original": 1.734723475976807e-18,
+          "candidate": 0.0,
+          "delta": 0.0,
+          "sum_abs_delta": 3.469446951953614e-18
+        },
+        "CL_pressure": {
+          "original": 1.1102230246251565e-16,
+          "candidate": 1.1102230246251565e-16,
+          "delta": 1.734723475976807e-18,
+          "sum_abs_delta": 0.0
+        },
+        "CM_y": {
+          "original": 1.0408340855860843e-17,
+          "candidate": 0.0,
+          "delta": 4.336808689942018e-19,
+          "sum_abs_delta": 6.938893903907228e-18
+        }
+      },
+      "force_moment_closure_absolute": {
+        "original_force_N": 1.3877787807814457e-17,
+        "candidate_force_N": 6.938893903907228e-18,
+        "delta_force_N": 6.938893903907228e-18,
+        "original_moment_Nm": 6.938893903907228e-18,
+        "candidate_moment_Nm": 6.938893903907228e-18,
+        "delta_moment_Nm": 3.469446951953614e-18
+      }
+    },
+    {
+      "radius_over_chord": 0.05,
+      "regions": {
+        "inside": {
+          "half_faces": 0,
+          "full_mirrored_area": 0.0,
+          "area_fraction": 0.0,
+          "cp_delta_area_rms": null,
+          "cp_delta_abs_max": null,
+          "adjacent_normal_angle_max_deg": null,
+          "patch_normal_spread_max_deg": null,
+          "original_force_N": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "candidate_force_N": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "delta_force_N": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "original_moment_Nm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.0,
+              "candidate": 0.0,
+              "delta": 0.0,
+              "positive_delta": 0.0,
+              "negative_delta": 0.0,
+              "sum_abs_delta": 0.0,
+              "original_sum_abs": 0.0,
+              "candidate_sum_abs": 0.0,
+              "share_of_global_abs_delta": 0.0
+            },
+            "CL_pressure": {
+              "original": 0.0,
+              "candidate": 0.0,
+              "delta": 0.0,
+              "positive_delta": 0.0,
+              "negative_delta": 0.0,
+              "sum_abs_delta": 0.0,
+              "original_sum_abs": 0.0,
+              "candidate_sum_abs": 0.0,
+              "share_of_global_abs_delta": 0.0
+            },
+            "CM_y": {
+              "original": 0.0,
+              "candidate": 0.0,
+              "delta": 0.0,
+              "positive_delta": 0.0,
+              "negative_delta": 0.0,
+              "sum_abs_delta": 0.0,
+              "original_sum_abs": 0.0,
+              "candidate_sum_abs": 0.0,
+              "share_of_global_abs_delta": 0.0
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            },
+            "30": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            }
+          }
+        },
+        "crossing": {
+          "half_faces": 7,
+          "full_mirrored_area": 0.032986887325016784,
+          "area_fraction": 0.0023757058502569582,
+          "cp_delta_area_rms": 3.2040578370191466,
+          "cp_delta_abs_max": 8.624469392581545,
+          "adjacent_normal_angle_max_deg": 164.39354655675436,
+          "patch_normal_spread_max_deg": 91.36801140616902,
+          "original_force_N": [
+            0.0006023983500589017,
+            0.0,
+            0.0019353494510684069
+          ],
+          "candidate_force_N": [
+            0.0006977325266919756,
+            0.0,
+            -0.007044202091600952
+          ],
+          "delta_force_N": [
+            9.533417663307392e-05,
+            0.0,
+            -0.00897955154266936
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.0013384418668047503,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            0.00500139614993282,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.00633983801673757,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.00031378892300082964,
+              "candidate": 3.3116236089230643e-05,
+              "delta": -0.000280672686911599,
+              "positive_delta": 0.00018375007929140002,
+              "negative_delta": -0.00046442276620299903,
+              "sum_abs_delta": 0.0006481728454943989,
+              "original_sum_abs": 0.00034724787580616383,
+              "candidate_sum_abs": 0.0007259237711345451,
+              "share_of_global_abs_delta": 0.02410617045751661
+            },
+            "CL_pressure": {
+              "original": 0.0007655030148897019,
+              "candidate": -0.002889064560221506,
+              "delta": -0.0036545675751112083,
+              "positive_delta": 0.0005225461881887702,
+              "negative_delta": -0.0041771137632999784,
+              "sum_abs_delta": 0.004699659951488749,
+              "original_sum_abs": 0.0010906595827760448,
+              "candidate_sum_abs": 0.005047613084320696,
+              "share_of_global_abs_delta": 0.05529474754387615
+            },
+            "CM_y": {
+              "original": -0.0005463028027774491,
+              "candidate": 0.0020413861836460494,
+              "delta": 0.0025876889864234983,
+              "positive_delta": 0.002951984746003571,
+              "negative_delta": -0.00036429575958007277,
+              "sum_abs_delta": 0.0033162805055836435,
+              "original_sum_abs": 0.0007822667604991472,
+              "candidate_sum_abs": 0.003546229376365101,
+              "share_of_global_abs_delta": 0.09937018319329355
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            },
+            "30": {
+              "half_faces": 7,
+              "full_mirrored_area": 0.032986887325016784,
+              "area_fraction": 0.0023757058502569582,
+              "cp_delta_area_rms": 3.2040578370191466,
+              "cp_delta_abs_max": 8.624469392581545,
+              "adjacent_normal_angle_max_deg": 164.39354655675436,
+              "patch_normal_spread_max_deg": 91.36801140616902,
+              "original_force_N": [
+                0.0006023983500589017,
+                0.0,
+                0.0019353494510684069
+              ],
+              "candidate_force_N": [
+                0.0006977325266919756,
+                0.0,
+                -0.007044202091600952
+              ],
+              "delta_force_N": [
+                9.533417663307392e-05,
+                0.0,
+                -0.00897955154266936
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.0013384418668047503,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.00500139614993282,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.00633983801673757,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.00031378892300082964,
+                  "candidate": 3.3116236089230643e-05,
+                  "delta": -0.000280672686911599,
+                  "positive_delta": 0.00018375007929140002,
+                  "negative_delta": -0.00046442276620299903,
+                  "sum_abs_delta": 0.0006481728454943989,
+                  "original_sum_abs": 0.00034724787580616383,
+                  "candidate_sum_abs": 0.0007259237711345451,
+                  "share_of_global_abs_delta": 0.02410617045751661
+                },
+                "CL_pressure": {
+                  "original": 0.0007655030148897019,
+                  "candidate": -0.002889064560221506,
+                  "delta": -0.0036545675751112083,
+                  "positive_delta": 0.0005225461881887702,
+                  "negative_delta": -0.0041771137632999784,
+                  "sum_abs_delta": 0.004699659951488749,
+                  "original_sum_abs": 0.0010906595827760448,
+                  "candidate_sum_abs": 0.005047613084320696,
+                  "share_of_global_abs_delta": 0.05529474754387615
+                },
+                "CM_y": {
+                  "original": -0.0005463028027774491,
+                  "candidate": 0.0020413861836460494,
+                  "delta": 0.0025876889864234983,
+                  "positive_delta": 0.002951984746003571,
+                  "negative_delta": -0.00036429575958007277,
+                  "sum_abs_delta": 0.0033162805055836435,
+                  "original_sum_abs": 0.0007822667604991472,
+                  "candidate_sum_abs": 0.003546229376365101,
+                  "share_of_global_abs_delta": 0.09937018319329355
+                }
+              }
+            }
+          }
+        },
+        "outside": {
+          "half_faces": 1198,
+          "full_mirrored_area": 13.852102178498892,
+          "area_fraction": 0.9976242941497431,
+          "cp_delta_area_rms": 0.11006680276310855,
+          "cp_delta_abs_max": 3.532380974920513,
+          "adjacent_normal_angle_max_deg": 164.66074038761204,
+          "patch_normal_spread_max_deg": 91.84903421126367,
+          "original_force_N": [
+            -0.10206320310912184,
+            0.0,
+            1.4178402084704027
+          ],
+          "candidate_force_N": [
+            -0.06160882700053641,
+            0.0,
+            1.4173274372629643
+          ],
+          "delta_force_N": [
+            0.04045437610858545,
+            0.0,
+            -0.0005127712074420991
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.04341928395879338,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            -0.04221384674922116,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.0012054372095722586,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.008937997820067099,
+              "candidate": 0.02536891375416423,
+              "delta": 0.01643091593409713,
+              "positive_delta": 0.021335498777963455,
+              "negative_delta": -0.004904582843866328,
+              "sum_abs_delta": 0.02624008162182978,
+              "original_sum_abs": 0.1205899885495012,
+              "candidate_sum_abs": 0.11850771182430507,
+              "share_of_global_abs_delta": 0.9758938295424837
+            },
+            "CL_pressure": {
+              "original": 0.5801388949770172,
+              "candidate": 0.5784912822605581,
+              "delta": -0.0016476127164590814,
+              "positive_delta": 0.03932280465040342,
+              "negative_delta": -0.04097041736686251,
+              "sum_abs_delta": 0.08029322201726591,
+              "original_sum_abs": 0.6366212068307548,
+              "candidate_sum_abs": 0.6415272172818772,
+              "share_of_global_abs_delta": 0.9447052524561246
+            },
+            "CM_y": {
+              "original": -0.0177221567178749,
+              "candidate": -0.01723014153029439,
+              "delta": 0.0004920151875805117,
+              "positive_delta": 0.015274364230779054,
+              "negative_delta": -0.014782349043198542,
+              "sum_abs_delta": 0.030056713273977596,
+              "original_sum_abs": 0.21247602010279118,
+              "candidate_sum_abs": 0.21729568055527104,
+              "share_of_global_abs_delta": 0.9006298168067073
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 542,
+              "full_mirrored_area": 6.771772583798986,
+              "area_fraction": 0.4877010548291478,
+              "cp_delta_area_rms": 0.0335736433880881,
+              "cp_delta_abs_max": 0.4203065017088248,
+              "adjacent_normal_angle_max_deg": 87.04024420418345,
+              "patch_normal_spread_max_deg": 91.84903421126367,
+              "original_force_N": [
+                -0.0010046719345918487,
+                0.0,
+                0.23544572200976602
+              ],
+              "candidate_force_N": [
+                -0.0010700514209086122,
+                0.0,
+                0.23612016066504168
+              ],
+              "delta_force_N": [
+                -6.537948631676958e-05,
+                0.0,
+                0.0006744386552755417
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.10751762674448789,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.10883978838133741,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0013221616368494188,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.007967182826105236,
+                  "candidate": 0.00796459119520954,
+                  "delta": -2.5916308956965006e-06,
+                  "positive_delta": 0.002141312578657701,
+                  "negative_delta": -0.0021439042095533975,
+                  "sum_abs_delta": 0.0042852167882110985,
+                  "original_sum_abs": 0.029586523192523154,
+                  "candidate_sum_abs": 0.03046096715148814,
+                  "share_of_global_abs_delta": 0.1593713267411497
+                },
+                "CL_pressure": {
+                  "original": 0.09577034403395468,
+                  "candidate": 0.09604690338508284,
+                  "delta": 0.00027655935112817147,
+                  "positive_delta": 0.007465182913028643,
+                  "negative_delta": -0.007188623561900471,
+                  "sum_abs_delta": 0.014653806474929114,
+                  "original_sum_abs": 0.12418591093331971,
+                  "candidate_sum_abs": 0.12416592926659414,
+                  "share_of_global_abs_delta": 0.17241216129506234
+                },
+                "CM_y": {
+                  "original": 0.04388474560999508,
+                  "candidate": 0.04442440342095403,
+                  "delta": 0.0005396578109589467,
+                  "positive_delta": 0.005913803738861033,
+                  "negative_delta": -0.005374145927902086,
+                  "sum_abs_delta": 0.011287949666763119,
+                  "original_sum_abs": 0.10334520852891531,
+                  "candidate_sum_abs": 0.10343501369594113,
+                  "share_of_global_abs_delta": 0.3382360522200515
+                }
+              }
+            },
+            "30": {
+              "half_faces": 656,
+              "full_mirrored_area": 7.080329594699906,
+              "area_fraction": 0.5099232393205954,
+              "cp_delta_area_rms": 0.15041071332023845,
+              "cp_delta_abs_max": 3.532380974920513,
+              "adjacent_normal_angle_max_deg": 164.66074038761204,
+              "patch_normal_spread_max_deg": 91.84903421126367,
+              "original_force_N": [
+                -0.10105853117452997,
+                0.0,
+                1.1823944864606384
+              ],
+              "candidate_force_N": [
+                -0.060538775579627814,
+                0.0,
+                1.1812072765979216
+              ],
+              "delta_force_N": [
+                0.04051975559490222,
+                0.0,
+                -0.0011872098627176428
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.15093691070328152,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                -0.15105363513055853,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                -0.00011672442727717188,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0009708149939618663,
+                  "candidate": 0.017404322558954695,
+                  "delta": 0.016433507564992827,
+                  "positive_delta": 0.019194186199305754,
+                  "negative_delta": -0.0027606786343129294,
+                  "sum_abs_delta": 0.021954864833618686,
+                  "original_sum_abs": 0.09100346535697804,
+                  "candidate_sum_abs": 0.08804674467281692,
+                  "share_of_global_abs_delta": 0.8165225028013342
+                },
+                "CL_pressure": {
+                  "original": 0.4843685509430626,
+                  "candidate": 0.4824443788754753,
+                  "delta": -0.0019241720675872535,
+                  "positive_delta": 0.031857621737374775,
+                  "negative_delta": -0.03378179380496203,
+                  "sum_abs_delta": 0.06563941554233681,
+                  "original_sum_abs": 0.5124352958974351,
+                  "candidate_sum_abs": 0.517361288015283,
+                  "share_of_global_abs_delta": 0.7722930911610624
+                },
+                "CM_y": {
+                  "original": -0.06160690232786997,
+                  "candidate": -0.061654544951248405,
+                  "delta": -4.764262337843489e-05,
+                  "positive_delta": 0.009360560491918022,
+                  "negative_delta": -0.009408203115296457,
+                  "sum_abs_delta": 0.01876876360721448,
+                  "original_sum_abs": 0.10913081157387586,
+                  "candidate_sum_abs": 0.11386066685932988,
+                  "share_of_global_abs_delta": 0.5623937645866559
+                }
+              }
+            }
+          }
+        }
+      },
+      "coefficient_closure_absolute": {
+        "CD_pressure": {
+          "original": 3.469446951953614e-18,
+          "candidate": 0.0,
+          "delta": 0.0,
+          "sum_abs_delta": 0.0
+        },
+        "CL_pressure": {
+          "original": 0.0,
+          "candidate": 1.1102230246251565e-16,
+          "delta": 1.734723475976807e-18,
+          "sum_abs_delta": 2.7755575615628914e-17
+        },
+        "CM_y": {
+          "original": 1.734723475976807e-17,
+          "candidate": 6.938893903907228e-18,
+          "delta": 4.336808689942018e-19,
+          "sum_abs_delta": 6.938893903907228e-18
+        }
+      },
+      "force_moment_closure_absolute": {
+        "original_force_N": 2.220446049250313e-16,
+        "candidate_force_N": 2.220446049250313e-16,
+        "delta_force_N": 3.469446951953614e-18,
+        "original_moment_Nm": 6.938893903907228e-18,
+        "candidate_moment_Nm": 1.3877787807814457e-17,
+        "delta_moment_Nm": 6.938893903907228e-18
+      }
+    },
+    {
+      "radius_over_chord": 0.1,
+      "regions": {
+        "inside": {
+          "half_faces": 4,
+          "full_mirrored_area": 0.012003347038208498,
+          "area_fraction": 0.0008644774967812745,
+          "cp_delta_area_rms": 0.440502632810565,
+          "cp_delta_abs_max": 0.8312127564012752,
+          "adjacent_normal_angle_max_deg": 164.39354655675436,
+          "patch_normal_spread_max_deg": 91.36801140616902,
+          "original_force_N": [
+            0.00024180731466099376,
+            0.0,
+            0.0006528412208499902
+          ],
+          "candidate_force_N": [
+            -0.0001076983115650388,
+            0.0,
+            -0.0019572682148231457
+          ],
+          "delta_force_N": [
+            -0.00034950562622603257,
+            0.0,
+            -0.0026101094356731362
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.0004694275442145656,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            0.0014340639740637417,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.0019034915182783072,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.00012154531686716456,
+              "candidate": -0.00011341863346686481,
+              "delta": -0.00023496395033402939,
+              "positive_delta": 0.0,
+              "negative_delta": -0.00023496395033402939,
+              "sum_abs_delta": 0.00023496395033402939,
+              "original_sum_abs": 0.00014795163329885328,
+              "candidate_sum_abs": 0.00011341863346686481,
+              "share_of_global_abs_delta": 0.008738534910087536
+            },
+            "CL_pressure": {
+              "original": 0.0002568498231817988,
+              "candidate": -0.0007920137518421199,
+              "delta": -0.0010488635750239188,
+              "positive_delta": 0.0,
+              "negative_delta": -0.0010488635750239188,
+              "sum_abs_delta": 0.0010488635750239188,
+              "original_sum_abs": 0.00048585662676229913,
+              "candidate_sum_abs": 0.0007920137518421199,
+              "share_of_global_abs_delta": 0.012340604892177982
+            },
+            "CM_y": {
+              "original": -0.00019160307927125123,
+              "candidate": 0.0005853322343117314,
+              "delta": 0.0007769353135829826,
+              "positive_delta": 0.0007769353135829826,
+              "negative_delta": 0.0,
+              "sum_abs_delta": 0.0007769353135829826,
+              "original_sum_abs": 0.0003607148104464389,
+              "candidate_sum_abs": 0.0005853322343117314,
+              "share_of_global_abs_delta": 0.02328036012336433
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            },
+            "30": {
+              "half_faces": 4,
+              "full_mirrored_area": 0.012003347038208498,
+              "area_fraction": 0.0008644774967812745,
+              "cp_delta_area_rms": 0.440502632810565,
+              "cp_delta_abs_max": 0.8312127564012752,
+              "adjacent_normal_angle_max_deg": 164.39354655675436,
+              "patch_normal_spread_max_deg": 91.36801140616902,
+              "original_force_N": [
+                0.00024180731466099376,
+                0.0,
+                0.0006528412208499902
+              ],
+              "candidate_force_N": [
+                -0.0001076983115650388,
+                0.0,
+                -0.0019572682148231457
+              ],
+              "delta_force_N": [
+                -0.00034950562622603257,
+                0.0,
+                -0.0026101094356731362
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.0004694275442145656,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0014340639740637417,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0019034915182783072,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.00012154531686716456,
+                  "candidate": -0.00011341863346686481,
+                  "delta": -0.00023496395033402939,
+                  "positive_delta": 0.0,
+                  "negative_delta": -0.00023496395033402939,
+                  "sum_abs_delta": 0.00023496395033402939,
+                  "original_sum_abs": 0.00014795163329885328,
+                  "candidate_sum_abs": 0.00011341863346686481,
+                  "share_of_global_abs_delta": 0.008738534910087536
+                },
+                "CL_pressure": {
+                  "original": 0.0002568498231817988,
+                  "candidate": -0.0007920137518421199,
+                  "delta": -0.0010488635750239188,
+                  "positive_delta": 0.0,
+                  "negative_delta": -0.0010488635750239188,
+                  "sum_abs_delta": 0.0010488635750239188,
+                  "original_sum_abs": 0.00048585662676229913,
+                  "candidate_sum_abs": 0.0007920137518421199,
+                  "share_of_global_abs_delta": 0.012340604892177982
+                },
+                "CM_y": {
+                  "original": -0.00019160307927125123,
+                  "candidate": 0.0005853322343117314,
+                  "delta": 0.0007769353135829826,
+                  "positive_delta": 0.0007769353135829826,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0007769353135829826,
+                  "original_sum_abs": 0.0003607148104464389,
+                  "candidate_sum_abs": 0.0005853322343117314,
+                  "share_of_global_abs_delta": 0.02328036012336433
+                }
+              }
+            }
+          }
+        },
+        "crossing": {
+          "half_faces": 12,
+          "full_mirrored_area": 0.08922371917837411,
+          "area_fraction": 0.006425865815868988,
+          "cp_delta_area_rms": 1.9506868008003206,
+          "cp_delta_abs_max": 8.624469392581545,
+          "adjacent_normal_angle_max_deg": 164.08862044755887,
+          "patch_normal_spread_max_deg": 91.36801140616902,
+          "original_force_N": [
+            0.0005472488693304604,
+            0.0,
+            0.0012262384238082018
+          ],
+          "candidate_force_N": [
+            0.001438981029961899,
+            0.0,
+            -0.0018383553343789124
+          ],
+          "delta_force_N": [
+            0.0008917321606314387,
+            0.0,
+            -0.0030645937581871125
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.0007612379492570149,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            0.0015303104499831883,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.002291548399240203,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.00026613883378629735,
+              "candidate": 0.0005197069584084611,
+              "delta": 0.0002535681246221637,
+              "positive_delta": 0.0006783633734279673,
+              "negative_delta": -0.00042479524880580376,
+              "sum_abs_delta": 0.0011031586222337712,
+              "original_sum_abs": 0.0005474539049680994,
+              "candidate_sum_abs": 0.0014008945986217043,
+              "share_of_global_abs_delta": 0.04102752834232433
+            },
+            "CL_pressure": {
+              "original": 0.0004791331978448151,
+              "candidate": -0.0007986837950134974,
+              "delta": -0.0012778169928583125,
+              "positive_delta": 0.0025487405711117576,
+              "negative_delta": -0.00382655756397007,
+              "sum_abs_delta": 0.006375298135081828,
+              "original_sum_abs": 0.0020543613107972068,
+              "candidate_sum_abs": 0.007259264838188538,
+              "share_of_global_abs_delta": 0.07500978890709388
+            },
+            "CM_y": {
+              "original": -0.0003107093670436795,
+              "candidate": 0.0006246165101972201,
+              "delta": 0.0009353258772408995,
+              "positive_delta": 0.002643834099518442,
+              "negative_delta": -0.0017085082222775424,
+              "sum_abs_delta": 0.004352342321795984,
+              "original_sum_abs": 0.001372188186284914,
+              "candidate_sum_abs": 0.004968352534336642,
+              "share_of_global_abs_delta": 0.13041510002202772
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            },
+            "30": {
+              "half_faces": 12,
+              "full_mirrored_area": 0.08922371917837411,
+              "area_fraction": 0.006425865815868988,
+              "cp_delta_area_rms": 1.9506868008003206,
+              "cp_delta_abs_max": 8.624469392581545,
+              "adjacent_normal_angle_max_deg": 164.08862044755887,
+              "patch_normal_spread_max_deg": 91.36801140616902,
+              "original_force_N": [
+                0.0005472488693304604,
+                0.0,
+                0.0012262384238082018
+              ],
+              "candidate_force_N": [
+                0.001438981029961899,
+                0.0,
+                -0.0018383553343789124
+              ],
+              "delta_force_N": [
+                0.0008917321606314387,
+                0.0,
+                -0.0030645937581871125
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.0007612379492570149,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0015303104499831883,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.002291548399240203,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.00026613883378629735,
+                  "candidate": 0.0005197069584084611,
+                  "delta": 0.0002535681246221637,
+                  "positive_delta": 0.0006783633734279673,
+                  "negative_delta": -0.00042479524880580376,
+                  "sum_abs_delta": 0.0011031586222337712,
+                  "original_sum_abs": 0.0005474539049680994,
+                  "candidate_sum_abs": 0.0014008945986217043,
+                  "share_of_global_abs_delta": 0.04102752834232433
+                },
+                "CL_pressure": {
+                  "original": 0.0004791331978448151,
+                  "candidate": -0.0007986837950134974,
+                  "delta": -0.0012778169928583125,
+                  "positive_delta": 0.0025487405711117576,
+                  "negative_delta": -0.00382655756397007,
+                  "sum_abs_delta": 0.006375298135081828,
+                  "original_sum_abs": 0.0020543613107972068,
+                  "candidate_sum_abs": 0.007259264838188538,
+                  "share_of_global_abs_delta": 0.07500978890709388
+                },
+                "CM_y": {
+                  "original": -0.0003107093670436795,
+                  "candidate": 0.0006246165101972201,
+                  "delta": 0.0009353258772408995,
+                  "positive_delta": 0.002643834099518442,
+                  "negative_delta": -0.0017085082222775424,
+                  "sum_abs_delta": 0.004352342321795984,
+                  "original_sum_abs": 0.001372188186284914,
+                  "candidate_sum_abs": 0.004968352534336642,
+                  "share_of_global_abs_delta": 0.13041510002202772
+                }
+              }
+            }
+          }
+        },
+        "outside": {
+          "half_faces": 1189,
+          "full_mirrored_area": 13.783861999607325,
+          "area_fraction": 0.9927096566873497,
+          "cp_delta_area_rms": 0.10928236561623714,
+          "cp_delta_abs_max": 3.532380974920513,
+          "adjacent_normal_angle_max_deg": 164.66074038761204,
+          "patch_normal_spread_max_deg": 91.84903421126367,
+          "original_force_N": [
+            -0.10224986094305438,
+            0.0,
+            1.4178964782768129
+          ],
+          "candidate_force_N": [
+            -0.0622423771922413,
+            0.0,
+            1.4140788587205653
+          ],
+          "delta_force_N": [
+            0.04000748375081313,
+            0.0,
+            -0.0038176195562511965
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.043527060332126576,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            -0.04017682502333529,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.003350235308791316,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.008864102592414469,
+              "candidate": 0.02499574166531187,
+              "delta": 0.016131639072897396,
+              "positive_delta": 0.020840885483826885,
+              "negative_delta": -0.004709246410929493,
+              "sum_abs_delta": 0.025550131894756384,
+              "original_sum_abs": 0.12024183088704042,
+              "candidate_sum_abs": 0.11771932236335104,
+              "share_of_global_abs_delta": 0.9502339367475887
+            },
+            "CL_pressure": {
+              "original": 0.5801684149708803,
+              "candidate": 0.5771929152471924,
+              "delta": -0.0029754997236880612,
+              "positive_delta": 0.037296610267480435,
+              "negative_delta": -0.040272109991168495,
+              "sum_abs_delta": 0.07756872025864892,
+              "original_sum_abs": 0.6351716484759713,
+              "candidate_sum_abs": 0.6385235517761672,
+              "share_of_global_abs_delta": 0.9126496062007289
+            },
+            "CM_y": {
+              "original": -0.017766147074337407,
+              "candidate": -0.01639870409115727,
+              "delta": 0.0013674429831801276,
+              "positive_delta": 0.014805579563681202,
+              "negative_delta": -0.013438136580501074,
+              "sum_abs_delta": 0.028243716144182272,
+              "original_sum_abs": 0.211525383866559,
+              "candidate_sum_abs": 0.21528822516298773,
+              "share_of_global_abs_delta": 0.8463045398546089
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 542,
+              "full_mirrored_area": 6.771772583798986,
+              "area_fraction": 0.4877010548291478,
+              "cp_delta_area_rms": 0.0335736433880881,
+              "cp_delta_abs_max": 0.4203065017088248,
+              "adjacent_normal_angle_max_deg": 87.04024420418345,
+              "patch_normal_spread_max_deg": 91.84903421126367,
+              "original_force_N": [
+                -0.0010046719345918487,
+                0.0,
+                0.23544572200976602
+              ],
+              "candidate_force_N": [
+                -0.0010700514209086122,
+                0.0,
+                0.23612016066504168
+              ],
+              "delta_force_N": [
+                -6.537948631676958e-05,
+                0.0,
+                0.0006744386552755417
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.10751762674448789,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.10883978838133741,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0013221616368494188,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.007967182826105236,
+                  "candidate": 0.00796459119520954,
+                  "delta": -2.5916308956965006e-06,
+                  "positive_delta": 0.002141312578657701,
+                  "negative_delta": -0.0021439042095533975,
+                  "sum_abs_delta": 0.0042852167882110985,
+                  "original_sum_abs": 0.029586523192523154,
+                  "candidate_sum_abs": 0.03046096715148814,
+                  "share_of_global_abs_delta": 0.1593713267411497
+                },
+                "CL_pressure": {
+                  "original": 0.09577034403395468,
+                  "candidate": 0.09604690338508284,
+                  "delta": 0.00027655935112817147,
+                  "positive_delta": 0.007465182913028643,
+                  "negative_delta": -0.007188623561900471,
+                  "sum_abs_delta": 0.014653806474929114,
+                  "original_sum_abs": 0.12418591093331971,
+                  "candidate_sum_abs": 0.12416592926659414,
+                  "share_of_global_abs_delta": 0.17241216129506234
+                },
+                "CM_y": {
+                  "original": 0.04388474560999508,
+                  "candidate": 0.04442440342095403,
+                  "delta": 0.0005396578109589467,
+                  "positive_delta": 0.005913803738861033,
+                  "negative_delta": -0.005374145927902086,
+                  "sum_abs_delta": 0.011287949666763119,
+                  "original_sum_abs": 0.10334520852891531,
+                  "candidate_sum_abs": 0.10343501369594113,
+                  "share_of_global_abs_delta": 0.3382360522200515
+                }
+              }
+            },
+            "30": {
+              "half_faces": 647,
+              "full_mirrored_area": 7.01208941580834,
+              "area_fraction": 0.505008601858202,
+              "cp_delta_area_rms": 0.1496242516609565,
+              "cp_delta_abs_max": 3.532380974920513,
+              "adjacent_normal_angle_max_deg": 164.66074038761204,
+              "patch_normal_spread_max_deg": 91.84903421126367,
+              "original_force_N": [
+                -0.10124518900846252,
+                0.0,
+                1.1824507562670485
+              ],
+              "candidate_force_N": [
+                -0.061172325771332706,
+                0.0,
+                1.1779586980555226
+              ],
+              "delta_force_N": [
+                0.0400728632371299,
+                0.0,
+                -0.004492058211526737
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.15104468707661467,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                -0.14901661340467265,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0020280736719418923,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0008969197663092308,
+                  "candidate": 0.017031150470102327,
+                  "delta": 0.016134230703793093,
+                  "positive_delta": 0.018699572905169187,
+                  "negative_delta": -0.0025653422013760955,
+                  "sum_abs_delta": 0.021264915106545282,
+                  "original_sum_abs": 0.09065530769451727,
+                  "candidate_sum_abs": 0.08725835521186291,
+                  "share_of_global_abs_delta": 0.7908626100064389
+                },
+                "CL_pressure": {
+                  "original": 0.48439807093692566,
+                  "candidate": 0.4811460118621094,
+                  "delta": -0.003252059074816231,
+                  "positive_delta": 0.029831427354451788,
+                  "negative_delta": -0.03308348642926802,
+                  "sum_abs_delta": 0.0629149137837198,
+                  "original_sum_abs": 0.5109857375426516,
+                  "candidate_sum_abs": 0.5143576225095732,
+                  "share_of_global_abs_delta": 0.7402374449056666
+                },
+                "CM_y": {
+                  "original": -0.06165089268433248,
+                  "candidate": -0.06082310751211131,
+                  "delta": 0.0008277851722211806,
+                  "positive_delta": 0.008891775824820168,
+                  "negative_delta": -0.008063990652598987,
+                  "sum_abs_delta": 0.016955766477419157,
+                  "original_sum_abs": 0.10818017533764367,
+                  "candidate_sum_abs": 0.11185321146704662,
+                  "share_of_global_abs_delta": 0.5080684876345575
+                }
+              }
+            }
+          }
+        }
+      },
+      "coefficient_closure_absolute": {
+        "CD_pressure": {
+          "original": 1.734723475976807e-18,
+          "candidate": 3.469446951953614e-18,
+          "delta": 0.0,
+          "sum_abs_delta": 3.469446951953614e-18
+        },
+        "CL_pressure": {
+          "original": 0.0,
+          "candidate": 1.1102230246251565e-16,
+          "delta": 4.336808689942018e-18,
+          "sum_abs_delta": 1.3877787807814457e-17
+        },
+        "CM_y": {
+          "original": 3.469446951953614e-18,
+          "candidate": 1.5612511283791264e-17,
+          "delta": 8.673617379884035e-19,
+          "sum_abs_delta": 6.938893903907228e-18
+        }
+      },
+      "force_moment_closure_absolute": {
+        "original_force_N": 2.220446049250313e-16,
+        "candidate_force_N": 2.220446049250313e-16,
+        "delta_force_N": 1.3877787807814457e-17,
+        "original_moment_Nm": 3.469446951953614e-17,
+        "candidate_moment_Nm": 1.3877787807814457e-17,
+        "delta_moment_Nm": 3.469446951953614e-18
+      }
+    },
+    {
+      "radius_over_chord": 0.2,
+      "regions": {
+        "inside": {
+          "half_faces": 14,
+          "full_mirrored_area": 0.07396764341009987,
+          "area_fraction": 0.005327127759818284,
+          "cp_delta_area_rms": 2.142494059895638,
+          "cp_delta_abs_max": 8.624469392581545,
+          "adjacent_normal_angle_max_deg": 164.39354655675436,
+          "patch_normal_spread_max_deg": 91.36801140616902,
+          "original_force_N": [
+            0.0004836519031863645,
+            0.0,
+            0.0005411913191411925
+          ],
+          "candidate_force_N": [
+            0.00041190171706202933,
+            0.0,
+            -0.007420089260999528
+          ],
+          "delta_force_N": [
+            -7.175018612433511e-05,
+            0.0,
+            -0.007961280580140721
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.00042106529867691716,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            0.00519428263501013,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.0056153479336870475,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.00021590995635288737,
+              "candidate": -9.647717719357382e-05,
+              "delta": -0.00031238713354646123,
+              "positive_delta": 0.00024268017896460805,
+              "negative_delta": -0.0005550673125110693,
+              "sum_abs_delta": 0.0007977474914756773,
+              "original_sum_abs": 0.0004569727606104496,
+              "candidate_sum_abs": 0.0009480921515985904,
+              "share_of_global_abs_delta": 0.029668995153446513
+            },
+            "CL_pressure": {
+              "original": 0.00020284852323600297,
+              "candidate": -0.003031735992352981,
+              "delta": -0.0032345845155889843,
+              "positive_delta": 0.0013150045936322872,
+              "negative_delta": -0.0045495891092212715,
+              "sum_abs_delta": 0.00586459370285356,
+              "original_sum_abs": 0.0018141776812148414,
+              "candidate_sum_abs": 0.006412747668644831,
+              "share_of_global_abs_delta": 0.0690009982837095
+            },
+            "CM_y": {
+              "original": -0.0001718633872150682,
+              "candidate": 0.0021201153612286252,
+              "delta": 0.0022919787484436925,
+              "positive_delta": 0.0032145084496925528,
+              "negative_delta": -0.0009225297012488594,
+              "sum_abs_delta": 0.004137038150941412,
+              "original_sum_abs": 0.0012704765784109571,
+              "candidate_sum_abs": 0.004518499784731429,
+              "share_of_global_abs_delta": 0.12396365091690033
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            },
+            "30": {
+              "half_faces": 14,
+              "full_mirrored_area": 0.07396764341009987,
+              "area_fraction": 0.005327127759818284,
+              "cp_delta_area_rms": 2.142494059895638,
+              "cp_delta_abs_max": 8.624469392581545,
+              "adjacent_normal_angle_max_deg": 164.39354655675436,
+              "patch_normal_spread_max_deg": 91.36801140616902,
+              "original_force_N": [
+                0.0004836519031863645,
+                0.0,
+                0.0005411913191411925
+              ],
+              "candidate_force_N": [
+                0.00041190171706202933,
+                0.0,
+                -0.007420089260999528
+              ],
+              "delta_force_N": [
+                -7.175018612433511e-05,
+                0.0,
+                -0.007961280580140721
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.00042106529867691716,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.00519428263501013,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0056153479336870475,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.00021590995635288737,
+                  "candidate": -9.647717719357382e-05,
+                  "delta": -0.00031238713354646123,
+                  "positive_delta": 0.00024268017896460805,
+                  "negative_delta": -0.0005550673125110693,
+                  "sum_abs_delta": 0.0007977474914756773,
+                  "original_sum_abs": 0.0004569727606104496,
+                  "candidate_sum_abs": 0.0009480921515985904,
+                  "share_of_global_abs_delta": 0.029668995153446513
+                },
+                "CL_pressure": {
+                  "original": 0.00020284852323600297,
+                  "candidate": -0.003031735992352981,
+                  "delta": -0.0032345845155889843,
+                  "positive_delta": 0.0013150045936322872,
+                  "negative_delta": -0.0045495891092212715,
+                  "sum_abs_delta": 0.00586459370285356,
+                  "original_sum_abs": 0.0018141776812148414,
+                  "candidate_sum_abs": 0.006412747668644831,
+                  "share_of_global_abs_delta": 0.0690009982837095
+                },
+                "CM_y": {
+                  "original": -0.0001718633872150682,
+                  "candidate": 0.0021201153612286252,
+                  "delta": 0.0022919787484436925,
+                  "positive_delta": 0.0032145084496925528,
+                  "negative_delta": -0.0009225297012488594,
+                  "sum_abs_delta": 0.004137038150941412,
+                  "original_sum_abs": 0.0012704765784109571,
+                  "candidate_sum_abs": 0.004518499784731429,
+                  "share_of_global_abs_delta": 0.12396365091690033
+                }
+              }
+            }
+          }
+        },
+        "crossing": {
+          "half_faces": 18,
+          "full_mirrored_area": 0.1396904662869845,
+          "area_fraction": 0.01006046598799369,
+          "cp_delta_area_rms": 0.8336654667410436,
+          "cp_delta_abs_max": 3.532380974920513,
+          "adjacent_normal_angle_max_deg": 163.8394953444015,
+          "patch_normal_spread_max_deg": 76.55443897957333,
+          "original_force_N": [
+            0.0006821935975157597,
+            0.0,
+            0.0011110950710042776
+          ],
+          "candidate_force_N": [
+            0.0013398727408142038,
+            0.0,
+            0.002967174954832315
+          ],
+          "delta_force_N": [
+            0.0006576791432984443,
+            0.0,
+            0.001856079883828036
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.0005862292586867085,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            -0.0019098344607193683,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            -0.0013236052020326597,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.00031691263718121386,
+              "candidate": 0.0006503593704356837,
+              "delta": 0.0003334467332544698,
+              "positive_delta": 0.0005220465577514396,
+              "negative_delta": -0.0001885998244969699,
+              "sum_abs_delta": 0.0007106463822484096,
+              "original_sum_abs": 0.0008304526494864442,
+              "candidate_sum_abs": 0.0012397733767658139,
+              "share_of_global_abs_delta": 0.026429621272441445
+            },
+            "CL_pressure": {
+              "original": 0.00042751425678414325,
+              "candidate": 0.0011588189201639035,
+              "delta": 0.0007313046633797601,
+              "positive_delta": 0.001802715387509453,
+              "negative_delta": -0.001071410724129693,
+              "sum_abs_delta": 0.0028741261116391457,
+              "original_sum_abs": 0.003840203787716868,
+              "candidate_sum_abs": 0.005596617313026785,
+              "share_of_global_abs_delta": 0.033816080182993945
+            },
+            "CM_y": {
+              "original": -0.00023927724844355434,
+              "candidate": -0.0007795242696813745,
+              "delta": -0.0005402470212378202,
+              "positive_delta": 0.0006349943163692128,
+              "negative_delta": -0.001175241337607033,
+              "sum_abs_delta": 0.0018102356539762459,
+              "original_sum_abs": 0.0022973713531503305,
+              "candidate_sum_abs": 0.0033916645123731864,
+              "share_of_global_abs_delta": 0.054242531129613476
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 0,
+              "full_mirrored_area": 0.0,
+              "area_fraction": 0.0,
+              "cp_delta_area_rms": null,
+              "cp_delta_abs_max": null,
+              "adjacent_normal_angle_max_deg": null,
+              "patch_normal_spread_max_deg": null,
+              "original_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_force_N": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CL_pressure": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                },
+                "CM_y": {
+                  "original": 0.0,
+                  "candidate": 0.0,
+                  "delta": 0.0,
+                  "positive_delta": 0.0,
+                  "negative_delta": 0.0,
+                  "sum_abs_delta": 0.0,
+                  "original_sum_abs": 0.0,
+                  "candidate_sum_abs": 0.0,
+                  "share_of_global_abs_delta": 0.0
+                }
+              }
+            },
+            "30": {
+              "half_faces": 18,
+              "full_mirrored_area": 0.1396904662869845,
+              "area_fraction": 0.01006046598799369,
+              "cp_delta_area_rms": 0.8336654667410436,
+              "cp_delta_abs_max": 3.532380974920513,
+              "adjacent_normal_angle_max_deg": 163.8394953444015,
+              "patch_normal_spread_max_deg": 76.55443897957333,
+              "original_force_N": [
+                0.0006821935975157597,
+                0.0,
+                0.0011110950710042776
+              ],
+              "candidate_force_N": [
+                0.0013398727408142038,
+                0.0,
+                0.002967174954832315
+              ],
+              "delta_force_N": [
+                0.0006576791432984443,
+                0.0,
+                0.001856079883828036
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.0005862292586867085,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                -0.0019098344607193683,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                -0.0013236052020326597,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.00031691263718121386,
+                  "candidate": 0.0006503593704356837,
+                  "delta": 0.0003334467332544698,
+                  "positive_delta": 0.0005220465577514396,
+                  "negative_delta": -0.0001885998244969699,
+                  "sum_abs_delta": 0.0007106463822484096,
+                  "original_sum_abs": 0.0008304526494864442,
+                  "candidate_sum_abs": 0.0012397733767658139,
+                  "share_of_global_abs_delta": 0.026429621272441445
+                },
+                "CL_pressure": {
+                  "original": 0.00042751425678414325,
+                  "candidate": 0.0011588189201639035,
+                  "delta": 0.0007313046633797601,
+                  "positive_delta": 0.001802715387509453,
+                  "negative_delta": -0.001071410724129693,
+                  "sum_abs_delta": 0.0028741261116391457,
+                  "original_sum_abs": 0.003840203787716868,
+                  "candidate_sum_abs": 0.005596617313026785,
+                  "share_of_global_abs_delta": 0.033816080182993945
+                },
+                "CM_y": {
+                  "original": -0.00023927724844355434,
+                  "candidate": -0.0007795242696813745,
+                  "delta": -0.0005402470212378202,
+                  "positive_delta": 0.0006349943163692128,
+                  "negative_delta": -0.001175241337607033,
+                  "sum_abs_delta": 0.0018102356539762459,
+                  "original_sum_abs": 0.0022973713531503305,
+                  "candidate_sum_abs": 0.0033916645123731864,
+                  "share_of_global_abs_delta": 0.054242531129613476
+                }
+              }
+            }
+          }
+        },
+        "outside": {
+          "half_faces": 1173,
+          "full_mirrored_area": 13.671430956126823,
+          "area_fraction": 0.9846124062521879,
+          "cp_delta_area_rms": 0.07147359376624159,
+          "cp_delta_abs_max": 1.344735798502642,
+          "adjacent_normal_angle_max_deg": 164.66074038761204,
+          "patch_normal_spread_max_deg": 91.84903421126367,
+          "original_force_N": [
+            -0.10262665025976504,
+            0.0,
+            1.4181232715313257
+          ],
+          "candidate_force_N": [
+            -0.06266286893172068,
+            0.0,
+            1.4147361494775301
+          ],
+          "delta_force_N": [
+            0.03996378132804442,
+            0.0,
+            -0.0033871220537987565
+          ],
+          "original_moment_Nm": [
+            0.0,
+            -0.043750431268234545,
+            0.0
+          ],
+          "candidate_moment_Nm": [
+            0.0,
+            -0.040496898773579114,
+            0.0
+          ],
+          "delta_moment_Nm": [
+            0.0,
+            0.0032535324946554385,
+            0.0
+          ],
+          "quantities": {
+            "CD_pressure": {
+              "original": 0.00871896414953383,
+              "candidate": 0.024848147797011354,
+              "delta": 0.01612918364747752,
+              "positive_delta": 0.02075452212053881,
+              "negative_delta": -0.004625338473061287,
+              "sum_abs_delta": 0.025379860593600097,
+              "original_sum_abs": 0.11964981101521048,
+              "candidate_sum_abs": 0.1170457700670752,
+              "share_of_global_abs_delta": 0.9439013835741126
+            },
+            "CL_pressure": {
+              "original": 0.5802740352118868,
+              "candidate": 0.5774751347725257,
+              "delta": -0.0027989004393610627,
+              "positive_delta": 0.03672763085745045,
+              "negative_delta": -0.039526531296811517,
+              "sum_abs_delta": 0.07625416215426198,
+              "original_sum_abs": 0.6320574849445991,
+              "candidate_sum_abs": 0.6345654653845263,
+              "share_of_global_abs_delta": 0.8971829215332976
+            },
+            "CM_y": {
+              "original": -0.017857318884993714,
+              "candidate": -0.01652934643819557,
+              "delta": 0.001327972446798138,
+              "positive_delta": 0.014376846210720861,
+              "negative_delta": -0.013048873763922723,
+              "sum_abs_delta": 0.027425719974643586,
+              "original_sum_abs": 0.20969043893172903,
+              "candidate_sum_abs": 0.21293174563453154,
+              "share_of_global_abs_delta": 0.8217938179534872
+            }
+          },
+          "components": {
+            "20": {
+              "half_faces": 542,
+              "full_mirrored_area": 6.771772583798986,
+              "area_fraction": 0.4877010548291478,
+              "cp_delta_area_rms": 0.0335736433880881,
+              "cp_delta_abs_max": 0.4203065017088248,
+              "adjacent_normal_angle_max_deg": 87.04024420418345,
+              "patch_normal_spread_max_deg": 91.84903421126367,
+              "original_force_N": [
+                -0.0010046719345918487,
+                0.0,
+                0.23544572200976602
+              ],
+              "candidate_force_N": [
+                -0.0010700514209086122,
+                0.0,
+                0.23612016066504168
+              ],
+              "delta_force_N": [
+                -6.537948631676958e-05,
+                0.0,
+                0.0006744386552755417
+              ],
+              "original_moment_Nm": [
+                0.0,
+                0.10751762674448789,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                0.10883978838133741,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.0013221616368494188,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.007967182826105236,
+                  "candidate": 0.00796459119520954,
+                  "delta": -2.5916308956965006e-06,
+                  "positive_delta": 0.002141312578657701,
+                  "negative_delta": -0.0021439042095533975,
+                  "sum_abs_delta": 0.0042852167882110985,
+                  "original_sum_abs": 0.029586523192523154,
+                  "candidate_sum_abs": 0.03046096715148814,
+                  "share_of_global_abs_delta": 0.1593713267411497
+                },
+                "CL_pressure": {
+                  "original": 0.09577034403395468,
+                  "candidate": 0.09604690338508284,
+                  "delta": 0.00027655935112817147,
+                  "positive_delta": 0.007465182913028643,
+                  "negative_delta": -0.007188623561900471,
+                  "sum_abs_delta": 0.014653806474929114,
+                  "original_sum_abs": 0.12418591093331971,
+                  "candidate_sum_abs": 0.12416592926659414,
+                  "share_of_global_abs_delta": 0.17241216129506234
+                },
+                "CM_y": {
+                  "original": 0.04388474560999508,
+                  "candidate": 0.04442440342095403,
+                  "delta": 0.0005396578109589467,
+                  "positive_delta": 0.005913803738861033,
+                  "negative_delta": -0.005374145927902086,
+                  "sum_abs_delta": 0.011287949666763119,
+                  "original_sum_abs": 0.10334520852891531,
+                  "candidate_sum_abs": 0.10343501369594113,
+                  "share_of_global_abs_delta": 0.3382360522200515
+                }
+              }
+            },
+            "30": {
+              "half_faces": 631,
+              "full_mirrored_area": 6.899658372327838,
+              "area_fraction": 0.49691135142304027,
+              "cp_delta_area_rms": 0.0949524418032367,
+              "cp_delta_abs_max": 1.344735798502642,
+              "adjacent_normal_angle_max_deg": 164.66074038761204,
+              "patch_normal_spread_max_deg": 91.84903421126367,
+              "original_force_N": [
+                -0.10162197832517318,
+                0.0,
+                1.1826775495215613
+              ],
+              "candidate_force_N": [
+                -0.061592817510812074,
+                0.0,
+                1.1786159888124879
+              ],
+              "delta_force_N": [
+                0.04002916081436119,
+                0.0,
+                -0.0040615607090742824
+              ],
+              "original_moment_Nm": [
+                0.0,
+                -0.15126805801272264,
+                0.0
+              ],
+              "candidate_moment_Nm": [
+                0.0,
+                -0.1493366871549165,
+                0.0
+              ],
+              "delta_moment_Nm": [
+                0.0,
+                0.001931370857806015,
+                0.0
+              ],
+              "quantities": {
+                "CD_pressure": {
+                  "original": 0.0007517813234285972,
+                  "candidate": 0.016883556601801814,
+                  "delta": 0.01613177527837322,
+                  "positive_delta": 0.018613209541881108,
+                  "negative_delta": -0.0024814342635078894,
+                  "sum_abs_delta": 0.021094643805388995,
+                  "original_sum_abs": 0.09006328782268733,
+                  "candidate_sum_abs": 0.08658480291558707,
+                  "share_of_global_abs_delta": 0.7845300568329627
+                },
+                "CL_pressure": {
+                  "original": 0.4845036911779321,
+                  "candidate": 0.48142823138744295,
+                  "delta": -0.003075459790489239,
+                  "positive_delta": 0.02926244794442181,
+                  "negative_delta": -0.03233790773491104,
+                  "sum_abs_delta": 0.06160035567933285,
+                  "original_sum_abs": 0.5078715740112795,
+                  "candidate_sum_abs": 0.5103995361179321,
+                  "share_of_global_abs_delta": 0.7247707602382351
+                },
+                "CM_y": {
+                  "original": -0.0617420644949888,
+                  "candidate": -0.060953749859149614,
+                  "delta": 0.0007883146358391908,
+                  "positive_delta": 0.00846304247185983,
+                  "negative_delta": -0.007674727836020637,
+                  "sum_abs_delta": 0.016137770307880467,
+                  "original_sum_abs": 0.10634523040281374,
+                  "candidate_sum_abs": 0.10949673193859039,
+                  "share_of_global_abs_delta": 0.4835577657334357
+                }
+              }
+            }
+          }
+        }
+      },
+      "coefficient_closure_absolute": {
+        "CD_pressure": {
+          "original": 0.0,
+          "candidate": 0.0,
+          "delta": 0.0,
+          "sum_abs_delta": 3.469446951953614e-18
+        },
+        "CL_pressure": {
+          "original": 0.0,
+          "candidate": 1.1102230246251565e-16,
+          "delta": 8.673617379884035e-19,
+          "sum_abs_delta": 0.0
+        },
+        "CM_y": {
+          "original": 3.469446951953614e-18,
+          "candidate": 1.3877787807814457e-17,
+          "delta": 4.336808689942018e-19,
+          "sum_abs_delta": 0.0
+        }
+      },
+      "force_moment_closure_absolute": {
+        "original_force_N": 2.220446049250313e-16,
+        "candidate_force_N": 2.0816681711721685e-17,
+        "delta_force_N": 1.214306433183765e-17,
+        "original_moment_Nm": 4.85722573273506e-17,
+        "candidate_moment_Nm": 0.0,
+        "delta_moment_Nm": 3.469446951953614e-18
+      }
+    }
+  ],
+  "components": {
+    "20": {
+      "half_faces": 542,
+      "full_mirrored_area": 6.771772583798986,
+      "area_fraction": 0.4877010548291478,
+      "cp_delta_area_rms": 0.0335736433880881,
+      "cp_delta_abs_max": 0.4203065017088248,
+      "adjacent_normal_angle_max_deg": 87.04024420418345,
+      "patch_normal_spread_max_deg": 91.84903421126367,
+      "original_force_N": [
+        -0.0010046719345918487,
+        0.0,
+        0.23544572200976602
+      ],
+      "candidate_force_N": [
+        -0.0010700514209086122,
+        0.0,
+        0.23612016066504168
+      ],
+      "delta_force_N": [
+        -6.537948631676958e-05,
+        0.0,
+        0.0006744386552755417
+      ],
+      "original_moment_Nm": [
+        0.0,
+        0.10751762674448789,
+        0.0
+      ],
+      "candidate_moment_Nm": [
+        0.0,
+        0.10883978838133741,
+        0.0
+      ],
+      "delta_moment_Nm": [
+        0.0,
+        0.0013221616368494188,
+        0.0
+      ],
+      "quantities": {
+        "CD_pressure": {
+          "original": 0.007967182826105236,
+          "candidate": 0.00796459119520954,
+          "delta": -2.5916308956965006e-06,
+          "positive_delta": 0.002141312578657701,
+          "negative_delta": -0.0021439042095533975,
+          "sum_abs_delta": 0.0042852167882110985,
+          "original_sum_abs": 0.029586523192523154,
+          "candidate_sum_abs": 0.03046096715148814,
+          "share_of_global_abs_delta": 0.1593713267411497
+        },
+        "CL_pressure": {
+          "original": 0.09577034403395468,
+          "candidate": 0.09604690338508284,
+          "delta": 0.00027655935112817147,
+          "positive_delta": 0.007465182913028643,
+          "negative_delta": -0.007188623561900471,
+          "sum_abs_delta": 0.014653806474929114,
+          "original_sum_abs": 0.12418591093331971,
+          "candidate_sum_abs": 0.12416592926659414,
+          "share_of_global_abs_delta": 0.17241216129506234
+        },
+        "CM_y": {
+          "original": 0.04388474560999508,
+          "candidate": 0.04442440342095403,
+          "delta": 0.0005396578109589467,
+          "positive_delta": 0.005913803738861033,
+          "negative_delta": -0.005374145927902086,
+          "sum_abs_delta": 0.011287949666763119,
+          "original_sum_abs": 0.10334520852891531,
+          "candidate_sum_abs": 0.10343501369594113,
+          "share_of_global_abs_delta": 0.3382360522200515
+        }
+      }
+    },
+    "30": {
+      "half_faces": 663,
+      "full_mirrored_area": 7.113316482024922,
+      "area_fraction": 0.5122989451708522,
+      "cp_delta_area_rms": 0.2648119520714789,
+      "cp_delta_abs_max": 8.624469392581545,
+      "adjacent_normal_angle_max_deg": 164.66074038761204,
+      "patch_normal_spread_max_deg": 91.84903421126367,
+      "original_force_N": [
+        -0.10045613282447108,
+        0.0,
+        1.184329835911707
+      ],
+      "candidate_force_N": [
+        -0.05984104305293583,
+        0.0,
+        1.1741630745063205
+      ],
+      "delta_force_N": [
+        0.04061508977153531,
+        0.0,
+        -0.010166761405387005
+      ],
+      "original_moment_Nm": [
+        0.0,
+        -0.15227535257008626,
+        0.0
+      ],
+      "candidate_moment_Nm": [
+        0.0,
+        -0.14605223898062575,
+        0.0
+      ],
+      "delta_moment_Nm": [
+        0.0,
+        0.006223113589460405,
+        0.0
+      ],
+      "quantities": {
+        "CD_pressure": {
+          "original": 0.0012846039169626929,
+          "candidate": 0.017437438795043923,
+          "delta": 0.016152834878081227,
+          "positive_delta": 0.019377936278597158,
+          "negative_delta": -0.0032251014005159283,
+          "sum_abs_delta": 0.022603037679113085,
+          "original_sum_abs": 0.09135071323278421,
+          "candidate_sum_abs": 0.08877266844395149,
+          "share_of_global_abs_delta": 0.8406286732588508
+        },
+        "CL_pressure": {
+          "original": 0.4851340539579523,
+          "candidate": 0.47955531431525383,
+          "delta": -0.005578739642698463,
+          "positive_delta": 0.032380167925563544,
+          "negative_delta": -0.03795890756826201,
+          "sum_abs_delta": 0.07033907549382555,
+          "original_sum_abs": 0.5135259554802112,
+          "candidate_sum_abs": 0.5224089010996038,
+          "share_of_global_abs_delta": 0.8275878387049385
+        },
+        "CM_y": {
+          "original": -0.06215320513064742,
+          "candidate": -0.059613158767602356,
+          "delta": 0.0025400463630450634,
+          "positive_delta": 0.012312545237921593,
+          "negative_delta": -0.00977249887487653,
+          "sum_abs_delta": 0.022085044112798123,
+          "original_sum_abs": 0.10991307833437503,
+          "candidate_sum_abs": 0.11740689623569499,
+          "share_of_global_abs_delta": 0.6617639477799494
+        }
+      }
+    }
+  },
+  "scope": "No panel excluded from full loads. No singularity or convergence claim.",
+  "input_sha256": {
+    "surface_input.json": "034c216906e6f13b7a38f878ffa065f62dd6638e8f9198dc49d300bacec0a846",
+    "frozen_state.npz": "e59805ab194bcc938dc4c581d9eb52a44c47fe3a0e041cea92050255095ea6da",
+    "recovered_fields.npz": "8590acb8cfe838023f401e4002b98bf46ac1b4bd166b1f5099694d44b957e310",
+    "patches.json": "b7651b8855eaf862672c0041c639dc4c2a15476509020bdc9aa44fe515d61051",
+    "report.json": "8c9b5060c6be73af93ff429af7986d82848bdb9d2bbae899c2e6cfb0de87b925"
+  },
+  "frozen_state_hash": "d61af885625f1d839440d894497fcf13ec51569421e8bc5c48fed05c7421f9a7",
+  "code_sha256": "25f0f117e7e8a8af07d35a16cb1fd6d0dfc906f626e4d19f84c28f80a00be152",
+  "Python": "3.11.17",
+  "NumPy": "2.4.6",
+  "selected_point_is_user_declared": true,
+  "input_hash_note": "Recorded at audit time; not a retroactive signature of PR29 files",
+  "regional_fields_sha256": "63ac9507a088ec25ff9de97c0e33520b2b342d0ac815fe58b77be0e71d7a1139"
+}
