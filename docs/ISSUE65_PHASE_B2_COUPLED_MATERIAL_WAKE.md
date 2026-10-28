@@ -208,3 +208,73 @@ after the repair remain pending local execution.** In particular, this
 change makes no claim that pressure Kutta, a finite-epsilon PV at a tip, or a
 steady free-wake physical fixed point has been solved. Keep PR Draft until
 tested/reviewed; keep issue #65 open and physical_accuracy_accepted=false.
+
+
+## Independent wall Cp / velocity-trace diagnostics (added 2026-10-28)
+
+New \`panel/p1_cp_diagnostics.py\` intentionally does NOT modify \`state['cp']\`,
+clip it, smooth it, or update the solution. It separates:
+
+1. \`p1_surface_gradient(xyz, faces, dof_face, mu)\`: independently rebuild the
+   per-triangle P1 basis gradient and report shortest edge, aspect ratio,
+   edge-matrix condition number, and gradient-operator norm.
+2. \`potential_gradient_fd4(potential, points, step)\`: a fourth-order centered
+   finite-difference gradient of a caller-supplied scalar potential.
+3. \`compare_p1_to_offsurface(...)\`: compare the current \`grad(mu)\` Cp with
+   an independent total-potential gradient sampled on a declared fluid-side
+   normal-offset ladder. It also reports the alternative \`U_t+grad(mu)\`
+   convention, so a missing/double-counted freestream convention cannot be
+   silently assumed. Offsets default to fractions of each face's shortest
+   edge, not a global length scale.
+4. \`diagnose_g2_state(mesh, state)\`: adapter for the existing G2 solve state;
+   it uses \`p1_steady_free_wake._potentials_at\`, i.e. freestream + shared wall
+   + every P1 wake, and reports exact recomputation consistency against the
+   solver's Cp plus independent off-surface Cp/velocity traces.
+5. \`kutta_pressure_diagnostic\` and \`pressure_load_diagnostic\`: per-station
+   Cp/speed-squared jump and the unclipped signed pressure-force/drag
+   cancellation budget. Equal-face Kutta averaging matches the current G1/G2
+   residual; area-weighted averaging is a separately selected alternative.
+
+This tool requires the caller to verify outward normals / fluid-side sign and
+that all finite-difference shifted points remain in the exterior. It does not
+automatically certify CAD winding, detect crossing nearby surfaces, or prove a
+pointwise principal-value limit. It is an audit path, not a solver change.
+
+### Local isolated execution (not full-repository integration)
+
+\`\`\`bash
+PYTHONPATH=. python -m pytest test/test_p1_analytic_sheet_velocity.py \\
+  test/test_p1_cp_stability_manufactured.py test/test_p1_cp_diagnostics.py \\
+  -q -p no:cacheprovider
+# 20 passed / exit 0 in the isolated sandbox
+\`\`\`
+
+A manufactured harmonic potential \`phi=x+0.1 sin(x) cosh(z)\` has exact
+zero normal velocity on the flat wall \`z=0\`. Across 12/24/48/96 chordwise
+panels, surface P1 Cp RMS error vs the analytic wall trace is respectively
+0.01239 / 0.00618 / 0.00309 / 0.001545; independent fourth-order
+off-surface-gradient Cp error is 1.97e-5 / 1.22e-5 / 3.04e-6 / 7.60e-7.
+This is a controlled smooth manufactured solution, NOT a real-aircraft
+validation. It shows the two methods have distinct, measurable errors and
+that the comparison converges with refinement. The generated JSON is saved
+outside the repo as \`dpanel_cp_diagnostic_demo_20261028.json\`.
+
+### Required next actual-repository run
+
+Once a local checkout of this exact branch is available, run the existing
+G1/G2 solve at fixed geometry, then call:
+
+\`\`\`python
+from panel.p1_cp_diagnostics import diagnose_g2_state
+audit = diagnose_g2_state(mesh, state, offsets=(0.2, 0.1, 0.05),
+                          offset_sign=+1.0, local_scale="edge_min")
+\`\`\`
+
+Save the report and compare: solver-Cp recomputation error (should be near
+roundoff), off-surface Cp vs solver Cp for each offset, tangential-velocity
+discrepancy for both potential conventions, normal-velocity residual, local
+edge conditioning, per-TE pressure residual, and signed drag cancellation.
+Repeat with a mesh-refined geometry and a verified outward-normal sign. Do not
+run this adapter on the true CAD until full source checkout and unit tests pass.
+The sandbox cannot resolve GitHub DNS, so **the 20 isolated tests do not claim
+that this adapter has run on a real G1/G2 solve or real CAD**.
