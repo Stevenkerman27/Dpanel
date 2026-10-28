@@ -1,0 +1,2851 @@
+{
+  "schema": "dpanel.half_group_report.v1",
+  "status": "numerical_solve_completed_not_physical_validation",
+  "physical_accuracy_accepted": false,
+  "inputs": {
+    "surface": "D:\\3D\\Projects\\panel\\runs\\multi_wake\\final_s02\\surface.json",
+    "surface_sha256": "503242c2f3645216089c9d7ce22ba46d100d1da47b34713030e46d1b57fa5e65",
+    "groups": "D:\\3D\\Projects\\panel\\runs\\multi_wake\\final_s02\\groups.json",
+    "groups_sha256": "344cd7e75bedc89b45016d87a0d04177dd1b8f6e174c84caac61a0b125a8bbe0",
+    "groups_schema": "dpanel.half_shed_groups.v2",
+    "surface_audit": {
+      "symmetry_plane_vertex_count": 42,
+      "symmetry_seam_edges": 24,
+      "max_plane_snap": 0.0,
+      "half_wall_panels": 508,
+      "half_wake_panels": 368,
+      "public_wall_positive_mirrored_volumes": [
+        0.14105557760519633,
+        0.14105583263684215
+      ],
+      "groups": 2,
+      "exposed_te_edges": 32,
+      "wake_wall_contact_edges": 0,
+      "no_artificial_symmetry_wall": true,
+      "physical_accuracy_accepted": false
+    },
+    "surface_provenance": {
+      "type": "OCC positive-y multi-wake fluid domain, not a clipped full mesh",
+      "wing_cad": "D:\\3D\\Projects\\panel\\runs\\multi_wake\\two_layer.step",
+      "wake_groups_declaration": "D:\\3D\\Projects\\panel\\runs\\multi_wake\\groups.json",
+      "CAD_passes": [
+        {
+          "pass_index": 0,
+          "fluid_volumes": 1,
+          "wake_inputs": 16,
+          "wake_surfaces": {
+            "lower_wing": 8,
+            "upper_wing": 8
+          },
+          "wall_surfaces": 18,
+          "symmetry_plane_faces": 1,
+          "component_classification": [
+            {
+              "surface_tag": 167,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -5.0,
+                  4.375,
+                  -3.75
+                ],
+                [
+                  -5.0,
+                  1.25,
+                  -2.5
+                ],
+                [
+                  -5.0,
+                  2.5,
+                  0.0
+                ],
+                [
+                  -5.0,
+                  3.75,
+                  2.5
+                ],
+                [
+                  -5.0,
+                  0.625,
+                  3.75
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 7.033439673402655
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  124,
+                  120,
+                  123,
+                  141,
+                  133
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 168,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -3.75,
+                  0.0,
+                  -3.75
+                ],
+                [
+                  2.5,
+                  0.0,
+                  -2.5
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -2.5,
+                  0.0,
+                  2.5
+                ],
+                [
+                  3.75,
+                  0.0,
+                  3.75
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 5.299452235704272
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  116,
+                  115,
+                  116,
+                  133,
+                  134
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 169,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -3.75,
+                  0.625,
+                  5.0
+                ],
+                [
+                  -2.5,
+                  3.75,
+                  5.0
+                ],
+                [
+                  0.0,
+                  2.5,
+                  5.0
+                ],
+                [
+                  2.5,
+                  1.25,
+                  5.0
+                ],
+                [
+                  3.75,
+                  4.375,
+                  5.0
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 6.266462977458554
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  133,
+                  141,
+                  141,
+                  140,
+                  141
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 170,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -3.75,
+                  5.0,
+                  -3.75
+                ],
+                [
+                  2.5,
+                  5.0,
+                  -2.5
+                ],
+                [
+                  0.0,
+                  5.0,
+                  0.0
+                ],
+                [
+                  -2.5,
+                  5.0,
+                  2.5
+                ],
+                [
+                  3.75,
+                  5.0,
+                  3.75
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 6.459380426797852
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  124,
+                  124,
+                  123,
+                  141,
+                  141
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 171,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -3.75,
+                  0.625,
+                  -5.0
+                ],
+                [
+                  -2.5,
+                  3.75,
+                  -5.0
+                ],
+                [
+                  0.0,
+                  2.5,
+                  -5.0
+                ],
+                [
+                  2.5,
+                  1.25,
+                  -5.0
+                ],
+                [
+                  3.75,
+                  4.375,
+                  -5.0
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 6.450655644304578
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  116,
+                  124,
+                  124,
+                  122,
+                  124
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 172,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  5.0,
+                  4.375,
+                  -3.75
+                ],
+                [
+                  5.0,
+                  1.25,
+                  -2.5
+                ],
+                [
+                  5.0,
+                  2.5,
+                  0.0
+                ],
+                [
+                  5.0,
+                  3.75,
+                  2.5
+                ],
+                [
+                  5.0,
+                  0.625,
+                  3.75
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 6.300690382689224
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  124,
+                  119,
+                  124,
+                  142,
+                  136
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 173,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.8682876671317055,
+                  0.05,
+                  -0.009204406572150641
+                ],
+                [
+                  0.7268991567749901,
+                  0.30000000000000004,
+                  -0.01639263518085713
+                ],
+                [
+                  0.4966024443868763,
+                  0.20000000000000007,
+                  -0.03157405971893615
+                ],
+                [
+                  0.25019089143779416,
+                  0.1,
+                  -0.040968179090224495
+                ],
+                [
+                  0.15999595107112496,
+                  0.3500000000000001,
+                  -0.03464702118457223
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1188630228279524e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  118,
+                  118,
+                  118,
+                  118,
+                  118
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 174,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.1141751008326051,
+                  0.05,
+                  0.05712715191276469
+                ],
+                [
+                  0.26243575092604665,
+                  0.3000000000000001,
+                  0.068578853173798
+                ],
+                [
+                  0.4939471773889704,
+                  0.20000000000000007,
+                  0.06840269273048495
+                ],
+                [
+                  0.7402083147092816,
+                  0.1,
+                  0.043580514788276216
+                ],
+                [
+                  0.8362565576755341,
+                  0.3500000000000001,
+                  0.021915017325384846
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.22614398128331e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  117,
+                  117,
+                  117,
+                  117,
+                  117
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 175,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.8682876671317055,
+                  0.05,
+                  0.23079559342773287
+                ],
+                [
+                  0.7268991567749901,
+                  0.30000000000000004,
+                  0.22360736481893345
+                ],
+                [
+                  0.4966024443868763,
+                  0.20000000000000007,
+                  0.2084259402811767
+                ],
+                [
+                  0.25019089143779416,
+                  0.1,
+                  0.19903182090969615
+                ],
+                [
+                  0.15999595107112496,
+                  0.3500000000000001,
+                  0.2053529788155122
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.2412670766236366e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  136,
+                  136,
+                  136,
+                  136,
+                  136
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 176,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.1141751008326051,
+                  0.05,
+                  0.29712715191279115
+                ],
+                [
+                  0.26243575092604665,
+                  0.3000000000000001,
+                  0.3085788531737683
+                ],
+                [
+                  0.4939471773889704,
+                  0.20000000000000007,
+                  0.30840269273048415
+                ],
+                [
+                  0.7402083147092816,
+                  0.1,
+                  0.28358051478828444
+                ],
+                [
+                  0.8362565576755341,
+                  0.3500000000000001,
+                  0.2619150173250303
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.7554167342883506e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  135,
+                  135,
+                  135,
+                  135,
+                  135
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 177,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.8253258964839014,
+                  0.45000000000000007,
+                  -0.00803559303919446
+                ],
+                [
+                  0.6997356487073092,
+                  0.7000000000000002,
+                  -0.014131582052465511
+                ],
+                [
+                  0.5010506149064995,
+                  0.6000000000000001,
+                  -0.027364185089734375
+                ],
+                [
+                  0.2862906116756973,
+                  0.5,
+                  -0.03568196243342194
+                ],
+                [
+                  0.21192125243408994,
+                  0.7500000000000001,
+                  -0.029784281369168136
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1150912609939193e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  120,
+                  120,
+                  120,
+                  120,
+                  120
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 178,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.16697365606446893,
+                  0.45000000000000007,
+                  0.04987291040004817
+                ],
+                [
+                  0.29933616090584525,
+                  0.7000000000000002,
+                  0.059119701011866796
+                ],
+                [
+                  0.49874938350804177,
+                  0.6000000000000001,
+                  0.059282333699755135
+                ],
+                [
+                  0.713079980331503,
+                  0.5,
+                  0.03795722255756115
+                ],
+                [
+                  0.7932680896902757,
+                  0.7500000000000001,
+                  0.018839225420113626
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.249000902703301e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  119,
+                  119,
+                  119,
+                  119,
+                  119
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 179,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.8253258964839014,
+                  0.45000000000000007,
+                  0.2319644069608045
+                ],
+                [
+                  0.6997356487073092,
+                  0.7000000000000002,
+                  0.2258684179473185
+                ],
+                [
+                  0.5010506149064995,
+                  0.6000000000000001,
+                  0.2126358149102532
+                ],
+                [
+                  0.2862906116756973,
+                  0.5,
+                  0.20431803756670655
+                ],
+                [
+                  0.21192125243408994,
+                  0.7500000000000001,
+                  0.21021571863090022
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.5700924586837752e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  138,
+                  138,
+                  138,
+                  138,
+                  138
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 180,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.16697365606446893,
+                  0.45000000000000007,
+                  0.2898729103999811
+                ],
+                [
+                  0.29933616090584525,
+                  0.7000000000000002,
+                  0.2991197010117006
+                ],
+                [
+                  0.49874938350804177,
+                  0.6000000000000001,
+                  0.29928233369949286
+                ],
+                [
+                  0.713079980331503,
+                  0.5,
+                  0.27795722255736144
+                ],
+                [
+                  0.7932680896902757,
+                  0.7500000000000001,
+                  0.25883922541998183
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.942890293094024e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  137,
+                  137,
+                  137,
+                  137,
+                  137
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 181,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.7823641258363145,
+                  0.8500000000000001,
+                  -0.006866779506223185
+                ],
+                [
+                  0.6725721406392926,
+                  1.0999999999999999,
+                  -0.011870528924084089
+                ],
+                [
+                  0.5054987854255069,
+                  1.0,
+                  -0.023154310460564962
+                ],
+                [
+                  0.32239033191368544,
+                  0.9000000000000001,
+                  -0.030395745776620037
+                ],
+                [
+                  0.2638465537968713,
+                  1.1500000000000001,
+                  -0.024921541553770358
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1107649934270853e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  122,
+                  122,
+                  122,
+                  122,
+                  122
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 182,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.21977221129595942,
+                  0.8500000000000001,
+                  0.042618668887316524
+                ],
+                [
+                  0.3362365708865932,
+                  1.1,
+                  0.049660548849978864
+                ],
+                [
+                  0.5035515896276587,
+                  1.0,
+                  0.05016197466900206
+                ],
+                [
+                  0.6859516459539312,
+                  0.9000000000000001,
+                  0.03233393032682416
+                ],
+                [
+                  0.7502796217059666,
+                  1.1500000000000001,
+                  0.01576343351466163
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.576213700060856e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  121,
+                  121,
+                  121,
+                  121,
+                  121
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 183,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.7823641258363145,
+                  0.8500000000000001,
+                  0.23313322049394733
+                ],
+                [
+                  0.6725721406392926,
+                  1.0999999999999999,
+                  0.22812947107579343
+                ],
+                [
+                  0.5054987854255069,
+                  1.0,
+                  0.21684568953960154
+                ],
+                [
+                  0.32239033191368544,
+                  0.9000000000000001,
+                  0.2096042542233831
+                ],
+                [
+                  0.2638465537968713,
+                  1.1500000000000001,
+                  0.21507845844652979
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.2412670766236366e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  140,
+                  140,
+                  140,
+                  140,
+                  140
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 184,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.21977221129595942,
+                  0.8500000000000001,
+                  0.282618668887188
+                ],
+                [
+                  0.3362365708865932,
+                  1.1,
+                  0.28966054884998005
+                ],
+                [
+                  0.5035515896276587,
+                  1.0,
+                  0.29016197466893556
+                ],
+                [
+                  0.6859516459539312,
+                  0.9000000000000001,
+                  0.272333930326911
+                ],
+                [
+                  0.7502796217059666,
+                  1.1500000000000001,
+                  0.2557634335143598
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 5.551115123125783e-17
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  139,
+                  139,
+                  139,
+                  139,
+                  139
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 185,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.739402355188952,
+                  1.25,
+                  -0.00569796597323984
+                ],
+                [
+                  0.6454086325716628,
+                  1.5000000000000002,
+                  -0.009609475795671705
+                ],
+                [
+                  0.5099469559455352,
+                  1.4000000000000001,
+                  -0.018944435831346022
+                ],
+                [
+                  0.3584900521523581,
+                  1.2999999999999998,
+                  -0.025109529119811076
+                ],
+                [
+                  0.3157718551606074,
+                  1.5500000000000003,
+                  -0.020058801738433288
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 2.4874386169105373e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  124,
+                  124,
+                  124,
+                  124,
+                  124
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 186,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.27257076652769896,
+                  1.25,
+                  0.03536442737456723
+                ],
+                [
+                  0.3731369808669044,
+                  1.5,
+                  0.04020139668808259
+                ],
+                [
+                  0.5083537957464416,
+                  1.4000000000000004,
+                  0.04104161563829323
+                ],
+                [
+                  0.6588233115763791,
+                  1.2999999999999998,
+                  0.02671063809606306
+                ],
+                [
+                  0.7072911537206551,
+                  1.55,
+                  0.012687641609460806
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1188630228279524e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  123,
+                  123,
+                  123,
+                  123,
+                  123
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 187,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.739402355188952,
+                  1.25,
+                  0.2343020340269834
+                ],
+                [
+                  0.6454086325716628,
+                  1.5000000000000002,
+                  0.23039052420433073
+                ],
+                [
+                  0.5099469559455352,
+                  1.4000000000000001,
+                  0.22105556416896213
+                ],
+                [
+                  0.3584900521523581,
+                  1.2999999999999998,
+                  0.21489047088039992
+                ],
+                [
+                  0.3157718551606074,
+                  1.5500000000000003,
+                  0.21994119826156272
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1443916996305594e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  142,
+                  142,
+                  142,
+                  142,
+                  142
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 188,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.27257076652769896,
+                  1.25,
+                  0.2753644273746393
+                ],
+                [
+                  0.3731369808669044,
+                  1.5,
+                  0.2802013966880076
+                ],
+                [
+                  0.5083537957464416,
+                  1.4000000000000004,
+                  0.28104161563842256
+                ],
+                [
+                  0.6588233115763791,
+                  1.2999999999999998,
+                  0.2667106380958872
+                ],
+                [
+                  0.7072911537206551,
+                  1.55,
+                  0.25268764160978396
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.2412670766236366e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  141,
+                  141,
+                  141,
+                  141,
+                  141
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 189,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.3274460854570519,
+                  1.6,
+                  -0.013589027148923767
+                ],
+                [
+                  0.38995119634047304,
+                  1.6,
+                  0.009206475309617271
+                ],
+                [
+                  0.4524563072238941,
+                  1.6,
+                  0.024403476948644625
+                ],
+                [
+                  0.5774665289907366,
+                  1.6,
+                  0.0016079744901035878
+                ],
+                [
+                  0.7024767507575789,
+                  1.6,
+                  0.009206475309617271
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.734723475976807e-18
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  126,
+                  126,
+                  126,
+                  126,
+                  126
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 190,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.3274460854570519,
+                  1.6,
+                  0.22641097285091663
+                ],
+                [
+                  0.38995119634047304,
+                  1.6,
+                  0.24920647530964773
+                ],
+                [
+                  0.4524563072238942,
+                  1.6,
+                  0.26440347694880184
+                ],
+                [
+                  0.5774665289907366,
+                  1.6,
+                  0.2416079744900707
+                ],
+                [
+                  0.7024767507575789,
+                  1.6,
+                  0.24920647530964773
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 0.0
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  144,
+                  144,
+                  144,
+                  144,
+                  144
+                ]
+              },
+              "unmatched_reason": null
+            }
+          ]
+        },
+        {
+          "pass_index": 1,
+          "fluid_volumes": 1,
+          "wake_inputs": 16,
+          "wake_surfaces": {
+            "lower_wing": 8,
+            "upper_wing": 8
+          },
+          "wall_surfaces": 18,
+          "symmetry_plane_faces": 1,
+          "component_classification": [
+            {
+              "surface_tag": 167,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -5.0,
+                  4.375,
+                  -3.75
+                ],
+                [
+                  -5.0,
+                  1.25,
+                  -2.5
+                ],
+                [
+                  -5.0,
+                  2.5,
+                  0.0
+                ],
+                [
+                  -5.0,
+                  3.75,
+                  2.5
+                ],
+                [
+                  -5.0,
+                  0.625,
+                  3.75
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 7.033439673402655
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  124,
+                  120,
+                  123,
+                  141,
+                  133
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 168,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -3.75,
+                  0.0,
+                  -3.75
+                ],
+                [
+                  2.5,
+                  0.0,
+                  -2.5
+                ],
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -2.5,
+                  0.0,
+                  2.5
+                ],
+                [
+                  3.75,
+                  0.0,
+                  3.75
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 5.299452235704272
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  116,
+                  115,
+                  116,
+                  133,
+                  134
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 169,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -3.75,
+                  0.625,
+                  5.0
+                ],
+                [
+                  -2.5,
+                  3.75,
+                  5.0
+                ],
+                [
+                  0.0,
+                  2.5,
+                  5.0
+                ],
+                [
+                  2.5,
+                  1.25,
+                  5.0
+                ],
+                [
+                  3.75,
+                  4.375,
+                  5.0
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 6.266462977458554
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  133,
+                  141,
+                  141,
+                  140,
+                  141
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 170,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -3.75,
+                  5.0,
+                  -3.75
+                ],
+                [
+                  2.5,
+                  5.0,
+                  -2.5
+                ],
+                [
+                  0.0,
+                  5.0,
+                  0.0
+                ],
+                [
+                  -2.5,
+                  5.0,
+                  2.5
+                ],
+                [
+                  3.75,
+                  5.0,
+                  3.75
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 6.459380426797852
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  124,
+                  124,
+                  123,
+                  141,
+                  141
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 171,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  -3.75,
+                  0.625,
+                  -5.0
+                ],
+                [
+                  -2.5,
+                  3.75,
+                  -5.0
+                ],
+                [
+                  0.0,
+                  2.5,
+                  -5.0
+                ],
+                [
+                  2.5,
+                  1.25,
+                  -5.0
+                ],
+                [
+                  3.75,
+                  4.375,
+                  -5.0
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 6.450655644304578
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  116,
+                  124,
+                  124,
+                  122,
+                  124
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 172,
+              "physical_tag": null,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  5.0,
+                  4.375,
+                  -3.75
+                ],
+                [
+                  5.0,
+                  1.25,
+                  -2.5
+                ],
+                [
+                  5.0,
+                  2.5,
+                  0.0
+                ],
+                [
+                  5.0,
+                  3.75,
+                  2.5
+                ],
+                [
+                  5.0,
+                  0.625,
+                  3.75
+                ]
+              ],
+              "matched_roles": [],
+              "selected_role": null,
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 6.300690382689224
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  124,
+                  119,
+                  124,
+                  142,
+                  136
+                ]
+              },
+              "unmatched_reason": "no_source_geometry_within_tolerance"
+            },
+            {
+              "surface_tag": 173,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.8682876671317055,
+                  0.05,
+                  -0.009204406572150641
+                ],
+                [
+                  0.7268991567749901,
+                  0.30000000000000004,
+                  -0.01639263518085713
+                ],
+                [
+                  0.4966024443868763,
+                  0.20000000000000007,
+                  -0.03157405971893615
+                ],
+                [
+                  0.25019089143779416,
+                  0.1,
+                  -0.040968179090224495
+                ],
+                [
+                  0.15999595107112496,
+                  0.3500000000000001,
+                  -0.03464702118457223
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1188630228279524e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  118,
+                  118,
+                  118,
+                  118,
+                  118
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 174,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.1141751008326051,
+                  0.05,
+                  0.05712715191276469
+                ],
+                [
+                  0.26243575092604665,
+                  0.3000000000000001,
+                  0.068578853173798
+                ],
+                [
+                  0.4939471773889704,
+                  0.20000000000000007,
+                  0.06840269273048495
+                ],
+                [
+                  0.7402083147092816,
+                  0.1,
+                  0.043580514788276216
+                ],
+                [
+                  0.8362565576755341,
+                  0.3500000000000001,
+                  0.021915017325384846
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.22614398128331e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  117,
+                  117,
+                  117,
+                  117,
+                  117
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 175,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.8682876671317055,
+                  0.05,
+                  0.23079559342773287
+                ],
+                [
+                  0.7268991567749901,
+                  0.30000000000000004,
+                  0.22360736481893345
+                ],
+                [
+                  0.4966024443868763,
+                  0.20000000000000007,
+                  0.2084259402811767
+                ],
+                [
+                  0.25019089143779416,
+                  0.1,
+                  0.19903182090969615
+                ],
+                [
+                  0.15999595107112496,
+                  0.3500000000000001,
+                  0.2053529788155122
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.2412670766236366e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  136,
+                  136,
+                  136,
+                  136,
+                  136
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 176,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.1141751008326051,
+                  0.05,
+                  0.29712715191279115
+                ],
+                [
+                  0.26243575092604665,
+                  0.3000000000000001,
+                  0.3085788531737683
+                ],
+                [
+                  0.4939471773889704,
+                  0.20000000000000007,
+                  0.30840269273048415
+                ],
+                [
+                  0.7402083147092816,
+                  0.1,
+                  0.28358051478828444
+                ],
+                [
+                  0.8362565576755341,
+                  0.3500000000000001,
+                  0.2619150173250303
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.7554167342883506e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  135,
+                  135,
+                  135,
+                  135,
+                  135
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 177,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.8253258964839014,
+                  0.45000000000000007,
+                  -0.00803559303919446
+                ],
+                [
+                  0.6997356487073092,
+                  0.7000000000000002,
+                  -0.014131582052465511
+                ],
+                [
+                  0.5010506149064995,
+                  0.6000000000000001,
+                  -0.027364185089734375
+                ],
+                [
+                  0.2862906116756973,
+                  0.5,
+                  -0.03568196243342194
+                ],
+                [
+                  0.21192125243408994,
+                  0.7500000000000001,
+                  -0.029784281369168136
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1150912609939193e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  120,
+                  120,
+                  120,
+                  120,
+                  120
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 178,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.16697365606446893,
+                  0.45000000000000007,
+                  0.04987291040004817
+                ],
+                [
+                  0.29933616090584525,
+                  0.7000000000000002,
+                  0.059119701011866796
+                ],
+                [
+                  0.49874938350804177,
+                  0.6000000000000001,
+                  0.059282333699755135
+                ],
+                [
+                  0.713079980331503,
+                  0.5,
+                  0.03795722255756115
+                ],
+                [
+                  0.7932680896902757,
+                  0.7500000000000001,
+                  0.018839225420113626
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.249000902703301e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  119,
+                  119,
+                  119,
+                  119,
+                  119
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 179,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.8253258964839014,
+                  0.45000000000000007,
+                  0.2319644069608045
+                ],
+                [
+                  0.6997356487073092,
+                  0.7000000000000002,
+                  0.2258684179473185
+                ],
+                [
+                  0.5010506149064995,
+                  0.6000000000000001,
+                  0.2126358149102532
+                ],
+                [
+                  0.2862906116756973,
+                  0.5,
+                  0.20431803756670655
+                ],
+                [
+                  0.21192125243408994,
+                  0.7500000000000001,
+                  0.21021571863090022
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.5700924586837752e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  138,
+                  138,
+                  138,
+                  138,
+                  138
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 180,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.16697365606446893,
+                  0.45000000000000007,
+                  0.2898729103999811
+                ],
+                [
+                  0.29933616090584525,
+                  0.7000000000000002,
+                  0.2991197010117006
+                ],
+                [
+                  0.49874938350804177,
+                  0.6000000000000001,
+                  0.29928233369949286
+                ],
+                [
+                  0.713079980331503,
+                  0.5,
+                  0.27795722255736144
+                ],
+                [
+                  0.7932680896902757,
+                  0.7500000000000001,
+                  0.25883922541998183
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.942890293094024e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  137,
+                  137,
+                  137,
+                  137,
+                  137
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 181,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.7823641258363145,
+                  0.8500000000000001,
+                  -0.006866779506223185
+                ],
+                [
+                  0.6725721406392926,
+                  1.0999999999999999,
+                  -0.011870528924084089
+                ],
+                [
+                  0.5054987854255069,
+                  1.0,
+                  -0.023154310460564962
+                ],
+                [
+                  0.32239033191368544,
+                  0.9000000000000001,
+                  -0.030395745776620037
+                ],
+                [
+                  0.2638465537968713,
+                  1.1500000000000001,
+                  -0.024921541553770358
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1107649934270853e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  122,
+                  122,
+                  122,
+                  122,
+                  122
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 182,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.21977221129595942,
+                  0.8500000000000001,
+                  0.042618668887316524
+                ],
+                [
+                  0.3362365708865932,
+                  1.1,
+                  0.049660548849978864
+                ],
+                [
+                  0.5035515896276587,
+                  1.0,
+                  0.05016197466900206
+                ],
+                [
+                  0.6859516459539312,
+                  0.9000000000000001,
+                  0.03233393032682416
+                ],
+                [
+                  0.7502796217059666,
+                  1.1500000000000001,
+                  0.01576343351466163
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.576213700060856e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  121,
+                  121,
+                  121,
+                  121,
+                  121
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 183,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.7823641258363145,
+                  0.8500000000000001,
+                  0.23313322049394733
+                ],
+                [
+                  0.6725721406392926,
+                  1.0999999999999999,
+                  0.22812947107579343
+                ],
+                [
+                  0.5054987854255069,
+                  1.0,
+                  0.21684568953960154
+                ],
+                [
+                  0.32239033191368544,
+                  0.9000000000000001,
+                  0.2096042542233831
+                ],
+                [
+                  0.2638465537968713,
+                  1.1500000000000001,
+                  0.21507845844652979
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.2412670766236366e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  140,
+                  140,
+                  140,
+                  140,
+                  140
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 184,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.21977221129595942,
+                  0.8500000000000001,
+                  0.282618668887188
+                ],
+                [
+                  0.3362365708865932,
+                  1.1,
+                  0.28966054884998005
+                ],
+                [
+                  0.5035515896276587,
+                  1.0,
+                  0.29016197466893556
+                ],
+                [
+                  0.6859516459539312,
+                  0.9000000000000001,
+                  0.272333930326911
+                ],
+                [
+                  0.7502796217059666,
+                  1.1500000000000001,
+                  0.2557634335143598
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 5.551115123125783e-17
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  139,
+                  139,
+                  139,
+                  139,
+                  139
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 185,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.739402355188952,
+                  1.25,
+                  -0.00569796597323984
+                ],
+                [
+                  0.6454086325716628,
+                  1.5000000000000002,
+                  -0.009609475795671705
+                ],
+                [
+                  0.5099469559455352,
+                  1.4000000000000001,
+                  -0.018944435831346022
+                ],
+                [
+                  0.3584900521523581,
+                  1.2999999999999998,
+                  -0.025109529119811076
+                ],
+                [
+                  0.3157718551606074,
+                  1.5500000000000003,
+                  -0.020058801738433288
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 2.4874386169105373e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  124,
+                  124,
+                  124,
+                  124,
+                  124
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 186,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.27257076652769896,
+                  1.25,
+                  0.03536442737456723
+                ],
+                [
+                  0.3731369808669044,
+                  1.5,
+                  0.04020139668808259
+                ],
+                [
+                  0.5083537957464416,
+                  1.4000000000000004,
+                  0.04104161563829323
+                ],
+                [
+                  0.6588233115763791,
+                  1.2999999999999998,
+                  0.02671063809606306
+                ],
+                [
+                  0.7072911537206551,
+                  1.55,
+                  0.012687641609460806
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1188630228279524e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  123,
+                  123,
+                  123,
+                  123,
+                  123
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 187,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.739402355188952,
+                  1.25,
+                  0.2343020340269834
+                ],
+                [
+                  0.6454086325716628,
+                  1.5000000000000002,
+                  0.23039052420433073
+                ],
+                [
+                  0.5099469559455352,
+                  1.4000000000000001,
+                  0.22105556416896213
+                ],
+                [
+                  0.3584900521523581,
+                  1.2999999999999998,
+                  0.21489047088039992
+                ],
+                [
+                  0.3157718551606074,
+                  1.5500000000000003,
+                  0.21994119826156272
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.1443916996305594e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  142,
+                  142,
+                  142,
+                  142,
+                  142
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 188,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.27257076652769896,
+                  1.25,
+                  0.2753644273746393
+                ],
+                [
+                  0.3731369808669044,
+                  1.5,
+                  0.2802013966880076
+                ],
+                [
+                  0.5083537957464416,
+                  1.4000000000000004,
+                  0.28104161563842256
+                ],
+                [
+                  0.6588233115763791,
+                  1.2999999999999998,
+                  0.2667106380958872
+                ],
+                [
+                  0.7072911537206551,
+                  1.55,
+                  0.25268764160978396
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.2412670766236366e-16
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  141,
+                  141,
+                  141,
+                  141,
+                  141
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 189,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.3274460854570519,
+                  1.6,
+                  -0.013589027148923767
+                ],
+                [
+                  0.38995119634047304,
+                  1.6,
+                  0.009206475309617271
+                ],
+                [
+                  0.4524563072238941,
+                  1.6,
+                  0.024403476948644625
+                ],
+                [
+                  0.5774665289907366,
+                  1.6,
+                  0.0016079744901035878
+                ],
+                [
+                  0.7024767507575789,
+                  1.6,
+                  0.009206475309617271
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 1.734723475976807e-18
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  126,
+                  126,
+                  126,
+                  126,
+                  126
+                ]
+              },
+              "unmatched_reason": null
+            },
+            {
+              "surface_tag": 190,
+              "physical_tag": 10,
+              "sample_count": 5,
+              "sample_xyz": [
+                [
+                  0.3274460854570519,
+                  1.6,
+                  0.22641097285091663
+                ],
+                [
+                  0.38995119634047304,
+                  1.6,
+                  0.24920647530964773
+                ],
+                [
+                  0.4524563072238942,
+                  1.6,
+                  0.26440347694880184
+                ],
+                [
+                  0.5774665289907366,
+                  1.6,
+                  0.2416079744900707
+                ],
+                [
+                  0.7024767507575789,
+                  1.6,
+                  0.24920647530964773
+                ]
+              ],
+              "matched_roles": [
+                "wing"
+              ],
+              "selected_role": "wing",
+              "ambiguous": false,
+              "ambiguity_rule": null,
+              "role_max_sample_residual": {
+                "wing": 0.0
+              },
+              "nearest_source_face_by_sample": {
+                "wing": [
+                  144,
+                  144,
+                  144,
+                  144,
+                  144
+                ]
+              },
+              "unmatched_reason": null
+            }
+          ]
+        }
+      ],
+      "half_fluid_symmetry_caps_excluded": [
+        168
+      ],
+      "physical_wall_surface_tags": [
+        173,
+        174,
+        175,
+        176,
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190
+      ],
+      "physical_wake_surface_tags": {
+        "lower_wing": [
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          158
+        ],
+        "upper_wing": [
+          159,
+          160,
+          161,
+          162,
+          163,
+          164,
+          165,
+          166
+        ]
+      },
+      "body_contact_intervals": "unsupported in v2 (no body CAD accepted)"
+    }
+  },
+  "code": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "jax": "0.10.2",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "files": {
+      "panel/shed_groups.py": {
+        "sha256": "bc391ddc0e42bcecdafae80d587223721e3587b06e35d88965278a882816f62b",
+        "bytes": 24199
+      },
+      "panel/run_half_groups.py": {
+        "sha256": "a0995cd4dda57974353fde3c019ee7bb692eca258527fdfcabcf819f2b8e0a61",
+        "bytes": 30420
+      },
+      "panel/half_native.py": {
+        "sha256": "577f77d3afe031a8817a9535a17918f144286e98906226cf66dd8cd49a711ba9",
+        "bytes": 22279
+      },
+      "panel/kernel.py": {
+        "sha256": "e3234f690505a1fa5e9b051d95bde0aa873ea1730c2ffff31c66cb00168a0a9a",
+        "bytes": 5795
+      }
+    }
+  },
+  "groups": [
+    {
+      "group_id": "lower_wing",
+      "kind": "attached_lifting_TE",
+      "role": "lifting",
+      "root_condition": "symmetry_plane",
+      "wake_faces": 184,
+      "shed_edges": 16,
+      "stations": 9,
+      "circulation_unknowns": 8,
+      "wake_z": 0.0
+    },
+    {
+      "group_id": "upper_wing",
+      "kind": "attached_lifting_TE",
+      "role": "lifting",
+      "root_condition": "symmetry_plane",
+      "wake_faces": 184,
+      "shed_edges": 16,
+      "stations": 9,
+      "circulation_unknowns": 8,
+      "wake_z": 0.24000000000000005
+    }
+  ],
+  "validation": {
+    "closed_body": false,
+    "groups": [
+      {
+        "group_id": "lower_wing",
+        "kind": "attached_lifting_TE",
+        "role": "lifting",
+        "root_condition": "symmetry_plane",
+        "circulation_unknowns": 8,
+        "stations": 9,
+        "shed_edges": 16,
+        "wake_faces": 184,
+        "wake_z": 0.0,
+        "root_y": 0.0,
+        "wake_wall_tests": 16,
+        "root_containment": "symmetry_plane"
+      },
+      {
+        "group_id": "upper_wing",
+        "kind": "attached_lifting_TE",
+        "role": "lifting",
+        "root_condition": "symmetry_plane",
+        "circulation_unknowns": 8,
+        "stations": 9,
+        "shed_edges": 16,
+        "wake_faces": 184,
+        "wake_z": 0.24000000000000005,
+        "root_y": 0.0,
+        "wake_wall_tests": 16,
+        "root_containment": "symmetry_plane"
+      }
+    ],
+    "wake_faces": 368
+  },
+  "solve": {
+    "unknowns": 524,
+    "wall_panels": 508,
+    "group_slices": [
+      [
+        508,
+        516
+      ],
+      [
+        516,
+        524
+      ]
+    ],
+    "linear_residual_relative": 1.0651550350270984e-15,
+    "hot_seconds": 2.4761734000057913,
+    "CL": 0.28524516941126743,
+    "CD_pressure": -0.01253984593387403,
+    "CM": [
+      0.0,
+      -0.04938555074172734,
+      0.0
+    ],
+    "Cp_min": -3.2799258044649164,
+    "Cp_max": 0.17805402227948253,
+    "physical_accuracy_accepted": false
+  },
+  "group_rows": [
+    {
+      "group_id": "lower_wing",
+      "circulation_unknowns": 8,
+      "gamma": [
+        0.3115572030405067,
+        0.3053140739582329,
+        0.28989715440677616,
+        0.26127578844012384,
+        0.23745415944965645,
+        0.20119538952525826,
+        0.16386276588004953,
+        0.14153304183232884
+      ],
+      "gamma_sum": 1.9120895765329327,
+      "gamma_max_abs": 0.3115572030405067,
+      "te_jump_rms": 0.2332554886212076,
+      "te_jump_max_abs": 0.3100418685714957,
+      "kutta_residual_rms": 6.798699777552591e-17,
+      "wake_z": 0.0,
+      "wake_faces": 184,
+      "shed_edges": 16
+    },
+    {
+      "group_id": "upper_wing",
+      "circulation_unknowns": 8,
+      "gamma": [
+        -0.030672543619096423,
+        -0.029896377766991524,
+        -0.016204411812122354,
+        -0.011067429030237892,
+        0.014190654881653175,
+        0.020540538332731485,
+        0.033980007707883814,
+        0.036663514406577724
+      ],
+      "gamma_sum": 0.017533953100398007,
+      "gamma_max_abs": 0.036663514406577724,
+      "te_jump_rms": 0.025444558574293064,
+      "te_jump_max_abs": 0.04391901603897985,
+      "kutta_residual_rms": 2.7055569521709478e-17,
+      "wake_z": 0.24000000000000005,
+      "wake_faces": 184,
+      "shed_edges": 16
+    }
+  ],
+  "checks": {
+    "block_dimensions": {
+      "performed": true,
+      "ok": true,
+      "shape": [
+        524,
+        524
+      ],
+      "expected": 524,
+      "unknowns": 524,
+      "wall_unknowns": 508,
+      "group_unknowns": [
+        8,
+        8
+      ],
+      "group_slices": [
+        [
+          508,
+          516
+        ],
+        [
+          516,
+          524
+        ]
+      ],
+      "kutta_rows": 16,
+      "finite": true
+    },
+    "circulation_mass_rows": {
+      "performed": true,
+      "max_normalisation_gap": 1.1102230246251565e-16,
+      "max_quadrature_gap": 2.7755575615628914e-17,
+      "note": "M_g = raw_mass/measure_g is exact by construction; sum_j M_ij = 1 holds only on rows whose TE quadrature has a partition-of-unity basis, which the tapered tip station (dof -1) does not",
+      "groups": [
+        {
+          "group_size": 8,
+          "min_measure": 0.10107302290141082,
+          "quadrature_gap": 2.7755575615628914e-17,
+          "normalisation_gap": 1.1102230246251565e-16,
+          "basis_partition_max_abs_error": 0.8943375672973845,
+          "quadrature_points_with_partial_basis": 4,
+          "row_sums": [
+            0.9999999999999998,
+            0.9999999999999999,
+            0.9999999999999999,
+            1.0,
+            1.0000000000000002,
+            0.9999999999999998,
+            0.9999999999999998,
+            0.8333333333333218
+          ],
+          "row_sums_where_partition_of_unity": [
+            0.9999999999999998,
+            0.9999999999999999,
+            0.9999999999999999,
+            1.0,
+            1.0000000000000002,
+            0.9999999999999998,
+            0.9999999999999998,
+            0.8333333333333218
+          ]
+        },
+        {
+          "group_size": 8,
+          "min_measure": 0.10107302290141082,
+          "quadrature_gap": 2.7755575615628914e-17,
+          "normalisation_gap": 1.1102230246251565e-16,
+          "basis_partition_max_abs_error": 0.8943375672973845,
+          "quadrature_points_with_partial_basis": 4,
+          "row_sums": [
+            0.9999999999999998,
+            0.9999999999999999,
+            0.9999999999999999,
+            1.0,
+            1.0000000000000002,
+            0.9999999999999998,
+            0.9999999999999998,
+            0.8333333333333218
+          ],
+          "row_sums_where_partition_of_unity": [
+            0.9999999999999998,
+            0.9999999999999999,
+            0.9999999999999999,
+            1.0,
+            1.0000000000000002,
+            0.9999999999999998,
+            0.9999999999999998,
+            0.8333333333333218
+          ]
+        }
+      ]
+    },
+    "kutta_rows": {
+      "performed": true,
+      "max_rms": 6.798699777552591e-17,
+      "groups": [
+        {
+          "group_id": "lower_wing",
+          "kutta_residual_rms": 6.798699777552591e-17,
+          "circulation_unknowns": 8
+        },
+        {
+          "group_id": "upper_wing",
+          "kutta_residual_rms": 2.7055569521709478e-17,
+          "circulation_unknowns": 8
+        }
+      ]
+    },
+    "operator_mirror": {
+      "performed": true,
+      "notes": "doublet block compared off the diagonal; every group wake operator rebuilt from its triangles plus mirrored images",
+      "doublet_max_abs_gap": 2.7755575615628914e-17,
+      "doublet_relative_to_peak": 7.142477904222555e-17,
+      "worst_wake_operator_relative": 0.0,
+      "groups": [
+        {
+          "group_id": "lower_wing",
+          "wake_operator_shape": [
+            508,
+            8
+          ],
+          "wake_faces": 184,
+          "wake_operator_max_abs_gap": 0.0,
+          "wake_operator_relative_to_peak": 0.0
+        },
+        {
+          "group_id": "upper_wing",
+          "wake_operator_shape": [
+            508,
+            8
+          ],
+          "wake_faces": 184,
+          "wake_operator_max_abs_gap": 0.0,
+          "wake_operator_relative_to_peak": 0.0
+        }
+      ]
+    },
+    "v1_equivalence": {
+      "performed": false,
+      "reason": "v1 has exactly one wake sheet"
+    },
+    "full_oracle": {
+      "performed": false,
+      "reason": "not requested"
+    },
+    "lift_slope": {
+      "performed": true,
+      "alpha_rad": 0.08726646259971647,
+      "dcl_dalpha_ad": 1.9025304625104904,
+      "dcl_dalpha_per_deg": 0.0332054206902986,
+      "finite_difference": [
+        {
+          "step": 0.0001,
+          "central": 1.902530442535466,
+          "relative_difference": 1.0499187631892371e-08
+        },
+        {
+          "step": 1e-05,
+          "central": 1.902530462316587,
+          "relative_difference": 1.0191865079247236e-10
+        }
+      ],
+      "max_relative_difference": 1.0499187631892371e-08
+    }
+  },
+  "elapsed_seconds": 14.478496499999892
+}
