@@ -1,0 +1,30 @@
+{
+  "name": "bwb",
+  "notes": "blended wing body, root t/c 0.22 -> tip 0.10, AR 1.07",
+  "solids": 1,
+  "half_span": 1.0,
+  "reference_area": 1.2414970407424226,
+  "reference_chord": 1.0,
+  "status": "built",
+  "wing_step_validation": {
+    "imported_solid_count": 1,
+    "imported_solid_volumes": [
+      0.11195265795595126
+    ],
+    "matches_expected": true,
+    "positive_volume": true
+  },
+  "te_points": 25,
+  "te_first": [
+    0.55,
+    -1.0,
+    0.0
+  ],
+  "te_last": [
+    0.55,
+    1.0,
+    0.0
+  ],
+  "wing_step_sha256": "4c34fde653d02f94748692d24a8193d8d3ab01842aa7283e8529831b3621fa9a",
+  "te_sha256": "b64c621146e1a2ac8dc0abc14f314124c13761d59706727ddad0e326a183f8a1"
+}

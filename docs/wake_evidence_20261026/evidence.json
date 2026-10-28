@@ -1,0 +1,2796 @@
+{
+  "pairs": {
+    "status": "checks_passed",
+    "runs": [
+      {
+        "case": "single_wing",
+        "alpha": 0.0,
+        "mode": "fixed",
+        "CL": 0.0035895058932156106,
+        "CD_pressure": -0.02226463536208161,
+        "CM_y": -0.0010398222896178186,
+        "wall_normal_rms": 0.014747493488782827,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.0933159672738002e-10,
+          "total_normal_rms": 0.011926731329472261,
+          "total_normal_max": 0.03827970601883446,
+          "extrapolation_change_rms": 5.130126216298272e-06,
+          "freestream_normal_rms": 0.0,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.013021183680420217
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.011757676693579865
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.0,
+          "freestream_normal_max": 0.0,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8277136ddfbd796767236c68ff3ce83e0cb761eee58f8c58e13fbaf257da9c31",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a0_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a0_fixed",
+          "--alpha",
+          "0.0",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a0_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "single_wing",
+        "alpha": 0.0,
+        "mode": "freestream",
+        "CL": 0.0035895058932156106,
+        "CD_pressure": -0.02226463536208161,
+        "CM_y": -0.0010398222896178186,
+        "wall_normal_rms": 0.014747493488782827,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.0933159672738002e-10,
+          "total_normal_rms": 0.011926731329472261,
+          "total_normal_max": 0.03827970601883446,
+          "extrapolation_change_rms": 5.130126216298272e-06,
+          "freestream_normal_rms": 0.0,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.013021183680420217
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.011757676693579865
+          }
+        },
+        "wake_model": {
+          "mode": "freestream",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": true,
+          "freestream_normal_rms": 0.0,
+          "freestream_normal_max": 0.0,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8277136ddfbd796767236c68ff3ce83e0cb761eee58f8c58e13fbaf257da9c31",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a0_freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a0_freestream",
+          "--alpha",
+          "0.0",
+          "--wake-mode",
+          "freestream",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a0_freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "single_wing",
+        "alpha": 2.5,
+        "mode": "fixed",
+        "CL": 0.12326306241030457,
+        "CD_pressure": -0.017463306206841663,
+        "CM_y": -0.00743671250441136,
+        "wall_normal_rms": 0.015707887635273303,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 8.870309209374483e-10,
+          "total_normal_rms": 0.01693728316951334,
+          "total_normal_max": 0.11247292166345471,
+          "extrapolation_change_rms": 9.221600749909087e-06,
+          "freestream_normal_rms": 0.043619387365336,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.02404621598390132
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.015625221818661644
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.043619387365336,
+          "freestream_normal_max": 0.043619387365336,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8277136ddfbd796767236c68ff3ce83e0cb761eee58f8c58e13fbaf257da9c31",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a2.5_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a2.5_fixed",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a2.5_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "single_wing",
+        "alpha": 2.5,
+        "mode": "freestream",
+        "CL": 0.12324262158301484,
+        "CD_pressure": -0.017434718836973423,
+        "CM_y": -0.007419385022127076,
+        "wall_normal_rms": 0.01568902492124654,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 8.848459465138347e-10,
+          "total_normal_rms": 0.03490773862909932,
+          "total_normal_max": 0.08223101985500847,
+          "extrapolation_change_rms": 9.20995914560657e-06,
+          "freestream_normal_rms": 8.542165567390823e-18,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.03572535638146713
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.034786225869522736
+          }
+        },
+        "wake_model": {
+          "mode": "freestream",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": true,
+          "freestream_normal_rms": 6.53449648351552e-18,
+          "freestream_normal_max": 1.2648044539354295e-17,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8277136ddfbd796767236c68ff3ce83e0cb761eee58f8c58e13fbaf257da9c31",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a2.5_freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a2.5_freestream",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "freestream",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a2.5_freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "single_wing",
+        "alpha": 5.0,
+        "mode": "fixed",
+        "CL": 0.24153441844346338,
+        "CD_pressure": -0.003115641935854268,
+        "CM_y": -0.013781488153542095,
+        "wall_normal_rms": 0.018470835815397192,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.709387464909895e-09,
+          "total_normal_rms": 0.03511395843952333,
+          "total_normal_max": 0.22498367147568682,
+          "extrapolation_change_rms": 1.5013773953869199e-05,
+          "freestream_normal_rms": 0.08715574274765817,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.04561313962068552
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.03329716070061827
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.08715574274765815,
+          "freestream_normal_max": 0.08715574274765817,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8277136ddfbd796767236c68ff3ce83e0cb761eee58f8c58e13fbaf257da9c31",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a5_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a5_fixed",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a5_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "single_wing",
+        "alpha": 5.0,
+        "mode": "freestream",
+        "CL": 0.2418194106228796,
+        "CD_pressure": -0.002974915509556857,
+        "CM_y": -0.013813369454760895,
+        "wall_normal_rms": 0.018417680518600522,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.7036163590944398e-09,
+          "total_normal_rms": 0.06105291908578456,
+          "total_normal_max": 0.1572266474678609,
+          "extrapolation_change_rms": 1.5022152509469922e-05,
+          "freestream_normal_rms": 2.6475478238755827e-17,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.06546353770957494
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.06037905552108969
+          }
+        },
+        "wake_model": {
+          "mode": "freestream",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": true,
+          "freestream_normal_rms": 2.0686994759112937e-17,
+          "freestream_normal_max": 3.933514880151986e-17,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8277136ddfbd796767236c68ff3ce83e0cb761eee58f8c58e13fbaf257da9c31",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a5_freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a5_freestream",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--ncpu",
+          "8",
+          "--derivatives"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\single_wing_a5_freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": true
+      },
+      {
+        "case": "forward_body",
+        "alpha": 0.0,
+        "mode": "fixed",
+        "CL": 0.003737975082342502,
+        "CD_pressure": -0.019155437736352553,
+        "CM_y": -0.000186305756120002,
+        "wall_normal_rms": 0.01732632441514834,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 9.430494579687476e-11,
+          "total_normal_rms": 0.019077452948299253,
+          "total_normal_max": 0.04023539959097206,
+          "extrapolation_change_rms": 7.819154047822197e-06,
+          "freestream_normal_rms": 0.0,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.019604497272901252
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.01899669199082898
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.0,
+          "freestream_normal_max": 0.0,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "552fc21bd0f1e94b40c0c9d7215cf0091c0699d11e587ceb9c2e5edc7e51c31c",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a0_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\forward_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a0_fixed",
+          "--alpha",
+          "0.0",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a0_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "forward_body",
+        "alpha": 0.0,
+        "mode": "freestream",
+        "CL": 0.003737975082342502,
+        "CD_pressure": -0.019155437736352553,
+        "CM_y": -0.000186305756120002,
+        "wall_normal_rms": 0.01732632441514834,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 9.430494579687476e-11,
+          "total_normal_rms": 0.019077452948299253,
+          "total_normal_max": 0.04023539959097206,
+          "extrapolation_change_rms": 7.819154047822197e-06,
+          "freestream_normal_rms": 0.0,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.019604497272901252
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.01899669199082898
+          }
+        },
+        "wake_model": {
+          "mode": "freestream",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": true,
+          "freestream_normal_rms": 0.0,
+          "freestream_normal_max": 0.0,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "552fc21bd0f1e94b40c0c9d7215cf0091c0699d11e587ceb9c2e5edc7e51c31c",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a0_freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\forward_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a0_freestream",
+          "--alpha",
+          "0.0",
+          "--wake-mode",
+          "freestream",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a0_freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "forward_body",
+        "alpha": 5.0,
+        "mode": "fixed",
+        "CL": 0.26904292747368813,
+        "CD_pressure": 0.0017021703663806865,
+        "CM_y": 0.03237856293735673,
+        "wall_normal_rms": 0.019777632848983612,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.6144908743243036e-09,
+          "total_normal_rms": 0.037696164418165215,
+          "total_normal_max": 0.08296015169754709,
+          "extrapolation_change_rms": 1.5891345494633175e-05,
+          "freestream_normal_rms": 0.08715574274765817,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.042090787760669296
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.03698805428891261
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.08715574274765815,
+          "freestream_normal_max": 0.08715574274765817,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "552fc21bd0f1e94b40c0c9d7215cf0091c0699d11e587ceb9c2e5edc7e51c31c",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a5_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\forward_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a5_fixed",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a5_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "forward_body",
+        "alpha": 5.0,
+        "mode": "freestream",
+        "CL": 0.26939002130560963,
+        "CD_pressure": 0.0020130827610138763,
+        "CM_y": 0.03234564013737043,
+        "wall_normal_rms": 0.019725949430211685,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.6150671355852353e-09,
+          "total_normal_rms": 0.06364670814680487,
+          "total_normal_max": 0.15395240873561977,
+          "extrapolation_change_rms": 1.5884603999266386e-05,
+          "freestream_normal_rms": 2.672924942509894e-17,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.07095464919307842
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.06247033033133444
+          }
+        },
+        "wake_model": {
+          "mode": "freestream",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": true,
+          "freestream_normal_rms": 2.0650951839205422e-17,
+          "freestream_normal_max": 3.933514880151986e-17,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "552fc21bd0f1e94b40c0c9d7215cf0091c0699d11e587ceb9c2e5edc7e51c31c",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a5_freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\forward_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a5_freestream",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\forward_body_a5_freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "aft_body",
+        "alpha": 0.0,
+        "mode": "fixed",
+        "CL": 0.005616745436908811,
+        "CD_pressure": -0.01925561034351993,
+        "CM_y": 0.0019642340187795643,
+        "wall_normal_rms": 0.02547697322964542,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.0191626557444489e-10,
+          "total_normal_rms": 0.010463012391247318,
+          "total_normal_max": 0.8137000133068479,
+          "extrapolation_change_rms": 2.8306899099749205e-06,
+          "freestream_normal_rms": 0.0,
+          "near": {
+            "samples": 56,
+            "total_normal_rms": 0.014480915417962996
+          },
+          "far": {
+            "samples": 8,
+            "total_normal_rms": 0.009759365874627899
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.0,
+          "freestream_normal_max": 0.0,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a0_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\aft_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a0_fixed",
+          "--alpha",
+          "0.0",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a0_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "aft_body",
+        "alpha": 0.0,
+        "mode": "far-freestream",
+        "CL": 0.005616745436908811,
+        "CD_pressure": -0.01925561034351993,
+        "CM_y": 0.0019642340187795643,
+        "wall_normal_rms": 0.02547697322964542,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.0191626557444489e-10,
+          "total_normal_rms": 0.010463012391247318,
+          "total_normal_max": 0.8137000133068479,
+          "extrapolation_change_rms": 2.8306899099749205e-06,
+          "freestream_normal_rms": 0.0,
+          "near": {
+            "samples": 56,
+            "total_normal_rms": 0.014480915417962996
+          },
+          "far": {
+            "samples": 8,
+            "total_normal_rms": 0.009759365874627899
+          }
+        },
+        "wake_model": {
+          "mode": "far-freestream",
+          "hinge_x_normalized": 5.0,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.0,
+          "freestream_normal_max": 0.0,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a0_far-freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\aft_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a0_far-freestream",
+          "--alpha",
+          "0.0",
+          "--wake-mode",
+          "far-freestream",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a0_far-freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "aft_body",
+        "alpha": 5.0,
+        "mode": "fixed",
+        "CL": 0.2578572284778704,
+        "CD_pressure": 0.0007960027611745396,
+        "CM_y": 0.005421806411315504,
+        "wall_normal_rms": 0.028895037139537477,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.6177568729069947e-09,
+          "total_normal_rms": 0.048489182866440016,
+          "total_normal_max": 0.7694771503499993,
+          "extrapolation_change_rms": 2.2944588677543e-05,
+          "freestream_normal_rms": 0.08715574274765817,
+          "near": {
+            "samples": 56,
+            "total_normal_rms": 0.08410759240115176
+          },
+          "far": {
+            "samples": 8,
+            "total_normal_rms": 0.04099576453822041
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.08715574274765817,
+          "freestream_normal_max": 0.08715574274765817,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a5_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\aft_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a5_fixed",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a5_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "aft_body",
+        "alpha": 5.0,
+        "mode": "far-freestream",
+        "CL": 0.25788735286537917,
+        "CD_pressure": 0.0008354814764014138,
+        "CM_y": 0.005423446672265306,
+        "wall_normal_rms": 0.028918898628871845,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 1.6150444315243817e-09,
+          "total_normal_rms": 0.07395595702350988,
+          "total_normal_max": 0.769807305515144,
+          "extrapolation_change_rms": 2.303844746627826e-05,
+          "freestream_normal_rms": 0.030679844982939648,
+          "near": {
+            "samples": 56,
+            "total_normal_rms": 0.08411120954532275
+          },
+          "far": {
+            "samples": 8,
+            "total_normal_rms": 0.07240473252566766
+          }
+        },
+        "wake_model": {
+          "mode": "far-freestream",
+          "hinge_x_normalized": 5.0,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.030678827329658428,
+          "freestream_normal_max": 0.08715574274765817,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "8127d41e46b4477e996369d32eec006d4d92ac3357b4774b85eb321aaf6d2fbc",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a5_far-freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\aft_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a5_far-freestream",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "far-freestream",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\aft_body_a5_far-freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "swept_tapered",
+        "alpha": 5.0,
+        "mode": "fixed",
+        "CL": 0.5208219442749445,
+        "CD_pressure": 0.010471932997925886,
+        "CM_y": -0.18967359125346636,
+        "wall_normal_rms": 0.029720756156909608,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 2.3111200730951964e-09,
+          "total_normal_rms": 0.03463596525235429,
+          "total_normal_max": 0.27986972993484704,
+          "extrapolation_change_rms": 2.055078167009805e-05,
+          "freestream_normal_rms": 0.08715574274765817,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.08167631479705946
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.020790949771469478
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.08715574274765818,
+          "freestream_normal_max": 0.08715574274765817,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "133a64b903c0d081aa2e3c81c7c998b4ed52c9e6a43f67d61292f51f393640fd",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\swept_tapered_a5_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\swept_tapered.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\swept_tapered_a5_fixed",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\swept_tapered_a5_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "swept_tapered",
+        "alpha": 5.0,
+        "mode": "freestream",
+        "CL": 0.5223432099423643,
+        "CD_pressure": 0.01070340177488238,
+        "CM_y": -0.19038550005045468,
+        "wall_normal_rms": 0.029788578281835457,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 2.310558799845097e-09,
+          "total_normal_rms": 0.0834397037218447,
+          "total_normal_max": 0.20187683140133622,
+          "extrapolation_change_rms": 2.0429677435479024e-05,
+          "freestream_normal_rms": 4.685950155264132e-15,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.10257776647766176
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.08039200673243209
+          }
+        },
+        "wake_model": {
+          "mode": "freestream",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": true,
+          "freestream_normal_rms": 4.049977450502412e-15,
+          "freestream_normal_max": 1.3824343718085085e-13,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "133a64b903c0d081aa2e3c81c7c998b4ed52c9e6a43f67d61292f51f393640fd",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\swept_tapered_a5_freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\swept_tapered.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\swept_tapered_a5_freestream",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--ncpu",
+          "8",
+          "--derivatives"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\swept_tapered_a5_freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": true
+      },
+      {
+        "case": "thick_body",
+        "alpha": 5.0,
+        "mode": "fixed",
+        "CL": 0.5278180729356298,
+        "CD_pressure": 0.009271473836490749,
+        "CM_y": 0.053662552295750905,
+        "wall_normal_rms": 0.027127504012439387,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 2.983044034010618e-09,
+          "total_normal_rms": 0.11045775990464902,
+          "total_normal_max": 0.3354189454089357,
+          "extrapolation_change_rms": 3.869683391127174e-05,
+          "freestream_normal_rms": 0.08715574274765817,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.07914084624349112
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.1138387163927459
+          }
+        },
+        "wake_model": {
+          "mode": "fixed",
+          "hinge_x_normalized": null,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": false,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.08715574274765815,
+          "freestream_normal_max": 0.08715574274765843,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "aaa4ddaf34adca68c44caa3896d387edd253762e8bb60ba6bca42761b5c18ef5",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\thick_body_a5_fixed",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\thick_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\thick_body_a5_fixed",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "fixed",
+          "--ncpu",
+          "8"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\thick_body_a5_fixed",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": null
+      },
+      {
+        "case": "thick_body",
+        "alpha": 5.0,
+        "mode": "far-freestream",
+        "CL": 0.5279777825769486,
+        "CD_pressure": 0.009357036475974785,
+        "CM_y": 0.053647123590295547,
+        "wall_normal_rms": 0.027135330935410117,
+        "wake_tangency": {
+          "samples": 64,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 2.985634073304766e-09,
+          "total_normal_rms": 0.11390500459682634,
+          "total_normal_max": 0.33111458255645,
+          "extrapolation_change_rms": 3.885725121355951e-05,
+          "freestream_normal_rms": 0.029280984311301883,
+          "near": {
+            "samples": 55,
+            "total_normal_rms": 0.07914995281232882
+          },
+          "far": {
+            "samples": 9,
+            "total_normal_rms": 0.11759261082262054
+          }
+        },
+        "wake_model": {
+          "mode": "far-freestream",
+          "hinge_x_normalized": 5.0,
+          "offset_sha256": null,
+          "circulation_coordinate": "Transported vertex material label; affine gradient on each actual triangle",
+          "angle_tracks_alpha": true,
+          "fully_freestream_aligned": false,
+          "freestream_normal_rms": 0.031537714202931715,
+          "freestream_normal_max": 0.08715574274765843,
+          "local_flow_tangency_solved": false,
+          "derivative": "Prescribed motion included; supplied offsets frozen; no converged free-wake or CAD/contact derivative"
+        },
+        "surface_sha256": "aaa4ddaf34adca68c44caa3896d387edd253762e8bb60ba6bca42761b5c18ef5",
+        "directory": "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\thick_body_a5_far-freestream",
+        "solve_command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\thick_body.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\thick_body_a5_far-freestream",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "far-freestream",
+          "--ncpu",
+          "8",
+          "--derivatives"
+        ],
+        "audit_command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\wake_direction_pairs_20261026\\thick_body_a5_far-freestream",
+          "--wake-samples",
+          "64",
+          "--ncpu",
+          "8"
+        ],
+        "derivatives_passed": true
+      }
+    ],
+    "checks": [
+      {
+        "test": "single_wing_a0_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a0_freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a0_freestream_freestream_tangency",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a0_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "single_wing_zero_alpha_same_problem",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "single_wing_a2.5_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a2.5_freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a2.5_freestream_freestream_tangency",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a2.5_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "single_wing_a5_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a5_freestream_AD_FD_45_scalars",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a5_freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a5_freestream_freestream_tangency",
+        "passed": true
+      },
+      {
+        "test": "single_wing_a5_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "single_wing_historical_fixed_regression",
+        "max_error": 1.1324274851176597e-14,
+        "passed": true
+      },
+      {
+        "test": "forward_body_a0_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "forward_body_a0_freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "forward_body_a0_freestream_freestream_tangency",
+        "passed": true
+      },
+      {
+        "test": "forward_body_a0_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "forward_body_zero_alpha_same_problem",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "forward_body_a5_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "forward_body_a5_freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "forward_body_a5_freestream_freestream_tangency",
+        "passed": true
+      },
+      {
+        "test": "forward_body_a5_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "forward_body_historical_fixed_regression",
+        "max_error": 3.774758283725532e-14,
+        "passed": true
+      },
+      {
+        "test": "aft_body_a0_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "aft_body_a0_far-freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "aft_body_a0_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "aft_body_zero_alpha_same_problem",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "aft_body_a5_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "aft_body_a5_far-freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "aft_body_a5_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "aft_body_historical_fixed_regression",
+        "max_error": 2.864375403532904e-14,
+        "passed": true
+      },
+      {
+        "test": "swept_tapered_a5_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "swept_tapered_a5_freestream_AD_FD_45_scalars",
+        "passed": true
+      },
+      {
+        "test": "swept_tapered_a5_freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "swept_tapered_a5_freestream_freestream_tangency",
+        "passed": true
+      },
+      {
+        "test": "swept_tapered_a5_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "swept_tapered_historical_fixed_regression",
+        "max_error": 1.4988010832439613e-14,
+        "passed": true
+      },
+      {
+        "test": "thick_body_a5_fixed_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "thick_body_a5_far-freestream_AD_FD_45_scalars",
+        "passed": true
+      },
+      {
+        "test": "thick_body_a5_far-freestream_independent_kernels",
+        "passed": true
+      },
+      {
+        "test": "thick_body_a5_same_wall",
+        "max_error": 0.0,
+        "passed": true
+      },
+      {
+        "test": "thick_body_historical_fixed_regression",
+        "max_error": 8.970602038971265e-14,
+        "passed": true
+      },
+      {
+        "test": "contact_requires_new_fluid_cut",
+        "passed": true
+      }
+    ],
+    "physical_accuracy_accepted": false,
+    "source_sha256": "44c88507f4bb28fa3060d1f1e5cb75bfe2c7d08009f7bca4b298a1a325aec193"
+  },
+  "relaxed": {
+    "status": "iteration_budget_exhausted",
+    "formulation": "Fixed-x three-dimensional material-line Picard iteration",
+    "initial_wake": "Freestream",
+    "far_hinge_x": 5.0,
+    "relaxation": 0.25,
+    "tolerance": 0.001,
+    "physical_accuracy_accepted": false,
+    "derivative_scope": "No derivative through the nonlinear iteration",
+    "source_sha256": "73e361c0e5088407afa0fb146a4d18b57f6a82773582d35dc350aa859fde1c59",
+    "history": [
+      {
+        "iteration": 0,
+        "CL": 0.2418194106228796,
+        "CD_pressure": -0.002974915509556857,
+        "node_fixed_point_max": 0.39321920454264914,
+        "node_fixed_point_rms": 0.1541465938539925,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 5.8786579493208535e-09,
+          "total_normal_rms": 0.06191255794969679,
+          "total_normal_max": 0.27127731522027143,
+          "extrapolation_change_rms": 1.3536394118050108e-05,
+          "freestream_normal_rms": 2.6655452031727628e-17,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.0654911227934219
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.06134348322772501
+          }
+        },
+        "wall_normal_rms": 0.018417680518600522,
+        "maximum_offset": 0.0
+      },
+      {
+        "iteration": 1,
+        "CL": 0.2416729002266595,
+        "CD_pressure": -0.002991718308516969,
+        "node_fixed_point_max": 0.24305147814767905,
+        "node_fixed_point_rms": 0.1098375894480561,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 5.835766758721661e-09,
+          "total_normal_rms": 0.05186548840328455,
+          "total_normal_max": 0.22450347251337338,
+          "extrapolation_change_rms": 7.891124321782896e-06,
+          "freestream_normal_rms": 0.005186402086605153,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.04760568887346754
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.05247054789097407
+          }
+        },
+        "wall_normal_rms": 0.01842313307989887,
+        "maximum_offset": 0.09830480113566235
+      },
+      {
+        "iteration": 2,
+        "CL": 0.24159014041757707,
+        "CD_pressure": -0.0030019920356162606,
+        "node_fixed_point_max": 0.1844372661026015,
+        "node_fixed_point_rms": 0.08060153039260655,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 5.984363837807649e-09,
+          "total_normal_rms": 0.04701042141413112,
+          "total_normal_max": 0.1889061551063409,
+          "extrapolation_change_rms": 6.688376320650552e-06,
+          "freestream_normal_rms": 0.008645619150429128,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.035901659877978276
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.048408612119194956
+          }
+        },
+        "wall_normal_rms": 0.018427739112126158,
+        "maximum_offset": 0.15052145193215422
+      },
+      {
+        "iteration": 3,
+        "CL": 0.2415416318466893,
+        "CD_pressure": -0.0030084683394709408,
+        "node_fixed_point_max": 0.15079518271970377,
+        "node_fixed_point_rms": 0.06036519274740813,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 6.152405529480376e-09,
+          "total_normal_rms": 0.04425707253287707,
+          "total_normal_max": 0.162995550217284,
+          "extrapolation_change_rms": 6.128955573503232e-06,
+          "freestream_normal_rms": 0.011015841477899609,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.02830110327494162
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.04607490498129429
+          }
+        },
+        "wall_normal_rms": 0.018431342666135813,
+        "maximum_offset": 0.1820366241628859
+      },
+      {
+        "iteration": 4,
+        "CL": 0.24151351062685866,
+        "CD_pressure": -0.0030125560326952723,
+        "node_fixed_point_max": 0.12838949193944577,
+        "node_fixed_point_rms": 0.04611763638607218,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 6.2892415719773e-09,
+          "total_normal_rms": 0.042619800185096354,
+          "total_normal_max": 0.14454888932943455,
+          "extrapolation_change_rms": 5.836237050417168e-06,
+          "freestream_normal_rms": 0.012665866519601242,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.02343723376094759
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.04464674269307927
+          }
+        },
+        "wall_normal_rms": 0.018434090676059695,
+        "maximum_offset": 0.2055331095621204
+      },
+      {
+        "iteration": 5,
+        "CL": 0.24149805066154217,
+        "CD_pressure": -0.0030151022716839075,
+        "node_fixed_point_max": 0.11188924791873055,
+        "node_fixed_point_rms": 0.03599741856705063,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 6.3945972406109775e-09,
+          "total_normal_rms": 0.04163613252108348,
+          "total_normal_max": 0.13156644472794765,
+          "extrapolation_change_rms": 5.677759151833517e-06,
+          "freestream_normal_rms": 0.01382601143276854,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.020411679074207233
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.04376233117682517
+          }
+        },
+        "wall_normal_rms": 0.01843617281257627,
+        "maximum_offset": 0.22714402807301945
+      },
+      {
+        "iteration": 6,
+        "CL": 0.24149060115562135,
+        "CD_pressure": -0.003016643287267119,
+        "node_fixed_point_max": 0.09882152677753986,
+        "node_fixed_point_rms": 0.0287464497832855,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 6.475951830342552e-09,
+          "total_normal_rms": 0.041049392229781954,
+          "total_normal_max": 0.12248699585521658,
+          "extrapolation_change_rms": 5.5908151321177276e-06,
+          "freestream_normal_rms": 0.0146470143855466,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.018591922778718975
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.043219402577337654
+          }
+        },
+        "wall_normal_rms": 0.018437754840587312,
+        "maximum_offset": 0.24302817985752695
+      },
+      {
+        "iteration": 7,
+        "CL": 0.2414882329245095,
+        "CD_pressure": -0.0030175269171788467,
+        "node_fixed_point_max": 0.08809795551174751,
+        "node_fixed_point_rms": 0.023486687936684392,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 6.5319697428734e-09,
+          "total_normal_rms": 0.04070721697401278,
+          "total_normal_max": 0.11615903628748372,
+          "extrapolation_change_rms": 5.543261789334012e-06,
+          "freestream_normal_rms": 0.015230749161157246,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.017533488418006653
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.04289382303012604
+          }
+        },
+        "wall_normal_rms": 0.018438966417047398,
+        "maximum_offset": 0.25448947931079074
+      },
+      {
+        "iteration": 8,
+        "CL": 0.24148904049279382,
+        "CD_pressure": -0.0030179827015922728,
+        "node_fixed_point_max": 0.07942465536287029,
+        "node_fixed_point_rms": 0.019601664103634935,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 6.570334054600835e-09,
+          "total_normal_rms": 0.040517094062785475,
+          "total_normal_max": 0.11175595420277992,
+          "extrapolation_change_rms": 5.518526235389866e-06,
+          "freestream_normal_rms": 0.01564759329027129,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.016939115654065254
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.042707428293633415
+          }
+        },
+        "wall_normal_rms": 0.018439904220135757,
+        "maximum_offset": 0.2627543579035266
+      },
+      {
+        "iteration": 9,
+        "CL": 0.24149175815113733,
+        "CD_pressure": -0.0030181638955694406,
+        "node_fixed_point_max": 0.07171023981603375,
+        "node_fixed_point_rms": 0.016662936115500793,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 6.600936408585056e-09,
+          "total_normal_rms": 0.04042332433113007,
+          "total_normal_max": 0.10869308107278108,
+          "extrapolation_change_rms": 5.508132766244593e-06,
+          "freestream_normal_rms": 0.015946806984036964,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.016621933960067916
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.042611736103040705
+          }
+        },
+        "wall_normal_rms": 0.018440638719062173,
+        "maximum_offset": 0.26871367231165344
+      },
+      {
+        "iteration": 10,
+        "CL": 0.2414955379521865,
+        "CD_pressure": -0.003018173375688022,
+        "node_fixed_point_max": 0.06481948513312219,
+        "node_fixed_point_rms": 0.014378122847289312,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 6.620013037750283e-09,
+          "total_normal_rms": 0.040392846182754356,
+          "total_normal_max": 0.10656061999737296,
+          "extrapolation_change_rms": 5.5076990754362964e-06,
+          "freestream_normal_rms": 0.016163092325410907,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.016470148716377437
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.042577280167179696
+          }
+        },
+        "wall_normal_rms": 0.01844122081166707,
+        "maximum_offset": 0.2730119968562203
+      }
+    ],
+    "commands": [
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_00",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_00.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_00",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_01",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_01.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_01",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_02",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_02.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_02",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_03",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_03.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_03",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_04",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_04.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_04",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_05",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_05.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_05",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_06",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_06.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_06",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_07",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_07.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_07",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_08",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_08.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_08",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_09",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_09.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_09",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_10",
+          "--alpha",
+          "5.0",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\offset_10.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_10",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      }
+    ],
+    "final_directory": "D:\\3D\\Projects\\panel\\runs\\material_wake_single_v3_20261026\\iteration_10",
+    "step_attempts": [
+      {
+        "iteration": 0,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 38187,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 6.350065770283063e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 1,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 32764,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 6.6261555863823264e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 2,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 30249,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 6.6261555863823264e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 3,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 29063,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 6.6261555863823264e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 4,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 28384,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 7.178335218580853e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 5,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 27694,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 6.6261555863823264e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 6,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 27130,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 7.730514850779382e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 7,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 26813,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 8.834874115176436e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 8,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 26605,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 6.6261555863823264e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 9,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 26437,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 6.6261555863823264e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      }
+    ],
+    "elapsed_seconds": 106.76585939999495
+  },
+  "second_angle": {
+    "status": "iteration_budget_exhausted",
+    "formulation": "Fixed-x three-dimensional material-line Picard iteration",
+    "initial_wake": "Freestream",
+    "far_hinge_x": 5.0,
+    "relaxation": 0.25,
+    "tolerance": 0.001,
+    "physical_accuracy_accepted": false,
+    "derivative_scope": "No derivative through the nonlinear iteration",
+    "source_sha256": "73e361c0e5088407afa0fb146a4d18b57f6a82773582d35dc350aa859fde1c59",
+    "history": [
+      {
+        "iteration": 0,
+        "CL": 0.12324262158301484,
+        "CD_pressure": -0.017434718836973423,
+        "node_fixed_point_max": 0.2039650191323398,
+        "node_fixed_point_rms": 0.08066493258878565,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 3.0427455000037185e-09,
+          "total_normal_rms": 0.03377284867282083,
+          "total_normal_max": 0.13776771536524335,
+          "extrapolation_change_rms": 8.3892273867346e-06,
+          "freestream_normal_rms": 7.571709680761027e-18,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.03561272306244099
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.03348081830209719
+          }
+        },
+        "wall_normal_rms": 0.01568902492124654,
+        "maximum_offset": 0.0
+      },
+      {
+        "iteration": 1,
+        "CL": 0.12318728453084084,
+        "CD_pressure": -0.017438291948511545,
+        "node_fixed_point_max": 0.1431030570481182,
+        "node_fixed_point_rms": 0.059247666567467994,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 2.9969446924127396e-09,
+          "total_normal_rms": 0.031026731761882295,
+          "total_normal_max": 0.11580948502043575,
+          "extrapolation_change_rms": 7.028753640148585e-06,
+          "freestream_normal_rms": 0.0027827346676635,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.027652162925628904
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.03150670128580299
+          }
+        },
+        "wall_normal_rms": 0.015691278668351624,
+        "maximum_offset": 0.05099125478308506
+      },
+      {
+        "iteration": 2,
+        "CL": 0.12314985239316378,
+        "CD_pressure": -0.017440793591530175,
+        "node_fixed_point_max": 0.1046752273189986,
+        "node_fixed_point_rms": 0.04364444853456309,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 2.992245201616228e-09,
+          "total_normal_rms": 0.028747512621587125,
+          "total_normal_max": 0.09927334328053047,
+          "extrapolation_change_rms": 6.118378130715325e-06,
+          "freestream_normal_rms": 0.004732489657607411,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.021841675575743794
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.029635470047074362
+          }
+        },
+        "wall_normal_rms": 0.01569300588138013,
+        "maximum_offset": 0.08532743354051012
+      },
+      {
+        "iteration": 3,
+        "CL": 0.1231243450834845,
+        "CD_pressure": -0.01744255249046317,
+        "node_fixed_point_max": 0.0774759661861558,
+        "node_fixed_point_rms": 0.0324659846914006,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 2.9985907368246245e-09,
+          "total_normal_rms": 0.02723060959101873,
+          "total_normal_max": 0.08699530967706162,
+          "extrapolation_change_rms": 5.575167919307705e-06,
+          "freestream_normal_rms": 0.006092885922388861,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.01788145453511978
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.028336859728193577
+          }
+        },
+        "wall_normal_rms": 0.015694314757809653,
+        "maximum_offset": 0.10879687816431685
+      },
+      {
+        "iteration": 4,
+        "CL": 0.12310690135266182,
+        "CD_pressure": -0.0174437932745886,
+        "node_fixed_point_max": 0.0625483242063663,
+        "node_fixed_point_rms": 0.024432934715992463,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 3.0074067403074167e-09,
+          "total_normal_rms": 0.026252144183131713,
+          "total_normal_max": 0.07795527396062034,
+          "extrapolation_change_rms": 5.249529104866921e-06,
+          "freestream_normal_rms": 0.007053967918399485,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.015269160709866133
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.02747257644669853
+          }
+        },
+        "wall_normal_rms": 0.015695300690537546,
+        "maximum_offset": 0.12806291135916206
+      },
+      {
+        "iteration": 5,
+        "CL": 0.1230950159464316,
+        "CD_pressure": -0.01744466934940098,
+        "node_fixed_point_max": 0.05219730098099766,
+        "node_fixed_point_rms": 0.01863117937315511,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 3.014099164699857e-09,
+          "total_normal_rms": 0.02562345479843966,
+          "total_normal_max": 0.07133126285471753,
+          "extrapolation_change_rms": 5.056451187363018e-06,
+          "freestream_normal_rms": 0.00774158757218813,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.01359094338655659
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.02690215313829069
+          }
+        },
+        "wall_normal_rms": 0.015696042248337684,
+        "maximum_offset": 0.14221779179829816
+      },
+      {
+        "iteration": 6,
+        "CL": 0.12308701175720559,
+        "CD_pressure": -0.0174452870272019,
+        "node_fixed_point_max": 0.04449765512525267,
+        "node_fixed_point_rms": 0.014416194580635958,
+        "wake_tangency": {
+          "samples": 600,
+          "velocity_definition": "Two-sided average, linear zero-offset extrapolation",
+          "offsets_sqrt_area": [
+            0.001,
+            0.0005
+          ],
+          "velocity_vs_potential_fd_max_error": 3.0203225198643935e-09,
+          "total_normal_rms": 0.025219202980173206,
+          "total_normal_max": 0.0664896219740296,
+          "extrapolation_change_rms": 4.945980793541367e-06,
+          "freestream_normal_rms": 0.00823858555196836,
+          "near": {
+            "samples": 520,
+            "total_normal_rms": 0.012537160937802884
+          },
+          "far": {
+            "samples": 80,
+            "total_normal_rms": 0.026526678598246225
+          }
+        },
+        "wall_normal_rms": 0.01569660093550542,
+        "maximum_offset": 0.15260221242967603
+      }
+    ],
+    "commands": [
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_00",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\offset_00.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_00",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_01",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\offset_01.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_01",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_02",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\offset_02.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_02",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_03",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\offset_03.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_03",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_04",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\offset_04.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_04",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_05",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\offset_05.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_05",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "D:\\3D\\Projects\\panel\\.conda_env\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\solve.py",
+          "--surface",
+          "D:\\3D\\Projects\\panel\\cases\\panel_cut\\single_wing.json",
+          "--out",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_06",
+          "--alpha",
+          "2.5",
+          "--wake-mode",
+          "freestream",
+          "--wake-offset",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\offset_06.npz",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\python.exe",
+          "D:\\3D\\Projects\\panel\\panel\\audit.py",
+          "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_06",
+          "--wake-samples",
+          "-1",
+          "--ncpu",
+          "8"
+        ],
+        "returncode": 0
+      }
+    ],
+    "final_directory": "D:\\3D\\Projects\\panel\\runs\\material_wake_single_a2p5_20261026\\iteration_06",
+    "step_attempts": [
+      {
+        "iteration": 0,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 41245,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 5.5217963219852725e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 1,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 35085,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 5.5217963219852725e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 2,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 32158,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 8.834874115176436e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 3,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 30625,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 5.5217963219852725e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 4,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 29787,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 4.969616689786745e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      },
+      {
+        "iteration": 5,
+        "step": 0.25,
+        "accepted": true,
+        "geometry": {
+          "plane_groups": 521,
+          "wall_slice_segments": 29310,
+          "intersections": 0,
+          "nonadjacent_noncoplanar_wake_crossings": 0,
+          "positive_z_graph_required": false,
+          "maximum_abs_centroid_winding": 6.6261555863823264e-18,
+          "scope": "Triangle wall crossings and centroid winding; wake transverse crossings only; no coplanar overlap/tangential-touch or wall self-intersection certificate"
+        }
+      }
+    ],
+    "elapsed_seconds": 77.41728379999404
+  },
+  "interpretation": "Geometric and prescribed-wake derivative checks only; no physical accuracy acceptance"
+}

@@ -1,0 +1,11 @@
+# VSPGEOM v3 Tag Key File
+D:/3D/Projects/panel/runs/vsp_conv/vlm_l1/trap.vspgeom
+1
+
+# part#,geom#,surf#,gname,gid,thick,plate,copy#,geomcopy#
+1,0,0,wing_C,JNVBKLCLSI,0,3,1,1
+
+1
+
+# tag#,part#,ssname1,ssname2,...,ssid1,ssid2,...
+1,1

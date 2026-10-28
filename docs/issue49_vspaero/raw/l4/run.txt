@@ -1,0 +1,1 @@
+﻿exit=0 elapsed_s=52.34 driver=vspaero.exe_direct_cwd_evidence omp=8 aoa=5 write_tecplot=1

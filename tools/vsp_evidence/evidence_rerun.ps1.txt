@@ -1,0 +1,17 @@
+﻿$root = 'D:\3D\Projects\panel'
+$exe = Join-Path $root 'OpenVSP-3.52.1-win64\vspaero.exe'
+$dst = Join-Path $root 'runs\vsp_conv\evidence'
+foreach ($l in @('l1','l2','l3','l4')) {
+  $d = Join-Path $dst $l
+  Push-Location $d
+  $t0 = Get-Date
+  $out = & $exe -omp 8 trap 2>&1
+  $code = $LASTEXITCODE
+  $el = ((Get-Date) - $t0).TotalSeconds
+  $out | Set-Content -Path (Join-Path $d 'stdout.log') -Encoding utf8
+  "exit=$code elapsed_s=$([math]::Round($el,2)) driver=vspaero.exe_direct_cwd_evidence omp=8 aoa=5 write_tecplot=1" | Set-Content -Path (Join-Path $d 'run.txt') -Encoding utf8
+  Pop-Location
+  $tec = Join-Path $d 'trap.tec.dat'
+  $kb = if (Test-Path $tec) { [math]::Round((Get-Item $tec).Length/1KB) } else { 0 }
+  "$l exit=$code elapsed=$([math]::Round($el,1))s tec_kb=$kb"
+}
