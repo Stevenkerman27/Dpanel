@@ -1,0 +1,100 @@
+{
+  "schema": "dpanel.p1.g2.steady_free_wake.receipt.v1",
+  "physical_accuracy_accepted": false,
+  "created_utc": "2026-10-28T04:36:55.597966+00:00",
+  "environment": {
+    "python": "3.13.5",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "OS": "Linux CPU",
+    "BLAS_threads": 1,
+    "OMP_threads": 1
+  },
+  "executed": {
+    "tests": "12 passed / 3.74 sec (G1+G2+new steady free wake)",
+    "pressure_cli": "alpha 0 5; 18 max iterations; 6 wake panels per component; relaxation .25",
+    "linear_cli": "alpha 5; 5 iterations; signed-speed Kutta"
+  },
+  "reference_area": 4.99,
+  "n_wall_faces": 192,
+  "n_wall_dof": 108,
+  "wake_panels": [
+    72,
+    48
+  ],
+  "pressure_runs": [
+    {
+      "alpha": 0.0,
+      "iterations": 13,
+      "converged": true,
+      "geometry_stable": true,
+      "init_CL": 0.08362297093214376,
+      "final_CL": 0.08325829475530487,
+      "init_CL_gamma": 0.09274179011985402,
+      "final_CL_gamma": 0.0924811084701216,
+      "init_slip": {
+        "main_wing": 0.02827643370237855,
+        "raised_tail": 0.013576928273972139
+      },
+      "final_slip": {
+        "main_wing": 0.009915396175205956,
+        "raised_tail": 0.004908739793429475
+      },
+      "init_Cp_jump": {
+        "main_wing": 0.004838370996691719,
+        "raised_tail": 0.002496223953509865
+      },
+      "final_Cp_jump": {
+        "main_wing": 0.004799940679495462,
+        "raised_tail": 0.002490968165838188
+      }
+    },
+    {
+      "alpha": 5.0,
+      "iterations": 18,
+      "converged": false,
+      "geometry_stable": true,
+      "init_CL": 0.365472330203936,
+      "final_CL": 0.3651918074148745,
+      "init_CL_gamma": 0.34233313568960255,
+      "final_CL_gamma": 0.341845449270937,
+      "init_slip": {
+        "main_wing": 0.057137111886765936,
+        "raised_tail": 0.018556590717531997
+      },
+      "final_slip": {
+        "main_wing": 0.026793836280869877,
+        "raised_tail": 0.005167659939919356
+      },
+      "init_Cp_jump": {
+        "main_wing": 0.015189997824533242,
+        "raised_tail": 0.0020676028974956845
+      },
+      "final_Cp_jump": {
+        "main_wing": 0.015972672709372644,
+        "raised_tail": 0.0015984971017514757
+      }
+    }
+  ],
+  "linear_run": {
+    "alpha": 5.0,
+    "iterations": 5,
+    "init_CL": 0.3735012653967718,
+    "final_CL": 0.37326683142530787
+  },
+  "actual_real_cad_fixture_available_in_sandbox": false,
+  "sha256": {
+    "panel/p1_steady_free_wake.py": "44c44d136978998940c41a28d6c180dd8e76bb7547aabd392c9cfa71e317fe7a",
+    "panel/run_p1_steady_wake.py": "db5398230a5c1c79094a1823b076d338a20d9801e4784689986541ee0b8f4c38",
+    "test/test_p1_steady_free_wake.py": "90c8f00ae3a38fa2ec58cc93418916d70dd1be544be415bdfb2d8a8d82e4b618",
+    "docs/P1_G2_STEADY_FREE_WAKE.md": "4d9d466c0d82d8581895cd285858f3858105dcee71798316f0ac323584e53d3a",
+    "runs/g2_steady_free_wake/report.json": "c3572150ad041c4eb5ada796741169dfa673f9c763849adf597e3e66e0103ee5",
+    "runs/g2_steady_free_wake_linear/report.json": "7559d6499d1a634918d4a211c4612b541ceb879641419b3189ca271032c85dce"
+  },
+  "limitations": [
+    "steady kinematic wake only",
+    "finite normal-probe PV",
+    "wake dynamic Cp jump not zero",
+    "real CAD unrun"
+  ]
+}

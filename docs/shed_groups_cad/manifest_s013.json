@@ -1,0 +1,29 @@
+{
+  "status": "half_group_surface_created_not_physical_accuracy",
+  "full_aircraft_mesh_generated": false,
+  "right_wall_panels": 896,
+  "right_wake_panels": 528,
+  "groups": [
+    {
+      "group_id": "lower_wing",
+      "wake_panels": 264,
+      "shed_edges": 16,
+      "stations": 9,
+      "circulation_unknowns": 8,
+      "wake_z": 0.0
+    },
+    {
+      "group_id": "upper_wing",
+      "wake_panels": 264,
+      "shed_edges": 16,
+      "stations": 9,
+      "circulation_unknowns": 8,
+      "wake_z": 0.24
+    }
+  ],
+  "right_independent_mu": 896,
+  "right_independent_gamma": 16,
+  "geometry_is_from_OCC_half_domain": true,
+  "physical_accuracy_accepted": false,
+  "elapsed_seconds": 4.123675399998319
+}

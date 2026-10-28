@@ -1,0 +1,92 @@
+{
+ "schema": "dpanel.half_alpha_sweep.v1",
+ "status": "completed",
+ "physical_accuracy_accepted": false,
+ "note": "Fixed mesh, trailing edges, wake and Gamma degrees of freedom. Only the freestream direction rotates about +y at constant speed with zero sideslip, so the z=0 wake stays where the mesh put it and its kinematic misalignment at non-zero alpha is a model limitation, not a discretisation error.",
+ "source_surface": "D:\\3D\\Projects\\panel\\runs\\geom_robust\\mesh\\swept30_s075\\surface.json",
+ "surface_sha256": "5155468398265f82fbd0e91299b1f313af2f14c54fba4e5b8702e353dded8a72",
+ "environment": {
+  "python": "3.11.17",
+  "jax": "0.10.2",
+  "platform": "Windows-10-10.0.26200-SP0"
+ },
+ "span": 4.0,
+ "reference_area": 3.0,
+ "aspect_ratio": 5.333333333333333,
+ "speed": 1.0,
+ "alphas": [
+  -5.0,
+  -2.5,
+  0.0,
+  2.5,
+  5.0
+ ],
+ "rows": [
+  {
+   "alpha_deg": -5.0,
+   "CL": -0.2202836015406076,
+   "CD_pressure": 0.009264429760001658,
+   "CM_y": 0.07720094102432126,
+   "true_residual": 9.778783723605877e-16,
+   "first_seconds": 0.5664958000124898,
+   "hot_seconds": 6.180000491440296e-05
+  },
+  {
+   "alpha_deg": -2.5,
+   "CL": -0.041567874534481845,
+   "CD_pressure": -0.005916075423918745,
+   "CM_y": -0.013333753809903795,
+   "true_residual": 6.763328724584502e-16,
+   "first_seconds": 0.00019049999536946416,
+   "hot_seconds": 0.000145800004247576
+  },
+  {
+   "alpha_deg": 0.0,
+   "CL": 0.13952581429978347,
+   "CD_pressure": -0.011873932525329233,
+   "CM_y": -0.1047504513362206,
+   "true_residual": 7.468342407924608e-16,
+   "first_seconds": 0.00021949999791104347,
+   "hot_seconds": 6.160000339150429e-05
+  },
+  {
+   "alpha_deg": 2.5,
+   "CL": 0.3214307487760777,
+   "CD_pressure": -0.008376546931800575,
+   "CM_y": -0.19635341528754555,
+   "true_residual": 1.1808891250095017e-15,
+   "first_seconds": 0.00023550000332761556,
+   "hot_seconds": 0.0002351000002818182
+  },
+  {
+   "alpha_deg": 5.0,
+   "CL": 0.5025602434087202,
+   "CD_pressure": 0.00462928229178339,
+   "CM_y": -0.2874454917968244,
+   "true_residual": 1.5059095984569383e-15,
+   "first_seconds": 0.00020260000019334257,
+   "hot_seconds": 7.779999577905983e-05
+  }
+ ],
+ "cl_zero": 0.13952581429978347,
+ "single_point_legacy_slope": 5.758916179677403,
+ "single_point_legacy_definition": "CL(5 deg) / alpha_rad; this is not dCL/dalpha",
+ "central_difference": {
+  "h_2p5": 4.159657816950849,
+  "h_5": 4.141590156260535,
+  "agreement": 0.004362493633756287
+ },
+ "odd_even": {
+  "cl_even_part": 0.13993143712079792,
+  "cl_odd_part": 0.18149931165527977,
+  "note": "for a symmetric section the even part is the camber/finite-mesh offset and the odd part carries the slope"
+ },
+ "references": {
+  "prandtl": 4.569589314312426,
+  "helmbold": 4.354250359440964,
+  "applicability": "both are low-speed lifting-line style estimates for a single isolated unswept wing; neither is a physical truth value and neither is an acceptance threshold, and they do not apply to the T-tail configuration because its tail carries no Kutta condition",
+  "prandtl_formula": "2*pi*AR/(AR+2)",
+  "helmbold_formula": "2*pi*AR/(2+sqrt(AR^2+4))"
+ },
+ "first_solve_seconds": 0.5664958000124898
+}

@@ -1,0 +1,8 @@
+{
+  "stage": "gmsh_positive_half_surface_meshing",
+  "status": "failed",
+  "exception": "ValueError",
+  "message": "Mesh budget exceeded: wake_panels=969 > max_wake_panels=900",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\runs\\pr47_git\\panel\\cad_half.py\", line 417, in main\n    fixture, passes = _build(args, stage)\n                      ^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\pr47_git\\panel\\cad_half.py\", line 308, in _build\n    quality_report = (audit_mesh_quality(\n                      ^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\pr47_git\\panel\\mesh_quality_gate.py\", line 99, in audit_mesh_quality\n    raise ValueError(f\"Mesh budget exceeded: {label}={count[label]} > {limit_key}={limit}\")\nValueError: Mesh budget exceeded: wake_panels=969 > max_wake_panels=900\n",
+  "elapsed_seconds": 10.568335700008902
+}

@@ -1,0 +1,182 @@
+{
+  "schema": "dpanel.half_shed_groups.v2",
+  "parent_schema": "dpanel.half_planar_cut.v1",
+  "note": "Draft contract example for issue #39 Step A. No loader consumes this file yet; it documents field shapes only. Indices are illustrative placeholders, not a valid mesh.",
+  "units": {
+    "length": "m",
+    "velocity": "m/s",
+    "density": "kg/m^3"
+  },
+  "geometry": {
+    "coordinates": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        0.5,
+        0.5,
+        0
+      ]
+    ],
+    "moment_reference": [
+      0.25,
+      0,
+      0
+    ],
+    "reference_area": 2,
+    "reference_chord": 1,
+    "density": 1.225,
+    "freestream": [
+      0.99619,
+      0,
+      0.08716
+    ]
+  },
+  "wall": {
+    "faces": [
+      [
+        0,
+        1,
+        2
+      ]
+    ],
+    "component_ids": [
+      30
+    ]
+  },
+  "contact_cuts": [],
+  "shed_groups": [
+    {
+      "group_id": "wing",
+      "kind": "attached_lifting_TE",
+      "source_component_ids": [
+        30
+      ],
+      "shed_edges": [
+        [
+          0,
+          1
+        ]
+      ],
+      "upper_bank_faces": [
+        0
+      ],
+      "lower_bank_faces": [
+        1
+      ],
+      "wake_faces": [
+        [
+          0,
+          1,
+          2
+        ]
+      ],
+      "wake_material_labels": [
+        "wing_wake"
+      ],
+      "gamma_stations": [
+        0,
+        0.5,
+        1
+      ],
+      "gamma_station_dof": [
+        -1,
+        0,
+        -1
+      ],
+      "closure": {
+        "kutta": "weak_mass",
+        "basis": "piecewise_linear_in_y",
+        "source": "upper_minus_lower_potential_jump",
+        "applicability": "attached, steady, incompressible, zero sideslip, small incidence"
+      },
+      "root_condition": "symmetry_plane",
+      "wake_plane": {
+        "normal": [
+          0,
+          0,
+          1
+        ],
+        "origin_z": 0
+      },
+      "contact_with": {
+        "component_ids": [
+          20
+        ],
+        "rule": "cut only, no shared gamma"
+      }
+    },
+    {
+      "group_id": "htail",
+      "kind": "attached_lifting_TE",
+      "source_component_ids": [
+        30
+      ],
+      "shed_edges": [
+        [
+          3,
+          4
+        ]
+      ],
+      "upper_bank_faces": [
+        5
+      ],
+      "lower_bank_faces": [
+        6
+      ],
+      "wake_faces": [
+        [
+          3,
+          4,
+          7
+        ]
+      ],
+      "wake_material_labels": [
+        "htail_wake"
+      ],
+      "gamma_stations": [
+        0,
+        0.35,
+        0.7
+      ],
+      "gamma_station_dof": [
+        -1,
+        0,
+        -1
+      ],
+      "closure": {
+        "kutta": "weak_mass",
+        "basis": "piecewise_linear_in_y",
+        "source": "upper_minus_lower_potential_jump",
+        "applicability": "attached, steady, incompressible, zero sideslip, small incidence"
+      },
+      "root_condition": "buried_in_solid",
+      "wake_plane": {
+        "normal": [
+          0,
+          0,
+          1
+        ],
+        "origin_z": 0.2
+      },
+      "contact_with": {
+        "component_ids": [
+          20,
+          30
+        ],
+        "rule": "buried root, cut edges only"
+      }
+    }
+  ],
+  "compat": {
+    "v1_single_group": "legacy",
+    "reject_silent_degradation": true
+  }
+}

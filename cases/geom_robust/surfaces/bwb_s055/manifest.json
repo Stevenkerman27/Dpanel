@@ -1,0 +1,11 @@
+{
+  "status": "half_surface_created_not_physical_accuracy",
+  "full_aircraft_mesh_generated": false,
+  "right_wall_panels": 1227,
+  "right_wake_panels": 689,
+  "right_independent_mu": 1227,
+  "right_independent_gamma": 16,
+  "geometry_is_from_OCC_half_domain": true,
+  "physical_accuracy_accepted": false,
+  "elapsed_seconds": 10.554023700009566
+}

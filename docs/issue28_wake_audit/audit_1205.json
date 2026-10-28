@@ -1,0 +1,341 @@
+{
+  "schema": "dpanel.half_wake_audit.v1",
+  "status": "independently_audited",
+  "physical_accuracy_accepted": false,
+  "source_surface": "D:\\3D\\Projects\\panel\\runs\\half_cad_wingbody_3x\\surface.json",
+  "surface_sha256": "034c216906e6f13b7a38f878ffa065f62dd6638e8f9198dc49d300bacec0a846",
+  "state_sha256": "c739c0003ff3b4834d4b87451c09388a6e86a39514cb6a0375b534e14530d71c",
+  "code_sha256": "dbd5146d763d4aabe42cb06b0ccc987db6c4a363f0e813bb7d8a52b9c705d44e",
+  "environment": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "jax": "0.10.2"
+  },
+  "geometry": {
+    "half_panels": 1205,
+    "half_wake": 733,
+    "half_gamma": 22,
+    "full_panels": 2410,
+    "full_wake": 1466,
+    "full_gamma": 43
+  },
+  "reference": {
+    "freestream": [
+      0.9961946980917455,
+      0.0,
+      0.08715574274765817
+    ],
+    "speed": 1.0,
+    "chord": 1.0
+  },
+  "mirror_oracle": {
+    "expanded_state_vs_full": {
+      "max_abs": 1.1213252548714081e-14,
+      "relative_to_peak": 3.177151560697875e-14
+    },
+    "half_mu_vs_full_positive": {
+      "max_abs": 4.579669976578771e-15,
+      "relative_to_peak": 1.677430983237268e-14
+    },
+    "half_gamma_vs_full_positive": {
+      "max_abs": 9.658940314238862e-15,
+      "relative_to_peak": 2.736754314660546e-14
+    },
+    "half_wake_doublet_vs_full_positive": {
+      "max_abs": 9.159339953157541e-15,
+      "relative_to_peak": 2.599995272302974e-14
+    },
+    "half_wake_slope_vs_full_positive": {
+      "max_abs": 1.7408297026122455e-13,
+      "relative_to_peak": 1.12781555962129e-13
+    }
+  },
+  "wake_report": {
+    "by_offset": [
+      {
+        "offset_over_sqrt_area": 0.01,
+        "all": {
+          "label": "all",
+          "samples": 5864,
+          "area_fraction": 1.0,
+          "flux_rms": 0.0768974998555825,
+          "flux_mean": -0.00242599431161175,
+          "flux_plus_rms": 0.07689944455245885,
+          "flux_minus_rms": 0.07689559147554223,
+          "dcp_rms": 0.003435329688306148,
+          "dcp_mean": -0.00026938341740467993,
+          "dcp_abs_max": 0.18308409978901352,
+          "transport_rms": 0.0017792663620279717,
+          "transport_mean": 0.00013612035194299462,
+          "identity_abs_max": 6.661338147750939e-16
+        },
+        "near": {
+          "label": "near: first half of the wake streamwise extent",
+          "samples": 5464,
+          "area_fraction": 0.1321951341128874,
+          "flux_rms": 0.08524221184943052,
+          "flux_mean": -0.01097567404255259,
+          "flux_plus_rms": 0.08525549463999682,
+          "flux_minus_rms": 0.08522917518239637,
+          "dcp_rms": 0.009448285189350243,
+          "dcp_mean": -0.0020466584225155102,
+          "dcp_abs_max": 0.18308409978901352,
+          "transport_rms": 0.004893588032312904,
+          "transport_mean": 0.0010123442703702872,
+          "identity_abs_max": 6.661338147750939e-16
+        },
+        "far": {
+          "label": "far: second half of the wake streamwise extent",
+          "samples": 400,
+          "area_fraction": 0.8678048658871127,
+          "flux_rms": 0.0755454685718017,
+          "flux_mean": -0.0011235977670860564,
+          "flux_plus_rms": 0.07554546634522398,
+          "flux_minus_rms": 0.07554547079870585,
+          "dcp_rms": 2.1950993452836988e-05,
+          "dcp_mean": 1.3538380449474618e-06,
+          "dcp_abs_max": 0.0001391534476902212,
+          "transport_rms": 9.894851246706645e-06,
+          "transport_mean": 2.6427200896562956e-06,
+          "identity_abs_max": 3.307528133756482e-16
+        }
+      },
+      {
+        "offset_over_sqrt_area": 0.001,
+        "all": {
+          "label": "all",
+          "samples": 5864,
+          "area_fraction": 1.0,
+          "flux_rms": 0.08163597495721606,
+          "flux_mean": -0.0029840028580295054,
+          "flux_plus_rms": 0.08163615673462173,
+          "flux_minus_rms": 0.08163579352212187,
+          "dcp_rms": 0.003545391085678959,
+          "dcp_mean": -0.00027195430491920786,
+          "dcp_abs_max": 0.23104598447765579,
+          "transport_rms": 0.0017792708066703773,
+          "transport_mean": 0.00013612047484122276,
+          "identity_abs_max": 4.614364446098307e-16
+        },
+        "near": {
+          "label": "near: first half of the wake streamwise extent",
+          "samples": 5464,
+          "area_fraction": 0.1321951341128874,
+          "flux_rms": 0.08540527216997129,
+          "flux_mean": -0.010993849072478447,
+          "flux_plus_rms": 0.08540658751629102,
+          "flux_minus_rms": 0.08540395928149162,
+          "dcp_rms": 0.009751033812594082,
+          "dcp_mean": -0.002026886051034311,
+          "dcp_abs_max": 0.23104598447765579,
+          "transport_rms": 0.004893600256557682,
+          "transport_mean": 0.0010123451591748688,
+          "identity_abs_max": 4.614364446098307e-16
+        },
+        "far": {
+          "label": "far: second half of the wake streamwise extent",
+          "samples": 400,
+          "area_fraction": 0.8678048658871127,
+          "flux_rms": 0.08104640277419993,
+          "flux_mean": -0.0017638406577861825,
+          "flux_plus_rms": 0.08104640261788013,
+          "flux_minus_rms": 0.08104640293052277,
+          "dcp_rms": 1.9586155623599062e-05,
+          "dcp_mean": -4.620660391305029e-06,
+          "dcp_abs_max": 0.00015605925086425998,
+          "transport_rms": 9.894878561887922e-06,
+          "transport_mean": 2.642726315234659e-06,
+          "identity_abs_max": 3.3184845049292165e-16
+        }
+      },
+      {
+        "offset_over_sqrt_area": 0.0001,
+        "all": {
+          "label": "all",
+          "samples": 5864,
+          "area_fraction": 1.0,
+          "flux_rms": 0.08169382212850304,
+          "flux_mean": -0.002990149119524771,
+          "flux_plus_rms": 0.08169384027811713,
+          "flux_minus_rms": 0.08169380398230967,
+          "dcp_rms": 0.003557218734254593,
+          "dcp_mean": -0.0002722122866530602,
+          "dcp_abs_max": 0.23858894364790828,
+          "transport_rms": 0.0017792708511060844,
+          "transport_mean": 0.00013612047606981128,
+          "identity_abs_max": 4.996003610813204e-16
+        },
+        "near": {
+          "label": "near: first half of the wake streamwise extent",
+          "samples": 5464,
+          "area_fraction": 0.1321951341128874,
+          "flux_rms": 0.08540691534634634,
+          "flux_mean": -0.010994031448060805,
+          "flux_plus_rms": 0.08540704676850579,
+          "flux_minus_rms": 0.08540678394876493,
+          "dcp_rms": 0.009783562372656247,
+          "dcp_mean": -0.0020249099081327327,
+          "dcp_abs_max": 0.23858894364790828,
+          "transport_rms": 0.004893600378770653,
+          "transport_mean": 0.0010123451680599399,
+          "identity_abs_max": 4.996003610813204e-16
+        },
+        "far": {
+          "label": "far: second half of the wake streamwise extent",
+          "samples": 400,
+          "area_fraction": 0.8678048658871127,
+          "flux_rms": 0.0811132793013925,
+          "flux_mean": -0.0017708954146461108,
+          "flux_plus_rms": 0.0811132792858283,
+          "flux_minus_rms": 0.08111327931695675,
+          "dcp_rms": 1.9765273025240113e-05,
+          "dcp_mean": -5.2189725582020785e-06,
+          "dcp_abs_max": 0.0001589360241747162,
+          "transport_rms": 9.894878835038143e-06,
+          "transport_mean": 2.642726377489966e-06,
+          "identity_abs_max": 3.8104285352003053e-16
+        }
+      }
+    ],
+    "sensitivity": {
+      "offsets": [
+        0.01,
+        0.001,
+        0.0001
+      ],
+      "flux_rms": [
+        0.0768974998555825,
+        0.08163597495721606,
+        0.08169382212850304
+      ],
+      "dcp_rms": [
+        0.003435329688306148,
+        0.003545391085678959,
+        0.003557218734254593
+      ],
+      "transport_rms": [
+        0.0017792663620279717,
+        0.0017792708066703773,
+        0.0017792708511060844
+      ],
+      "flux_rms_coarsest_minus_finest": -0.004796322272920539,
+      "dcp_rms_coarsest_minus_finest": -0.00012188904594844473,
+      "flux_rms_successive": [
+        -0.004738475101633555,
+        -5.7847171286984356e-05
+      ],
+      "dcp_rms_successive": [
+        -0.00011006139737281071,
+        -1.1827648575634016e-05
+      ]
+    },
+    "near_far_rule": "near = the first half of the truncated wake streamwise extent (x_gap <= 0.5*max x_gap), x_TE at the nearest trailing-edge midpoint in y; an absolute 0.5*chord cut is recorded separately and can be empty",
+    "sampling": "4 points per wake triangle (centroid plus three interior barycentric points), area weighted, both mirrored halves"
+  },
+  "positive_half_only": {
+    "warning": "diagnostic only: fails exactly because the image is missing",
+    "near_far": {
+      "offset_over_sqrt_area": 0.01,
+      "all": {
+        "label": "all",
+        "samples": 2932,
+        "area_fraction": 1.0,
+        "flux_rms": 0.3201898104658952,
+        "flux_mean": -0.12326436713461737,
+        "flux_plus_rms": 0.32019337576786766,
+        "flux_minus_rms": 0.32018625805345363,
+        "dcp_rms": 0.0035035193872091385,
+        "dcp_mean": -0.0002074258578644537,
+        "dcp_abs_max": 0.4090792808617181,
+        "transport_rms": 0.0016298372385532322,
+        "transport_mean": 9.774572596063235e-05,
+        "identity_abs_max": 2.3314683517128287e-15
+      },
+      "near": {
+        "label": "near: first half of the wake streamwise extent",
+        "samples": 2732,
+        "area_fraction": 0.13219513411288739,
+        "flux_rms": 0.3650179778048244,
+        "flux_mean": -0.13021643307709124,
+        "flux_plus_rms": 0.3650415328388692,
+        "flux_minus_rms": 0.3649945070478316,
+        "dcp_rms": 0.009635965932598798,
+        "dcp_mean": -0.0015781990301466102,
+        "dcp_abs_max": 0.4090792808617181,
+        "transport_rms": 0.004482655986087582,
+        "transport_mean": 0.0007327676269969336,
+        "identity_abs_max": 2.3314683517128287e-15
+      },
+      "far": {
+        "label": "far: second half of the wake streamwise extent",
+        "samples": 200,
+        "area_fraction": 0.8678048658871126,
+        "flux_rms": 0.31279764704772633,
+        "flux_mean": -0.12220533955162785,
+        "flux_plus_rms": 0.3127976652016781,
+        "flux_minus_rms": 0.31279762889379414,
+        "dcp_rms": 9.996933566158441e-06,
+        "dcp_mean": 1.3878403198108853e-06,
+        "dcp_abs_max": 5.589054593757581e-05,
+        "transport_rms": 3.920779473885811e-06,
+        "transport_mean": 1.0110697354681455e-06,
+        "identity_abs_max": 9.227873388919887e-16
+      }
+    }
+  },
+  "checks": {
+    "velocity_equals_potential_gradient": {
+      "probes": 25,
+      "steps": [
+        {
+          "step_over_chord": 0.001,
+          "max_abs": 1.6833269803062656e-06,
+          "relative_to_peak_speed": 1.6435230875670473e-06,
+          "rms": 2.708238168298305e-07
+        },
+        {
+          "step_over_chord": 0.0001,
+          "max_abs": 1.6835146887661523e-08,
+          "relative_to_peak_speed": 1.6437063574790517e-08,
+          "rms": 2.709189750097614e-09
+        }
+      ]
+    },
+    "potential_numba_vs_jax": {
+      "targets": 25,
+      "max_abs": 1.8735013540549517e-16,
+      "relative_to_peak": 8.045498775976805e-16,
+      "potential_peak": 0.23286329489590774
+    },
+    "wall_tangency": {
+      "cells": 1205,
+      "normal_rms": 0.020169706583773196,
+      "normal_max": 0.25347999896148815,
+      "interior_potential_rms": 8.046867224318331e-17,
+      "note": "exterior trace; interior potential = potential - mu"
+    },
+    "mirror_equivariance": {
+      "pairs": 733,
+      "flux_max_abs": 1.4838130724115217e-13,
+      "dcp_max_abs": 1.071365218763276e-13,
+      "transport_symmetry_max_abs": 5.537237335317968e-14,
+      "vy_antisymmetry_max_abs": 1.1379786002407855e-15,
+      "slope_sum_max_abs": 1.8873648140601177e-13,
+      "mu_symmetry_max_abs": 2.3592239273284576e-15
+    },
+    "image_contribution": {
+      "targets": 2932,
+      "image_rms_over_speed": 0.3273020975313165,
+      "image_plus_rms_over_speed": 0.32825650811828294,
+      "flux_shift_rms": 0.2943971563889641,
+      "note": "full mirrored field minus positive-half-only field"
+    },
+    "units": {
+      "flux": "dimensionless (V . n / U)",
+      "transport": "dimensionless (V . grad(Gamma) / U^2, Gamma[s]=m^2/s)",
+      "dcp": "dimensionless (2 dP / (rho U^2))",
+      "constraint": "n is the discretized wake normal +z, never replaced by the freestream direction"
+    }
+  },
+  "elapsed_seconds": 86.89028110000072
+}
