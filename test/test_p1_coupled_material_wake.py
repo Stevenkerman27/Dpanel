@@ -1,0 +1,389 @@
+"""B2 mathematical/unit tests plus explicit full-repository integration tests."""
+from types import SimpleNamespace as NS
+
+import numpy as np
+import pytest
+
+from panel.p1_coupled_material_wake import (
+    TotalVelocity, GeometryGates, triangle_data, limits, material_paths,
+    streamline_target, area_diagnostics, convex_overlap, geometry_failure,
+    snapshot_hash, solve_coupled_material_wake,
+)
+
+
+def small_field():
+    xyz = np.array([[0., 0., 0.], [1., .1, .2], [.2, .9, -.1]])
+    faces = np.array([[0, 1, 2]])
+    group = NS(name='wake', wake_xyz=xyz+[1.4, -.1, .3], wake_faces=faces,
+               gamma_hat=np.array([[1., 0.], [.4, .6], [0., 1.]]))
+    mesh = NS(xyz=xyz, faces=faces, dof_face=faces, groups=(group,))
+    state = dict(mu=np.array([.2, -.1, .4]), gamma=np.array([.3, -.2]), alpha_deg=5.)
+    return mesh, state
+
+
+def independent_area_velocity(point, tri, values, order=60):
+    """Area quadrature of grad[ integral mu n.r/(4*pi*r^3) dS ]."""
+    q, w = np.polynomial.legendre.leggauss(order)
+    q, w = (q+1)/2, w/2
+    u, v = np.meshgrid(q, q, indexing='ij')
+    weights = w[:, None]*w[None, :]*(1-u)
+    bary = np.stack(((1-u)*(1-v), u, (1-u)*v), axis=-1)
+    source = bary@tri
+    mu = bary@values
+    r = point-source
+    rn = np.linalg.norm(r, axis=-1)
+    av = np.cross(tri[1]-tri[0], tri[2]-tri[0])
+    integrand = av/rn[..., None]**3 - 3*(r@av)[..., None]*r/rn[..., None]**5
+    return np.sum((weights*mu)[..., None]*integrand, axis=(0, 1))/(4*np.pi)
+
+
+def test_total_velocity_matches_independent_linear_area_integral():
+    mesh, state = small_field()
+    field = TotalVelocity(mesh, state)
+    point = np.array([.3, -.4, 1.7])
+    expected = field.free + independent_area_velocity(point, mesh.xyz, state['mu'])
+    g = mesh.groups[0]
+    expected += independent_area_velocity(point, g.wake_xyz, g.gamma_hat@state['gamma'])
+    np.testing.assert_allclose(field(point), expected, atol=2e-12, rtol=2e-12)
+
+
+def test_multiple_groups_contribute_once_not_independent_lift_superposition():
+    mesh, state = small_field()
+    p = np.array([.2, -.5, 2.])
+    one = TotalVelocity(mesh, state)
+    mesh2 = NS(**vars(mesh))
+    mesh2.groups = (mesh.groups[0], mesh.groups[0])
+    state2 = dict(state, gamma=np.tile(state['gamma'], 2))
+    two = TotalVelocity(mesh2, state2)
+    wallmesh = NS(**vars(mesh), )
+    wallmesh.groups = ()
+    wall = TotalVelocity(wallmesh, dict(state, gamma=np.array([])))
+    np.testing.assert_allclose(two(p)-wall(p), 2*(one(p)-wall(p)), atol=1e-14)
+
+
+def test_material_strength_gradient_recomputed_not_carried_in_global_axes():
+    mesh, state = small_field()
+    g = mesh.groups[0]
+    old = TotalVelocity(mesh, state)
+    g.wake_xyz = g.wake_xyz*np.array([1., 2., 3.])
+    new = TotalVelocity(mesh, state)
+    tri, _n, _a, shape, _e = triangle_data(g.wake_xyz, g.wake_faces)
+    nodal = g.gamma_hat@state['gamma']
+    np.testing.assert_allclose(new.grad_face[-1], nodal[g.wake_faces][0]@shape[0])
+    assert not np.allclose(new.grad_face[-1], old.grad_face[-1])
+    recovered = new.mu_face[-1] + (tri[0]-tri[0].mean(axis=0))@new.grad_face[-1]
+    np.testing.assert_allclose(recovered, nodal, atol=1e-14)
+
+
+class UniformField:
+    free = np.array([1., 0., 0.])
+    def __call__(self, p, *, order):
+        return self.free.copy()
+
+
+@pytest.mark.parametrize('ladder', [(1., 0.), (1., -1.), (1., 1.), (1., np.nan), (1.,)])
+def test_invalid_epsilon_ladders_rejected(ladder):
+    with pytest.raises(ValueError):
+        limits(UniformField(), np.zeros((1, 3)), np.array([[0., 0., 1.]]), np.ones(1),
+               eps_fraction=.05, ladder=ladder, order=48)
+
+
+def test_constant_field_limits_exact_and_quadrature_audited():
+    v = limits(UniformField(), np.zeros((1, 3)), np.array([[0., 0., 1.]]), np.ones(1),
+               eps_fraction=.05, ladder=(1., .5), order=48)
+    np.testing.assert_array_equal(v['mean'], [[1., 0., 0.]])
+    assert v['epsilon_error'][0] == v['quadrature_error'][0] == 0
+
+
+def path_fixture():
+    xyz = np.array([[0., 0., 0.], [1., 0., 0.], [2., 0., 0.],
+                    [0., 1., 0.], [1., 1., 0.], [2., 1., 0.]])
+    faces = np.array([[0, 1, 4], [0, 4, 3], [1, 2, 5], [1, 5, 4]])
+    mat = NS(reference_xyz=xyz.copy(), roots=np.array([0, 3]), used=np.arange(6),
+             predecessor=np.array([-1, 0, 1, -1, 3, 4]), order=np.array([0, 3, 1, 4, 2, 5]),
+             panel_area=triangle_data(xyz, faces)[2])
+    return xyz, faces, mat
+
+
+def test_aligned_uniform_wake_is_fixed_point_not_permanent_convection():
+    xyz, _f, mat = path_fixture()
+    target = streamline_target(xyz, mat, np.tile([1., 0., 0.], (6, 1)), np.ones(6, bool))
+    np.testing.assert_array_equal(target, xyz)
+    s, r = material_paths(mat)
+    np.testing.assert_array_equal(s, [0, 1, 2, 0, 1, 2])
+    np.testing.assert_array_equal(r, [0, 0, 0, 3, 3, 3])
+
+
+def test_negative_vx_has_no_axial_division_and_roots_stay_fixed():
+    xyz, _f, mat = path_fixture()
+    target = streamline_target(xyz, mat, np.tile([-1., .2, .3], (6, 1)), np.ones(6, bool))
+    assert np.isfinite(target).all()
+    np.testing.assert_array_equal(target[mat.roots], xyz[mat.roots])
+    assert np.all(np.abs(target[1]-xyz[1]) > 0)
+
+
+def test_ineligible_nodes_are_not_silently_marched():
+    xyz, _f, mat = path_fixture()
+    target = streamline_target(xyz, mat, np.tile([1., 1., 1.], (6, 1)), np.zeros(6, bool))
+    np.testing.assert_array_equal(target, xyz)
+
+
+def test_area_weighting_relative_bands_and_identity_residual_not_jump():
+    normal = np.tile([0., 0., 1.], (2, 1))
+    plus = np.array([[2., 0., 1.], [2., 0., 3.]])
+    minus = np.array([[1., 0., 1.], [1., 0., 3.]])
+    sample = dict(plus=plus, minus=minus, mean=(plus+minus)/2,
+                  epsilon_error=np.zeros(2), quadrature_error=np.zeros(2), eps=np.ones(2)*.001)
+    report = area_diagnostics(sample, normal, np.array([1., 3.]), np.array([.2, .8]))
+    assert report['overall']['slip_rms'] == pytest.approx(np.sqrt(7))
+    assert report['overall']['identity_residual_rms'] == 0
+    assert report['overall']['dcp_rms'] == 3
+    assert sum(b['area_fraction'] for b in report['bands']) == 1
+    assert report['bands'][1]['faces'] == 0
+
+
+def test_convex_overlap_detects_swept_crossing_and_coplanar_contact():
+    tri = np.array([[0., 0., 0.], [1., 0., 0.], [0., 1., 0.]])
+    swept = np.vstack((tri+[0, 0, -1.], tri+[0, 0, 1.]))
+    assert convex_overlap(swept, tri, 1e-10)
+    assert convex_overlap(tri, tri+[.1, .1, 0.], 1e-10)
+    assert not convex_overlap(swept, tri+[3., 3., 0.], 1e-10)
+    # AABB overlaps, triangles do not: exercise in-plane SAT axes.
+    assert not convex_overlap(tri, np.array([[.8, .8, 0.], [1.8, .8, 0.], [.8, 1.8, 0.]]), 1e-10)
+
+
+def geometry_fixture():
+    xyz, faces, mat = path_fixture()
+    group = NS(name='wake', wake_xyz=xyz, wake_faces=faces)
+    wall = np.array([[-3., 0., -3.], [-2., 0., -3.], [-3., 1., -3.]])
+    mesh = NS(groups=(group,), xyz=wall, faces=np.array([[0, 1, 2]]), reference_chord=1.)
+    return mesh, {'wake': mat}, {'wake': xyz.copy()}
+
+
+def test_geometry_rejects_degeneracy_without_raising_or_partial_commit():
+    mesh, mats, coordinates = geometry_fixture()
+    coordinates['wake'][4] = coordinates['wake'][1]
+    gate = GeometryGates(max_step_fraction=100.)
+    assert geometry_failure(mesh, coordinates, mats, gate) == 'area'
+    assert not np.array_equal(mesh.groups[0].wake_xyz, coordinates['wake'])
+
+
+@pytest.mark.parametrize('change,reason', [('root', 'root'), ('step', 'step'),
+                                         ('attachment', 'attachment'), ('nonfinite', 'nonfinite')])
+def test_geometry_refusal_reasons(change, reason):
+    mesh, mats, coordinates = geometry_fixture()
+    if change == 'root':
+        coordinates['wake'][0, 2] = .1
+    elif change == 'step':
+        coordinates['wake'][2, 2] = .9
+    elif change == 'attachment':
+        coordinates['wake'][1, 0] = -1.
+    else:
+        coordinates['wake'][1, 2] = np.nan
+    assert geometry_failure(mesh, coordinates, mats, GeometryGates()) == reason
+
+
+def test_snapshot_hash_covers_geometry_and_strength_without_zip_metadata():
+    arrays = dict(mu=np.array([1., 2.]), xyz=np.zeros((3, 3)))
+    assert snapshot_hash(arrays) == snapshot_hash(dict(reversed(list(arrays.items()))))
+    other = {k: v.copy() for k, v in arrays.items()}
+    other['xyz'][0, 0] = 1.
+    assert snapshot_hash(arrays) != snapshot_hash(other)
+    with pytest.raises(ValueError):
+        snapshot_hash(dict(bad=np.array([object()], dtype=object)))
+
+
+def generated_mesh():
+    from panel.p1_lifting_g1 import make_wing
+    from panel.p1_lifting_g2 import combine_wings
+    return combine_wings([make_wing(chord_panels=4, span_panels=4, wake_panels=2)])
+
+
+def test_integration_phase_a_kernel_matches_total_p1_field():
+    from panel.wake_velocity import sheet_velocity_sum
+    mesh, state = small_field()
+    field = TotalVelocity(mesh, state)
+    for p in (np.array([.2, -.3, 1.4]), np.array([2., .5, -.8])):
+        reference = field.free-sheet_velocity_sum(p, field.triangles, field.mu_face, field.grad_face)
+        np.testing.assert_allclose(field(p), reference, atol=2e-12, rtol=2e-12)
+
+
+def test_integration_same_total_potential_gradient_and_fixed_wake_iteration_zero():
+    from panel.p1_steady_free_wake import _potentials_at
+    from panel.p1_lifting_g2 import solve_multi
+    mesh = generated_mesh()
+    state = solve_multi(mesh, 5., kutta='signed_speed')
+    field = TotalVelocity(mesh, state)
+    point, h = np.array([.3, -.4, 2.]), 2e-5
+    fd = np.array([(_potentials_at(mesh, state, (point+h*e)[None])[0]
+                   -_potentials_at(mesh, state, (point-h*e)[None])[0])/(2*h) for e in np.eye(3)])
+    np.testing.assert_allclose(field(point), fd, atol=2e-7, rtol=2e-7)
+    result = solve_coupled_material_wake(mesh, 5., kutta='signed_speed', iterations=0)
+    assert max(result['initial_equivalence'].values()) <= 1e-10
+    for key in ('mu', 'gamma'):
+        np.testing.assert_allclose(result['state'][key], state[key], atol=1e-9, rtol=1e-9)
+    assert not result['physical_accuracy_accepted'] and not result['converged']
+
+
+def test_integration_accepted_geometry_is_resolved_and_material_labels_frozen(monkeypatch):
+    import panel.p1_coupled_material_wake as b2
+    import panel.p1_lifting_g2 as g2
+    mesh = generated_mesh()
+    seen = []
+    original = g2.solve_multi
+    def tracked(model, *args, **kwargs):
+        seen.append(model.groups[0].wake_xyz.copy())
+        return original(model, *args, **kwargs)
+    monkeypatch.setattr(g2, 'solve_multi', tracked)
+    # Manufactured smooth flow isolates coupling/geometry from the singular-PV research question.
+    class SmoothField(UniformField):
+        def __init__(self, model, state):
+            self.free = np.array([1., 0., .02])
+    monkeypatch.setattr(b2, 'TotalVelocity', SmoothField)
+    result = b2.solve_coupled_material_wake(mesh, 5., kutta='signed_speed', iterations=1)
+    assert result['history'][0]['outgoing_update']['accepted']
+    assert len(seen) == 3  # canonical fixed solve + iteration 0 + accepted iteration 1
+    np.testing.assert_array_equal(seen[-1], result['mesh'].groups[0].wake_xyz)
+    assert not np.array_equal(seen[0], seen[-1])
+    np.testing.assert_array_equal(mesh.groups[0].gamma_hat, result['mesh'].groups[0].gamma_hat)
+    check = original(result['mesh'], 5., kutta='signed_speed')
+    np.testing.assert_allclose(check['gamma'], result['state']['gamma'], atol=1e-9, rtol=1e-9)
+    assert not result['converged']
+
+
+def test_geometry_fold_wall_crossing_and_intersection_budget():
+    mesh, mats, coordinates = geometry_fixture()
+    x = coordinates['wake'][:, 0].copy()
+    coordinates['wake'][:, 0] = x*np.cos(np.deg2rad(80))
+    coordinates['wake'][:, 2] = x*np.sin(np.deg2rad(80))
+    assert geometry_failure(mesh, coordinates, mats, GeometryGates(max_step_fraction=10.)) == 'fold'
+    mesh, mats, coordinates = geometry_fixture()
+    mesh.xyz = np.array([[.5, -1., .1], [3., -1., .1], [.5, 3., .1]])
+    coordinates['wake'][[1, 2, 4, 5], 2] = .2
+    assert geometry_failure(mesh, coordinates, mats, GeometryGates()) == 'wall'
+    mesh, mats, coordinates = geometry_fixture()
+    mesh.xyz = np.array([[.1, .8, 0.], [.2, .8, 0.], [.1, .9, 0.]])
+    mesh.faces = np.array([[0, 1, 2], [0, 1, 2]])
+    assert geometry_failure(mesh, coordinates, mats, GeometryGates(max_collision_pairs=1)) == 'intersection_budget'
+
+
+def test_cross_wake_swept_intersection_is_rejected():
+    mesh, mats, coordinates = geometry_fixture()
+    base = mesh.groups[0]
+    raised = NS(name='raised', wake_xyz=base.wake_xyz+[0, 0, .1], wake_faces=base.wake_faces)
+    mesh.groups = (base, raised)
+    m = NS(**vars(mats['wake']))
+    m.reference_xyz = raised.wake_xyz.copy()
+    mats['raised'] = m
+    coordinates['raised'] = raised.wake_xyz.copy()
+    coordinates['raised'][[1, 2, 4, 5], 2] = -.1
+    assert geometry_failure(mesh, coordinates, mats, GeometryGates()) == 'intersection'
+
+
+def mock_coupling(monkeypatch, field):
+    """Test orchestration without pretending mocked solves are physics validation."""
+    import sys
+    import types
+    import panel.p1_coupled_material_wake as b2
+    mesh, mats, _ = geometry_fixture()
+    mesh.dof_face = mesh.faces
+    mesh.groups[0].gamma_hat = np.ones((6, 1))
+    calls = []
+    def solve(model, *args, **kwargs):
+        calls.append(model.groups[0].wake_xyz.copy())
+        return dict(alpha_deg=5., mu=np.zeros(3), gamma=np.ones(1), cp=np.zeros(1),
+                    CL=.2, CL_gamma=.21, CD_pressure=.01, CM_y=-.03, wall_rms=.001,
+                    jump_rms=0., pressure_kutta_rms=.001, signed_kutta_rms=.002,
+                    linear_constrained_rank=3, linear_singular_min=.1,
+                    nonlinear=None, group_results=[])
+    ops = dict(W=np.zeros((1, 1)), J=np.array([[1., 0., 0., 0.]]), K=np.array([[0., 1., 0., 0.]]))
+    g2 = types.ModuleType('panel.p1_lifting_g2')
+    g2.assemble_multi = lambda model: ops
+    g2.solve_multi = solve
+    old = types.ModuleType('panel.p1_steady_free_wake')
+    old.prepare_wake_material = lambda group: mats[group.name]
+    old.reassemble_wake_only = lambda model, static: dict(static)
+    def with_xyz(model, coordinates):
+        result = NS(**vars(model))
+        group = NS(**vars(model.groups[0]))
+        group.wake_xyz = coordinates[group.name].copy()
+        result.groups = (group,)
+        return result
+    old.with_wake_xyz = with_xyz
+    monkeypatch.setitem(sys.modules, 'panel.p1_lifting_g2', g2)
+    monkeypatch.setitem(sys.modules, 'panel.p1_steady_free_wake', old)
+    monkeypatch.setattr(b2, 'TotalVelocity', lambda model, state: field)
+    return mesh, calls
+
+
+def test_mock_coupling_resolves_accepted_geometry_and_snapshots_are_aligned(monkeypatch):
+    f = UniformField()
+    f.free = np.array([1., 0., .02])
+    mesh, calls = mock_coupling(monkeypatch, f)
+    snapshots = []
+    def save(it, model, state, record, arrays):
+        snapshots.append((arrays['g0_xyz'].copy(), snapshot_hash(arrays), record['state_sha256']))
+    result = solve_coupled_material_wake(mesh, iterations=1, save_callback=save)
+    assert result['history'][0]['outgoing_update']['accepted']
+    assert len(calls) == 3 and len(snapshots) == 2
+    assert not np.array_equal(calls[0], calls[-1])
+    np.testing.assert_array_equal(calls[-1], result['mesh'].groups[0].wake_xyz)
+    assert all(actual == recorded for _, actual, recorded in snapshots)
+    assert not result['converged']
+
+
+@pytest.mark.parametrize('failure', ['convergence', 'speed', 'wall'])
+def test_mock_coupling_cannot_report_frozen_nodes_as_converged(monkeypatch, failure):
+    class BadField(UniformField):
+        def __call__(self, p, *, order):
+            if failure == 'convergence':
+                return np.array([1., 0., np.log(abs(p[2])+1e-30)])
+            if failure == 'speed':
+                return np.zeros(3)
+            return np.array([1., 0., .02])
+    mesh, calls = mock_coupling(monkeypatch, BadField())
+    if failure == 'wall':
+        monkeypatch.setattr('panel.p1_coupled_material_wake.geometry_failure', lambda *a: 'wall')
+    result = solve_coupled_material_wake(mesh, iterations=2)
+    assert result['status'].startswith('blocked_')
+    assert not result['converged'] and not result['kinematic_candidate']
+    assert len(calls) == 2
+    update = result['history'][0]['outgoing_update']
+    assert not update['accepted'] and update['reason_counts'][failure] > 0
+
+
+def frozen_sample():
+    mesh, state = small_field()
+    g = mesh.groups[0]
+    field = TotalVelocity(mesh, state)
+    tri, normal, area, _shape, edges = triangle_data(g.wake_xyz, g.wake_faces)
+    normals = np.zeros_like(g.wake_xyz)
+    scale = np.full(len(normals), np.inf)
+    for k in range(3):
+        np.add.at(normals, g.wake_faces[:, k], normal*area[:, None])
+        np.minimum.at(scale, g.wake_faces[:, k], edges.min(axis=1))
+    free = np.arange(3)
+    normals /= np.linalg.norm(normals, axis=1)[:, None]
+    kwargs = dict(eps_fraction=.05, ladder=(1., .5), order=48)
+    face = limits(field, tri.mean(axis=1), normal, edges.min(axis=1), **kwargs)
+    nodes = limits(field, g.wake_xyz, normals, scale, **kwargs)
+    arrays = dict(mu=state['mu'], gamma=state['gamma'], alpha_deg=np.asarray(state['alpha_deg']),
+                  wall_xyz=mesh.xyz, wall_faces=mesh.faces, wall_dof_face=mesh.dof_face,
+                  g0_xyz=g.wake_xyz, g0_faces=g.wake_faces, g0_gamma_hat=g.gamma_hat,
+                  g0_free_nodes=free, sampling_eps_fraction=np.asarray(.05),
+                  sampling_ladder=np.asarray([1., .5]), sampling_order=np.asarray(48))
+    arrays.update({'g0_face_'+k: v for k, v in face.items()})
+    arrays.update({'g0_node_'+k: v for k, v in nodes.items()})
+    return arrays
+
+
+def test_frozen_field_replay_is_bitwise_and_rejects_input_tampering():
+    from panel.p1_coupled_material_wake import replay_snapshot
+    arrays = frozen_sample()
+    digest = snapshot_hash(arrays)
+    result = replay_snapshot(arrays, digest)
+    assert result['bitwise_equal']
+    assert max(result['max_differences'].values()) == 0
+    arrays['mu'][0] += .01
+    with pytest.raises(ValueError, match='SHA mismatch'):
+        replay_snapshot(arrays, digest)
