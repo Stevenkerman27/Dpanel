@@ -95,3 +95,9 @@ node monitor\post_comment.mjs <apiPath> <bodyFile> --delete <commentId>   # 顺�
 `github_watch.mjs`、`post_comment.mjs`、`gh_api.mjs` 已全部改为调用 `net.mjs`，不再各自实现 CONNECT 隧道。实测：`--probe` 两条路由都 200；一次 push 中代理 `Recv failure` 后**自动切直连一次成功**；`fetch` 一次拉全 49 个远端分支。
 
 沙箱限制（踩过，写死在这里）：DSH 沙箱禁止 node 用管道捕获子进程输出，`spawn(git)` 默认 `stdio:'pipe'` 直接 EPERM。`gh_push.mjs` 因此把子进程 stdout/stderr 重定向到 `state/git-*.log` 再读回；且 Windows 下 spawn 不走 PATHEXT，必须用 `C:\Program Files\Git\cmd\git.exe` 绝对路径。
+
+### 自身操作账本（`state/own_actions.json`）
+
+云端 agent 与本地用的是**同一个 GitHub 账号**，所以只按 actor 过滤会把云端工作一并吞掉。现在的做法：本地每次通过 `post_comment.mjs` / `gh_api.mjs` 做写操作（POST/PUT/PATCH/DELETE）都记一条 `{kind, number, at}` 到账本；监听器看到本人账号的事件时，若 30 分钟内账本里有同号记录，标「已核对为我的操作」，否则标「**可能是你手动操作**」——两种都照常上报，不再静默丢弃。
+
+`gh_api.mjs` 的记录覆盖 PR 创建/合并/关闭、issue 关闭等（`number` 从路径里取）；`git push` 走 `gh_push.mjs`，目前仍按「有 commit 事件即视为自己推的」处理（`kind: "push"` 分支）。
