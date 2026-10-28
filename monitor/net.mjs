@@ -156,6 +156,30 @@ export async function apiRequest(url, { method = "GET", headers = {}, body = nul
   return last;
 }
 
+// 记录经由本层发出的写操作，供监听器区分「我的操作」与「云端同账号的操作」。
+// 放在 apiJson 里而不是各脚本里：任何调用方（含临时脚本）直接 apiJson 写 GitHub 都会被记上，
+// 否则监听器会把自己刚做的合并/改引用当成「可能是你手动操作」把自己叫醒。
+function recordMutation(apiPath, method, json) {
+  if (method === "GET" || method === "HEAD") return;
+  const at = new Date().toISOString();
+  const m = /(?:pulls|issues)\/(\d+)/.exec(apiPath);
+  let number = m ? Number(m[1]) : null;
+  if (number == null && json && Number.isFinite(json.number)) number = Number(json.number);
+  const entries = [{ kind: "api", number, at, path: apiPath }];
+  // merge 与 git/refs 写入会产生新 commit：同时记一条 push，让监听器把 commit 事件也认作我的。
+  if (/\/merge$/.test(apiPath) || /\/git\/refs/.test(apiPath)) entries.push({ kind: "push", refspec: apiPath, at });
+  try {
+    const ledger = path.join(HERE, "state", "own_actions.json");
+    let list = [];
+    try {
+      list = JSON.parse(fs.readFileSync(ledger, "utf8"));
+    } catch {}
+    const cutoff = Date.now() - 3 * 24 * 3600 * 1000;
+    list = list.filter((a) => Date.parse(a.at) > cutoff).concat(entries);
+    fs.mkdirSync(path.dirname(ledger), { recursive: true });
+    fs.writeFileSync(ledger, JSON.stringify(list, null, 2), "utf8");
+  } catch {}
+}
 export async function apiJson(apiPath, { method = "GET", body = null, etag = null, attempts = 6 } = {}) {
   const p = apiPath.startsWith("/") ? apiPath : "/" + apiPath;
   const headers = etag ? { "If-None-Match": etag } : {};
@@ -169,6 +193,7 @@ export async function apiJson(apiPath, { method = "GET", body = null, etag = nul
       json = null;
     }
   }
+  if (res.status >= 200 && res.status < 300) recordMutation(p, method.toUpperCase(), json);
   return { ...res, json };
 }
 
