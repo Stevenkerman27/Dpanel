@@ -143,3 +143,21 @@ HEAD 与将发布的路径。
 **为什么不是加延时**：轮询间隔默认 900 s，加 1 s 延时不改变任何东西；真正的问题不是「太快」，而是「这件事我已经知道」。判定依据必须是账本配对（谁做的），不是时间（多近做的）。时间只在配对时用来划窗口（30 分钟），避免把半小时后云端的同编号操作误判成我的。
 
 **`post_comment.mjs --delete` 语义**：带 `--delete` 就是删除动作，删完直接退出，不再读 body file 重发（早期版本会「删了又发一条」，2026-10-28 修）。
+
+## 出箱自动发布：autopublish.mjs（2026-10-28）
+
+发布是程序化动作，不再需要子智能体。主会话只做两件事：把文件写进工作区、写一个清单，然后等。
+
+```json
+// runs/outbox/<name>.json
+{"branch": "master",
+ "paths": ["monitor/autopublish.mjs", "monitor/README.md"],
+ "message": "monitor: add autopublish outbox"}
+```
+
+- `node monitor/autopublish.mjs --once`：处理完当前清单退出（有失败时 exit 1）。
+- `node monitor/autopublish.mjs --daemon --interval 15`：常驻，每 15 秒扫一次出箱。
+- 每个清单：把 `paths` 从工作区复制进 `runs/master_git` → 调 `publish.mjs`（git 传输失败自动回退 API）→ 校验 → 结果写 `runs/outbox/results/<name>.json`，日志写 `runs/outbox/logs/`，成功清单移进 `done/`、失败移进 `failed/`。
+- 发布成功会写 `own_actions.json`（`kind:'push'`），所以监听器不会为这次发布唤醒 agent。
+- `"dryRun": true` 只跑 `--dry-run`，用来验证清单路径是否干净。
+- 清单里 `paths` 必须相对仓库根且已存在于工作区；`message` 里的 BOM 会被剥掉。
