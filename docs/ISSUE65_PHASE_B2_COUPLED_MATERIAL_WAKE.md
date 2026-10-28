@@ -15,9 +15,9 @@ Implementation/test commit: `0f6be3e463d2849a847224da000d220757a86aaf` (subseque
 
 `panel/p1_coupled_material_wake.py` computes the same total potential representation as `_potentials_at`: freestream plus the shared wall doublet field plus every independent wake. Wall values are `mu[dof_face]`; each wake's nodal values are `gamma_hat @ Gamma_g`. Per-face centroids and tangential gradients are reconstructed on the CURRENT geometry, not carried as fixed world-coordinate gradients and not reduced to P0 strengths.
 
-`TotalVelocity` vectorizes the formula in `wake_velocity.sheet_velocity`. Production `influence_block` uses the opposite double-layer sign, so the adapter applies one global minus sign to BOTH wall and wake contributions. The 48-point edge quadrature is preserved; it is not mislabeled as an analytically integrated edge kernel. The implementation measures both the last epsilon-ladder change and the change on doubling edge quadrature order (48 to 96 by default). Neither finite check proves a Cauchy principal value, especially at a free edge or a TE cut.
+`TotalVelocity` vectorizes the formula in `wake_velocity.sheet_velocity`. Production `influence_block` uses the opposite double-layer sign, so the adapter applies one global minus sign to BOTH wall and wake contributions. At the original submitted HEAD, 48-point Gauss edge quadrature was used and 48→96 sensitivity was reported. **After the in-place PR #68 numerical repair below, the opt-in B2 default is analytic straight-edge integration of the P1 linear strength (including its first edge moment).** Opposite-oriented traces are combined per actual topological edge before singular contributions are evaluated; genuine cut discontinuities are retained. The legacy Gauss evaluator remains available only as `--velocity-method legacy_gauss` for frozen A/B comparisons. The epsilon ladder still measures near-sheet convergence; neither method proves a principal-value limit at a singular TE or tip.
 
-Each accepted candidate updates only W; A/J/K/wall geometry are reused. `solve_multi` then re-solves shared mu and ALL groups' Gamma before diagnostics or a final result are returned. Iteration 0 is separately compared with the canonical fixed-wake solve, including W and CLp/CLgamma/CDp/CMy. The gate is `abs(delta)/max(1,abs(reference)) <= 1e-10` (a mixed absolute/relative gate, intentionally well-defined at zero load).
+Each accepted candidate updates only W; A/J/K/wall geometry are reused. `solve_multi` then re-solves shared mu and ALL groups' Gamma before diagnostics or a final result are returned. Iteration 0 is separately compared with the canonical fixed-wake solve, including W and CLp/CLgamma/CDp/CMy. The **original** gate compared loads to `1e-10`. Local integration revealed that it incorrectly compared two independent nonlinear solver termination paths (5 versus 6 `nfev`) even when all fixed operators matched and W differed by only ~3.47e-18. The **repaired** iteration 0 explicitly checks A/J/K/grad operator identity and W relative difference <=1e-12, then reuses the canonical fixed-wake state instead of solving the same unchanged geometry twice. Every accepted *changed* wake geometry still re-solves shared mu and each Gamma.
 
 The geometry map is rooted fixed-material-arclength Picard iteration, not unsteady material advection:
 
@@ -33,11 +33,11 @@ A node with unresolved epsilon/order sensitivity or a vanishing tangent stays in
 
 ## Recorded quantities and interpretation
 
-Every solved iteration includes CLp, CLgamma, CD_pressure, CM_y, signed and relative CLp-CLgamma gap, wall/jump RMS, both Kutta RMS values, linear-seed rank/singular minimum, and the rank/singular minimum of the selected EXACT linear constraints. The inherited `linear_constrained_rank`/`linear_singular_min` describe the signed-speed linear seed, not the final nonlinear pressure Jacobian. Default Kutta is `pressure`; `signed_speed` remains an explicit diagnostic control.
+Every solved iteration includes CLp, CLgamma, CD_pressure, CM_y, signed and relative CLp-CLgamma gap, wall/jump RMS, both Kutta RMS values, linear-seed rank/singular minimum, and the rank/singular minimum of the selected EXACT linear constraints. The inherited `linear_constrained_rank`/`linear_singular_min` describe the signed-speed linear seed, not the final nonlinear pressure Jacobian. An initial pressure-Kutta nonlinear failure is now reported as `blocked_initial_nonlinear_solve` (versus `blocked_updated_nonlinear_solve` after an accepted move); the initial state and diagnostics remain in the receipt. A larger `max_nfev` is not a substitute for a physically compatible Kutta closure. Default Kutta is `pressure`; `signed_speed` remains an explicit diagnostic control.
 
 Face velocity samples are evaluated at face centres, not by averaging singular nodal values. Slip, Cp jump, normal jump and Cp-identity residual have area-weighted RMS/max. All faces are included, even when nearby nodes are refused. Three fixed bands use relative ORIGINAL material arclength, not absolute chord cutoffs or moving quantiles; each reports face count, area and total area fraction. Current solver freestream speed is one, so these quantities are already normalized by U or U^2.
 
-For finite offsets the measured normal velocity difference is not forced to zero. The identity residual is `dCp + 2*Vmean.dot(Vplus-Vminus)`, not dCp itself. This identity is an algebraic check, not an independent physical-accuracy test.
+For finite offsets the measured normal velocity difference is not forced to zero. Analytic edge integration removes one source of spurious normal jump (underresolved edge quadrature), but normal jump sampled at distinct offset points also includes genuine O(epsilon) variation of the smooth wall/cross-wake field. Its zero-offset limit requires a separate convergence analysis; this code does not clamp it. The identity residual is `dCp + 2*Vmean.dot(Vplus-Vminus)`, not dCp itself. This identity is an algebraic check, not an independent physical-accuracy test.
 
 `incoming_update` belongs to the motion which produced this solved state; `outgoing_update` belongs to the candidate built from it. Rejection units: root/speed/convergence count nodes; geometry reason counts count refused backtracking trials. Per-group `eligibility.rejected` counts refused free nodes, not faces. Displacement RMS includes all used nodes, including fixed roots. Trends explicitly retain nonmonotone slip and rejected-node counts. No fixed point found in N steps is not a proof that no mathematical steady solution exists.
 
@@ -108,3 +108,103 @@ At the pinned base, `wake_nodes.grid_sheet` numbers nodes `i + j*(nx+1)` but set
 ## Exit criteria
 
 First establish same-flow/sign/basis correctness and accepted-step re-solving with full-repository tests. Then obtain and review G1, G2 and an available CAD history. Reject convergence claims with frozen nodes, unresolved epsilon/order checks, nonconverged Kutta solves, untracked geometry rejection, or divergent CLp/CLgamma disagreement. Do not choose a method because CL increases, drag decreases or a VSPAERO value is approached. Do not close #65 merely because this integration code merges. Analytic/controlled near-edge limits, pressure-continuous steady acceptance, implicit wake VJP and unsteady Kelvin-history shedding remain separate milestones.
+
+
+## In-place repair following genuine local G1/G2/CAD feedback (2026-10-28)
+
+This is a substantive numerical change to **the same PR #68** and not a
+branch-stacked follow-up. The original local receipts and their failures are
+retained at [PR #68 local G1](https://github.com/Stevenkerman27/Dpanel/pull/68#issuecomment-6468145085),
+[G2](https://github.com/Stevenkerman27/Dpanel/pull/68#issuecomment-6468224999), and
+[real CAD](https://github.com/Stevenkerman27/Dpanel/pull/68#issuecomment-6469452045).
+These numbers were measured on the PRE-FIX source, not the repaired source.
+
+| Failure in pre-fix receipt | Source-derived evidence | Repair / remaining boundary |
+| --- | --- | --- |
+| G1 exit 1 before physical data | A/J/K/grad equal exactly, W max delta 3.47e-18; nonlinear nfev 5 vs 6 changed CL by 5.514e-10 | Gate the actual operator. Reuse iteration-0 canonical state, preserving exact loads; all changed geometries still re-solve. |
+| G1 and G2 report no wake fixed point | G1 node epsilon error max 3.66e-2 vs tol 2e-2; G2 main slip 5.25% → 4.99% → 5.20%, repeated node rejections | Retain all epsilon/slip gates and non-convergence verdicts. New exact-edge kernel may improve estimates but does not guarantee a fixed point. |
+| G1/G2 signed pressure drag negative | G1 CDp≈−0.0201; G2 CDp≈−0.0235 | CLI now emits an explicit warning. These signed, cancellation-prone near-field integrals are NOT validated induced or total drag. |
+| CAD iteration-0 pressure Kutta failed | 792 full-wall triangles; nonlinear nfev 80/200/600 all ended without success; wall RMS ~1.49e-3; CL drift 0.3036→0.3100 | Distinguish **initial** nonlinear failure from failure after moving wake. Do not silently switch Kutta or increase nfev. |
+| CAD fixed 48/96-point Gauss sheet velocity breaks on slender wake | 770 wake faces, aspect p90=260, node quadrature discrepancy 1.23, epsilon discrepancy 0.695; 258/468 nodes refused by convergence | **Replace the numerical edge integrals by analytic straight-segment antiderivatives, including the P1 first moment.** Cancel continuous shared-edge traces before evaluation. Retain the true singular-edge/epsilon refusal. |
+
+### Mathematics and verification of the new kernel
+
+Let a source edge be parameterized by x(l)=a+l*t, l∈[0,L],
+s=(p−a)·t, rho=p−a−s*t, q=s−L, and
+R0=sqrt(|rho|²+s²), R1=sqrt(|rho|²+q²). Then
+
+- I1 = ∫ dl/R = asinh(s/|rho|) − asinh(q/|rho|),
+- I3 = ∫ dl/R³ = [s/R0−q/R1]/|rho|² (with the algebraically stable outside-segment form),
+- Il3 = ∫ l dl/R³ = s*I3 + 1/R0−1/R1.
+
+For a linearly varying edge strength mu(l)=mu_a+(mu_b−mu_a)*l/L,
+its exact Biot–Savart boundary contribution is
+
+    (t × rho) [ mu_a*I3 + (mu_b−mu_a)*Il3/L ].
+
+For the P1 in-plane-strength-gradient term the corresponding exact edge
+integral is I1(t × n). The −Omega*n component is retained exactly, as
+required by the independent Phase A mathematical identity. Combining these
+produces the same P1 off-sheet potential gradient as before, without any
+48-point near-singular edge quadrature. The cancellation is performed only
+within one physical mesh using actual shared vertex IDs; a TE/cut jump is
+never spuriously smoothed or averaged.
+
+**Independent isolated mathematical tests actually executed** on Python
+3.13.5 / NumPy 2.3.5 / SciPy 1.17.0:
+
+    PYTHONPATH=/mnt/data/dpanel_issue65_fix python -m pytest -q \
+      /mnt/data/dpanel_issue65_fix/test/test_p1_analytic_sheet_velocity.py
+    # exit 0, 6 passed, 0.49s
+
+This test harness executed an independently authored local prototype with the
+same stated closed-form equations, **not a complete checkout of the posted Git
+branch**. It verifies adaptive SciPy line integration, independent high-order
+Duffy area integration for linear doublets, continuous shared-edge cancellation
+and physical cut retention, scale and winding, and aspect-ratio 260 slivers.
+A matching standalone regression file is committed to this PR.
+
+On an off-sheet triangular sliver with longitudinal length 26, transverse
+width 0.1 and normal evaluation offset 0.000625, the local oracle measured
+norm errors relative to the analytic edge integral of approximately **1.91**
+for whole-edge 48-point Gauss and **1.62** for 96-point Gauss (unit velocity
+normalization). This is a controlled fixed-strength numerical counterexample,
+not a new CAD convergence result. For non-near-sheet independent linear P1
+area quadrature the analytic evaluator agreed at near machine precision.
+
+### A/B and failure states after repair
+
+The repaired opt-in B2 command uses analytic edges by default. To compare
+finite-edge quadrature on identical geometry, alpha and Gamma solve, add
+\`--velocity-method legacy_gauss\` and use a different \`--out\` directory:
+
+\`\`\`bash
+python -m pytest test/test_p1_analytic_sheet_velocity.py test/test_p1_coupled_material_wake.py test/test_wake_nodes.py test/test_wake_velocity.py -q
+python -m panel.run_p1_coupled_material_wake --case g1 --alpha 5 --kutta pressure --iterations 4 --chord-panels 4 --span-panels 4 --wake-panels 3 --out runs/issue65_b2_analytic_g1_r2
+python -m panel.run_p1_coupled_material_wake --case g2 --alpha 5 --kutta pressure --iterations 4 --chord-panels 4 --span-panels 4 --wake-panels 3 --out runs/issue65_b2_analytic_g2_r2
+python -m panel.run_p1_coupled_material_wake --case g1 --alpha 5 --kutta pressure --iterations 0 --chord-panels 4 --span-panels 4 --wake-panels 3 --velocity-method legacy_gauss --out runs/issue65_b2_legacy_g1_i0_r2
+\`\`\`
+
+Run the CAD input **only where it actually exists** using the same new branch
+HEAD, separate output directories and original fixture SHA. Its pressure-Kutta
+iteration 0 will still be explicitly blocked if the unchanged underlying
+physical nonlinear solve fails. Only a *new* actual run can establish whether
+the improved off-sheet speed estimates reduce epsilon errors or allow more
+eligible material nodes on the real CAD.
+
+In analytic mode \`quadrature_error=0\` means **not applicable** (no numerical
+edge quadrature); it does **not** mean the near-sheet velocity limit is exact.
+\`edge_quadrature_error_interpretation\` explicitly records this. The
+\`epsilon_error\`, normal-jump, slip, Kutta and mesh-quality outputs remain
+necessary and cannot be suppressed to claim convergence.
+
+Snapshots now record \`sampling_kernel\` so that the selected A/B method is
+replayed exactly. Pre-repair snapshots lacking that marker are replayed using
+the preserved legacy Gauss evaluator. As before, a bitwise frozen-state
+replay is guaranteed only within a reproducible implementation/environment.
+
+**Full-repository integration of this latest PR HEAD and real CAD experiments
+after the repair remain pending local execution.** In particular, this
+change makes no claim that pressure Kutta, a finite-epsilon PV at a tip, or a
+steady free-wake physical fixed point has been solved. Keep PR Draft until
+tested/reviewed; keep issue #65 open and physical_accuracy_accepted=false.
