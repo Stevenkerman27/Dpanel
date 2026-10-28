@@ -1,5 +1,7 @@
 # 把 GitHub 发布交给子智能体（2026-10-28）
 
+> **现状（2026-10-28 之后）**：发布已自动化 —— 主会话写文件 + `runs/outbox/<name>.json` 清单，守护进程 `monitor/autopublish.mjs --daemon` 自动 stage/发布/校验/记账，见 `monitor/README.md` 的「出箱自动发布」。本文档保留为**手动或回退路径**（守护进程不在、或需要一次性的非常规发布时照此派人）。
+
 为什么要有这份文档：`github.com:443` 的 git 传输和 `api.github.com` 会**独立**故障，
 手拼 `-c http.proxy=... -c http.sslBackend=openssl -c http.extraHeader=...` 再反复重试，
 每次要花掉主会话十几个步骤。现在发布是一条命令 + 一个低思考子智能体，主会话只读一行回执。
