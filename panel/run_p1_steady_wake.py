@@ -42,6 +42,18 @@ def main(argv=None):
     p.add_argument('--relaxation',type=float,default=.25)
     p.add_argument('--probe-fraction',type=float,default=.055)
     p.add_argument('--step-fraction',type=float,default=.009)
+    p.add_argument('--probe-floor-fraction',type=float,default=0.,
+                   help='Floor the two-sided probe height by this fraction of the short edge')
+    p.add_argument('--min-axial',type=float,default=.08,
+                   help='Minimum axial speed for x-marching a wake node')
+    p.add_argument('--slip-gate',type=float,default=0.,
+                   help='Relax only nodes whose incident faces have |normal slip| below this')
+    p.add_argument('--relax-min-y',type=float,default=0.,
+                   help='Freeze wake nodes closer than this |y| to the symmetry plane')
+    p.add_argument('--max-step-chord',type=float,default=0.,
+                   help='Cap per-iteration node displacement in reference chords')
+    p.add_argument('--strict-marching',action='store_true',
+                   help='Raise on axial stagnation instead of freezing the node')
     p.add_argument('--geometry-tol',type=float,default=.002,
                    help='Maximum per-iteration displacement / reference chord')
     p.add_argument('--normal-slip-tol',type=float,default=.01,
@@ -85,6 +97,10 @@ def main(argv=None):
         value=solve_steady_free_wake(model,alpha,kutta=args.kutta,
             iterations=args.iterations,relaxation=args.relaxation,
             probe_fraction=args.probe_fraction,step_fraction=args.step_fraction,
+            probe_floor_fraction=args.probe_floor_fraction,
+            min_axial=args.min_axial,frozen_guard=not args.strict_marching,
+            relax_min_abs_y=args.relax_min_y,max_step_chord=args.max_step_chord,
+            slip_gate=args.slip_gate,
             geometry_tol=args.geometry_tol,slip_tol=args.normal_slip_tol,
             save_callback=save)
         log=[]
@@ -117,7 +133,10 @@ def main(argv=None):
         parameters=dict(alpha=args.alpha,kutta=args.kutta,iterations=args.iterations,
             relaxation=args.relaxation,probe_fraction=args.probe_fraction,
             step_fraction=args.step_fraction,geometry_tol=args.geometry_tol,
-            normal_slip_tol=args.normal_slip_tol),
+            normal_slip_tol=args.normal_slip_tol,
+            probe_floor_fraction=args.probe_floor_fraction,min_axial=args.min_axial,
+            relax_min_abs_y=args.relax_min_y,max_step_chord=args.max_step_chord,
+            slip_gate=args.slip_gate),
         reports=reports,elapsed_seconds=time.perf_counter()-start,
         limitations=['fixed mesh connectivity and finite wake length',
                      'velocity principal value via explicit two-sided finite probes',

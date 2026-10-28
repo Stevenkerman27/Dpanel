@@ -103,6 +103,22 @@ def prepare_wake_material(g: LiftingGroup) -> WakeMaterial:
                                                     ref[f[:,2]]-ref[f[:,0]]),axis=1)/2)
 
 
+def _shortest_edges(mesh: Mesh) -> np.ndarray:
+    """Shortest triangle edge per face; the length scale that bounds a near-sheet probe."""
+    p=mesh.triangles
+    return np.minimum(np.minimum(np.linalg.norm(p[:,1]-p[:,0],axis=1),
+                                  np.linalg.norm(p[:,2]-p[:,1],axis=1)),
+                      np.linalg.norm(p[:,0]-p[:,2],axis=1))
+
+
+def _aspect_ratio(mesh: Mesh) -> np.ndarray:
+    p=mesh.triangles
+    e=np.column_stack((np.linalg.norm(p[:,1]-p[:,0],axis=1),
+                       np.linalg.norm(p[:,2]-p[:,1],axis=1),
+                       np.linalg.norm(p[:,0]-p[:,2],axis=1)))
+    return e.max(axis=1)/e.min(axis=1)
+
+
 def _potentials_at(mesh, result, targets, *, block=20, cached_wall=None):
     """Total uniform + all P1 wall + ALL P1 wake potential at off-sheet points."""
     points=np.asarray(targets,float)
@@ -132,7 +148,7 @@ def _potentials_at(mesh, result, targets, *, block=20, cached_wall=None):
 
 def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
                        probe_fraction=0.055, step_fraction=0.009,
-                       block=24):
+                       probe_floor_fraction=0.0, block=24):
     """PV approximate velocity at EVERY wake-face centroid from both sheet sides.
 
     Evaluate the complete P1 potential on each side of each sheet then take
@@ -148,6 +164,12 @@ def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
         wm=_wake_mesh(g)
         length=np.sqrt(wm.areas)
         h=probe_fraction*length
+        shortest=_shortest_edges(wm)
+        if probe_floor_fraction>0:
+            # On a strongly anisotropic wake sheet sqrt(area) is set by the long
+            # edge, so a probe scaled only by it sits inside the face's own near
+            # field. Floor the height by the short edge instead.
+            h=np.maximum(h,probe_floor_fraction*shortest)
         step=step_fraction*length
         e=np.eye(3)
         centers=wm.centers[:,None,None,:]+(np.array([-1.,1.])[None,:,None,None]
@@ -174,7 +196,10 @@ def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
                      np.sin(np.deg2rad(state['alpha_deg']))]))**2))),
                 normal_slip_max=float(np.max(np.abs(slip))),
                 wake_cp_jump_rms=float(np.sqrt(np.mean(cp_difference**2))),
-                wake_cp_jump_max=float(np.max(np.abs(cp_difference))))
+                wake_cp_jump_max=float(np.max(np.abs(cp_difference))),
+                shortest_edge_median=float(np.median(shortest)),
+                aspect_p90=float(np.percentile(_aspect_ratio(wm),90)),
+                probe_over_shortest_max=float(np.max(h/shortest)))
     return output,summary
 
 
@@ -189,11 +214,18 @@ def _node_velocities(g, face_velocity):
     return total
 
 
-def _one_wake_target(g, mat, vel, *, min_axial=0.08):
-    """Streamline-march frozen x-stations, including spanwise drift and rollup."""
+def _one_wake_target(g, mat, vel, *, min_axial=0.08, freeze=False):
+    """Streamline-march frozen x-stations, including spanwise drift and rollup.
+
+    Returns (target, frozen_nodes). A node whose upstream axial speed falls below
+    min_axial cannot be marched in x. With freeze=True it is held at its current
+    position and reported; with freeze=False this is an error, because silently
+    marching through a stagnation point would fabricate a streamline.
+    """
     current=np.asarray(g.wake_xyz,float)
     target=current.copy()
     original=mat.reference_xyz
+    frozen=[]
     for node in mat.order:
         predecessor=int(mat.predecessor[node])
         if predecessor<0:
@@ -202,13 +234,17 @@ def _one_wake_target(g, mat, vel, *, min_axial=0.08):
             continue
         v0=vel[predecessor];v1=vel[node]
         if min(v0[0],v1[0])<min_axial:
-            raise ValueError(f'{g.name}: wake streamwise marching requires Vx>0; '
-                             'reverse flow needs pseudo-time propagation')
+            if not freeze:
+                raise ValueError(f'{g.name}: wake streamwise marching requires Vx>0; '
+                                 'reverse flow needs pseudo-time propagation')
+            frozen.append(int(node))
+            target[node]=current[node]
+            continue
         dx=original[node,0]-original[predecessor,0]
         target[node,0]=original[node,0]
         target[node,1:]=target[predecessor,1:]+0.5*dx*(
             v0[1:]/v0[0]+v1[1:]/v1[0])
-    return target
+    return target,frozen
 
 
 def with_wake_xyz(mesh: MultiLiftingMesh, wake_coordinates: dict[str,np.ndarray]):
@@ -244,7 +280,10 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
                            kutta='pressure', iterations=6, relaxation=.25,
                            probe_fraction=.055, step_fraction=.009,
                            geometry_tol=2e-3, slip_tol=1e-2, max_nfev=80,
-                           wake_velocity_block=24, save_callback=None):
+                           wake_velocity_block=24, save_callback=None,
+                           min_axial=0.08, frozen_guard=True,
+                           probe_floor_fraction=0.0, relax_min_abs_y=0.0,
+                           max_step_chord=0.0, slip_gate=0.0):
     """Return final state, relaxed wake mesh, and complete iteration history.
 
     Iteration 0 is ALWAYS the original fixed-wake solution; downstream wake
@@ -264,6 +303,7 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
         state=solve_multi(current,alpha_deg,kutta=kutta,max_nfev=max_nfev,operators=ops)
         panel_velocity,slip=mean_wake_velocity(current,state,
                     probe_fraction=probe_fraction,step_fraction=step_fraction,
+                    probe_floor_fraction=probe_floor_fraction,
                     block=wake_velocity_block)
         record=dict(iteration=i,CL=state['CL'],CL_gamma=state['CL_gamma'],
                 CD_pressure=state['CD_pressure'],CM_y=state['CM_y'],
@@ -275,22 +315,52 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             save_callback(i,current,state,record)
         history.append(record)
         if i==iterations:
-            if i>0:record['wake_geometry_change']=history[-2]['wake_geometry_change']
+            if i>0:
+                record['wake_geometry_change']=history[-2]['wake_geometry_change']
+                record['relaxed_nodes']=history[-2]['relaxed_nodes']
+                record['frozen_nodes']=history[-2]['frozen_nodes']
             break
-        target={};displacement=[]
+        target={};displacement=[];frozen={}
         for g in current.groups:
             m=mat[g.name]
             v=_node_velocities(g,panel_velocity[g.name])
-            t=_one_wake_target(g,m,v)
+            t,frozen_nodes=_one_wake_target(g,m,v,min_axial=min_axial,
+                                            freeze=frozen_guard)
+            frozen[g.name]=len(frozen_nodes)
             x_new=g.wake_xyz.copy()
-            x_new[m.used]=(1-relaxation)*g.wake_xyz[m.used]+relaxation*t[m.used]
+            movable=np.zeros(len(x_new),bool);movable[m.used]=True
+            if slip_gate>0:
+                # Relax only where the sheet is already close to a stream
+                # surface. Elsewhere the loop would chase a near-singular
+                # velocity that the panel discretisation cannot represent.
+                ns=np.zeros(len(x_new))
+                cnt=np.zeros(len(x_new))
+                face_slip=np.abs(np.einsum('fi,fi->f',panel_velocity[g.name],
+                                            _wake_mesh(g).normals))
+                np.add.at(ns,g.wake_faces,face_slip[:,None].repeat(3,1))
+                np.add.at(cnt,g.wake_faces,1)
+                movable&=((ns/np.maximum(cnt,1))<slip_gate)
+            if relax_min_abs_y>0:
+                # A wake strip whose spanwise Gamma basis changes sign cannot be
+                # relaxed there: the junction acts as a concentrated vortex and
+                # the kinematic stream-surface condition has no meaning across it.
+                movable&=np.abs(g.wake_xyz[:,1])>=relax_min_abs_y
+            step=relaxation*(t[movable]-g.wake_xyz[movable])
+            if max_step_chord>0:
+                limit=max_step_chord*mesh.reference_chord
+                length=np.linalg.norm(step,axis=1)
+                scale=np.minimum(1.,limit/np.maximum(length,1e-30))
+                step=step*scale[:,None]
+            x_new[movable]=g.wake_xyz[movable]+step
             # The x-stations and material Gamma basis never move/reinterpolate.
             x_new[m.used,0]=m.reference_xyz[m.used,0]
             x_new[m.roots]=m.reference_xyz[m.roots]
-            d=np.linalg.norm(x_new[m.used]-g.wake_xyz[m.used],axis=1)
-            displacement.append(float(d.max()/mesh.reference_chord))
+            d=np.linalg.norm(x_new[movable]-g.wake_xyz[movable],axis=1)
+            displacement.append(float(d.max()/mesh.reference_chord) if len(d) else 0.)
+            record.setdefault('relaxed_nodes',{})[g.name]=int(movable.sum())
             target[g.name]=x_new
         record['wake_geometry_change']=max(displacement)
+        record['frozen_nodes']=frozen
         current=with_wake_xyz(current,target)
         if (record['wake_geometry_change']<geometry_tol and i>1
                 and max(item['normal_slip_rms'] for item in slip.values()) < slip_tol):
@@ -298,7 +368,9 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             ops=reassemble_wake_only(current,fixed)
             state=solve_multi(current,alpha_deg,kutta=kutta,max_nfev=max_nfev,operators=ops)
             _,slip=mean_wake_velocity(current,state,probe_fraction=probe_fraction,
-                                      step_fraction=step_fraction,block=wake_velocity_block)
+                                      step_fraction=step_fraction,
+                                      probe_floor_fraction=probe_floor_fraction,
+                                      block=wake_velocity_block)
             final=dict(iteration=i+1,CL=state['CL'],CL_gamma=state['CL_gamma'],
                        CD_pressure=state['CD_pressure'],CM_y=state['CM_y'],
                        wall_rms=state['wall_rms'],jump_rms=state['jump_rms'],
