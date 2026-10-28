@@ -14,10 +14,19 @@ const ROOT = path.resolve(HERE, "..");
 
 
 // 记录我自己通过本脚本发出的写操作，供监听器区分「我的操作」与「云端同账号的操作」。
-function recordOwnAction(apiPath, method) {
+// 编号优先取响应体里的 number：新建 issue/PR 的路径里没有编号（POST /repos/o/r/issues），
+// 只靠正则会记成 null，监听器随后会把自己的新建当成「云端操作」把自己叫醒。
+function recordOwnAction(apiPath, method, body) {
   if (method === "GET") return;
   const m = /(?:pulls|issues)\/(\d+)/.exec(apiPath);
-  const entry = { kind: "api", number: m ? Number(m[1]) : null, at: new Date().toISOString() };
+  let number = m ? Number(m[1]) : null;
+  if (number == null && body) {
+    try {
+      const parsed = JSON.parse(body);
+      if (parsed && Number.isFinite(parsed.number)) number = Number(parsed.number);
+    } catch {}
+  }
+  const entry = { kind: "api", number, at: new Date().toISOString() };
   const ledger = path.join(HERE, "state", "own_actions.json");
   let list = [];
   try {
@@ -39,7 +48,7 @@ const apiPath = apiPathRaw.startsWith("/") ? apiPathRaw : "/" + apiPathRaw;
 const body = bodyFile ? fs.readFileSync(path.resolve(ROOT, bodyFile), "utf8") : null;
 const res = await apiRequest("https://api.github.com" + apiPath, { method: method.toUpperCase(), body });
 const LIMIT = Number(process.env.GH_LIMIT || 4000);
-if (res.status >= 200 && res.status < 300) recordOwnAction(apiPath, method.toUpperCase());
+if (res.status >= 200 && res.status < 300) recordOwnAction(apiPath, method.toUpperCase(), res.body);
 console.log("STATUS", res.status, "route", res.route);
 console.log(String(res.body || res.error || "").slice(0, LIMIT));
 process.exit(res.status >= 200 && res.status < 300 ? 0 : 1);
