@@ -149,15 +149,19 @@ def solve_wall_nullspace_kutta(B, rhs, J, grad, pairs, *,
     x = x_min+T@fit.x
     wall = B@x-rhs
     kutta = fun(fit.x)
-    w_growth = float((np.linalg.norm(wall)-wall_min_norm) /
-                     max(wall_min_norm, 1e-30))
+    # A consistent manufactured wall system can have a ~1e-15 minimum
+    # residual. Relative growth against that number alone is meaningless.
+    wall_delta = float(np.linalg.norm(wall)-wall_min_norm)
+    wall_scale = max(wall_min_norm, 1e-10*float(np.linalg.norm(rhs)), 1e-12)
+    w_growth = wall_delta/wall_scale
     k_rms = float(np.sqrt(np.mean(kutta*kutta)))
     sv_j = np.linalg.svd(jac(fit.x), compute_uv=False)
     jrank = int(np.sum(sv_j > sv_j[0]*1e-11)) if len(sv_j) and sv_j[0] else 0
     result.update(
         candidate=x, wall_rms=float(np.sqrt(np.mean(wall*wall))),
         wall_residual_max=float(np.max(np.abs(wall))),
-        wall_relative_increase=w_growth,
+        wall_relative_increase=w_growth, wall_abs_increase=wall_delta,
+        wall_growth_reference_scale=wall_scale,
         pressure_kutta_rms=k_rms, pressure_kutta_max=float(np.max(np.abs(kutta))),
         pressure_seed_rms=float(np.sqrt(np.mean(r_seed*r_seed))),
         pressure_jacobian_rank=jrank, pressure_jacobian_singular_values=sv_j.tolist(),
