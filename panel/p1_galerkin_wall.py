@@ -1,9 +1,9 @@
 """P1 Galerkin wall operator with batched target-face assembly.
 
-The source-triangle P1 double-layer integral uses the existing analytic kernel.
+The source-triangle P1 double-layer integral uses the analytic kernel.
 Target test integration uses a Duffy-transformed tensor Gauss rule. Target
-faces are batched so the analytic kernel loops over source faces once per
-batch rather than once per target face. Production collocation is unchanged.
+faces are batched so the kernel traverses source faces once per batch rather
+than once per target face. The collocation assembler remains available for A/B.
 """
 from __future__ import annotations
 import numpy as np
