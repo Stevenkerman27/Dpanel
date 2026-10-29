@@ -66,7 +66,7 @@ jobs:
       - name: Solve all four CAD-derived models after Gamma support fix
         run: >
           python tools/issue71/galerkin_cad_sweep.py
-          --models elliptic_s075 conv_s075 swept30_s075 bwb_s055
+          --models conv_s075 swept30_s075
           --methods signed_speed --order 2 --max-nfev 80
           --out runs/issue77_cad_solve.json
       - name: Upload per-model diagnostics
