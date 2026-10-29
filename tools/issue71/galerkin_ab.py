@@ -1,7 +1,6 @@
 """Reproducible collocation-vs-Galerkin A/B on frozen generated G1/G2 geometries."""
 from __future__ import annotations
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -19,8 +18,9 @@ from panel.p1_te_jump_integral import audit_g2_group_te_jump
 
 
 def clean(x):
-    if isinstance(x,np.ndarray): return x.tolist()
+    if isinstance(x,np.ndarray): return [clean(v) for v in x.tolist()]
     if isinstance(x,(np.floating,np.integer,np.bool_)): return x.item()
+    if isinstance(x,float) and not np.isfinite(x): return None
     if isinstance(x,dict): return {str(k):clean(v) for k,v in x.items()}
     if isinstance(x,(tuple,list)): return [clean(v) for v in x]
     return x
@@ -35,6 +35,15 @@ def build(c,span,wake,camber,g2):
         wings.append(tail);names.append("raised_tail");origins.append((1.6,0.,.35))
     return combine_wings(wings,names=names,origins=origins,
                          reference_chord=main.chord,reference_point=main.reference_point)
+
+
+def solve_status(state, cap):
+    nonlinear=state.get("nonlinear")
+    if nonlinear is None or nonlinear.get("success",True):
+        return "linear_constrained_least_squares_solved"
+    if int(nonlinear.get("nfev",0))>=cap:
+        return "iteration_limit_not_converged"
+    return "nonlinear_failure_not_converged"
 
 
 def run(a):
@@ -53,44 +62,66 @@ def run(a):
         cases=[])
     t0=time.perf_counter()
     for c in a.chord_panels:
-        mesh=build(c,a.span_panels,a.wake_panels,a.camber,a.g2)
-        coll=assemble_multi(mesh)
-        gal=assemble_galerkin_multi(mesh,order=a.order)
-        case=dict(chord_panels=c,wall_faces=len(mesh.faces),wall_dofs=mesh.ndof_mu,
-                  gamma_dofs=coll["W"].shape[1],results=[])
+        case=dict(chord_panels=c,results=[],errors=[])
+        try:
+            mesh=build(c,a.span_panels,a.wake_panels,a.camber,a.g2)
+            case.update(wall_faces=len(mesh.faces),wall_dofs=mesh.ndof_mu)
+        except Exception as exc:
+            case["errors"].append(dict(stage="geometry",error=repr(exc)))
+            report["cases"].append(case)
+            continue
+        coll=gal=None
+        try:
+            coll=assemble_multi(mesh)
+            case["gamma_dofs"]=int(coll["W"].shape[1])
+        except Exception as exc:
+            case["errors"].append(dict(stage="collocation_assembly",error=repr(exc)))
+        try:
+            gal=assemble_galerkin_multi(mesh,order=a.order)
+            case["galerkin_quadrature_order"]=a.order
+        except Exception as exc:
+            case["errors"].append(dict(stage="galerkin_assembly",error=repr(exc)))
         for method in a.methods:
             row=dict(kutta=method)
-            try:
-                old=solve_multi(mesh,a.alpha,kutta=method,max_nfev=a.max_nfev,operators=coll)
-                row["collocation"]=dict(CL=old["CL"],CL_gamma=old["CL_gamma"],
-                    CD_pressure=old["CD_pressure"],CM_y=old["CM_y"],
-                    wall_rms=old["wall_rms"],jump_rms=old["jump_rms"],
-                    signed_kutta_rms=old["signed_kutta_rms"],
-                    pressure_kutta_rms=old["pressure_kutta_rms"],
-                    nonlinear=old["nonlinear"],
-                    te_jump={g.name:audit_g2_group_te_jump(mesh,old,coll,g.name) for g in mesh.groups})
-            except Exception as e:
-                row["collocation_error"]=repr(e)
-            try:
-                new=solve_galerkin_multi(mesh,a.alpha,kutta=method,max_nfev=a.max_nfev,
-                                         operators=gal)
-                row["galerkin"]=dict(CL=new["CL"],CL_gamma=new["CL_gamma"],
-                    CD_pressure=new["CD_pressure"],CM_y=new["CM_y"],
-                    wall_rms=new["wall_rms"],wall_dual_rms=new["wall_dual_rms"],
-                    jump_rms=new["jump_rms"],signed_kutta_rms=new["signed_kutta_rms"],
-                    pressure_kutta_rms=new["pressure_kutta_rms"],
-                    nonlinear=new["nonlinear"],quadrature_order=new["order"],
-                    te_jump={g.name:audit_g2_group_te_jump(mesh,new,gal,g.name) for g in mesh.groups})
-                if "mu" in new:
-                    row["state_delta"]={"mu_l2":float(np.linalg.norm(new["mu"]-old["mu"]))
-                                        if "collocation" in row else None,
-                                        "gamma_l2":float(np.linalg.norm(new["gamma"]-old["gamma"]))
-                                        if "collocation" in row else None}
-            except Exception as e:
-                row["galerkin_error"]=repr(e)
+            old_state=new_state=None
+            if coll is not None:
+                try:
+                    old_state=solve_multi(mesh,a.alpha,kutta=method,max_nfev=a.max_nfev,operators=coll)
+                    row["collocation"]=dict(status=solve_status(old_state,a.max_nfev),
+                        CL=old_state["CL"],CL_gamma=old_state["CL_gamma"],
+                        CD_pressure=old_state["CD_pressure"],CM_y=old_state["CM_y"],
+                        wall_rms=old_state["wall_rms"],jump_rms=old_state["jump_rms"],
+                        signed_kutta_rms=old_state["signed_kutta_rms"],
+                        pressure_kutta_rms=old_state["pressure_kutta_rms"],
+                        nonlinear=old_state["nonlinear"],
+                        te_jump={g.name:audit_g2_group_te_jump(mesh,old_state,coll,g.name)
+                                 for g in mesh.groups})
+                except Exception as exc:
+                    row["collocation_error"]=repr(exc)
+                    case["errors"].append(dict(stage="collocation_solve",method=method,error=repr(exc)))
+            if gal is not None:
+                try:
+                    new_state=solve_galerkin_multi(mesh,a.alpha,kutta=method,max_nfev=a.max_nfev,
+                                                   operators=gal)
+                    row["galerkin"]=dict(status=solve_status(new_state,a.max_nfev),
+                        CL=new_state["CL"],CL_gamma=new_state["CL_gamma"],
+                        CD_pressure=new_state["CD_pressure"],CM_y=new_state["CM_y"],
+                        wall_rms=new_state["wall_rms"],wall_dual_rms=new_state["wall_dual_rms"],
+                        jump_rms=new_state["jump_rms"],signed_kutta_rms=new_state["signed_kutta_rms"],
+                        pressure_kutta_rms=new_state["pressure_kutta_rms"],
+                        nonlinear=new_state["nonlinear"],quadrature_order=new_state["order"],
+                        te_jump={g.name:audit_g2_group_te_jump(mesh,new_state,gal,g.name)
+                                 for g in mesh.groups})
+                except Exception as exc:
+                    row["galerkin_error"]=repr(exc)
+                    case["errors"].append(dict(stage="galerkin_solve",method=method,error=repr(exc)))
+            if old_state is not None and new_state is not None:
+                row["state_delta"]={"mu_l2":float(np.linalg.norm(new_state["mu"]-old_state["mu"])),
+                                    "gamma_l2":float(np.linalg.norm(new_state["gamma"]-old_state["gamma"]))}
             case["results"].append(row)
         report["cases"].append(case)
     report["seconds"]=time.perf_counter()-t0
+    report["execution_errors"]=sum(len(c.get("errors",[])) for c in report["cases"])
     return report
 
 
@@ -114,9 +145,11 @@ def main(argv=None):
     report=run(a)
     a.out.write_text(json.dumps(clean(report),indent=2,allow_nan=False),encoding="utf-8")
     print(json.dumps({"out":str(a.out),"seconds":report["seconds"],
-                      "cases":len(report["cases"]),"physical_accuracy_accepted":False}))
-    return 0 if all(not any(k.endswith("_error") for r in c["results"] for k in r)
-                    for c in report["cases"]) else 2
+                      "cases":len(report["cases"]),"execution_errors":report["execution_errors"],
+                      "physical_accuracy_accepted":False}))
+    # Nonlinear nonconvergence is data and is retained in the report; exit 2 is
+    # reserved for execution/assembly exceptions, not a failed physical test.
+    return 0 if report["execution_errors"]==0 else 2
 
 
 if __name__=="__main__":
