@@ -1,9 +1,8 @@
-"""End-to-end experimental P1 Galerkin lifting solver for G1/G2 meshes.
+"""P1 Galerkin lifting solver for G1/G2 meshes.
 
-Research comparison path only. It preserves the current collocation solver and
-uses its geometry, wake interpolation, TE jump and Kutta definitions for a
-controlled A/B. The Galerkin wall residual is measured in the dual mass norm;
-raw weak residuals are also returned. No production defaults change.
+Uses the shared geometry, wake interpolation, TE jump and Kutta definitions.
+The wall residual is reported in both raw weak form and the dual mass norm.
+The collocation path remains available for regression and A/B comparisons.
 """
 from __future__ import annotations
 import numpy as np
