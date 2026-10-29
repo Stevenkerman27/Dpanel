@@ -51,6 +51,18 @@ jobs:
           test/test_p1_lifting_g1.py
           test/test_p1_lifting_g2.py
           -q
+      - name: Benchmark batched versus original per-face assembly
+        run: >
+          python tools/issue71/galerkin_batch_benchmark.py
+          --chord-panels 4 8 12 --span-panels 8 --order 3
+          --out runs/issue71_galerkin_batch_benchmark.json
+      - name: Upload assembly benchmark
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: galerkin-assembly-benchmark
+          path: runs/issue71_galerkin_batch_benchmark.json
+          if-no-files-found: warn
 
   cad-models:
     runs-on: ubuntu-latest
