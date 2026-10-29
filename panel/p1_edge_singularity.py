@@ -20,8 +20,8 @@ def fluid_wedge_angle_from_solid(beta):
 def neumann_wedge_exponent(fluid_angle):
     """Leading nonconstant exponent lambda=pi/Omega for 2-D Neumann wedge."""
     omega = np.asarray(fluid_angle, dtype=float)
-    if not np.isfinite(omega).all() or np.any(omega <= np.pi) or np.any(omega >= 2*np.pi):
-        raise ValueError("exterior convex-edge fluid angle Omega must be in (pi, 2*pi)")
+    if not np.isfinite(omega).all() or np.any(omega <= np.pi) or np.any(omega > 2*np.pi):
+        raise ValueError("exterior convex-edge fluid angle Omega must be in (pi, 2*pi]")
     return np.pi/omega
 
 
