@@ -2,17 +2,73 @@
   "schema": "dpanel.issue77.contact_fix.summary.v1",
   "input_sha256": "3fa433761a98e6eb3bf708124783c2a1a7b138de418abaa4105c99a04e6ce172",
   "baseline_snapshot_merge_ref": "bb6fd7e59492a615d79750de2aeafabc5af2a943",
-  "environment": {"python": "3.13", "numpy": "2.3.5", "scipy": "1.17.0", "blas_threads": 1},
+  "environment": {
+    "python": "3.13",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "blas_threads": 1
+  },
   "wall_faces": 6224,
-  "alpha_deg": 5.0,
+  "alpha_deg": 5,
   "quadrature_order": 2,
-  "regression": {"passed": 83, "exit_code": 0, "seconds": 4.15},
-  "baseline_te_only": {"CL": 0.4060144342768674, "CL_gamma": 0.41142934386659163, "CD_pressure": 0.09985506792979242, "CD_body": 0.09593826617352494, "body_cp_abs_max": 15.474972467536702},
-  "contact_only": {"CL": 0.4746695634755822, "CL_gamma": 0.47990083061666866, "CD_pressure": 0.012925978606145545, "CD_body": 0.005776600197262215, "body_cp_abs_max": 1.0559913474668066},
-  "contact_and_declared_te_signed": {"CL": 0.47464673771491545, "CL_gamma": 0.47985862326838347, "CD_pressure": 0.012923856861252364, "CD_body": 0.0057749460237162, "body_cp_abs_max": 1.055984006699878, "constrained_condition": 308.94955061294075, "contact_rows": 67, "kutta_rows": 46, "gamma_dofs": 18, "contact_jump_rms": 1.6472504591227958e-15},
-  "contact_and_declared_te_pressure": {"CL": 0.46582799477985615, "CL_gamma": 0.47090256551545984, "CD_pressure": 0.012167207917007004, "CD_body": 0.005669682054172734, "body_cp_abs_max": 1.051592910835951, "pressure_kutta_rms": 9.265321630156508e-09, "nonlinear_success": true, "nfev": 7, "contact_jump_rms": 1.6739839664820025e-15},
+  "regression": {
+    "passed": 83,
+    "exit_code": 0,
+    "seconds": 4.15
+  },
+  "baseline_te_only": {
+    "CL": 0.4060144342768674,
+    "CL_gamma": 0.41142934386659163,
+    "CD_pressure": 0.09985506792979242,
+    "CD_body": 0.09593826617352494,
+    "body_cp_abs_max": 15.474972467536702
+  },
+  "contact_only": {
+    "CL": 0.4746695634755822,
+    "CL_gamma": 0.47990083061666866,
+    "CD_pressure": 0.012925978606145545,
+    "CD_body": 0.005776600197262215,
+    "body_cp_abs_max": 1.0559913474668066
+  },
+  "contact_and_declared_te_signed": {
+    "CL": 0.47464673771491545,
+    "CL_gamma": 0.47985862326838347,
+    "CD_pressure": 0.012923856861252364,
+    "CD_body": 0.0057749460237162,
+    "body_cp_abs_max": 1.055984006699878,
+    "constrained_condition": 308.94955061294075,
+    "contact_rows": 67,
+    "kutta_rows": 46,
+    "gamma_dofs": 18,
+    "contact_jump_rms": 1.6472504591227958e-15
+  },
+  "contact_and_declared_te_pressure": {
+    "CL": 0.46582799477985615,
+    "CL_gamma": 0.47090256551545984,
+    "CD_pressure": 0.012167207917007004,
+    "CD_body": 0.005669682054172734,
+    "body_cp_abs_max": 1.051592910835951,
+    "pressure_kutta_rms": 9.265321630156508e-9,
+    "nonlinear_success": true,
+    "nfev": 7,
+    "contact_jump_rms": 1.6739839664820025e-15
+  },
   "geometry_or_wake_changed": false,
   "cp_clipped": false,
   "robin_boundary_condition_added": false,
-  "physical_accuracy_accepted": false
+  "physical_accuracy_accepted": false,
+  "review_followup": {
+    "tested_code_commit": "f856a5f4f2b34aa9effd0714157e16a8e29958ec",
+    "regression": {
+      "passed": 91,
+      "failed": 0,
+      "exit_code": 0,
+      "seconds": 2.91
+    },
+    "contact_cut_rejection_paths_covered": 6,
+    "trace_audit_exported": true,
+    "contact_jump_reported_for_both_solvers": true,
+    "drag_cancellation_zero_net_convention": "null_with_explicit_status",
+    "physical_accuracy_accepted": false
+  }
 }
