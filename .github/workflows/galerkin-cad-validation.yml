@@ -33,7 +33,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: pip
       - name: Install numerical test dependencies
         run: python -m pip install --upgrade numpy scipy pytest
       - name: Run complete Galerkin/TE/edge/G1/G2 suite
