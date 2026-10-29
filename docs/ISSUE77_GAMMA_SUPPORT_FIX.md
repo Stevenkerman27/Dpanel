@@ -23,3 +23,10 @@ The Galerkin solve now reports the constrained singular-value condition estimate
 Run the related test suite and all four full CAD solves through `.github/workflows/issue77-gamma-support.yml`. The expected result is that conv no longer has zero-support independent Gamma columns, the constrained condition returns to the same order of magnitude as the other models, and its loads are finite and plausible. `CDp ≈ 0.106` from the station-clipping experiment remains a separate open accuracy issue and is not claimed fixed here.
 
 `physical_accuracy_accepted=false`.
+## Status after the later wake/body contact-trace repair
+
+**This document records the intermediate Gamma-support-only stage. Its statement that `CDp ≈ 0.106` remains an open issue is superseded by [`ISSUE77_CONTACT_TRACE_FIX.md`](ISSUE77_CONTACT_TRACE_FIX.md).** That value came from a solver with the physical TE Gamma support corrected but the `smooth_wall_contact` potential trace still artificially continuous.
+
+On the same frozen 6224-face `conv_s075` geometry, adding the declared contact jump and using the actual TE-bank faces gives `CL=0.4746467377`, `CL_gamma=0.4798586233`, `CDp=0.0129238569`, body `CDp=0.0057749460`, body `max|Cp|=1.055984`, and constrained condition estimate `308.95`. The controlled contact-only ablation is the causal evidence; do not treat the old `CL=0.4060` / `CDp=0.099855` row as the final contact-compatible solution.
+
+This is still not an all-geometry physical-accuracy certification. Contact-jump compatibility, true-TE Kutta, quadrature/grid convergence, and additional contact-CAD models remain separate acceptance checks.
