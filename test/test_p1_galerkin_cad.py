@@ -43,8 +43,11 @@ def test_conv_gamma_basis_excludes_zero_support_inboard_contact_stations():
     assert np.min(wing.gamma_y[wing.gamma_y>0])==pytest.approx(0.24999647337329162,abs=1e-9)
     assert not np.any(np.isclose(np.abs(wing.gamma_y),0.0,atol=1e-10))
     assert not np.any(np.isclose(np.abs(wing.gamma_y),0.2,atol=1e-10))
-    assert wing.gamma_hat.shape[1]==17
-    assert np.min(wing.gamma_y)<-0.2499 and np.max(wing.gamma_y)>1.599
+    assert wing.gamma_hat.shape[1]==18
+    assert np.min(wing.gamma_y)<-1.599 and np.max(wing.gamma_y)>1.599
+    assert np.any(np.isclose(wing.gamma_y,-0.24999647337329162,atol=1e-9))
+    assert np.any(np.isclose(wing.gamma_y,+0.24999647337329162,atol=1e-9))
+    np.testing.assert_allclose(wing.gamma_y,-wing.gamma_y[::-1],rtol=0,atol=1e-12)
 
 
 def test_other_cad_models_keep_their_original_gamma_stations():
