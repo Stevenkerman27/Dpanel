@@ -84,3 +84,12 @@ def test_invalid_unsorted_or_uncovered_knots_are_rejected():
         audit_te_jump_integral([0.,1.,.5],[0.,0.,0.],[0.,1.],[0.,0.])
     with pytest.raises(ValueError):
         audit_te_jump_integral([0.,1.],[0.,0.],[.1,.9],[0.,0.])
+
+
+def test_runner_json_serializes_numpy_boolean_and_solver_status_fields():
+    import json
+    from tools.issue71.te_jump_integral import jsonable
+    value={"flag":np.bool_(True),"n":np.int64(3),"x":np.float64(.5),
+           "nested":[np.bool_(False)]}
+    encoded=json.dumps(jsonable(value),allow_nan=False)
+    assert json.loads(encoded)=={"flag":True,"n":3,"x":.5,"nested":[False]}
