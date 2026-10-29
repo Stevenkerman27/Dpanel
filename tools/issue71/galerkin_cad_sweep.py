@@ -63,14 +63,14 @@ def status(state,cap):
 
 
 
-def component_pressure_loads(path,state,mesh,alpha_deg):
+def component_pressure_loads(path,state,ms,geometry,alpha_deg):
     """Split pressure force by exported CAD physical component tag."""
     raw=json.loads(Path(path).read_text(encoding="utf-8"))
     half=np.asarray(raw.get("component_ids",[]),int)
     if not len(half):
         return {}
     ids=np.r_[half,half]
-    if len(ids)!=len(mesh.faces) or len(state.get("cp",[]))!=len(mesh.faces):
+    if len(ids)!=len(ms.triangles) or len(state.get("cp",[]))!=len(ms.triangles):
         return {"error":"component ID count does not match mirrored wall faces"}
     role_by_tag={}
     provenance=raw.get("provenance",{})
@@ -80,7 +80,6 @@ def component_pressure_loads(path,state,mesh,alpha_deg):
             role=item.get("selected_role")
             if tag is not None and role:
                 role_by_tag[int(tag)]=str(role)
-    ms=mesh
     cp=np.asarray(state["cp"],float)
     face_force=-(cp*ms.areas)[:,None]*ms.normals
     alpha=np.deg2rad(float(alpha_deg))
@@ -90,12 +89,12 @@ def component_pressure_loads(path,state,mesh,alpha_deg):
     for tag in np.unique(ids):
         mask=ids==tag
         force=face_force[mask].sum(axis=0)
-        moment=np.cross(ms.centers[mask]-np.asarray(mesh.reference_point),face_force[mask]).sum(axis=0)
+        moment=np.cross(ms.centers[mask]-np.asarray(geometry.reference_point),face_force[mask]).sum(axis=0)
         result[str(role_by_tag.get(int(tag),f"component_{int(tag)}"))]=dict(
             physical_tag=int(tag),faces=int(mask.sum()),
-            CL_pressure=float(force@lift/mesh.reference_area),
-            CD_pressure=float(force@U/mesh.reference_area),
-            CM_y=float(moment[1]/(mesh.reference_area*mesh.reference_chord)),
+            CL_pressure=float(force@lift/geometry.reference_area),
+            CD_pressure=float(force@U/geometry.reference_area),
+            CM_y=float(moment[1]/(geometry.reference_area*geometry.reference_chord)),
             cp_abs_max=float(np.max(np.abs(cp[mask]))),
             cp_min=float(np.min(cp[mask])),cp_max=float(np.max(cp[mask])))
     return result
@@ -167,7 +166,7 @@ def run_model(name,path,args):
                         solution_status=state.get("solution_status"),
                         implausible_reasons=state.get("implausible_reasons",[]),
                         te_jump=audit_g2_group_te_jump(mesh,state,ops,name),
-                        component_pressure_loads=component_pressure_loads(path,state,ops["mesh"],args.alpha))
+                        component_pressure_loads=component_pressure_loads(path,state,ops["mesh"],mesh,args.alpha))
                 except Exception as exc:
                     result[label+"_error"]=repr(exc)
                     result[label+"_traceback"]=traceback.format_exc()
