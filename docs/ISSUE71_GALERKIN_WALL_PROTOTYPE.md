@@ -60,3 +60,28 @@ collocation matrix: each row is a basis test integral.
 
 Do not switch production G1/G2 to this operator or claim physical convergence
 until the operator identities and mesh-refinement checks pass.
+## Integrated framework update
+
+The branch now includes an end-to-end experimental coupled solver, not just a wall matrix:
+
+- panel/p1_galerkin_solver.py assembles the true P1 weak wall matrix, wake doublet coupling, exact P1 mass, and freestream moments for one or multiple lifting groups. It reuses the same geometry, Gamma basis, TE jump matrix, velocity gradients and Kutta sampling pairs as G2.
+- solve_galerkin_multi uses the mass-dual norm ||M^(-1/2) r_G|| for the weak residual. It can enforce the existing signed-speed Kutta equations exactly, or solve the pressure-Kutta nonlinear problem while preserving the TE jump exactly. It reports raw wall RMS, dual wall RMS, J residual, signed Kutta, pressure Kutta, loads, constrained rank and nonlinear termination separately.
+- panel/p1_te_jump_integral.py checks full-edge compatibility mu_upper-mu_lower=Gamma on the common refinement of wall TE stations and Gamma material knots, including exact integral, L2/max mismatch and weak moments. This is not pressure Kutta.
+- tools/issue71/galerkin_ab.py runs collocation versus Galerkin on identical generated G1/G2 geometries and both Kutta variants, recording Git HEAD, Python/NumPy/SciPy, thread environment, CL/CLgamma/CD/CM, wall residuals, closure residuals, state differences, TE-jump audit and nonlinear status into one JSON receipt.
+- test/test_p1_galerkin_solver.py checks end-to-end solve, exact J/K closure, pressure Jacobian against finite differences and nonlinear termination. test/test_p1_te_jump_integral.py checks knot alignment, interior-knot mismatch, integral cancellation, weak moments and G1/G2 adapters.
+
+## Full local acceptance commands
+
+First run the full related suite:
+
+    python -m pytest test/test_p1_edge_singularity.py test/test_p1_galerkin_wall.py test/test_p1_galerkin_solver.py test/test_p1_te_jump_integral.py test/test_p1_lifting_g1.py test/test_p1_lifting_g2.py -q
+
+Then execute the reproducible A/B sweep:
+
+    python tools/issue71/galerkin_ab.py --chord-panels 4 6 8 --span-panels 4 --methods signed_speed pressure --order 3 --max-nfev 80 --out runs/issue71_galerkin_ab_r1.json
+
+For a coupled multi-surface case add --g2. Preserve the JSON even when a pressure solve reaches its iteration cap; such a row is labelled as not converged and must not be included as a valid solution.
+
+## What a successful run does and does not establish
+
+The test suite establishes assembly identities and code-path consistency. The A/B report establishes what this discretization does on generated meshes. Neither alone establishes physical accuracy. Acceptance still requires quadrature-order stability, A_G @ ones = -M @ ones, the smooth-sphere manufactured control, fixed-physical-point velocity convergence, and stable loads/Gamma under mesh refinement. The edge-enrichment basis is deliberately not yet coupled into this solver; add it only after the Galerkin baseline passes these gates, to avoid confounding basis and operator changes.
