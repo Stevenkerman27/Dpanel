@@ -37,6 +37,19 @@ def build(c,span,wake,camber,g2):
                          reference_chord=main.chord,reference_point=main.reference_point)
 
 
+
+def fixed_point_velocity(mesh,state,points,h):
+    """Independent fourth-order FD of the complete off-surface total potential."""
+    from panel.p1_steady_free_wake import _potentials_at
+    p=np.asarray(points,float)
+    grad=np.empty_like(p)
+    for k in range(3):
+        d=np.zeros_like(p);d[:,k]=float(h)
+        values=_potentials_at(mesh,state,np.concatenate((p-2*d,p-d,p+d,p+2*d),axis=0))
+        fm2,fm1,fp1,fp2=np.split(np.asarray(values,float),4)
+        grad[:,k]=(fm2-8*fm1+8*fp1-fp2)/(12*float(h))
+    return grad
+
 def solve_status(state, cap):
     nonlinear=state.get("nonlinear")
     if nonlinear is None or nonlinear.get("success",True):
@@ -118,6 +131,18 @@ def run(a):
             if old_state is not None and new_state is not None:
                 row["state_delta"]={"mu_l2":float(np.linalg.norm(new_state["mu"]-old_state["mu"])),
                                     "gamma_l2":float(np.linalg.norm(new_state["gamma"]-old_state["gamma"]))}
+                probes=np.array([[.25,0.,.12],[.50,0.,.12],[.75,0.,.12]])
+                row["fixed_point_velocity"]={"points":probes.tolist(),"step_sensitivity":{}}
+                for h in (5e-4,2.5e-4):
+                    try:
+                        vc=fixed_point_velocity(mesh,old_state,probes,h)
+                        vg=fixed_point_velocity(mesh,new_state,probes,h)
+                        row["fixed_point_velocity"]["step_sensitivity"][str(h)]={
+                            "collocation":vc.tolist(),"galerkin":vg.tolist(),
+                            "delta_l2":float(np.linalg.norm(vg-vc)),
+                            "delta_linf":float(np.max(np.abs(vg-vc)))}
+                    except Exception as exc:
+                        row["fixed_point_velocity"]["step_sensitivity"][str(h)]={"error":repr(exc)}
             case["results"].append(row)
         report["cases"].append(case)
     report["seconds"]=time.perf_counter()-t0
