@@ -40,6 +40,11 @@ class Wing:
     section: str
     reference_area: float
     reference_point: np.ndarray
+    contact_geo: object = None
+    contact_pairs: object = None
+    contact_gamma_hat: object = None
+    trace_audit: object = None
+    te_face_pairs: object = None
 
 
 def _airfoil(x, *, thickness=.12, camber=.0):
@@ -131,6 +136,54 @@ def _interpolation_basis(values, stations):
     return out
 
 
+
+def _gamma_stations_on_te_support(half_y, te_y, data, tol):
+    """Remove wake/contact-only stations from the independent lifting Gamma basis.
+
+    Contact stations may be excluded only when the CAD writer's station map
+    explicitly ties them to the physical TE-root DOF. This prevents silently
+    discarding an independent physical unknown.
+    """
+    half_y=np.asarray(half_y,float)
+    te_y=np.asarray(te_y,float)
+    positive_te=te_y[te_y>=-tol]
+    if not len(positive_te):
+        raise ValueError('No nonnegative TE stations found in half-surface')
+    root=float(np.min(positive_te));tip=float(np.max(positive_te))
+    station_map=np.asarray(data.get('gamma_station_dof',np.arange(len(half_y))),int)
+    if station_map.shape!=(len(half_y),):
+        raise ValueError('gamma_station_dof length must match gamma_stations')
+    keep=(half_y>=root-tol)&(half_y<=tip+tol)
+    excluded=np.flatnonzero(~keep)
+    root_candidates=np.flatnonzero(np.abs(half_y-root)<=tol)
+    if not len(root_candidates):
+        raise ValueError('Gamma stations must include the actual TE-root y station')
+    root_label=int(station_map[root_candidates[0]])
+    inboard=excluded[half_y[excluded]<root-tol]
+    bad_inboard=[int(i) for i in inboard if station_map[i]!=root_label]
+    outboard=excluded[half_y[excluded]>tip+tol]
+    bad_outboard=[int(i) for i in outboard if station_map[i]>=0]
+    if bad_inboard:
+        i=bad_inboard[0]
+        raise ValueError(
+            f'Gamma station y={half_y[i]:.6f} lies inboard of the TE trace '
+            f'(root {root:.6f}) but is not tied to the TE-root DOF; '
+            'refusing a zero-support circulation basis')
+    if bad_outboard:
+        i=bad_outboard[0]
+        raise ValueError(
+            f'Gamma station y={half_y[i]:.6f} lies outboard of the TE tip '
+            f'({tip:.6f}) but is still an independent DOF; '
+            'refusing to discard a circulation basis function')
+    clipped=half_y[keep]
+    if len(clipped)<2 or abs(clipped[-1]-tip)>tol:
+        raise ValueError('Gamma stations do not cover the actual TE root-to-tip span')
+    if abs(clipped[0]-root)>tol:
+        clipped=np.r_[root,clipped]
+    if abs(clipped[-1]-tip)>tol:
+        clipped=np.r_[clipped,tip]
+    return np.unique(clipped)
+
 def _from_dpanel_half_surface_edges(path):
     """Legacy adapter for surfaces that only declare trailing_edges vertex pairs.
 
@@ -164,7 +217,11 @@ def _from_dpanel_half_surface_edges(path):
     te_y=np.mean(vertices[full_te][:,:,1],axis=1)
     order=np.argsort(te_y)
     full_te=full_te[order];te_y=te_y[order]
-    ys=np.r_[-half_y[:0:-1],half_y]
+    half_y=_gamma_stations_on_te_support(half_y,te_y,data,tol)
+    if abs(float(half_y[0]))<=tol:
+        ys=np.r_[-half_y[:0:-1],half_y]
+    else:
+        ys=np.r_[-half_y[::-1],half_y]
     inner=(te_y>ys[0]+tol)&(te_y<ys[-1]-tol)
     full_te=full_te[inner];te_y=te_y[inner]
     # Some meshes have multiple geometric TE face pairs at a given station.
@@ -199,7 +256,7 @@ def _from_dpanel_half_surface_edges(path):
 
 
 
-def from_dpanel_half_surface(path):
+def _from_dpanel_half_surface_te_only(path):
     """Load a true positive-y DPanel half-surface and create a FULL mirrored G1.
 
     The cross-TE pairing comes from the declared ``upper_te_faces`` /
@@ -246,12 +303,20 @@ def from_dpanel_half_surface(path):
                              'refusing to guess a TE bank pairing'%int(fu))
         nodes.extend(int(v) for v in shared)
     te_nodes=np.unique(np.asarray(nodes,int))
-    ys=np.r_[-half_y[:0:-1],half_y]
     te_y=vertices[te_nodes,1]
     order=np.argsort(te_y,kind='stable')
     te_nodes=te_nodes[order];te_y=te_y[order]
+    half_y=_gamma_stations_on_te_support(half_y,te_y,data,tol)
+    # If the actual half-wing TE root is off the symmetry plane, mirror
+    # that root station too. The usual [-half_y[1:], half_y] construction is
+    # only valid when half_y[0] == 0; otherwise it silently drops the negative
+    # root and creates an asymmetric Gamma space.
+    if abs(float(half_y[0]))<=tol:
+        ys=np.r_[-half_y[:0:-1],half_y]
+    else:
+        ys=np.r_[-half_y[::-1],half_y]
     if te_y[0]<ys[0]-tol or te_y[-1]>ys[-1]+tol:
-        raise ValueError('TE nodes fall outside the declared gamma station span')
+        raise ValueError('TE nodes fall outside the clipped gamma station span')
     used_wall=np.unique(full_faces)
     compact=np.full(len(vertices),-1,dtype=int)
     compact[used_wall]=np.arange(len(used_wall))
@@ -281,6 +346,13 @@ def from_dpanel_half_surface(path):
     return Wing(vertices,full_faces,face_bank,te_nodes,te_up,te_down,pair,te_y,dface,nd,
                 vertices,full_wake,ys,Ghat,chord,float(ys[-1]-ys[0]),
                 f'half CAD mirrored: {Path(path).name}',ref_area,rp)
+
+def from_dpanel_half_surface(path):
+    """Load a CAD half-surface with all declared TE and wake/body trace cuts."""
+    from .p1_wake_contact import with_declared_contact_cuts
+    data = json.loads(Path(path).read_text(encoding='utf-8'))
+    return with_declared_contact_cuts(_from_dpanel_half_surface_te_only(path), data)
+
 
 def _mesh_as_kernel(wing):
     tri=wing.xyz[wing.faces]
@@ -356,24 +428,29 @@ def assemble(wing):
     H=_interpolation_basis(wing.te_pair_y,wing.gamma_y)
     # Tip Gamma degrees are prescribed zero and are not unknowns.
     GH=H[:,1:-1]
+    if wing.contact_pairs is not None and len(wing.contact_pairs):
+        Cc=np.zeros((len(wing.contact_pairs),nt))
+        for i,(u,l) in enumerate(wing.contact_pairs):
+            Cc[i,u]+=1.; Cc[i,l]-=1.
+        C=np.vstack((C,Cc))
+        GH=np.vstack((GH,wing.contact_gamma_hat))
 
     # Define face-bank signed tangent speed near TE, at spanwise source strips.
     grad=_gradient_map(wing,mesh)
-    Vface=np.array([1.,0.,0.]);K=np.zeros((len(C),nt));pairs=[]
+    Vface=np.array([1.,0.,0.]);K=np.zeros((len(wing.te_pairs),nt));pairs=[]
     for k, (uid,lid) in enumerate(wing.te_pairs):
-        yy=wing.te_pair_y[k]; idx=[]
-        for side,node in ((1,uid),(-1,lid)):
-            adjacent=np.flatnonzero(np.any(wing.dof_face==node,axis=1)&(wing.face_bank==side))
-            if not len(adjacent):
-                # A bank may contain only non-TE-adjacent triangles in a generic
-                # CAD fixture; inspect geometry rather than guessing a physical cut.
-                adjacent=np.flatnonzero(wing.face_bank==side)
-            if not len(adjacent): raise ValueError('Missing upper/lower TE bank faces')
-            pair_xyz=wing.xyz[wing.te_geo[k]] if len(wing.te_geo)==len(wing.te_pairs) else np.array([wing.chord,yy,0.])
-            metric=4*(mesh.centers[adjacent,0]-pair_xyz[0])**2+(mesh.centers[adjacent,1]-yy)**2
-            inds=adjacent[np.argsort(metric)[:2]]
-            idx.append(inds)
-        top,bot=idx
+        if wing.te_face_pairs is not None:
+            top,bot=wing.te_face_pairs[k]
+        else:
+            yy=wing.te_pair_y[k]; idx=[]
+            for side,node in ((1,uid),(-1,lid)):
+                adjacent=np.flatnonzero(np.any(wing.dof_face==node,axis=1)&(wing.face_bank==side))
+                if not len(adjacent):
+                    raise ValueError('Missing upper/lower TE bank support')
+                pair_xyz=wing.xyz[wing.te_geo[k]] if len(wing.te_geo)==len(wing.te_pairs) else np.array([wing.chord,yy,0.])
+                metric=4*(mesh.centers[adjacent,0]-pair_xyz[0])**2+(mesh.centers[adjacent,1]-yy)**2
+                idx.append(adjacent[np.argsort(metric)[:2]])
+            top,bot=idx
         K[k]=np.mean(np.einsum('i,fij->fj',Vface,grad[top]),axis=0)-np.mean(np.einsum('i,fij->fj',Vface,grad[bot]),axis=0)
         pairs.append((top,bot))
     return dict(A=A,W=W,C=C,GH=GH,K=K,mesh=mesh,grad=grad,te_pairs=pairs)
@@ -381,7 +458,7 @@ def assemble(wing):
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100):
-    ops=assemble(wing);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(C)
+    ops=assemble(wing);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(K)
     alpha=np.deg2rad(alpha_deg);U=np.array([np.cos(alpha),0,np.sin(alpha)])
     rhs=-ops['mesh'].centers@U
     scale=np.sqrt(ops['mesh'].areas/np.mean(ops['mesh'].areas))

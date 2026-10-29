@@ -32,6 +32,10 @@ class LiftingGroup:
     gamma_hat: np.ndarray
     chord: float
     reference_area: float
+    contact_pairs: object = None
+    contact_gamma_hat: object = None
+    trace_audit: object = None
+    te_face_pairs: object = None
 
 
 @dataclass(frozen=True)
@@ -91,7 +95,13 @@ def combine_wings(wings: Sequence[Wing], *, origins=None, names=None,
             wake_faces=np.asarray(wing.wake_faces,int),
             gamma_y=np.asarray(wing.gamma_y,float)+origin[1],
             gamma_hat=np.asarray(wing.gamma_hat,float),
-            chord=float(wing.chord),reference_area=float(wing.reference_area)))
+            chord=float(wing.chord),reference_area=float(wing.reference_area),
+            contact_pairs=(None if wing.contact_pairs is None else
+                           np.asarray(wing.contact_pairs,int)+dof_offset),
+            contact_gamma_hat=wing.contact_gamma_hat,trace_audit=wing.trace_audit,
+            te_face_pairs=(None if wing.te_face_pairs is None else tuple(
+                (np.asarray(a,int)+face_offset,np.asarray(b,int)+face_offset)
+                for a,b in wing.te_face_pairs))))
         node_offset+=len(xyz);dof_offset+=int(wing.ndof_mu);face_offset+=len(faces)
     if reference_area is None:
         reference_area=sum(g.reference_area for g in groups)
@@ -164,23 +174,36 @@ def assemble_multi(mesh: MultiLiftingMesh):
         for i,(up,down) in enumerate(group.te_pairs):
             c[i,up]+=1.;c[i,down]-=1.
         H=_interpolation_basis(group.te_pair_y,group.gamma_y)[:,1:-1]
+        if group.contact_pairs is not None and len(group.contact_pairs):
+            cc=np.zeros((len(group.contact_pairs),nm))
+            for i,(up,down) in enumerate(group.contact_pairs):
+                cc[i,up]+=1.; cc[i,down]-=1.
+            c=np.vstack((c,cc))
+            H=np.vstack((H,group.contact_gamma_hat))
         J_parts.append((c,H))
         kg=np.zeros((len(group.te_pairs),nm));pairs=[]
         for i,(up,down) in enumerate(group.te_pairs):
-            y=float(group.te_pair_y[i]); pos=group.te_xyz[i]
-            found=[]
-            for bank,dof in ((1,up),(-1,down)):
-                cand=group.face_ids[(mesh.face_bank[group.face_ids]==bank)&
-                    np.any(mesh.dof_face[group.face_ids]==dof,axis=1)]
-                if not len(cand):
-                    cand=group.face_ids[mesh.face_bank[group.face_ids]==bank]
-                if not len(cand):raise ValueError(f'Missing {group.name} TE face bank')
-                metric=4*(ms.centers[cand,0]-pos[0])**2+(ms.centers[cand,1]-y)**2
-                found.append(cand[np.argsort(metric)[:2]])
-            top,bot=found;pairs.append((top,bot))
+            if group.te_face_pairs is not None:
+                top,bot=group.te_face_pairs[i]
+            else:
+                y=float(group.te_pair_y[i]); pos=group.te_xyz[i]
+                found=[]
+                for bank,dof in ((1,up),(-1,down)):
+                    cand=group.face_ids[(mesh.face_bank[group.face_ids]==bank)&
+                        np.any(mesh.dof_face[group.face_ids]==dof,axis=1)]
+                    if not len(cand):
+                        raise ValueError(f'Missing {group.name} TE face-bank support')
+                    metric=4*(ms.centers[cand,0]-pos[0])**2+(ms.centers[cand,1]-y)**2
+                    found.append(cand[np.argsort(metric)[:2]])
+                top,bot=found
+            for bank_faces,dof in ((top,up),(bot,down)):
+                if not len(bank_faces) or not np.all(np.any(mesh.dof_face[bank_faces]==dof,axis=1)):
+                    raise ValueError(f'Invalid declared {group.name} TE sampling faces')
+            pairs.append((top,bot))
             kg[i]=(np.mean(grad[top,0,:],axis=0)-np.mean(grad[bot,0,:],axis=0))
         K_parts.append(kg);TEface.append(pairs)
-        groups_receipt.append(dict(name=group.name,n_gamma=ng,n_kutta=len(c),
+        groups_receipt.append(dict(name=group.name,n_gamma=ng,n_kutta=len(group.te_pairs),
+                                   n_jump=len(c),n_contact_jump=len(c)-len(group.te_pairs),
                                    n_wall_faces=len(group.face_ids)))
     W=np.column_stack(W_parts)
     J=[]
@@ -188,7 +211,7 @@ def assemble_multi(mesh: MultiLiftingMesh):
         part=np.zeros((len(c),W.shape[1]));part[:,slices[mesh.groups[gi].name]]=-h
         J.append(np.column_stack((c,part)))
     J=np.concatenate(J,axis=0)
-    K=np.column_stack((np.concatenate(K_parts,axis=0),np.zeros((J.shape[0],W.shape[1]))))
+    K=np.column_stack((np.concatenate(K_parts,axis=0),np.zeros((sum(len(g.te_pairs) for g in mesh.groups),W.shape[1]))))
     return dict(A=A,W=W,J=J,K=K,grad=grad,mesh=ms,
                 slices=slices,te_face_pairs=TEface,group_info=groups_receipt)
 

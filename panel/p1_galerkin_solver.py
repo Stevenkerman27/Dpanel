@@ -12,6 +12,8 @@ from scipy.optimize import least_squares
 from .p1_lifting_g1 import _doublet_matrix
 from .p1_lifting_g2 import _mesh, assemble_multi
 from .p1_galerkin_wall import _duffy_rule, _assemble_batched
+from .p1_solution_status import assess_solution
+from .p1_wake_contact import contact_jump_report
 
 
 def _mass_from_arrays(dof_face, areas, ndof):
@@ -147,10 +149,23 @@ def solve_galerkin_multi(mesh, alpha_deg=5., *, kutta="signed_speed",
     raw=A@mu+W@gamma-b
     dual=solve_triangular(L,raw,lower=True)
     pr=_pressure_residual(x,ops,nm)
+    singular_values=np.asarray(sv,float)
+    sv_max=float(singular_values[0]) if len(singular_values) else 0.
+    sv_min=float(singular_values[-1]) if len(singular_values) else 0.
+    constrained_condition=float(sv_max/sv_min) if sv_min>0 else float("inf")
+    gamma_col_norms=np.linalg.norm(W,axis=0) if W.shape[1] else np.zeros(0)
+    mu_norm=float(np.linalg.norm(mu));gamma_norm=float(np.linalg.norm(gamma))
+    cl_value=float(force@lift/mesh.reference_area)
+    cd_value=float(force@U/mesh.reference_area)
+    screening=assess_solution(dict(CL=cl_value,CD_pressure=cd_value,
+        mu_norm=mu_norm,gamma_norm=gamma_norm,constrained_condition=constrained_condition,
+        gamma_column_norm_min=float(gamma_col_norms.min()) if gamma_col_norms.size else 0.,
+        gamma_column_norm_median=float(np.median(gamma_col_norms)) if gamma_col_norms.size else 0.,
+        nonlinear=nonlinear))
     return dict(alpha_deg=float(alpha_deg),kutta=kutta,
-        CL=float(force@lift/mesh.reference_area),
+        CL=cl_value,
         CL_gamma=float(sum(g["CL_gamma"] for g in group_results)),
-        CD_pressure=float(force@U/mesh.reference_area),
+        CD_pressure=cd_value,
         CM_y=float(moment[1]/(mesh.reference_area*mesh.reference_chord)),
         force=force.tolist(),mu=mu,cp=cp,gamma=gamma,group_results=group_results,
         jump_rms=float(np.linalg.norm(J@x)/np.sqrt(max(1,J.shape[0]))),
@@ -159,6 +174,16 @@ def solve_galerkin_multi(mesh, alpha_deg=5., *, kutta="signed_speed",
         wall_rms=float(np.linalg.norm(raw)/np.sqrt(len(raw))),
         wall_dual_rms=float(np.linalg.norm(dual)/np.sqrt(len(dual))),
         linear_constrained_rank=int(rank),
-        linear_singular_min=float(sv[-1]) if len(sv) else 0.,
+        linear_singular_min=sv_min,
+        linear_singular_max=sv_max,
+        constrained_condition=constrained_condition,
+        mu_norm=mu_norm,gamma_norm=gamma_norm,
+        gamma_column_norm_min=float(gamma_col_norms.min()) if gamma_col_norms.size else 0.,
+        gamma_column_norm_median=float(np.median(gamma_col_norms)) if gamma_col_norms.size else 0.,
+        solution_status=screening['solution_status'],
+        implausible_reasons=screening['implausible_reasons'],
+        diagnostic_warnings=screening['diagnostic_warnings'],
+        plausibility_controls=screening['plausibility_controls'],
+        contact_jump=contact_jump_report(mesh,mu,gamma,ops['slices']),
         nonlinear=nonlinear,order=int(ops["order"]),
         physical_accuracy_accepted=False)

@@ -45,11 +45,92 @@ def sha(path):
 
 
 def status(state,cap):
-    n=state.get("nonlinear")
-    if n is None or n.get("success",True): return "solver_success"
-    if int(n.get("nfev",0))>=cap: return "iteration_limit_not_converged"
-    return "nonlinear_failure_not_converged"
+    from panel.p1_solution_status import assess_solution
+    nonlinear=state.get('nonlinear')
+    if nonlinear is not None and not nonlinear.get('success',False):
+        if int(nonlinear.get('nfev',0))>=cap:
+            return 'iteration_limit_not_converged'
+        return 'nonlinear_failure_not_converged'
+    # Preserve an explicit invalidity verdict from other backends too.
+    if state.get('solution_status')=='implausible_solution':
+        return 'implausible_solution'
+    return assess_solution(state)['solution_status']
 
+
+def component_pressure_loads(path,state,ms,geometry,alpha_deg):
+    """Split pressure force by exported CAD physical component tag."""
+    raw=json.loads(Path(path).read_text(encoding="utf-8"))
+    half=np.asarray(raw.get("component_ids",[]),int)
+    if not len(half):
+        return {}
+    ids=np.r_[half,half]
+    if len(ids)!=len(ms.triangles) or len(state.get("cp",[]))!=len(ms.triangles):
+        return {"error":"component ID count does not match mirrored wall faces"}
+    role_by_tag={}
+    provenance=raw.get("provenance",{})
+    for pas in provenance.get("CAD_passes",[]):
+        for item in pas.get("component_classification",[]):
+            tag=item.get("physical_tag")
+            role=item.get("selected_role")
+            if tag is not None and role:
+                role_by_tag[int(tag)]=str(role)
+    cp=np.asarray(state["cp"],float)
+    face_force=-(cp*ms.areas)[:,None]*ms.normals
+    alpha=np.deg2rad(float(alpha_deg))
+    U=np.array([np.cos(alpha),0.,np.sin(alpha)])
+    lift=np.array([-np.sin(alpha),0.,np.cos(alpha)])
+    cd_face=face_force@U/geometry.reference_area
+    cl_face=face_force@lift/geometry.reference_area
+    result={}
+    for tag in np.unique(ids):
+        mask=ids==tag
+        force=face_force[mask].sum(axis=0)
+        moment=np.cross(ms.centers[mask]-np.asarray(geometry.reference_point),face_force[mask]).sum(axis=0)
+        cdi=cd_face[mask]
+        local_ids=np.flatnonzero(mask)
+        high_cp=local_ids[np.argsort(np.abs(cp[mask]))[-10:][::-1]]
+        high_drag=local_ids[np.argsort(cd_face[mask])[-10:][::-1]]
+        result[str(role_by_tag.get(int(tag),f"component_{int(tag)}"))]=dict(
+            physical_tag=int(tag),faces=int(mask.sum()),
+            CL_pressure=float(force@lift/geometry.reference_area),
+            CD_pressure=float(force@U/geometry.reference_area),
+            CM_y=float(moment[1]/(geometry.reference_area*geometry.reference_chord)),
+            drag_positive_sum=float(cdi[cdi>0].sum()),
+            drag_negative_sum=float(cdi[cdi<0].sum()),
+            drag_abs_sum=float(np.abs(cdi).sum()),
+            drag_cancellation_ratio=(float(np.abs(cdi).sum()/abs(float(cdi.sum())))
+                if abs(float(cdi.sum()))>1e-15 else None),
+            drag_cancellation_status=('defined' if abs(float(cdi.sum()))>1e-15
+                else ('no_drag_contributions' if np.abs(cdi).sum()==0. else 'complete_cancellation')),
+            cp_abs_max=float(np.max(np.abs(cp[mask]))),
+            cp_min=float(np.min(cp[mask])),cp_max=float(np.max(cp[mask])),
+            top_abs_cp_faces=[dict(face=int(i),center=ms.centers[i].tolist(),
+                cp=float(cp[i]),area=float(ms.areas[i]),CD_face=float(cd_face[i]))
+                for i in high_cp],
+            top_positive_drag_faces=[dict(face=int(i),center=ms.centers[i].tolist(),
+                cp=float(cp[i]),area=float(ms.areas[i]),CD_face=float(cd_face[i]))
+                for i in high_drag]
+        )
+    return result
+
+
+def trace_audit_summary(mesh):
+    """Keep topology acceptance evidence beside every CAD solve receipt."""
+    fields=("wall_geometric_nodes","wall_potential_dofs","split_nodes",
+            "te_jump_rows","contact_jump_rows","unsplit_zero_gamma_tips",
+            "contact_edges","trailing_edges","contact_constraints_are_not_kutta")
+    out={}
+    for group in mesh.groups:
+        audit=getattr(group,"trace_audit",None)
+        if audit is not None:
+            out[group.name]={key:clean(audit[key]) for key in fields if key in audit}
+    return out
+
+
+def contact_jump_diagnostics(mesh,state,ops):
+    """Evaluate the wall trace jump for either Galerkin or collocation states."""
+    from panel.p1_wake_contact import contact_jump_report
+    return contact_jump_report(mesh,state["mu"],state["gamma"],ops["slices"])
 
 def run_model(name,path,args):
     from panel.p1_lifting_g1 import from_dpanel_half_surface
@@ -66,10 +147,12 @@ def run_model(name,path,args):
             half_faces=int(len(json.loads(path.read_text())["faces"])),
             full_faces=int(len(wing.faces)),full_vertices=int(len(wing.xyz)),
             mu_dofs=int(wing.ndof_mu),gamma_dofs=int(wing.gamma_hat.shape[1]),
-            te_pairs=int(len(wing.te_pairs)),wake_faces=int(len(wing.wake_faces)))
+            te_pairs=int(len(wing.te_pairs)),wake_faces=int(len(wing.wake_faces)),
+            trace_audit=clean(wing.trace_audit or {}))
         mesh=combine_wings([wing],names=[name],origins=[(0.,0.,0.)],
             reference_area=wing.reference_area,reference_chord=wing.chord,
             reference_point=wing.reference_point)
+        row["mesh_input"]["trace_audit_by_group"]=trace_audit_summary(mesh)
         row["stages"]["geometry_seconds"]=time.perf_counter()-t
         t=time.perf_counter()
         coll=assemble_multi(mesh)
@@ -109,7 +192,18 @@ def run_model(name,path,args):
                                             else float(state["pressure_kutta_rms"])),
                         nonlinear=state["nonlinear"],
                         group_results=state["group_results"] if "group_results" in state else None,
-                        te_jump=audit_g2_group_te_jump(mesh,state,ops,name))
+                        mu_norm=float(np.linalg.norm(state.get("mu",[]))),
+                        gamma_norm=float(np.linalg.norm(state.get("gamma",[]))),
+                        constrained_condition=state.get("constrained_condition"),
+                        linear_singular_min=state.get("linear_singular_min"),
+                        gamma_column_norm_min=state.get("gamma_column_norm_min"),
+                        gamma_column_norm_median=state.get("gamma_column_norm_median"),
+                        solution_status=state.get("solution_status"),
+                        contact_jump=contact_jump_diagnostics(mesh,state,ops),
+                        diagnostic_warnings=state.get("diagnostic_warnings",[]),
+                        implausible_reasons=state.get("implausible_reasons",[]),
+                        te_jump=audit_g2_group_te_jump(mesh,state,ops,name),
+                        component_pressure_loads=component_pressure_loads(path,state,ops["mesh"],mesh,args.alpha))
                 except Exception as exc:
                     result[label+"_error"]=repr(exc)
                     result[label+"_traceback"]=traceback.format_exc()
@@ -117,7 +211,8 @@ def run_model(name,path,args):
             row["solves"].append(result)
         row["status"]="completed_with_solver_failures" if any(
             any(k.endswith("_error") for k in sol) or any(
-                sol.get(k,{}).get("status","").endswith("not_converged")
+                (sol.get(k,{}).get("status","").endswith("not_converged")
+                 or sol.get(k,{}).get("status","")=="implausible_solution")
                 for k in ("collocation","galerkin")) for sol in row["solves"]) else "completed"
     except Exception as exc:
         row["status"]="execution_error";row["error"]=repr(exc)

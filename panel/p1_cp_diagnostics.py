@@ -140,16 +140,20 @@ def pressure_load_diagnostic(cp,areas,normals,centers,reference_area,drag_axis,l
     d,l=d/dn,l/ln
     ff=-(cp*a)[:,None]*n; cd=ff@d/sref; cl=ff@l/sref
     force=ff.sum(axis=0); moment=np.cross(c-rp,ff).sum(axis=0); net=float(cd.sum()); abs_sum=float(np.abs(cd).sum())
+    ratio=(abs_sum/abs(net) if abs(net)>1e-15 else None)
+    cancellation_status=('defined' if ratio is not None else
+                         ('no_drag_contributions' if abs_sum==0. else 'complete_cancellation'))
     return dict(face_cd_contributions=cd,face_cl_contributions=cl,CL_pressure=float(cl.sum()),CD_pressure=net,
                 drag_positive_sum=float(cd[cd>0].sum()),drag_negative_sum=float(cd[cd<0].sum()),
-                drag_abs_sum=abs_sum,drag_cancellation_ratio=abs_sum/abs(net) if abs(net)>1e-15 else float("inf"),
+                drag_abs_sum=abs_sum,drag_cancellation_ratio=ratio,
+                drag_cancellation_status=cancellation_status,
                 CM_vector=moment/(sref*cref),force=force,moment=moment)
 
 
 def diagnose_g2_state(mesh,state,offsets=(.2,.1,.05),step_fraction=.2,offset_sign=1.,local_scale="edge_min"):
     """Adapter for solve_multi output; potential includes freestream, wall and every wake."""
     from .p1_steady_free_wake import _potentials_at
-    alpha=np.deg2rad(float(state["alpha_deg"])); U=np.array([np.cos(alpha),0.,np.sin(alpha]))
+    alpha=np.deg2rad(float(state["alpha_deg"])); U=np.array([np.cos(alpha),0.,np.sin(alpha)])
     phi=lambda points: _potentials_at(mesh,state,points)
     report=compare_p1_to_offsurface(mesh.xyz,mesh.faces,mesh.dof_face,state["mu"],phi,U,
                                    offsets,step_fraction,offset_sign,local_scale)

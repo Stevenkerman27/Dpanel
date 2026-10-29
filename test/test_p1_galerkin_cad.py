@@ -33,3 +33,92 @@ def test_cad_half_surface_mirrors_with_finite_wake_and_consistent_gamma(name):
     assert np.all(np.linalg.norm(np.cross(
         wing.xyz[wing.faces][:,1]-wing.xyz[wing.faces][:,0],
         wing.xyz[wing.faces][:,2]-wing.xyz[wing.faces][:,0]),axis=1)>1e-14)
+
+
+def test_conv_gamma_basis_excludes_zero_support_inboard_contact_stations():
+    wing=from_dpanel_half_surface(CASES["conv_s075"])
+    # The actual exposed TE starts at the fuselage contact y ~= 0.25.
+    # The CAD wake still spans y=0,0.2 for contact topology, but those stations
+    # must not become independent Gamma unknowns in the lifting solve.
+    assert np.min(wing.gamma_y[wing.gamma_y>0])==pytest.approx(0.24999647337329162,abs=1e-9)
+    assert not np.any(np.isclose(np.abs(wing.gamma_y),0.0,atol=1e-10))
+    assert not np.any(np.isclose(np.abs(wing.gamma_y),0.2,atol=1e-10))
+    assert wing.gamma_hat.shape[1]==18
+    assert np.min(wing.gamma_y)<-1.599 and np.max(wing.gamma_y)>1.599
+    assert np.any(np.isclose(wing.gamma_y,-0.24999647337329162,atol=1e-9))
+    assert np.any(np.isclose(wing.gamma_y,+0.24999647337329162,atol=1e-9))
+    np.testing.assert_allclose(wing.gamma_y,-wing.gamma_y[::-1],rtol=0,atol=1e-12)
+
+
+
+
+
+
+
+
+def test_conv_gamma_basis_excludes_inboard_contact_stations_and_keeps_both_root_banks():
+    wing=from_dpanel_half_surface(CASES["conv_s075"])
+    root=0.24999647337329162
+    assert np.min(wing.gamma_y[wing.gamma_y>0])==pytest.approx(root,abs=1e-9)
+    assert not np.any(np.isclose(np.abs(wing.gamma_y),0.0,atol=1e-10))
+    assert not np.any(np.isclose(np.abs(wing.gamma_y),0.2,atol=1e-10))
+    assert wing.gamma_hat.shape[1]==18
+    assert np.any(np.isclose(wing.gamma_y,-root,atol=1e-9))
+    assert np.any(np.isclose(wing.gamma_y,+root,atol=1e-9))
+    np.testing.assert_allclose(wing.gamma_y,-wing.gamma_y[::-1],rtol=0,atol=1e-12)
+
+
+def test_other_cad_models_keep_their_original_gamma_stations():
+    for name in ("elliptic_s075","swept30_s075","bwb_s055"):
+        raw=json.loads(CASES[name].read_text(encoding="utf-8"))
+        wing=from_dpanel_half_surface(CASES[name])
+        stations=np.asarray(raw["gamma_stations"])
+        expected=np.r_[-stations[:0:-1],stations]
+        np.testing.assert_allclose(wing.gamma_y,expected,rtol=0,atol=1e-12)
+
+
+def test_loader_rejects_unmapped_independent_station_inboard_of_te(tmp_path):
+    raw=json.loads(CASES["conv_s075"].read_text(encoding="utf-8"))
+    raw["gamma_station_dof"][0]=99
+    path=tmp_path/"bad_conv_surface.json"
+    path.write_text(json.dumps(raw),encoding="utf-8")
+    with pytest.raises(ValueError,match="not tied to the TE-root DOF"):
+        from_dpanel_half_surface(path)
+
+
+def test_cad_sweep_does_not_report_implausible_solution_as_success():
+    from tools.issue71.galerkin_cad_sweep import status
+    state={"nonlinear":None,"solution_status":"implausible_solution"}
+    assert status(state,80)=="implausible_solution"
+    assert status({"nonlinear":{"success":False,"nfev":80}},80)=="iteration_limit_not_converged"
+    assert status({"nonlinear":None,"solution_status":"solver_success","CL":0.4,
+                   "CD_pressure":0.01,"mu":np.ones(3),"gamma":np.ones(2)},80)=="solver_success"
+
+
+def test_component_pressure_load_split_sums_to_total_pressure_force(tmp_path):
+    from types import SimpleNamespace
+    from tools.issue71.galerkin_cad_sweep import component_pressure_loads
+    raw={"component_ids":[20,30],"provenance":{"CAD_passes":[{"component_classification":[
+        {"physical_tag":20,"selected_role":"body"},
+        {"physical_tag":30,"selected_role":"wing"}]}]}}
+    path=tmp_path/"components.json";path.write_text(json.dumps(raw),encoding="utf-8")
+    ms=SimpleNamespace(
+        triangles=np.zeros((4,3,3)),
+        areas=np.array([1.,2.,3.,4.]),
+        normals=np.array([[1.,0.,0.],[0.,0.,1.],[-1.,0.,0.],[0.,0.,-1.]]),
+        centers=np.zeros((4,3)))
+    geom=SimpleNamespace(reference_point=np.zeros(3),reference_area=10.,reference_chord=1.)
+    state={"cp":np.array([.2,.3,.4,.5])}
+    result=component_pressure_loads(path,state,ms,geom,0.)
+    assert set(result)=={"body","wing"}
+    assert sum(x["faces"] for x in result.values())==4
+    assert sum(x["CD_pressure"] for x in result.values())==pytest.approx(
+        np.sum(-(state["cp"]*ms.areas)*ms.normals[:,0])/geom.reference_area)
+    for component in result.values():
+        if component['drag_abs_sum']==0.:
+            assert component['drag_cancellation_ratio'] is None
+            assert component['drag_cancellation_status']=='no_drag_contributions'
+        else:
+            assert component['drag_cancellation_ratio']>=1.
+        assert len(component["top_abs_cp_faces"])==2
+        assert len(component["top_positive_drag_faces"])==2

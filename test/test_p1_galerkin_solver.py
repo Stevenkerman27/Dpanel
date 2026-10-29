@@ -39,6 +39,11 @@ def test_signed_speed_galerkin_solve_enforces_existing_J_and_K_exactly():
     assert state["jump_rms"]<1e-9
     assert state["signed_kutta_rms"]<1e-9
     assert np.isfinite(state["wall_dual_rms"])
+    assert np.isfinite(state["constrained_condition"])
+    assert state["constrained_condition"]<1e6
+    assert np.isfinite(state["mu_norm"]) and np.isfinite(state["gamma_norm"])
+    assert state["gamma_column_norm_min"]>0.
+    assert state["solution_status"]=="solver_success"
     assert state["physical_accuracy_accepted"] is False
 
 
