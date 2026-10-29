@@ -44,7 +44,7 @@ def assemble_galerkin_multi(mesh, *, order=3, block=32):
     for g,n in zip(groups,ngs):
         wt=np.asarray(g.wake_xyz,float)[np.asarray(g.wake_faces,int)]
         wd=np.asarray(g.wake_faces,int)
-        H=np.asarray(g.gamma_hat,float)[:,1:-1]
+        H=np.asarray(g.gamma_hat,float)
         wake_cache.append((wt,wd,H,n,len(g.wake_xyz)))
     for f in range(nface):
         tri=tris[f]
