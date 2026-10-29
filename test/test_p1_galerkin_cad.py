@@ -33,3 +33,41 @@ def test_cad_half_surface_mirrors_with_finite_wake_and_consistent_gamma(name):
     assert np.all(np.linalg.norm(np.cross(
         wing.xyz[wing.faces][:,1]-wing.xyz[wing.faces][:,0],
         wing.xyz[wing.faces][:,2]-wing.xyz[wing.faces][:,0]),axis=1)>1e-14)
+
+
+def test_conv_gamma_basis_excludes_zero_support_inboard_contact_stations():
+    wing=from_dpanel_half_surface(CASES["conv_s075"])
+    # The actual exposed TE starts at the fuselage contact y ~= 0.25.
+    # The CAD wake still spans y=0,0.2 for contact topology, but those stations
+    # must not become independent Gamma unknowns in the lifting solve.
+    assert np.min(wing.gamma_y[wing.gamma_y>0])==pytest.approx(0.24999647337329162,abs=1e-9)
+    assert not np.any(np.isclose(np.abs(wing.gamma_y),0.0,atol=1e-10))
+    assert not np.any(np.isclose(np.abs(wing.gamma_y),0.2,atol=1e-10))
+    assert wing.gamma_hat.shape[1]==17
+    assert np.min(wing.gamma_y)<-0.2499 and np.max(wing.gamma_y)>1.599
+
+
+def test_other_cad_models_keep_their_original_gamma_stations():
+    for name in ("elliptic_s075","swept30_s075","bwb_s055"):
+        raw=json.loads(CASES[name].read_text(encoding="utf-8"))
+        wing=from_dpanel_half_surface(CASES[name])
+        expected=np.r_[-np.asarray(raw["gamma_stations"])[::-1][:-1],
+                       np.asarray(raw["gamma_stations"])]
+        np.testing.assert_allclose(wing.gamma_y,expected,rtol=0,atol=1e-12)
+
+
+def test_loader_rejects_unmapped_independent_station_inboard_of_te(tmp_path):
+    raw=json.loads(CASES["conv_s075"].read_text(encoding="utf-8"))
+    raw["gamma_station_dof"][0]=99
+    path=tmp_path/"bad_conv_surface.json"
+    path.write_text(json.dumps(raw),encoding="utf-8")
+    with pytest.raises(ValueError,match="not tied to the TE-root DOF"):
+        from_dpanel_half_surface(path)
+
+
+def test_cad_sweep_does_not_report_implausible_solution_as_success():
+    from tools.issue71.galerkin_cad_sweep import status
+    state={"nonlinear":None,"solution_status":"implausible_solution"}
+    assert status(state,80)=="implausible_solution"
+    assert status({"nonlinear":{"success":False,"nfev":80}},80)=="iteration_limit_not_converged"
+    assert status({"nonlinear":None,"solution_status":"solver_success"},80)=="solver_success"
