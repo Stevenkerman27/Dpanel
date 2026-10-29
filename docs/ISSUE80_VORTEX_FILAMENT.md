@@ -35,6 +35,8 @@ The implementation in `panel/vortex_filament.py` has no hidden core radius, clip
 - near-axis inverse-distance signature;
 - explicit on-segment and endpoint singularity policy;
 - polyline summation and explicit segment exclusion;
+- a closed square vortex loop against independent segment line integrals;
+- the logarithmic growth of the remaining polygonal-loop velocity when one straight self-segment is excluded;
 - invalid-input rejection.
 
 Run from the repository root:
@@ -43,15 +45,28 @@ Run from the repository root:
 python -m pytest test/test_vortex_filament.py -q
 ```
 
-The repository test command has **not yet been executed in the full DPanel checkout by this authoring environment**. Do not mark these tests as passing until the local agent reports the exact HEAD, Python/NumPy versions, command, exit code and output.
+## Local execution receipt
+
+The local agent executed the original 9-test version at HEAD `b6aa91cb202d05c2072d6c46c51863642fbcac85` on Windows, Python 3.11.17 and NumPy 2.4.6:
+
+```
+python -m pytest test/test_vortex_filament.py -q
+9 passed, 1 warning in 0.11s
+exit code: 0
+```
+
+The warning reported a Windows `.pytest_cache` access-denied condition; the agent notes that its normal sandbox workflow uses `-p dsh_tmp_plugin` and `DSH_TMP_ROOT` to avoid cache writes. The agent also ran independent numerical checks: 200 off-filament points versus a separate composite Gauss–Legendre oracle had maximum relative error `1.18e-14`; a closed square loop differed from independently integrated segments by `9.999e-16`; a triangular ring matched the existing `wake_velocity.triangle_ring_velocity` at `1.245e-15`; and near-axis evaluation down to `h=1e-9` matched the finite-segment analytic limit to `3.6e-16`.
+
+The agent found an important limitation: excluding the straight segment's own PV contribution does not regularize a curved polygonal filament. At the midpoint of one segment of a unit-radius polygonal loop, the remaining induced speed grew with refinement; the increment under each doubling approached `(Gamma/(4*pi*R))*ln(2)`, the expected logarithmic self-induction divergence. This confirms that the zero straight-segment PV convention is **not** a complete curved-filament self-induction model.
+
+Two repository regressions were added after the above 9-test run: a closed-loop oracle and the logarithmic-divergence test. Therefore the current PR head still needs a fresh full test run; the 9-pass receipt does not cover the two new tests. Do not mark the current head as passing until the local agent reports the new HEAD, exact command, exit code and output.
 
 ## Interpretation and next gate
 
 This is a verified-formula candidate, not a completed free-wake method. A curved filament's velocity depends on the discretization and self/near-self treatment; the straight-segment PV convention does not supply a curvature term. Before coupling it into the wake iteration, the next experiment must compare:
-1. a closed polygonal vortex loop against an independent direct line-integral oracle at off-filament targets;
-2. mesh refinement and near-filament offset sensitivity;
-3. at least one analytically controlled curved-filament case, with the chosen self-induction convention stated explicitly;
-4. the resulting representation against the existing P1 analytic sheet field only where their mathematical assumptions make equivalence valid.
+1. refine the committed closed-loop and logarithmic-divergence regression checks in the full repository;
+2. decide whether to add a physically justified finite-core or curvature-aware self-induction model (with parameter sensitivity), or retain the P1 sheet field for near-wake induction;
+3. compare the resulting representation against the existing P1 analytic sheet field only where their mathematical assumptions make equivalence valid.
 
 If the intended free wake remains a continuously varying P1 sheet, the filament method must retain or derive the contribution associated with the in-panel strength gradient. A constant-strength filament-only sum is not an acceptable drop-in replacement.
 
