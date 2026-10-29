@@ -77,3 +77,26 @@ The closed-form segment formula was independently exercised against four
 manufactured cases: aligned traces, unmatched interior Gamma knot, cancellation
 of signed residual, and partition-of-unity identity for the weak moments.
 An isolated copy of the diagnostic module and its five pure-function tests was actually run in the sandbox: **5 passed / exit 0 in 0.06 s**. The G1/G2 adapter integration tests, full repository tests and actual runner have not been executed in this sandbox because it cannot clone the repository; local execution of the commands above remains required. Receipt: /mnt/data/dpanel_te_jump_integral_sandbox_receipt.json.
+
+
+## Local PR #73 acceptance findings and fixes (2026-10-29)
+
+The local review confirms the closed-form integral and L2 formulas against
+independent refined quadrature (signed integral relative difference 0; L2^2
+relative difference 5.9e-8, consistent with the reference midpoint quadrature
+error). It also found two integration bugs, now fixed in this branch:
+
+- G1 adapter now uses actual `Wing.te_up` and `Wing.te_down` fields; its
+  test was corrected accordingly.
+- JSON conversion now handles `np.bool_`; the CLI test checks JSON
+  round-trip. Per-row nonlinear success and nfev are explicit, and a failed
+  solve at the 200-evaluation cap is labelled `iteration_limit`.
+
+The local sweep is the critical scientific result: with the jump residual
+at roundoff (about 1e-16), pressure-Kutta RMS was about 2.8e-8 to 1.3e-7
+at chord counts 4/8/12/16, while CL changed from +0.457 to -0.450.
+Thus **small pressure-Kutta residual is not a circulation-validity
+criterion**. It only says the discrete nonlinear condition has been fitted.
+It does not certify convergence of the underlying surface velocity field,
+identifiability of Gamma, or physical accuracy. The c=24 pressure solve hit
+nfev=200 without success and must not be treated as a converged sample.
