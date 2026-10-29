@@ -70,7 +70,7 @@ def assemble_galerkin_wall(wing, freestream=(1.,0.,0.), order=3,
         Hfull = np.asarray(wing.gamma_hat,dtype=float)
         if Hfull.shape[0] != nwake or Hfull.shape[1] != ngfull:
             raise ValueError("wake Gamma interpolation shape mismatch")
-        H = Hfull[:,1:-1]
+        H = Hfull
     else:
         wake_tris = None
         wake_dofs = None
