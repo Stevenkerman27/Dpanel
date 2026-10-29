@@ -1,0 +1,1657 @@
+{
+  "schema": "dpanel.issue71.galerkin_ab.v1",
+  "physical_accuracy_accepted": false,
+  "environment": {
+    "python": "3.11.17 | packaged by Anaconda, Inc. | (main, Oct  1 2026, 20:16:54) [MSC v.1942 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "git_head": "980af6fcea2918e32302f00520d1246e35585fb6",
+    "threads": {
+      "OPENBLAS_NUM_THREADS": null,
+      "OMP_NUM_THREADS": null,
+      "MKL_NUM_THREADS": null
+    }
+  },
+  "options": {
+    "chord_panels": [
+      16,
+      24
+    ],
+    "span_panels": 8,
+    "wake_panels": 2,
+    "alpha": 5.0,
+    "camber": 0.02,
+    "g2": false,
+    "kutta": [
+      "pressure",
+      "signed_speed"
+    ],
+    "order": 3,
+    "max_nfev": 80
+  },
+  "cases": [
+    {
+      "chord_panels": 16,
+      "results": [
+        {
+          "kutta": "pressure",
+          "collocation": {
+            "status": "linear_constrained_least_squares_solved",
+            "CL": -0.450009677420909,
+            "CL_gamma": -0.45090757500731415,
+            "CD_pressure": -0.06107055635430437,
+            "CM_y": 0.38505998963585075,
+            "wall_rms": 0.0014831617541996376,
+            "jump_rms": 1.18687833744435e-16,
+            "signed_kutta_rms": 0.02275190391685989,
+            "pressure_kutta_rms": 2.8405850488991113e-08,
+            "group_results": [
+              {
+                "name": "main_wing",
+                "CL_pressure": -0.450009677420909,
+                "CL_gamma": -0.45090757500731415,
+                "gamma": [
+                  -0.4469350557722017,
+                  -0.2882172931554675,
+                  -0.18632271025726083,
+                  -0.14252835724391488,
+                  -0.15896217220360404,
+                  -0.08450784979322823,
+                  -0.49615686160357925
+                ],
+                "gamma_y": [
+                  -2.0,
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5,
+                  2.0
+                ],
+                "Gamma_integral": -0.9018151500146283,
+                "wall_faces": 576,
+                "wake_triangles": 32
+              }
+            ],
+            "nonlinear": {
+              "success": true,
+              "message": "`ftol` termination condition is satisfied.",
+              "nfev": 7
+            },
+            "te_jump": {
+              "main_wing": {
+                "status": "pass",
+                "condition": "potential_jump_compatibility_only_not_pressure_kutta",
+                "partition_aligned": true,
+                "gamma_knots_inside_te_edges": [
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5
+                ],
+                "nodal_residual": [
+                  0.0,
+                  1.1102230246251565e-16,
+                  0.0,
+                  -5.551115123125783e-17,
+                  -1.1102230246251565e-16,
+                  -5.551115123125783e-17,
+                  -1.1102230246251565e-16,
+                  1.6653345369377348e-16,
+                  0.0
+                ],
+                "nodal_residual_max": 1.6653345369377348e-16,
+                "jump_integral": -0.9018151500146283,
+                "gamma_integral": -0.9018151500146283,
+                "integral_residual": -2.7755575615628914e-17,
+                "integral_residual_normalized": -6.938893903907228e-18,
+                "l2_residual": 1.537034178252068e-16,
+                "l2_rms": 7.68517089126034e-17,
+                "max_abs_residual": 1.6653345369377348e-16,
+                "weak_moment_linf": 4.625929269271486e-17,
+                "integral_alone_can_hide_cancellation": false,
+                "edges": [
+                  {
+                    "y0": -2.0,
+                    "y1": -1.5,
+                    "integral_residual": 2.7755575615628914e-17,
+                    "l2_rms": 6.409875621278546e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.5,
+                    "y1": -1.0,
+                    "integral_residual": 2.7755575615628914e-17,
+                    "l2_rms": 6.409875621278546e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.0,
+                    "y1": -0.5,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -0.5,
+                    "y1": 0.0,
+                    "integral_residual": -4.163336342344337e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.0,
+                    "y1": 0.5,
+                    "integral_residual": -4.163336342344337e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.5,
+                    "y1": 1.0,
+                    "integral_residual": -4.163336342344337e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.0,
+                    "y1": 1.5,
+                    "integral_residual": 1.3877787807814457e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.5,
+                    "y1": 2.0,
+                    "integral_residual": 4.163336342344337e-17,
+                    "l2_rms": 9.614813431917819e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  }
+                ],
+                "physical_accuracy_accepted": false
+              }
+            }
+          },
+          "galerkin": {
+            "status": "linear_constrained_least_squares_solved",
+            "CL": 0.45818201657078195,
+            "CL_gamma": 0.4655481416130052,
+            "CD_pressure": 0.017367140534383173,
+            "CM_y": -0.15435049494393785,
+            "wall_rms": 5.466921405324029e-09,
+            "wall_dual_rms": 1.6265749781973684e-07,
+            "jump_rms": 1.18687833744435e-16,
+            "signed_kutta_rms": 0.02016495385732434,
+            "pressure_kutta_rms": 1.8299018888536174e-13,
+            "group_results": [
+              {
+                "name": "main_wing",
+                "CL_pressure": 0.45818201657078195,
+                "CL_gamma": 0.4655481416130052,
+                "Gamma_integral": 0.9310962832260103,
+                "gamma": [
+                  0.2320416079878505,
+                  0.26710227765548483,
+                  0.2901228607244017,
+                  0.2956248069024206,
+                  0.28932212539165564,
+                  0.267415308244584,
+                  0.22056357954562333
+                ],
+                "gamma_y": [
+                  -2.0,
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5,
+                  2.0
+                ]
+              }
+            ],
+            "nonlinear": {
+              "success": true,
+              "message": "`xtol` termination condition is satisfied.",
+              "nfev": 4
+            },
+            "quadrature_order": 3,
+            "te_jump": {
+              "main_wing": {
+                "status": "pass",
+                "condition": "potential_jump_compatibility_only_not_pressure_kutta",
+                "partition_aligned": true,
+                "gamma_knots_inside_te_edges": [
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5
+                ],
+                "nodal_residual": [
+                  0.0,
+                  -5.551115123125783e-17,
+                  -5.551115123125783e-17,
+                  5.551115123125783e-17,
+                  -5.551115123125783e-17,
+                  1.6653345369377348e-16,
+                  -1.6653345369377348e-16,
+                  0.0,
+                  0.0
+                ],
+                "nodal_residual_max": 1.6653345369377348e-16,
+                "jump_integral": 0.9310962832260102,
+                "gamma_integral": 0.9310962832260103,
+                "integral_residual": -5.551115123125783e-17,
+                "integral_residual_normalized": -1.3877787807814457e-17,
+                "l2_residual": 1.2617852778345905e-16,
+                "l2_rms": 6.308926389172953e-17,
+                "max_abs_residual": 1.6653345369377348e-16,
+                "weak_moment_linf": 4.163336342344337e-17,
+                "integral_alone_can_hide_cancellation": false,
+                "edges": [
+                  {
+                    "y0": -2.0,
+                    "y1": -1.5,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.5,
+                    "y1": -1.0,
+                    "integral_residual": -2.7755575615628914e-17,
+                    "l2_rms": 5.551115123125783e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.0,
+                    "y1": -0.5,
+                    "integral_residual": 0.0,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -0.5,
+                    "y1": 0.0,
+                    "integral_residual": 0.0,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.0,
+                    "y1": 0.5,
+                    "integral_residual": 2.7755575615628914e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.5,
+                    "y1": 1.0,
+                    "integral_residual": 0.0,
+                    "l2_rms": 9.614813431917819e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.0,
+                    "y1": 1.5,
+                    "integral_residual": -4.163336342344337e-17,
+                    "l2_rms": 9.614813431917819e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.5,
+                    "y1": 2.0,
+                    "integral_residual": 0.0,
+                    "l2_rms": 0.0,
+                    "max_abs_residual": 0.0,
+                    "gamma_knot_inside": false
+                  }
+                ],
+                "physical_accuracy_accepted": false
+              }
+            }
+          },
+          "state_delta": {
+            "mu_l2": 2.1590773753539465,
+            "gamma_l2": 1.4236799585618845
+          },
+          "fixed_point_velocity": {
+            "points": [
+              [
+                0.25,
+                0.0,
+                0.12
+              ],
+              [
+                0.5,
+                0.0,
+                0.12
+              ],
+              [
+                0.75,
+                0.0,
+                0.12
+              ]
+            ],
+            "step_sensitivity": {
+              "0.0005": {
+                "collocation": [
+                  [
+                    1.1382661921654538,
+                    0.004080611874906122,
+                    0.07484354259325772
+                  ],
+                  [
+                    1.063730251758932,
+                    0.0067969563435354985,
+                    -0.04851907578451442
+                  ],
+                  [
+                    0.92369707264676,
+                    0.009499418271219362,
+                    -0.07714703961675395
+                  ]
+                ],
+                "galerkin": [
+                  [
+                    1.2793163750560166,
+                    -0.00012504803316900256,
+                    0.09458838115762129
+                  ],
+                  [
+                    1.2070762667899526,
+                    -0.0002052225095231878,
+                    -0.058281334300192
+                  ],
+                  [
+                    1.0991695585260697,
+                    -0.0002731041178390588,
+                    -0.12242042040220649
+                  ]
+                ],
+                "delta_l2": 0.27190234836463045,
+                "delta_linf": 0.17547248587930964
+              },
+              "0.00025": {
+                "collocation": [
+                  [
+                    1.1382661921333637,
+                    0.004080611875660149,
+                    0.07484354257653036
+                  ],
+                  [
+                    1.0637302517641316,
+                    0.00679695634423864,
+                    -0.048519075822632075
+                  ],
+                  [
+                    0.923697072651423,
+                    0.009499418271182355,
+                    -0.07714703961758662
+                  ]
+                ],
+                "galerkin": [
+                  [
+                    1.2793163750363101,
+                    -0.00012504803285443936,
+                    0.09458838114247599
+                  ],
+                  [
+                    1.2070762668046446,
+                    -0.00020522251028184021,
+                    -0.058281334318362646
+                  ],
+                  [
+                    1.099169558526773,
+                    -0.00027310411843117777,
+                    -0.12242042040144785
+                  ]
+                ],
+                "delta_l2": 0.27190234837270166,
+                "delta_linf": 0.17547248587534992
+              }
+            }
+          }
+        },
+        {
+          "kutta": "signed_speed",
+          "collocation": {
+            "status": "linear_constrained_least_squares_solved",
+            "CL": -0.449960916063945,
+            "CL_gamma": -0.4505536299549051,
+            "CD_pressure": -0.061001777334774146,
+            "CM_y": 0.38515050560491965,
+            "wall_rms": 0.0014833903105377416,
+            "jump_rms": 2.220446049250313e-16,
+            "signed_kutta_rms": 3.7212752812819024e-14,
+            "pressure_kutta_rms": 0.04098801485732931,
+            "group_results": [
+              {
+                "name": "main_wing",
+                "CL_pressure": -0.449960916063945,
+                "CL_gamma": -0.4505536299549051,
+                "gamma": [
+                  -0.4464436891427498,
+                  -0.28755320424636227,
+                  -0.18669341337183853,
+                  -0.1421067260754531,
+                  -0.15873008270714434,
+                  -0.08545721221304016,
+                  -0.4952301920630322
+                ],
+                "gamma_y": [
+                  -2.0,
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5,
+                  2.0
+                ],
+                "Gamma_integral": -0.9011072599098102,
+                "wall_faces": 576,
+                "wake_triangles": 32
+              }
+            ],
+            "nonlinear": null,
+            "te_jump": {
+              "main_wing": {
+                "status": "pass",
+                "condition": "potential_jump_compatibility_only_not_pressure_kutta",
+                "partition_aligned": true,
+                "gamma_knots_inside_te_edges": [
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5
+                ],
+                "nodal_residual": [
+                  0.0,
+                  1.1102230246251565e-16,
+                  5.551115123125783e-17,
+                  4.440892098500626e-16,
+                  -5.551115123125783e-17,
+                  5.551115123125783e-17,
+                  2.3592239273284576e-16,
+                  2.220446049250313e-16,
+                  0.0
+                ],
+                "nodal_residual_max": 4.440892098500626e-16,
+                "jump_integral": -0.9011072599098097,
+                "gamma_integral": -0.9011072599098102,
+                "integral_residual": 5.342948306008566e-16,
+                "integral_residual_normalized": 1.3357370765021415e-16,
+                "l2_residual": 3.454612263151911e-16,
+                "l2_rms": 1.7273061315759555e-16,
+                "max_abs_residual": 4.440892098500626e-16,
+                "weak_moment_linf": 1.4802973661668756e-16,
+                "integral_alone_can_hide_cancellation": false,
+                "edges": [
+                  {
+                    "y0": -2.0,
+                    "y1": -1.5,
+                    "integral_residual": 2.7755575615628914e-17,
+                    "l2_rms": 6.409875621278546e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.5,
+                    "y1": -1.0,
+                    "integral_residual": 4.163336342344337e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.0,
+                    "y1": -0.5,
+                    "integral_residual": 1.249000902703301e-16,
+                    "l2_rms": 2.7383000657611717e-16,
+                    "max_abs_residual": 4.440892098500626e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -0.5,
+                    "y1": 0.0,
+                    "integral_residual": 9.71445146547012e-17,
+                    "l2_rms": 2.4196749845665633e-16,
+                    "max_abs_residual": 4.440892098500626e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.0,
+                    "y1": 0.5,
+                    "integral_residual": 0.0,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.5,
+                    "y1": 1.0,
+                    "integral_residual": 7.28583859910259e-17,
+                    "l2_rms": 1.547440757354369e-16,
+                    "max_abs_residual": 2.3592239273284576e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.0,
+                    "y1": 1.5,
+                    "integral_residual": 1.1449174941446927e-16,
+                    "l2_rms": 2.2901854106632004e-16,
+                    "max_abs_residual": 2.3592239273284576e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.5,
+                    "y1": 2.0,
+                    "integral_residual": 5.551115123125783e-17,
+                    "l2_rms": 1.2819751242557092e-16,
+                    "max_abs_residual": 2.220446049250313e-16,
+                    "gamma_knot_inside": false
+                  }
+                ],
+                "physical_accuracy_accepted": false
+              }
+            }
+          },
+          "galerkin": {
+            "status": "linear_constrained_least_squares_solved",
+            "CL": 0.4619293422406764,
+            "CL_gamma": 0.46934800064543436,
+            "CD_pressure": 0.017675899961330673,
+            "CM_y": -0.15657400937830213,
+            "wall_rms": 5.0255211676551025e-09,
+            "wall_dual_rms": 1.5105217077504706e-07,
+            "jump_rms": 1.7803175061665246e-16,
+            "signed_kutta_rms": 3.1776437161565096e-14,
+            "pressure_kutta_rms": 0.03327371880580008,
+            "group_results": [
+              {
+                "name": "main_wing",
+                "CL_pressure": 0.4619293422406764,
+                "CL_gamma": 0.46934800064543436,
+                "Gamma_integral": 0.9386960012908687,
+                "gamma": [
+                  0.23407863113947514,
+                  0.2692961680897256,
+                  0.29237262097066324,
+                  0.2979040978193428,
+                  0.2915677273197461,
+                  0.2695724447030906,
+                  0.22260031253969406
+                ],
+                "gamma_y": [
+                  -2.0,
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5,
+                  2.0
+                ]
+              }
+            ],
+            "nonlinear": null,
+            "quadrature_order": 3,
+            "te_jump": {
+              "main_wing": {
+                "status": "pass",
+                "condition": "potential_jump_compatibility_only_not_pressure_kutta",
+                "partition_aligned": true,
+                "gamma_knots_inside_te_edges": [
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5
+                ],
+                "nodal_residual": [
+                  0.0,
+                  0.0,
+                  2.7755575615628914e-16,
+                  -5.551115123125783e-17,
+                  0.0,
+                  2.220446049250313e-16,
+                  3.3306690738754696e-16,
+                  8.326672684688674e-17,
+                  0.0
+                ],
+                "nodal_residual_max": 3.3306690738754696e-16,
+                "jump_integral": 0.9386960012908692,
+                "gamma_integral": 0.9386960012908687,
+                "integral_residual": 4.3021142204224816e-16,
+                "integral_residual_normalized": 1.0755285551056204e-16,
+                "l2_residual": 3.1114318012430395e-16,
+                "l2_rms": 1.5557159006215198e-16,
+                "max_abs_residual": 3.3306690738754696e-16,
+                "weak_moment_linf": 1.364649134435088e-16,
+                "integral_alone_can_hide_cancellation": false,
+                "edges": [
+                  {
+                    "y0": -2.0,
+                    "y1": -1.5,
+                    "integral_residual": 0.0,
+                    "l2_rms": 0.0,
+                    "max_abs_residual": 0.0,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.5,
+                    "y1": -1.0,
+                    "integral_residual": 6.938893903907228e-17,
+                    "l2_rms": 1.6024689053196368e-16,
+                    "max_abs_residual": 2.7755575615628914e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.0,
+                    "y1": -0.5,
+                    "integral_residual": 5.551115123125783e-17,
+                    "l2_rms": 1.4686870114880517e-16,
+                    "max_abs_residual": 2.7755575615628914e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -0.5,
+                    "y1": 0.0,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.0,
+                    "y1": 0.5,
+                    "integral_residual": 5.551115123125783e-17,
+                    "l2_rms": 1.2819751242557092e-16,
+                    "max_abs_residual": 2.220446049250313e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.5,
+                    "y1": 1.0,
+                    "integral_residual": 1.3877787807814457e-16,
+                    "l2_rms": 2.7940000073818173e-16,
+                    "max_abs_residual": 3.3306690738754696e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.0,
+                    "y1": 1.5,
+                    "integral_residual": 1.0408340855860843e-16,
+                    "l2_rms": 2.2030305172320775e-16,
+                    "max_abs_residual": 3.3306690738754696e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.5,
+                    "y1": 2.0,
+                    "integral_residual": 2.0816681711721685e-17,
+                    "l2_rms": 4.8074067159589095e-17,
+                    "max_abs_residual": 8.326672684688674e-17,
+                    "gamma_knot_inside": false
+                  }
+                ],
+                "physical_accuracy_accepted": false
+              }
+            }
+          },
+          "state_delta": {
+            "mu_l2": 2.166770208387831,
+            "gamma_l2": 1.4284258645872492
+          },
+          "fixed_point_velocity": {
+            "points": [
+              [
+                0.25,
+                0.0,
+                0.12
+              ],
+              [
+                0.5,
+                0.0,
+                0.12
+              ],
+              [
+                0.75,
+                0.0,
+                0.12
+              ]
+            ],
+            "step_sensitivity": {
+              "0.0005": {
+                "collocation": [
+                  [
+                    1.138268436996978,
+                    0.004070663942631891,
+                    0.07495430101676452
+                  ],
+                  [
+                    1.0636968199137324,
+                    0.006793488497007043,
+                    -0.04839672705514442
+                  ],
+                  [
+                    0.9237211569070128,
+                    0.009526505949893535,
+                    -0.07717341862066111
+                  ]
+                ],
+                "galerkin": [
+                  [
+                    1.2799951128087683,
+                    -0.00012613859697493032,
+                    0.09464235878565523
+                  ],
+                  [
+                    1.2077988981705385,
+                    -0.00020694187674585862,
+                    -0.05835302799976164
+                  ],
+                  [
+                    1.100090836194223,
+                    -0.0002754468287347045,
+                    -0.12267508721062562
+                  ]
+                ],
+                "delta_l2": 0.27327270301549506,
+                "delta_linf": 0.17636967928721015
+              },
+              "0.00025": {
+                "collocation": [
+                  [
+                    1.1382684369648788,
+                    0.004070663943515444,
+                    0.07495430100002791
+                  ],
+                  [
+                    1.0636968199188024,
+                    0.006793488497784199,
+                    -0.048396727092892
+                  ],
+                  [
+                    0.9237211569109727,
+                    0.009526505948949845,
+                    -0.07717341862182685
+                  ]
+                ],
+                "galerkin": [
+                  [
+                    1.2799951127890896,
+                    -0.00012613859690091545,
+                    0.09464235877019538
+                  ],
+                  [
+                    1.2077988981860448,
+                    -0.00020694187730097013,
+                    -0.05835302801704412
+                  ],
+                  [
+                    1.1000908361951112,
+                    -0.0002754468287532082,
+                    -0.12267508721068113
+                  ]
+                ],
+                "delta_l2": 0.27327270302463236,
+                "delta_linf": 0.1763696792841385
+              }
+            }
+          }
+        }
+      ],
+      "errors": [],
+      "wall_faces": 576,
+      "wall_dofs": 297,
+      "gamma_dofs": 7,
+      "galerkin_quadrature_order": 3
+    },
+    {
+      "chord_panels": 24,
+      "results": [
+        {
+          "kutta": "pressure",
+          "collocation": {
+            "status": "iteration_limit_not_converged",
+            "CL": -0.7404716966398147,
+            "CL_gamma": -0.7429358620845037,
+            "CD_pressure": -0.09421946602291106,
+            "CM_y": 0.5578346558615512,
+            "wall_rms": 0.0014591826278145237,
+            "jump_rms": 1.18687833744435e-16,
+            "signed_kutta_rms": 0.2536158311575262,
+            "pressure_kutta_rms": 5.546267842565293e-06,
+            "group_results": [
+              {
+                "name": "main_wing",
+                "CL_pressure": -0.7404716966398147,
+                "CL_gamma": -0.7429358620845037,
+                "gamma": [
+                  -0.592062533178926,
+                  -0.500172792458123,
+                  -0.4904597698449921,
+                  -0.28375134284680026,
+                  -0.37128317295077745,
+                  -0.1698430256539449,
+                  -0.564170811404451
+                ],
+                "gamma_y": [
+                  -2.0,
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5,
+                  2.0
+                ],
+                "Gamma_integral": -1.4858717241690074,
+                "wall_faces": 864,
+                "wake_triangles": 32
+              }
+            ],
+            "nonlinear": {
+              "success": false,
+              "message": "The maximum number of function evaluations is exceeded.",
+              "nfev": 80
+            },
+            "te_jump": {
+              "main_wing": {
+                "status": "pass",
+                "condition": "potential_jump_compatibility_only_not_pressure_kutta",
+                "partition_aligned": true,
+                "gamma_knots_inside_te_edges": [
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5
+                ],
+                "nodal_residual": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  -5.551115123125783e-17,
+                  -1.1102230246251565e-16,
+                  1.6653345369377348e-16,
+                  -2.7755575615628914e-17,
+                  -1.1102230246251565e-16,
+                  0.0
+                ],
+                "nodal_residual_max": 1.6653345369377348e-16,
+                "jump_integral": -1.4858717241690074,
+                "gamma_integral": -1.4858717241690074,
+                "integral_residual": -6.938893903907228e-17,
+                "integral_residual_normalized": -1.734723475976807e-17,
+                "l2_residual": 1.2819751242557095e-16,
+                "l2_rms": 6.409875621278547e-17,
+                "max_abs_residual": 1.6653345369377348e-16,
+                "weak_moment_linf": 4.394632805807911e-17,
+                "integral_alone_can_hide_cancellation": false,
+                "edges": [
+                  {
+                    "y0": -2.0,
+                    "y1": -1.5,
+                    "integral_residual": 0.0,
+                    "l2_rms": 0.0,
+                    "max_abs_residual": 0.0,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.5,
+                    "y1": -1.0,
+                    "integral_residual": 0.0,
+                    "l2_rms": 0.0,
+                    "max_abs_residual": 0.0,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.0,
+                    "y1": -0.5,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -0.5,
+                    "y1": 0.0,
+                    "integral_residual": -4.163336342344337e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.0,
+                    "y1": 0.5,
+                    "integral_residual": 1.3877787807814457e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.5,
+                    "y1": 1.0,
+                    "integral_residual": 3.469446951953614e-17,
+                    "l2_rms": 8.92216926358191e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.0,
+                    "y1": 1.5,
+                    "integral_residual": -3.469446951953614e-17,
+                    "l2_rms": 7.343435057440258e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.5,
+                    "y1": 2.0,
+                    "integral_residual": -2.7755575615628914e-17,
+                    "l2_rms": 6.409875621278546e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  }
+                ],
+                "physical_accuracy_accepted": false
+              }
+            }
+          },
+          "galerkin": {
+            "status": "linear_constrained_least_squares_solved",
+            "CL": 0.46235028526550925,
+            "CL_gamma": 0.47010872797769865,
+            "CD_pressure": 0.016992340868467116,
+            "CM_y": -0.15685517919194666,
+            "wall_rms": 1.4943135016944175e-09,
+            "wall_dual_rms": 6.726851721722734e-08,
+            "jump_rms": 1.0278667914282461e-16,
+            "signed_kutta_rms": 0.019817965874035188,
+            "pressure_kutta_rms": 4.097212925468844e-14,
+            "group_results": [
+              {
+                "name": "main_wing",
+                "CL_pressure": 0.46235028526550925,
+                "CL_gamma": 0.47010872797769865,
+                "Gamma_integral": 0.9402174559553973,
+                "gamma": [
+                  0.23858801351161035,
+                  0.26846542759124375,
+                  0.2919269943656238,
+                  0.2972686680948472,
+                  0.2909460508874997,
+                  0.2688166733347268,
+                  0.22442308412524298
+                ],
+                "gamma_y": [
+                  -2.0,
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5,
+                  2.0
+                ]
+              }
+            ],
+            "nonlinear": {
+              "success": true,
+              "message": "`xtol` termination condition is satisfied.",
+              "nfev": 4
+            },
+            "quadrature_order": 3,
+            "te_jump": {
+              "main_wing": {
+                "status": "pass",
+                "condition": "potential_jump_compatibility_only_not_pressure_kutta",
+                "partition_aligned": true,
+                "gamma_knots_inside_te_edges": [
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5
+                ],
+                "nodal_residual": [
+                  0.0,
+                  -5.551115123125783e-17,
+                  5.551115123125783e-17,
+                  -5.551115123125783e-17,
+                  0.0,
+                  1.1102230246251565e-16,
+                  0.0,
+                  -1.6653345369377348e-16,
+                  0.0
+                ],
+                "nodal_residual_max": 1.6653345369377348e-16,
+                "jump_integral": 0.9402174559553972,
+                "gamma_integral": 0.9402174559553973,
+                "integral_residual": -5.551115123125783e-17,
+                "integral_residual_normalized": -1.3877787807814457e-17,
+                "l2_residual": 1.2412670766236366e-16,
+                "l2_rms": 6.206335383118183e-17,
+                "max_abs_residual": 1.6653345369377348e-16,
+                "weak_moment_linf": 5.551115123125783e-17,
+                "integral_alone_can_hide_cancellation": false,
+                "edges": [
+                  {
+                    "y0": -2.0,
+                    "y1": -1.5,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.5,
+                    "y1": -1.0,
+                    "integral_residual": 0.0,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.0,
+                    "y1": -0.5,
+                    "integral_residual": 0.0,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -0.5,
+                    "y1": 0.0,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.0,
+                    "y1": 0.5,
+                    "integral_residual": 2.7755575615628914e-17,
+                    "l2_rms": 6.409875621278546e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.5,
+                    "y1": 1.0,
+                    "integral_residual": 2.7755575615628914e-17,
+                    "l2_rms": 6.409875621278546e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.0,
+                    "y1": 1.5,
+                    "integral_residual": -4.163336342344337e-17,
+                    "l2_rms": 9.614813431917819e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.5,
+                    "y1": 2.0,
+                    "integral_residual": -4.163336342344337e-17,
+                    "l2_rms": 9.614813431917819e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  }
+                ],
+                "physical_accuracy_accepted": false
+              }
+            }
+          },
+          "state_delta": {
+            "mu_l2": 3.396766389888173,
+            "gamma_l2": 1.8663731016207648
+          },
+          "fixed_point_velocity": {
+            "points": [
+              [
+                0.25,
+                0.0,
+                0.12
+              ],
+              [
+                0.5,
+                0.0,
+                0.12
+              ],
+              [
+                0.75,
+                0.0,
+                0.12
+              ]
+            ],
+            "step_sensitivity": {
+              "0.0005": {
+                "collocation": [
+                  [
+                    1.0792767776741836,
+                    0.009229863723555129,
+                    0.07084463672288784
+                  ],
+                  [
+                    0.9974305124991848,
+                    0.01704272014153389,
+                    -0.03848458179969705
+                  ],
+                  [
+                    0.8559171831241663,
+                    0.027329204947764325,
+                    -0.06284748534048552
+                  ]
+                ],
+                "galerkin": [
+                  [
+                    1.2806737722526513,
+                    -0.00014267839100005433,
+                    0.09445259529972105
+                  ],
+                  [
+                    1.2073524683946883,
+                    -0.00023214963686587115,
+                    -0.05850039977595145
+                  ],
+                  [
+                    1.0996913810381777,
+                    -0.0003055242398149656,
+                    -0.12290355411838834
+                  ]
+                ],
+                "delta_l2": 0.3869993288936733,
+                "delta_linf": 0.24377419791401134
+              },
+              "0.00025": {
+                "collocation": [
+                  [
+                    1.079276777691346,
+                    0.009229863724008469,
+                    0.07084463664401112
+                  ],
+                  [
+                    0.9974305125149407,
+                    0.017042720144762786,
+                    -0.0384845817976894
+                  ],
+                  [
+                    0.8559171831240553,
+                    0.027329204947708814,
+                    -0.06284748534316857
+                  ]
+                ],
+                "galerkin": [
+                  [
+                    1.2806737722682593,
+                    -0.00014267839117583966,
+                    0.09445259529046919
+                  ],
+                  [
+                    1.207352468403496,
+                    -0.00023214963699539717,
+                    -0.05850039978746076
+                  ],
+                  [
+                    1.0996913810404907,
+                    -0.00030552423927835787,
+                    -0.12290355412022021
+                  ]
+                ],
+                "delta_l2": 0.3869993288955595,
+                "delta_linf": 0.2437741979164354
+              }
+            }
+          }
+        },
+        {
+          "kutta": "signed_speed",
+          "collocation": {
+            "status": "linear_constrained_least_squares_solved",
+            "CL": -0.7410757529621533,
+            "CL_gamma": -0.7427434746840376,
+            "CD_pressure": -0.09393802089641244,
+            "CM_y": 0.5584158697586605,
+            "wall_rms": 0.0014597715812678352,
+            "jump_rms": 2.220446049250313e-16,
+            "signed_kutta_rms": 2.842170943040401e-14,
+            "pressure_kutta_rms": 0.03770734680398684,
+            "group_results": [
+              {
+                "name": "main_wing",
+                "CL_pressure": -0.7410757529621533,
+                "CL_gamma": -0.7427434746840376,
+                "gamma": [
+                  -0.5920951594513035,
+                  -0.5001493370657211,
+                  -0.4904447558552124,
+                  -0.28374759917314624,
+                  -0.3712608854460436,
+                  -0.16982116728148422,
+                  -0.5634549944632388
+                ],
+                "gamma_y": [
+                  -2.0,
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5,
+                  2.0
+                ],
+                "Gamma_integral": -1.4854869493680751,
+                "wall_faces": 864,
+                "wake_triangles": 32
+              }
+            ],
+            "nonlinear": null,
+            "te_jump": {
+              "main_wing": {
+                "status": "pass",
+                "condition": "potential_jump_compatibility_only_not_pressure_kutta",
+                "partition_aligned": true,
+                "gamma_knots_inside_te_edges": [
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5
+                ],
+                "nodal_residual": [
+                  0.0,
+                  -2.220446049250313e-16,
+                  -1.1102230246251565e-16,
+                  -2.220446049250313e-16,
+                  1.6653345369377348e-16,
+                  -1.6653345369377348e-16,
+                  1.1102230246251565e-16,
+                  2.220446049250313e-16,
+                  0.0
+                ],
+                "nodal_residual_max": 2.220446049250313e-16,
+                "jump_integral": -1.485486949368075,
+                "gamma_integral": -1.4854869493680751,
+                "integral_residual": -1.1102230246251565e-16,
+                "integral_residual_normalized": -2.7755575615628914e-17,
+                "l2_residual": 2.7289062128071225e-16,
+                "l2_rms": 1.3644531064035612e-16,
+                "max_abs_residual": 2.220446049250313e-16,
+                "weak_moment_linf": 8.326672684688674e-17,
+                "integral_alone_can_hide_cancellation": false,
+                "edges": [
+                  {
+                    "y0": -2.0,
+                    "y1": -1.5,
+                    "integral_residual": -5.551115123125783e-17,
+                    "l2_rms": 1.2819751242557092e-16,
+                    "max_abs_residual": 2.220446049250313e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.5,
+                    "y1": -1.0,
+                    "integral_residual": -8.326672684688674e-17,
+                    "l2_rms": 1.6958936828758672e-16,
+                    "max_abs_residual": 2.220446049250313e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.0,
+                    "y1": -0.5,
+                    "integral_residual": -8.326672684688674e-17,
+                    "l2_rms": 1.6958936828758672e-16,
+                    "max_abs_residual": 2.220446049250313e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -0.5,
+                    "y1": 0.0,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 1.1555567610933196e-16,
+                    "max_abs_residual": 2.220446049250313e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.0,
+                    "y1": 0.5,
+                    "integral_residual": 0.0,
+                    "l2_rms": 9.614813431917819e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.5,
+                    "y1": 1.0,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 8.479468414379336e-17,
+                    "max_abs_residual": 1.6653345369377348e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.0,
+                    "y1": 1.5,
+                    "integral_residual": 8.326672684688674e-17,
+                    "l2_rms": 1.6958936828758672e-16,
+                    "max_abs_residual": 2.220446049250313e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.5,
+                    "y1": 2.0,
+                    "integral_residual": 5.551115123125783e-17,
+                    "l2_rms": 1.2819751242557092e-16,
+                    "max_abs_residual": 2.220446049250313e-16,
+                    "gamma_knot_inside": false
+                  }
+                ],
+                "physical_accuracy_accepted": false
+              }
+            }
+          },
+          "galerkin": {
+            "status": "linear_constrained_least_squares_solved",
+            "CL": 0.4648423899233706,
+            "CL_gamma": 0.4726388590860326,
+            "CD_pressure": 0.01719728430833575,
+            "CM_y": -0.1583344027836711,
+            "wall_rms": 1.4286419572676293e-09,
+            "wall_dual_rms": 6.463733186225796e-08,
+            "jump_rms": 1.4536231567507431e-16,
+            "signed_kutta_rms": 5.0386305498927774e-14,
+            "pressure_kutta_rms": 0.031611487580986745,
+            "group_results": [
+              {
+                "name": "main_wing",
+                "CL_pressure": 0.4648423899233706,
+                "CL_gamma": 0.4726388590860326,
+                "Gamma_integral": 0.9452777181720652,
+                "gamma": [
+                  0.2399815955538562,
+                  0.26991824707033446,
+                  0.29341697144996964,
+                  0.298776060065955,
+                  0.29243087986533556,
+                  0.27024802647843804,
+                  0.22578365586024157
+                ],
+                "gamma_y": [
+                  -2.0,
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5,
+                  2.0
+                ]
+              }
+            ],
+            "nonlinear": null,
+            "quadrature_order": 3,
+            "te_jump": {
+              "main_wing": {
+                "status": "pass",
+                "condition": "potential_jump_compatibility_only_not_pressure_kutta",
+                "partition_aligned": true,
+                "gamma_knots_inside_te_edges": [
+                  -1.5,
+                  -1.0,
+                  -0.5,
+                  0.0,
+                  0.5,
+                  1.0,
+                  1.5
+                ],
+                "nodal_residual": [
+                  0.0,
+                  -8.326672684688674e-17,
+                  5.551115123125783e-17,
+                  -5.551115123125783e-17,
+                  5.551115123125783e-17,
+                  -1.1102230246251565e-16,
+                  -3.3306690738754696e-16,
+                  -5.551115123125783e-17,
+                  0.0
+                ],
+                "nodal_residual_max": 3.3306690738754696e-16,
+                "jump_integral": 0.945277718172065,
+                "gamma_integral": 0.9452777181720652,
+                "integral_residual": -2.636779683484747e-16,
+                "integral_residual_normalized": -6.591949208711867e-17,
+                "l2_residual": 2.3221980631040627e-16,
+                "l2_rms": 1.1610990315520314e-16,
+                "max_abs_residual": 3.3306690738754696e-16,
+                "weak_moment_linf": 1.249000902703301e-16,
+                "integral_alone_can_hide_cancellation": false,
+                "edges": [
+                  {
+                    "y0": -2.0,
+                    "y1": -1.5,
+                    "integral_residual": -2.0816681711721685e-17,
+                    "l2_rms": 4.8074067159589095e-17,
+                    "max_abs_residual": 8.326672684688674e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.5,
+                    "y1": -1.0,
+                    "integral_residual": -6.938893903907228e-18,
+                    "l2_rms": 4.239734207189668e-17,
+                    "max_abs_residual": 8.326672684688674e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -1.0,
+                    "y1": -0.5,
+                    "integral_residual": 0.0,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": -0.5,
+                    "y1": 0.0,
+                    "integral_residual": 0.0,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.0,
+                    "y1": 0.5,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 5.551115123125783e-17,
+                    "max_abs_residual": 1.1102230246251565e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 0.5,
+                    "y1": 1.0,
+                    "integral_residual": -1.1102230246251565e-16,
+                    "l2_rms": 2.3111135221866393e-16,
+                    "max_abs_residual": 3.3306690738754696e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.0,
+                    "y1": 1.5,
+                    "integral_residual": -9.71445146547012e-17,
+                    "l2_rms": 2.101618266747808e-16,
+                    "max_abs_residual": 3.3306690738754696e-16,
+                    "gamma_knot_inside": false
+                  },
+                  {
+                    "y0": 1.5,
+                    "y1": 2.0,
+                    "integral_residual": -1.3877787807814457e-17,
+                    "l2_rms": 3.204937810639273e-17,
+                    "max_abs_residual": 5.551115123125783e-17,
+                    "gamma_knot_inside": false
+                  }
+                ],
+                "physical_accuracy_accepted": false
+              }
+            }
+          },
+          "state_delta": {
+            "mu_l2": 3.4038114272576556,
+            "gamma_l2": 1.8698059079132534
+          },
+          "fixed_point_velocity": {
+            "points": [
+              [
+                0.25,
+                0.0,
+                0.12
+              ],
+              [
+                0.5,
+                0.0,
+                0.12
+              ],
+              [
+                0.75,
+                0.0,
+                0.12
+              ]
+            ],
+            "step_sensitivity": {
+              "0.0005": {
+                "collocation": [
+                  [
+                    1.079281213820051,
+                    0.009231954151011265,
+                    0.07084950240073921
+                  ],
+                  [
+                    0.997431929344215,
+                    0.017045672025040037,
+                    -0.038478394581838625
+                  ],
+                  [
+                    0.855914340645969,
+                    0.02733219736041533,
+                    -0.06283645995190194
+                  ]
+                ],
+                "galerkin": [
+                  [
+                    1.281123185528828,
+                    -0.00014359883025264844,
+                    0.09448826784796971
+                  ],
+                  [
+                    1.2078299532942334,
+                    -0.00023363443516869845,
+                    -0.058547920049130855
+                  ],
+                  [
+                    1.1002993170629212,
+                    -0.0003075595766584745,
+                    -0.12307113425498913
+                  ]
+                ],
+                "delta_l2": 0.38790688494201137,
+                "delta_linf": 0.24438497641695212
+              },
+              "0.00025": {
+                "collocation": [
+                  [
+                    1.0792812138376573,
+                    0.009231954151404468,
+                    0.07084950232164045
+                  ],
+                  [
+                    0.997431929360452,
+                    0.017045672028074648,
+                    -0.038478394580709896
+                  ],
+                  [
+                    0.8559143406463576,
+                    0.027332197360729893,
+                    -0.06283645995449245
+                  ]
+                ],
+                "galerkin": [
+                  [
+                    1.2811231855439826,
+                    -0.00014359883071524138,
+                    0.09448826783838478
+                  ],
+                  [
+                    1.207829953301413,
+                    -0.00023363443461358693,
+                    -0.058547920060917726
+                  ],
+                  [
+                    1.100299317064383,
+                    -0.000307559576954534,
+                    -0.1230711342553592
+                  ]
+                ],
+                "delta_l2": 0.3879068849412333,
+                "delta_linf": 0.24438497641802548
+              }
+            }
+          }
+        }
+      ],
+      "errors": [],
+      "wall_faces": 864,
+      "wall_dofs": 441,
+      "gamma_dofs": 7,
+      "galerkin_quadrature_order": 3
+    }
+  ],
+  "seconds": 247.19163889999618,
+  "execution_errors": 0
+}
