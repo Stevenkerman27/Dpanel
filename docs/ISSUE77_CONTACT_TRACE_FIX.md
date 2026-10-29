@@ -48,3 +48,14 @@ Duplicate CAD test definitions were removed; an AST guard rejects future shadowe
     python -m tools.issue71.wake_contact_ab --variants fixed --methods signed_speed pressure --order 2 --max-nfev 20 --out runs/issue77_contact_fixed_both.json
 
 Local execution/review should verify the same results on the final PR head and merge through PR78. No additional test-only PR is required. Follow-up work is quadrature/grid refinement with the CORRECT contact trace space, additional contact-CAD cases, and then free-wake coupling. This finite set of runs fixes the identified topology defect; it does not establish all-geometry physical accuracy, zero body drag, or convergence of pressure drag under every refinement.
+
+## Follow-up review fixes on PR #78
+
+The independent review also found validation/reporting gaps. The latest tested code snapshot `f856a5f4f2b34aa9effd0714157e16a8e29958ec` closes them:
+
+- **91 regression tests passed in 2.91 s**. Five additional rejection-path tests cover a wake edge that is not a boundary, malformed bank orientation, branched cuts, open cut endpoints with nonzero Gamma support, and changed mirrored geometry. The existing missing-cut test covers the declared-vs-actual edge mismatch.
+- `contact_jump` is now recomputed and written into the CAD receipt for both Galerkin and collocation states; `mesh_input.trace_audit` and `trace_audit_by_group` record `split_nodes`, `contact_jump_rows`, `unsplit_zero_gamma_tips`, TE/contact edge counts and the fact that contact rows are not Kutta rows.
+- `pressure_load_diagnostic` and the CAD sweep use the same explicit null convention for undefined drag-cancellation ratios: `null` plus `no_drag_contributions` or `complete_cancellation`.
+- The duplicate-test-name AST guard remains active, and catastrophic-solution screening is centralized in `assess_solution`; the weak Gamma-column ratio remains diagnostic only.
+
+The new test suite initially caught a fixture-construction error (`np.r_` interprets strings as special directives); this was corrected by using `np.concatenate`. The final 91-test run is green. The two CAD solve jobs for this follow-up are being rerun on the same code snapshot; see the current Actions runs linked from PR #78 before merge. `physical_accuracy_accepted=false` remains intentional.
