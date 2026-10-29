@@ -173,7 +173,7 @@ def test_three_cut_fans_meeting_at_one_vertex_are_rejected():
     # Add a third conforming wall/wake cut on edge (0,2).
     w=np.vstack((w,[2,0,10]))
     e=np.vstack((e,[0,2]))
-    k=np.r_[k,"smooth_wall_contact"]
+    k=np.concatenate((k,np.array(["smooth_wall_contact"])))
     with pytest.raises(ValueError,match="Branched cut at vertex 2"):
         split_wall_trace_fans(x,f,w,e,k,h)
 
