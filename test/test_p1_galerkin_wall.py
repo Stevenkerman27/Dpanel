@@ -37,19 +37,17 @@ def test_galerkin_matrix_has_the_exact_P1_self_jump_mass_term():
     wing=make_wing(chord_panels=3,span_panels=3,wake_panels=1)
     mesh=_mesh_as_kernel(wing)
     f=0; tri=mesh.triangles[f]
-    # Degree-two exact 3-point rule on target triangle.
     bary=np.array([[2/3,1/6,1/6],[1/6,2/3,1/6],[1/6,1/6,2/3]])
     pts=bary@tri; weights=np.full(3,mesh.areas[f]/3)
-    D=_doublet_matrix(mesh.triangles,pts,self_faces=np.full(3,f),
-                      face_dofs=wing.dof_face,ndof=wing.ndof_mu)
-    local=np.zeros((3,wing.ndof_mu))
-    for k,dof in enumerate(wing.dof_face[f]):
+    # Isolate this source face so shared-node contributions from other faces
+    # cannot be mistaken for the local jump mass.
+    D=_doublet_matrix(tri[None],pts,self_faces=np.zeros(3,dtype=int),
+                      face_dofs=np.array([[0,1,2]]),ndof=3)
+    local=np.zeros((3,3))
+    for k in range(3):
         local[k]=np.sum((weights*bary[:,k])[:,None]*D,axis=0)
-    expected=np.zeros_like(local)
-    expected[:,wing.dof_face[f]]=-.5*(mesh.areas[f]/12)*np.array(
-        [[2,1,1],[1,2,1],[1,1,2]])
-    np.testing.assert_allclose(local[:,wing.dof_face[f]],expected[:,wing.dof_face[f]],atol=1e-14)
-
+    expected=-.5*(mesh.areas[f]/12)*np.array([[2,1,1],[1,2,1],[1,1,2]])
+    np.testing.assert_allclose(local,expected,atol=1e-14)
 
 def test_invalid_quadrature_order_is_rejected():
     from panel.p1_galerkin_wall import _duffy_rule
