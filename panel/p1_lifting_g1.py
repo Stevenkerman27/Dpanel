@@ -288,7 +288,14 @@ def from_dpanel_half_surface(path):
     if abs(clipped[-1]-te_tip)>tol:
         clipped=np.r_[clipped,te_tip]
     half_y=np.unique(clipped)
-    ys=np.r_[-half_y[:0:-1],half_y]
+    # If the actual half-wing TE root is off the symmetry plane, mirror
+    # that root station too. The usual [-half_y[1:], half_y] construction is
+    # only valid when half_y[0] == 0; otherwise it silently drops the negative
+    # root and creates an asymmetric Gamma space.
+    if abs(float(half_y[0]))<=tol:
+        ys=np.r_[-half_y[:0:-1],half_y]
+    else:
+        ys=np.r_[-half_y[::-1],half_y]
     if te_y[0]<ys[0]-tol or te_y[-1]>ys[-1]+tol:
         raise ValueError('TE nodes fall outside the clipped gamma station span')
     used_wall=np.unique(full_faces)
