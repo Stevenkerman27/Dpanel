@@ -96,3 +96,13 @@ Neumann wedge mode. test/test_p1_edge_singularity.py checks the crack limit,
 a 90-degree solid corner, exact no-penetration on both wedge faces, trace
 signs and input validation. These are analytical tests; they do not claim
 that the G1/G2 wing has already been enriched or that its CL has converged.
+
+## 6. Local measured traces: LE supports the mode; TE exposes a topology/discrete-space issue
+
+Local PR #74 receipt (G1 closed-body/no-cut/no-wake/Gamma=0, alpha=5 degrees, mid-span) reports the LE upper-minus-lower trace difference over x in [0.005,0.05] with fitted slopes +0.527 at c=16 and +0.447 at c=24. Each fit has only two points, so this is suggestive and not a robust exponent regression, but it is consistent with the common LE geometric vertex and the crack-limit r^(1/2) antisymmetric trace.
+
+The TE behaves differently: the upper-minus-lower trace remains approximately O(1) over the chord and collapses to zero only in the last chordwise cell, because the closed-body/no-cut mesh shares the geometric TE potential DOF. The inferred collapse width is one cell, so the gradient over that cell scales like O(1/h). This is evidence of a trial-space/topology mismatch for a lifting sharp TE in the no-cut control, not proof of a particular TE velocity exponent.
+
+The local report explicitly retracted velocity log-log slope as an acceptance quantity: fitting windows s<0.2 versus s in [0.02,0.15] changed the slope substantially and even changed its sign at some refinements. Use fixed physical off-surface points for field convergence; use potential trace shape and the declared local wedge model for singularity analysis. Do not fit an exponent to improve CL.
+
+Implication: a physical lifting TE must use a declared cut and a compatible Gamma jump space. Enrichment and cut topology are coupled, but the Galerkin baseline should first be validated without enrichment. Then add a cutoff r^lambda edge basis on each bank with independent coefficients and compare on the same frozen cut/wake.
