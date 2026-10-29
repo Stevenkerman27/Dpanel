@@ -15,6 +15,7 @@ import scipy
 from panel.p1_lifting_g1 import make_wing
 from panel.p1_lifting_g2 import combine_wings, assemble_multi, solve_multi
 from panel.p1_galerkin_solver import assemble_galerkin_multi, solve_galerkin_multi
+from panel.p1_te_jump_integral import audit_g2_group_te_jump
 
 
 def clean(x):
@@ -66,7 +67,8 @@ def run(a):
                     wall_rms=old["wall_rms"],jump_rms=old["jump_rms"],
                     signed_kutta_rms=old["signed_kutta_rms"],
                     pressure_kutta_rms=old["pressure_kutta_rms"],
-                    nonlinear=old["nonlinear"])
+                    nonlinear=old["nonlinear"],
+                    te_jump={g.name:audit_g2_group_te_jump(mesh,old,coll,g.name) for g in mesh.groups})
             except Exception as e:
                 row["collocation_error"]=repr(e)
             try:
@@ -77,7 +79,8 @@ def run(a):
                     wall_rms=new["wall_rms"],wall_dual_rms=new["wall_dual_rms"],
                     jump_rms=new["jump_rms"],signed_kutta_rms=new["signed_kutta_rms"],
                     pressure_kutta_rms=new["pressure_kutta_rms"],
-                    nonlinear=new["nonlinear"],quadrature_order=new["order"])
+                    nonlinear=new["nonlinear"],quadrature_order=new["order"],
+                    te_jump={g.name:audit_g2_group_te_jump(mesh,new,gal,g.name) for g in mesh.groups})
                 if "mu" in new:
                     row["state_delta"]={"mu_l2":float(np.linalg.norm(new["mu"]-old["mu"]))
                                         if "collocation" in row else None,
