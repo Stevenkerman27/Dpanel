@@ -1,0 +1,81 @@
+name: Galerkin and CAD validation
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - "panel/p1_galerkin_wall.py"
+      - "panel/p1_galerkin_solver.py"
+      - "panel/p1_lifting_g1.py"
+      - "panel/p1_te_jump_integral.py"
+      - "tools/issue71/galerkin_cad_sweep.py"
+      - "test/test_p1_galerkin_*.py"
+      - "test/test_p1_te_jump_integral.py"
+      - "test/test_p1_edge_singularity.py"
+      - "test/test_p1_te_trace_audit.py"
+      - ".github/workflows/galerkin-cad-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install numerical test dependencies
+        run: python -m pip install --upgrade numpy scipy pytest
+      - name: Run complete Galerkin/TE/edge/G1/G2 suite
+        run: >
+          python -m pytest
+          test/test_p1_edge_singularity.py
+          test/test_p1_te_trace_audit.py
+          test/test_p1_te_jump_integral.py
+          test/test_p1_galerkin_wall.py
+          test/test_p1_galerkin_solver.py
+          test/test_p1_galerkin_cad.py
+          test/test_p1_lifting_g1.py
+          test/test_p1_lifting_g2.py
+          -q
+
+  cad-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      PYTHONPATH: .
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install numerical dependencies
+        run: python -m pip install --upgrade numpy scipy pytest
+      - name: Run four CAD-derived full-span models
+        run: >
+          python tools/issue71/galerkin_cad_sweep.py
+          --models elliptic_s075 conv_s075 swept30_s075 bwb_s055
+          --methods signed_speed
+          --order 2 --max-nfev 80
+          --out runs/issue71_cad_solve_ci.json
+      - name: Upload CAD receipts even after a failed model
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: galerkin-cad-validation
+          path: runs/issue71_cad_solve_ci.json
+          if-no-files-found: warn
