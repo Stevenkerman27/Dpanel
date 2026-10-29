@@ -71,3 +71,28 @@ def test_galerkin_operator_is_finite_at_two_quadrature_orders():
     a3=assemble_galerkin_wall(wing,order=3,include_wake=False)
     assert np.isfinite(a2["A"]).all() and np.isfinite(a3["A"]).all()
     assert np.linalg.norm(a3["A"]-a2["A"])<np.linalg.norm(a2["A"])*2.
+
+
+def test_batched_wall_assembly_matches_original_per_face_quadrature():
+    from panel.p1_lifting_g1 import make_wing, _doublet_matrix, _mesh_as_kernel
+    from panel.p1_galerkin_wall import _duffy_rule
+    wing=make_wing(chord_panels=3,span_panels=3,wake_panels=1)
+    mesh=_mesh_as_kernel(wing);bary,qw=_duffy_rule(2)
+    n=wing.ndof_mu;A=np.zeros((n,n));W=np.zeros((n,wing.gamma_hat.shape[1]));b=np.zeros(n)
+    wake_tris=wing.wake_xyz[wing.wake_faces]
+    for f in range(len(wing.faces)):
+        pts=bary@mesh.triangles[f];weights=2*mesh.areas[f]*qw
+        D=_doublet_matrix(mesh.triangles,pts,self_faces=np.full(len(pts),f),
+                          face_dofs=wing.dof_face,ndof=n,block=64)
+        Dw=_doublet_matrix(wake_tris,pts,face_dofs=wing.wake_faces,
+                           ndof=len(wing.wake_xyz),block=64)@wing.gamma_hat
+        for k,row in enumerate(wing.dof_face[f]):
+            wk=weights*bary[:,k]
+            A[row]+=wk@D
+            W[row]+=wk@Dw
+            b[row]-=np.dot(wk,pts@np.array([.8,0.,.6]))
+    fast=assemble_galerkin_wall(wing,freestream=(.8,0.,.6),order=2,
+                                target_face_batch=5,block=128)
+    np.testing.assert_allclose(fast["A"],A,rtol=2e-12,atol=2e-12)
+    np.testing.assert_allclose(fast["W"],W,rtol=2e-12,atol=2e-12)
+    np.testing.assert_allclose(fast["b"],b,rtol=2e-12,atol=2e-12)
