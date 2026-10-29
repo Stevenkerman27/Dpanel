@@ -12,7 +12,7 @@ from scipy.optimize import least_squares
 
 from .p1_lifting_g1 import _doublet_matrix
 from .p1_lifting_g2 import _mesh, assemble_multi
-from .p1_galerkin_wall import _duffy_rule
+from .p1_galerkin_wall import _duffy_rule, _assemble_batched
 
 
 def _mass_from_arrays(dof_face, areas, ndof):
@@ -23,57 +23,51 @@ def _mass_from_arrays(dof_face, areas, ndof):
     return M
 
 
-def assemble_galerkin_multi(mesh, *, order=3, block=32):
-    """Assemble weak wall A_G, wake W_G, mass M and freestream moments b_xyz."""
+def assemble_galerkin_multi(mesh, *, order=3, block=2048, target_face_batch=64):
+    """Assemble weak wall A_G, wake W_G, exact mass M and RHS moments.
+
+    Target faces are batched; all lifting-group wakes are concatenated into one
+    source sheet with block-diagonal Gamma interpolation, avoiding one analytic
+    source-kernel traversal per wake group and target face.
+    """
     if not isinstance(block,int) or block<1:
         raise ValueError("block must be a positive integer")
+    if not isinstance(target_face_batch,int) or target_face_batch<1:
+        raise ValueError("target_face_batch must be a positive integer")
     bary,qweights=_duffy_rule(order)
     base=assemble_multi(mesh)
-    ms=base["mesh"]
-    tris=ms.triangles
-    nface=len(mesh.faces);nm=int(mesh.ndof_mu)
-    groups=mesh.groups
+    ms=base["mesh"];tris=ms.triangles
+    nm=int(mesh.ndof_mu);groups=mesh.groups
     ngs=[int(g.gamma_hat.shape[1]) for g in groups]
-    ng=sum(ngs)
-    slices={};offset=0
+    ng=sum(ngs);slices={};offset=0
     for g,n in zip(groups,ngs):
         slices[g.name]=slice(offset,offset+n);offset+=n
-    A=np.zeros((nm,nm));W=np.zeros((nm,ng));bxyz=np.zeros((nm,3))
     M=_mass_from_arrays(mesh.dof_face,ms.areas,nm)
-    wake_cache=[]
+    wake_tris_list=[];wake_dofs_list=[];wake_nodes_total=0
+    H=np.zeros((sum(len(g.wake_xyz) for g in groups),ng))
+    node_offset=0
     for g,n in zip(groups,ngs):
-        wt=np.asarray(g.wake_xyz,float)[np.asarray(g.wake_faces,int)]
-        wd=np.asarray(g.wake_faces,int)
-        H=np.asarray(g.gamma_hat,float)
-        wake_cache.append((wt,wd,H,n,len(g.wake_xyz)))
-    for f in range(nface):
-        tri=tris[f]
-        points=bary@tri
-        weights=qweights*(2.*ms.areas[f])
-        Dwall=_doublet_matrix(tris,points,self_faces=np.full(len(points),f),
-                              face_dofs=mesh.dof_face,ndof=nm,block=block)
-        Dw_groups=[]
-        for wt,wd,H,n,nwake in wake_cache:
-            if n:
-                Dnodes=_doublet_matrix(wt,points,face_dofs=wd,ndof=nwake,block=block)
-                Dgroups=Dnodes@H
-            else:
-                Dgroups=np.zeros((len(points),0))
-            Dw_groups.append(Dgroups)
-        for k,row in enumerate(mesh.dof_face[f]):
-            wk=weights*bary[:,k]
-            A[row]+=wk@Dwall
-            bxyz[row]-=wk@points
-            for gidx,Dg in enumerate(Dw_groups):
-                if Dg.shape[1]:
-                    W[row,slices[groups[gidx].name]]+=wk@Dg
+        xyz_w=np.asarray(g.wake_xyz,float)
+        faces_w=np.asarray(g.wake_faces,int)
+        wake_tris_list.append(xyz_w[faces_w])
+        wake_dofs_list.append(faces_w+node_offset)
+        H[node_offset:node_offset+len(xyz_w),slices[g.name]]=np.asarray(g.gamma_hat,float)
+        node_offset+=len(xyz_w)
+    wake_tris=np.concatenate(wake_tris_list,axis=0)
+    wake_dofs=np.concatenate(wake_dofs_list,axis=0)
+    A,W,bxyz=_assemble_batched(
+        tris,np.asarray(mesh.dof_face,int),ms.areas,ms.centers,tris,nm,
+        np.zeros(3),bary,qweights,wake_tris=wake_tris,wake_dofs=wake_dofs,
+        wake_basis=H,nwake=node_offset,target_face_batch=target_face_batch,
+        kernel_block=block)
     return dict(A=A,W=W,M=M,b_xyz=bxyz,mesh=ms,base_mesh=mesh,
-                J=base["J"],K=base["K"],grad=base["grad"],
-                slices=slices,te_face_pairs=[p for group_pairs in base["te_face_pairs"] for p in group_pairs],
-                group_info=base["group_info"],order=order,
-                formulation="P1 Galerkin target-test projection",
-                self_jump="exact full P1 mass contribution -0.5*M_local",
-                physical_accuracy_accepted=False)
+        J=base["J"],K=base["K"],grad=base["grad"],slices=slices,
+        te_face_pairs=[p for group_pairs in base["te_face_pairs"] for p in group_pairs],
+        group_info=base["group_info"],order=order,block=block,
+        target_face_batch=target_face_batch,
+        formulation="batched P1 Galerkin target-test projection",
+        self_jump="exact full P1 mass contribution -0.5*M_local",
+        physical_accuracy_accepted=False)
 
 
 def _pressure_residual(x,ops,nm):
