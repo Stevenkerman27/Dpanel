@@ -106,6 +106,7 @@ def run(a):
                         wall_rms=old_state["wall_rms"],jump_rms=old_state["jump_rms"],
                         signed_kutta_rms=old_state["signed_kutta_rms"],
                         pressure_kutta_rms=old_state["pressure_kutta_rms"],
+                        group_results=old_state["group_results"],
                         nonlinear=old_state["nonlinear"],
                         te_jump={g.name:audit_g2_group_te_jump(mesh,old_state,coll,g.name)
                                  for g in mesh.groups})
@@ -122,6 +123,7 @@ def run(a):
                         wall_rms=new_state["wall_rms"],wall_dual_rms=new_state["wall_dual_rms"],
                         jump_rms=new_state["jump_rms"],signed_kutta_rms=new_state["signed_kutta_rms"],
                         pressure_kutta_rms=new_state["pressure_kutta_rms"],
+                        group_results=new_state["group_results"],
                         nonlinear=new_state["nonlinear"],quadrature_order=new_state["order"],
                         te_jump={g.name:audit_g2_group_te_jump(mesh,new_state,gal,g.name)
                                  for g in mesh.groups})
