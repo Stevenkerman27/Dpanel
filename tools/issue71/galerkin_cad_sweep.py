@@ -85,18 +85,35 @@ def component_pressure_loads(path,state,ms,geometry,alpha_deg):
     alpha=np.deg2rad(float(alpha_deg))
     U=np.array([np.cos(alpha),0.,np.sin(alpha)])
     lift=np.array([-np.sin(alpha),0.,np.cos(alpha)])
+    cd_face=face_force@U/geometry.reference_area
+    cl_face=face_force@lift/geometry.reference_area
     result={}
     for tag in np.unique(ids):
         mask=ids==tag
         force=face_force[mask].sum(axis=0)
         moment=np.cross(ms.centers[mask]-np.asarray(geometry.reference_point),face_force[mask]).sum(axis=0)
+        cdi=cd_face[mask]
+        local_ids=np.flatnonzero(mask)
+        high_cp=local_ids[np.argsort(np.abs(cp[mask]))[-10:][::-1]]
+        high_drag=local_ids[np.argsort(cd_face[mask])[-10:][::-1]]
         result[str(role_by_tag.get(int(tag),f"component_{int(tag)}"))]=dict(
             physical_tag=int(tag),faces=int(mask.sum()),
             CL_pressure=float(force@lift/geometry.reference_area),
             CD_pressure=float(force@U/geometry.reference_area),
             CM_y=float(moment[1]/(geometry.reference_area*geometry.reference_chord)),
+            drag_positive_sum=float(cdi[cdi>0].sum()),
+            drag_negative_sum=float(cdi[cdi<0].sum()),
+            drag_abs_sum=float(np.abs(cdi).sum()),
+            drag_cancellation_ratio=float(np.abs(cdi).sum()/max(abs(float(cdi.sum())),1e-15)),
             cp_abs_max=float(np.max(np.abs(cp[mask]))),
-            cp_min=float(np.min(cp[mask])),cp_max=float(np.max(cp[mask])))
+            cp_min=float(np.min(cp[mask])),cp_max=float(np.max(cp[mask])),
+            top_abs_cp_faces=[dict(face=int(i),center=ms.centers[i].tolist(),
+                cp=float(cp[i]),area=float(ms.areas[i]),CD_face=float(cd_face[i]))
+                for i in high_cp],
+            top_positive_drag_faces=[dict(face=int(i),center=ms.centers[i].tolist(),
+                cp=float(cp[i]),area=float(ms.areas[i]),CD_face=float(cd_face[i]))
+                for i in high_drag])
+        )
     return result
 
 def run_model(name,path,args):
