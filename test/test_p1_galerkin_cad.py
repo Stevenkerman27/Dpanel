@@ -74,3 +74,42 @@ def test_cad_sweep_does_not_report_implausible_solution_as_success():
     assert status(state,80)=="implausible_solution"
     assert status({"nonlinear":{"success":False,"nfev":80}},80)=="iteration_limit_not_converged"
     assert status({"nonlinear":None,"solution_status":"solver_success"},80)=="solver_success"
+
+
+def test_conv_gamma_basis_excludes_inboard_contact_stations_and_keeps_both_root_banks():
+    wing=from_dpanel_half_surface(CASES["conv_s075"])
+    root=0.24999647337329162
+    assert np.min(wing.gamma_y[wing.gamma_y>0])==pytest.approx(root,abs=1e-9)
+    assert not np.any(np.isclose(np.abs(wing.gamma_y),0.0,atol=1e-10))
+    assert not np.any(np.isclose(np.abs(wing.gamma_y),0.2,atol=1e-10))
+    assert wing.gamma_hat.shape[1]==18
+    assert np.any(np.isclose(wing.gamma_y,-root,atol=1e-9))
+    assert np.any(np.isclose(wing.gamma_y,+root,atol=1e-9))
+    np.testing.assert_allclose(wing.gamma_y,-wing.gamma_y[::-1],rtol=0,atol=1e-12)
+
+
+def test_other_cad_models_keep_their_original_gamma_stations():
+    for name in ("elliptic_s075","swept30_s075","bwb_s055"):
+        raw=json.loads(CASES[name].read_text(encoding="utf-8"))
+        wing=from_dpanel_half_surface(CASES[name])
+        stations=np.asarray(raw["gamma_stations"])
+        expected=np.r_[-stations[:0:-1],stations]
+        np.testing.assert_allclose(wing.gamma_y,expected,rtol=0,atol=1e-12)
+
+
+def test_loader_rejects_unmapped_independent_station_inboard_of_te(tmp_path):
+    raw=json.loads(CASES["conv_s075"].read_text(encoding="utf-8"))
+    raw["gamma_station_dof"][0]=99
+    path=tmp_path/"bad_conv_surface.json"
+    path.write_text(json.dumps(raw),encoding="utf-8")
+    with pytest.raises(ValueError,match="not tied to the TE-root DOF"):
+        from_dpanel_half_surface(path)
+
+
+def test_cad_sweep_does_not_report_implausible_solution_as_success():
+    from tools.issue71.galerkin_cad_sweep import status
+    state={"nonlinear":None,"solution_status":"implausible_solution"}
+    assert status(state,80)=="implausible_solution"
+    assert status({"nonlinear":{"success":False,"nfev":80}},80)=="iteration_limit_not_converged"
+    assert status({"nonlinear":None,"solution_status":"solver_success","CL":0.4,
+                   "CD_pressure":0.01,"mu":np.ones(3),"gamma":np.ones(2)},80)=="solver_success"
