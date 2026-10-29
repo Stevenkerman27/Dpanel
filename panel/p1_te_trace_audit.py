@@ -101,6 +101,26 @@ def audit_te_trace(wing, *, coordinate_tol=None):
             err("te_split_crosses_bank", f"row={k}")
         if abs(X[v,1]-yte[k]) > atol:
             err("te_station_coordinate_mismatch", f"row={k}, y={X[v,1]}/{yte[k]}")
+    te_declared_count = len(declared)
+    contact_pairs = getattr(wing, "contact_pairs", None)
+    contact_vertices = np.asarray(getattr(wing, "contact_geo", None)
+                                  if getattr(wing, "contact_geo", None) is not None else [], int)
+    contact_edges = set()
+    if getattr(wing, "trace_audit", None):
+        contact_edges = {tuple(sorted(e["vertices"])) for e in
+                         wing.trace_audit.get("oriented_edge_records", [])
+                         if e["kind"] == "smooth_wall_contact"}
+    if contact_pairs is not None:
+        contact_pairs = np.asarray(contact_pairs, int).reshape(-1,2)
+        if len(contact_pairs) != len(contact_vertices):
+            err("contact_pair_geometry_length_mismatch", len(contact_pairs))
+        else:
+            for v, (upper, lower) in zip(contact_vertices, contact_pairs):
+                gu, gl = dof_geom.get(int(upper), set()), dof_geom.get(int(lower), set())
+                if upper == lower or gu != {int(v)} or gl != {int(v)}:
+                    err("contact_pair_not_split_same_geometry", f"vertex={v}")
+                    continue
+                declared[int(v)] = (int(upper), int(lower))
     for v, ms in geom_dof.items():
         if len(ms)>1 and (v not in declared or ms!=set(declared[v])):
             err("unexpected_potential_cut_vertex", f"vertex={v}, dofs={sorted(ms)}")
@@ -113,7 +133,7 @@ def audit_te_trace(wing, *, coordinate_tol=None):
         elif len(faces)==2:
             (fa, da), (fb, db) = faces
             if da != db:
-                if sorted((int(bank[fa]), int(bank[fb]))) != [-1, 1]:
+                if key not in contact_edges and sorted((int(bank[fa]), int(bank[fb]))) != [-1, 1]:
                     err("cut_across_non_te_bank_edge", f"edge={key}, faces={fa},{fb}")
                 if not any(v in declared for v in key):
                     err("seam_disconnected_from_declared_te", key)
@@ -170,12 +190,13 @@ def audit_te_trace(wing, *, coordinate_tol=None):
                     err("nonzero_tip_wake_gamma_hat", f"wake_node={node}")
     except ValueError as exc:
         err("invalid_gamma_stations", exc)
-    if len(pairs) != len(declared):
+    if len(pairs) != te_declared_count:
         warnings.append("TE pair rows not one-to-one with geometry")
     return dict(ok=not errors, errors=errors, warnings=warnings,
                 wall_faces=int(len(F)), wall_geometric_vertices=int(len(geom_dof)),
                 wall_potential_dofs=int(len(dof_geom)),
-                te_pair_rows=int(len(pairs)), split_te_vertices=int(len(declared)),
+                te_pair_rows=int(len(pairs)), split_te_vertices=int(te_declared_count),
+                split_contact_vertices=int(len(contact_vertices)),
                 seam_edges=int(len(seam)),
                 wake_attached_seam_edges=int(len(set(seam)&wake_seam)),
                 seam_geometry_edges=[list(e) for e in seam],

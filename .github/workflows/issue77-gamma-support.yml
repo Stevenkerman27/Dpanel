@@ -52,9 +52,11 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: python -m pip install --upgrade numpy scipy pytest 'jax[cpu]'
-      - name: Run related solver and CAD regressions
+      - name: Run complete contact, solver and CAD regressions
         run: >
           python -m pytest
+          test/test_p1_wake_contact.py
+          test/test_p1_solution_status.py
           test/test_p1_edge_singularity.py
           test/test_p1_te_trace_audit.py
           test/test_p1_te_jump_integral.py
@@ -63,6 +65,7 @@ jobs:
           test/test_p1_galerkin_cad.py
           test/test_p1_lifting_g1.py
           test/test_p1_lifting_g2.py
+          test/test_p1_cp_diagnostics.py
           -q
 
   cad-solves:
@@ -83,7 +86,7 @@ jobs:
         run: python -m pip install --upgrade numpy scipy pytest 'jax[cpu]'
       - name: Solve repaired conventional model and unchanged swept control
         run: >
-          python tools/issue71/galerkin_cad_sweep.py
+          python -m tools.issue71.galerkin_cad_sweep
           --models conv_s075 swept30_s075
           --methods signed_speed --order 2 --max-nfev 80
           --out runs/issue77_cad_solve.json

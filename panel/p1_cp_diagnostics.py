@@ -149,7 +149,7 @@ def pressure_load_diagnostic(cp,areas,normals,centers,reference_area,drag_axis,l
 def diagnose_g2_state(mesh,state,offsets=(.2,.1,.05),step_fraction=.2,offset_sign=1.,local_scale="edge_min"):
     """Adapter for solve_multi output; potential includes freestream, wall and every wake."""
     from .p1_steady_free_wake import _potentials_at
-    alpha=np.deg2rad(float(state["alpha_deg"])); U=np.array([np.cos(alpha),0.,np.sin(alpha]))
+    alpha=np.deg2rad(float(state["alpha_deg"])); U=np.array([np.cos(alpha),0.,np.sin(alpha)])
     phi=lambda points: _potentials_at(mesh,state,points)
     report=compare_p1_to_offsurface(mesh.xyz,mesh.faces,mesh.dof_face,state["mu"],phi,U,
                                    offsets,step_fraction,offset_sign,local_scale)

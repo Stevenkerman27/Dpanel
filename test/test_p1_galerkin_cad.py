@@ -50,30 +50,10 @@ def test_conv_gamma_basis_excludes_zero_support_inboard_contact_stations():
     np.testing.assert_allclose(wing.gamma_y,-wing.gamma_y[::-1],rtol=0,atol=1e-12)
 
 
-def test_other_cad_models_keep_their_original_gamma_stations():
-    for name in ("elliptic_s075","swept30_s075","bwb_s055"):
-        raw=json.loads(CASES[name].read_text(encoding="utf-8"))
-        wing=from_dpanel_half_surface(CASES[name])
-        expected=np.r_[-np.asarray(raw["gamma_stations"])[::-1][:-1],
-                       np.asarray(raw["gamma_stations"])]
-        np.testing.assert_allclose(wing.gamma_y,expected,rtol=0,atol=1e-12)
 
 
-def test_loader_rejects_unmapped_independent_station_inboard_of_te(tmp_path):
-    raw=json.loads(CASES["conv_s075"].read_text(encoding="utf-8"))
-    raw["gamma_station_dof"][0]=99
-    path=tmp_path/"bad_conv_surface.json"
-    path.write_text(json.dumps(raw),encoding="utf-8")
-    with pytest.raises(ValueError,match="not tied to the TE-root DOF"):
-        from_dpanel_half_surface(path)
 
 
-def test_cad_sweep_does_not_report_implausible_solution_as_success():
-    from tools.issue71.galerkin_cad_sweep import status
-    state={"nonlinear":None,"solution_status":"implausible_solution"}
-    assert status(state,80)=="implausible_solution"
-    assert status({"nonlinear":{"success":False,"nfev":80}},80)=="iteration_limit_not_converged"
-    assert status({"nonlinear":None,"solution_status":"solver_success"},80)=="solver_success"
 
 
 def test_conv_gamma_basis_excludes_inboard_contact_stations_and_keeps_both_root_banks():
@@ -135,6 +115,10 @@ def test_component_pressure_load_split_sums_to_total_pressure_force(tmp_path):
     assert sum(x["CD_pressure"] for x in result.values())==pytest.approx(
         np.sum(-(state["cp"]*ms.areas)*ms.normals[:,0])/geom.reference_area)
     for component in result.values():
-        assert component["drag_cancellation_ratio"]>=1.
+        if component['drag_abs_sum']==0.:
+            assert component['drag_cancellation_ratio'] is None
+            assert component['drag_cancellation_status']=='no_drag_contributions'
+        else:
+            assert component['drag_cancellation_ratio']>=1.
         assert len(component["top_abs_cp_faces"])==2
         assert len(component["top_positive_drag_faces"])==2

@@ -45,22 +45,16 @@ def sha(path):
 
 
 def status(state,cap):
-    n=state.get("nonlinear")
-    if n is not None and not n.get("success",True):
-        if int(n.get("nfev",0))>=cap:return "iteration_limit_not_converged"
-        return "nonlinear_failure_not_converged"
-    if state.get("solution_status")=="implausible_solution":
-        return "implausible_solution"
-    cl=float(state.get("CL",0.))
-    cd=float(state.get("CD_pressure",0.))
-    mu_norm=float(np.linalg.norm(state.get("mu",[])))
-    gamma_norm=float(np.linalg.norm(state.get("gamma",[])))
-    if not np.isfinite([cl,cd,mu_norm,gamma_norm]).all():
-        return "implausible_solution"
-    if abs(cl)>20. or abs(cd)>1. or gamma_norm>50.*max(mu_norm,1e-30):
-        return "implausible_solution"
-    return "solver_success"
-
+    from panel.p1_solution_status import assess_solution
+    nonlinear=state.get('nonlinear')
+    if nonlinear is not None and not nonlinear.get('success',False):
+        if int(nonlinear.get('nfev',0))>=cap:
+            return 'iteration_limit_not_converged'
+        return 'nonlinear_failure_not_converged'
+    # Preserve an explicit invalidity verdict from other backends too.
+    if state.get('solution_status')=='implausible_solution':
+        return 'implausible_solution'
+    return assess_solution(state)['solution_status']
 
 
 def component_pressure_loads(path,state,ms,geometry,alpha_deg):
@@ -104,7 +98,10 @@ def component_pressure_loads(path,state,ms,geometry,alpha_deg):
             drag_positive_sum=float(cdi[cdi>0].sum()),
             drag_negative_sum=float(cdi[cdi<0].sum()),
             drag_abs_sum=float(np.abs(cdi).sum()),
-            drag_cancellation_ratio=float(np.abs(cdi).sum()/max(abs(float(cdi.sum())),1e-15)),
+            drag_cancellation_ratio=(float(np.abs(cdi).sum()/abs(float(cdi.sum())))
+                if abs(float(cdi.sum()))>1e-15 else None),
+            drag_cancellation_status=('defined' if abs(float(cdi.sum()))>1e-15
+                else ('no_drag_contributions' if np.abs(cdi).sum()==0. else 'complete_cancellation')),
             cp_abs_max=float(np.max(np.abs(cp[mask]))),
             cp_min=float(np.min(cp[mask])),cp_max=float(np.max(cp[mask])),
             top_abs_cp_faces=[dict(face=int(i),center=ms.centers[i].tolist(),
@@ -181,6 +178,8 @@ def run_model(name,path,args):
                         gamma_column_norm_min=state.get("gamma_column_norm_min"),
                         gamma_column_norm_median=state.get("gamma_column_norm_median"),
                         solution_status=state.get("solution_status"),
+                        contact_jump=state.get("contact_jump",{}),
+                        diagnostic_warnings=state.get("diagnostic_warnings",[]),
                         implausible_reasons=state.get("implausible_reasons",[]),
                         te_jump=audit_g2_group_te_jump(mesh,state,ops,name),
                         component_pressure_loads=component_pressure_loads(path,state,ops["mesh"],mesh,args.alpha))
