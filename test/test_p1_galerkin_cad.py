@@ -113,3 +113,24 @@ def test_cad_sweep_does_not_report_implausible_solution_as_success():
     assert status({"nonlinear":{"success":False,"nfev":80}},80)=="iteration_limit_not_converged"
     assert status({"nonlinear":None,"solution_status":"solver_success","CL":0.4,
                    "CD_pressure":0.01,"mu":np.ones(3),"gamma":np.ones(2)},80)=="solver_success"
+
+
+def test_component_pressure_load_split_sums_to_total_pressure_force(tmp_path):
+    from types import SimpleNamespace
+    from tools.issue71.galerkin_cad_sweep import component_pressure_loads
+    raw={"component_ids":[20,30],"provenance":{"CAD_passes":[{"component_classification":[
+        {"physical_tag":20,"selected_role":"body"},
+        {"physical_tag":30,"selected_role":"wing"}]}]}}
+    path=tmp_path/"components.json";path.write_text(json.dumps(raw),encoding="utf-8")
+    ms=SimpleNamespace(
+        triangles=np.zeros((4,3,3)),
+        areas=np.array([1.,2.,3.,4.]),
+        normals=np.array([[1.,0.,0.],[0.,0.,1.],[-1.,0.,0.],[0.,0.,-1.]]),
+        centers=np.zeros((4,3)))
+    geom=SimpleNamespace(reference_point=np.zeros(3),reference_area=10.,reference_chord=1.)
+    state={"cp":np.array([.2,.3,.4,.5])}
+    result=component_pressure_loads(path,state,ms,geom,0.)
+    assert set(result)=={"body","wing"}
+    assert sum(x["faces"] for x in result.values())==4
+    assert sum(x["CD_pressure"] for x in result.values())==pytest.approx(
+        np.sum(-(state["cp"]*ms.areas)*ms.normals[:,0])/geom.reference_area)
