@@ -130,3 +130,41 @@ def test_curved_polyline_pv_of_one_straight_self_segment_is_not_total_self_induc
     total = polyline_biot_savart(point, vertices, 1.0, on_segment="straight_pv_zero")
     np.testing.assert_allclose(total, remaining, rtol=1e-14, atol=1e-14)
     assert np.linalg.norm(total) > 0.0
+
+
+def test_closed_square_loop_matches_independent_segment_integrals():
+    # A closed polygon is the sum of its oriented finite segments. Compare the
+    # API against independently quadrature-integrated line integrals, not the
+    # same closed-form segment expression used by the implementation.
+    ring = np.array([[-1., -1., 0.], [1., -1., 0.],
+                     [1., 1., 0.], [-1., 1., 0.], [-1., -1., 0.]])
+    point = np.array([0.17, -0.23, 0.41])
+    expected = sum((direct_line_integral(point, a, b, circulation=0.8, order=160)
+                    for a, b in zip(ring[:-1], ring[1:])), start=np.zeros(3))
+    actual = polyline_biot_savart(point, ring, circulation=0.8)
+    np.testing.assert_allclose(actual, expected, rtol=3e-12, atol=3e-13)
+
+
+def test_excluding_straight_self_segment_does_not_regularize_curved_filament():
+    # For a unit-radius polygonal loop, evaluate at the midpoint of segment 0
+    # and omit only that segment's straight-PV contribution. The remaining
+    # induced speed grows logarithmically under refinement: each doubling
+    # approaches Gamma/(4*pi*R)*ln(2). This is a regression against treating
+    # zero straight-segment PV as a complete, convergent curved-filament self
+    # induction model.
+    gamma, radius = 1.0, 1.0
+    speeds = []
+    for n in (32, 64, 128, 256, 512):
+        theta = 2*np.pi*np.arange(n)/n
+        circle = np.column_stack((radius*np.cos(theta),
+                                  radius*np.sin(theta), np.zeros(n)))
+        ring = np.vstack((circle, circle[0]))
+        point = 0.5*(ring[0] + ring[1])
+        velocity = polyline_biot_savart(
+            point, ring, circulation=gamma, excluded_segments=(0,))
+        speeds.append(np.linalg.norm(velocity))
+    increments = np.diff(speeds)
+    expected_increment = gamma/(4*np.pi*radius)*np.log(2.0)
+    assert np.all(increments > 0)
+    assert abs(increments[-1]/expected_increment - 1.0) < 1e-3
+    assert abs(increments[-1] - expected_increment) < abs(increments[-2] - expected_increment)
