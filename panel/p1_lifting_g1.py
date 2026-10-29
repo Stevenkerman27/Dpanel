@@ -295,7 +295,7 @@ def _mesh_as_kernel(wing):
 
 
 def _doublet_matrix(tris, targets, *, self_faces=None, face_dofs=None, ndof=None,
-                    block=32):
+                    block=512):
     # Build from the single triangle analytic source moments; exact direct kernel.
     tris=np.asarray(tris,float);targets=np.asarray(targets,float)
     if face_dofs is None: face_dofs=np.arange(len(tris)*3).reshape(-1,3)

@@ -1,0 +1,162 @@
+"""Run Galerkin vs collocation on multiple committed CAD-derived half meshes.
+
+This runner uses the repository's CAD-derived dpanel.half_planar_cut.v1
+surface.json fixtures. It mirrors each half mesh through the existing
+validated adapter, then solves both methods on identical full-span geometry.
+Every model writes a status and partial results even when a solver fails.
+"""
+from __future__ import annotations
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import platform
+import subprocess
+import sys
+import time
+import traceback
+import numpy as np
+import scipy
+
+ROOT=Path(__file__).resolve().parents[2]
+DEFAULTS={
+ "elliptic_s075":ROOT/"cases/geom_robust/surfaces/elliptic_s075/surface.json",
+ "conv_s075":ROOT/"cases/geom_robust/surfaces/conv_s075/surface.json",
+ "swept30_s075":ROOT/"cases/geom_robust/surfaces/swept30_s075/surface.json",
+ "bwb_s055":ROOT/"cases/geom_robust/surfaces/bwb_s055/surface.json",
+}
+
+
+def clean(x):
+    if isinstance(x,np.ndarray): return [clean(v) for v in x.tolist()]
+    if isinstance(x,(np.floating,np.integer,np.bool_)): return x.item()
+    if isinstance(x,float) and not np.isfinite(x): return None
+    if isinstance(x,dict): return {str(k):clean(v) for k,v in x.items()}
+    if isinstance(x,(list,tuple)): return [clean(v) for v in x]
+    return x
+
+
+def sha(path):
+    h=hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda:f.read(1024*1024),b""): h.update(block)
+    return h.hexdigest()
+
+
+def status(state,cap):
+    n=state.get("nonlinear")
+    if n is None or n.get("success",True): return "solver_success"
+    if int(n.get("nfev",0))>=cap: return "iteration_limit_not_converged"
+    return "nonlinear_failure_not_converged"
+
+
+def run_model(name,path,args):
+    from panel.p1_lifting_g1 import from_dpanel_half_surface
+    from panel.p1_lifting_g2 import combine_wings,assemble_multi,solve_multi
+    from panel.p1_galerkin_solver import assemble_galerkin_multi,solve_galerkin_multi
+    from panel.p1_te_jump_integral import audit_g2_group_te_jump
+    start=time.perf_counter()
+    row=dict(name=name,input=str(path),input_sha256=sha(path),status="started",
+             physical_accuracy_accepted=False,stages={})
+    try:
+        t=time.perf_counter()
+        wing=from_dpanel_half_surface(path)
+        row["mesh_input"]=dict(half_vertices=int(len(json.loads(path.read_text())["coordinates"])),
+            half_faces=int(len(json.loads(path.read_text())["faces"])),
+            full_faces=int(len(wing.faces)),full_vertices=int(len(wing.xyz)),
+            mu_dofs=int(wing.ndof_mu),gamma_dofs=int(wing.gamma_hat.shape[1]),
+            te_pairs=int(len(wing.te_pairs)),wake_faces=int(len(wing.wake_faces)))
+        mesh=combine_wings([wing],names=[name],origins=[(0.,0.,0.)],
+            reference_area=wing.reference_area,reference_chord=wing.chord,
+            reference_point=wing.reference_point)
+        row["stages"]["geometry_seconds"]=time.perf_counter()-t
+        t=time.perf_counter()
+        coll=assemble_multi(mesh)
+        row["stages"]["collocation_assembly_seconds"]=time.perf_counter()-t
+        t=time.perf_counter()
+        gal=assemble_galerkin_multi(mesh,order=args.order,block=args.kernel_block,
+                                    target_face_batch=args.target_face_batch)
+        row["stages"]["galerkin_assembly_seconds"]=time.perf_counter()-t
+        row["operators"]=dict(wall_faces=int(len(mesh.faces)),mu_dofs=int(mesh.ndof_mu),
+            gamma_dofs=int(coll["W"].shape[1]),galerkin_W_dofs=int(gal["W"].shape[1]),
+            galerkin_order=int(args.order),target_face_batch=int(args.target_face_batch),
+            kernel_block=int(args.kernel_block),
+            gamma_dimensions_match=bool(coll["W"].shape[1]==gal["W"].shape[1]))
+        if not row["operators"]["gamma_dimensions_match"]:
+            raise ValueError("Galerkin/collocation Gamma basis dimensions differ")
+        if args.assembly_only:
+            row["status"]="assembly_only_success"
+            row["stages"]["total_seconds"]=time.perf_counter()-start
+            return row
+        row["solves"]=[]
+        for method in args.methods:
+            result=dict(kutta=method)
+            for label,fn,ops in (
+                ("collocation",solve_multi,coll),
+                ("galerkin",solve_galerkin_multi,gal)):
+                t=time.perf_counter()
+                try:
+                    state=fn(mesh,args.alpha,kutta=method,max_nfev=args.max_nfev,operators=ops)
+                    result[label]=dict(status=status(state,args.max_nfev),
+                        seconds=time.perf_counter()-t,CL=float(state["CL"]),
+                        CL_gamma=float(state["CL_gamma"]),CD_pressure=float(state["CD_pressure"]),
+                        CM_y=float(state["CM_y"]),wall_rms=float(state["wall_rms"]),
+                        wall_dual_rms=(float(state["wall_dual_rms"]) if "wall_dual_rms" in state else None),
+                        jump_rms=float(state["jump_rms"]),
+                        signed_kutta_rms=float(state["signed_kutta_rms"]),
+                        pressure_kutta_rms=(None if state["pressure_kutta_rms"] is None
+                                            else float(state["pressure_kutta_rms"])),
+                        nonlinear=state["nonlinear"],
+                        group_results=state["group_results"] if "group_results" in state else None,
+                        te_jump=audit_g2_group_te_jump(mesh,state,ops,name))
+                except Exception as exc:
+                    result[label+"_error"]=repr(exc)
+                    result[label+"_traceback"]=traceback.format_exc()
+                result.setdefault("timing_seconds",{})[label]=time.perf_counter()-t
+            row["solves"].append(result)
+        row["status"]="completed_with_solver_failures" if any(
+            any(k.endswith("_error") for k in sol) or any(
+                sol.get(k,{}).get("status","").endswith("not_converged")
+                for k in ("collocation","galerkin")) for sol in row["solves"]) else "completed"
+    except Exception as exc:
+        row["status"]="execution_error";row["error"]=repr(exc)
+        row["traceback"]=traceback.format_exc()
+    row["stages"]["total_seconds"]=time.perf_counter()-start
+    return row
+
+
+def main(argv=None):
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--models",nargs="+",choices=tuple(DEFAULTS),default=list(DEFAULTS))
+    p.add_argument("--methods",nargs="+",choices=("signed_speed","pressure"),default=["signed_speed"])
+    p.add_argument("--alpha",type=float,default=5.)
+    p.add_argument("--order",type=int,default=2)
+    p.add_argument("--kernel-block",type=int,default=2048)
+    p.add_argument("--target-face-batch",type=int,default=64)
+    p.add_argument("--max-nfev",type=int,default=80)
+    p.add_argument("--assembly-only",action="store_true")
+    p.add_argument("--out",type=Path,required=True)
+    a=p.parse_args(argv)
+    if a.out.exists():p.error("output exists; use a new path to preserve previous receipts")
+    a.out.parent.mkdir(parents=True,exist_ok=True)
+    try: head=subprocess.check_output(["git","rev-parse","HEAD"],cwd=ROOT,text=True).strip()
+    except Exception: head=None
+    report=dict(schema="dpanel.issue71.galerkin_cad_sweep.v1",physical_accuracy_accepted=False,
+        environment=dict(python=sys.version,platform=platform.platform(),numpy=np.__version__,
+            scipy=scipy.__version__,git_head=head,threads={k:os.environ.get(k) for k in
+            ("OPENBLAS_NUM_THREADS","OMP_NUM_THREADS","MKL_NUM_THREADS")}),
+        options=dict(models=a.models,methods=a.methods,alpha=a.alpha,order=a.order,
+            kernel_block=a.kernel_block,target_face_batch=a.target_face_batch,
+            max_nfev=a.max_nfev,assembly_only=a.assembly_only),models=[])
+    for name in a.models:
+        report["models"].append(run_model(name,DEFAULTS[name],a))
+        a.out.write_text(json.dumps(clean(report),indent=2,allow_nan=False),encoding="utf-8")
+        print(json.dumps({"model":name,"status":report["models"][-1]["status"],
+                          "seconds":report["models"][-1]["stages"].get("total_seconds"),
+                          "out":str(a.out)}),flush=True)
+    return 0 if all(m["status"] in ("completed","assembly_only_success") for m in report["models"]) else 2
+
+
+if __name__=="__main__":
+    raise SystemExit(main())

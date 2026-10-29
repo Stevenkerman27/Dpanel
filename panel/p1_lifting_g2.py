@@ -149,11 +149,14 @@ def assemble_multi(mesh: MultiLiftingMesh):
     W_parts=[];J_parts=[];K_parts=[];TEface=[];slices={};offset=0;groups_receipt=[]
     for gi,group in enumerate(mesh.groups):
         ng=group.gamma_hat.shape[1]
-        Wg=np.zeros((nf,ng))
-        for f in group.wake_faces:
-            coefficients=_doublet_matrix(group.wake_xyz[f][None],ms.centers,
-                                        face_dofs=np.arange(3)[None],ndof=3)
-            Wg+=coefficients@group.gamma_hat[f]
+        wake_tris=np.asarray(group.wake_xyz,float)[np.asarray(group.wake_faces,int)]
+        # Assemble all wake source triangles in one analytic-kernel traversal.
+        # face_dofs maps each source triangle back to the shared wake-node basis,
+        # so this is algebraically the sum of the former per-triangle calls.
+        coefficients=_doublet_matrix(wake_tris,ms.centers,
+            face_dofs=np.asarray(group.wake_faces,int),
+            ndof=len(group.wake_xyz))
+        Wg=coefficients@np.asarray(group.gamma_hat,float)
         W_parts.append(Wg)
         slices[group.name]=slice(offset,offset+ng)
         offset+=ng
