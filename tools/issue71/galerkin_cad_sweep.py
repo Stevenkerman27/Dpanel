@@ -46,9 +46,12 @@ def sha(path):
 
 def status(state,cap):
     n=state.get("nonlinear")
-    if n is None or n.get("success",True): return "solver_success"
-    if int(n.get("nfev",0))>=cap: return "iteration_limit_not_converged"
-    return "nonlinear_failure_not_converged"
+    if n is not None and not n.get("success",True):
+        if int(n.get("nfev",0))>=cap:return "iteration_limit_not_converged"
+        return "nonlinear_failure_not_converged"
+    if state.get("solution_status")=="implausible_solution":
+        return "implausible_solution"
+    return "solver_success"
 
 
 def run_model(name,path,args):
@@ -109,6 +112,13 @@ def run_model(name,path,args):
                                             else float(state["pressure_kutta_rms"])),
                         nonlinear=state["nonlinear"],
                         group_results=state["group_results"] if "group_results" in state else None,
+                        mu_norm=state.get("mu_norm"),gamma_norm=state.get("gamma_norm"),
+                        constrained_condition=state.get("constrained_condition"),
+                        linear_singular_min=state.get("linear_singular_min"),
+                        gamma_column_norm_min=state.get("gamma_column_norm_min"),
+                        gamma_column_norm_median=state.get("gamma_column_norm_median"),
+                        solution_status=state.get("solution_status"),
+                        implausible_reasons=state.get("implausible_reasons",[]),
                         te_jump=audit_g2_group_te_jump(mesh,state,ops,name))
                 except Exception as exc:
                     result[label+"_error"]=repr(exc)
@@ -117,7 +127,8 @@ def run_model(name,path,args):
             row["solves"].append(result)
         row["status"]="completed_with_solver_failures" if any(
             any(k.endswith("_error") for k in sol) or any(
-                sol.get(k,{}).get("status","").endswith("not_converged")
+                (sol.get(k,{}).get("status","").endswith("not_converged")
+                 or sol.get(k,{}).get("status","")=="implausible_solution")
                 for k in ("collocation","galerkin")) for sol in row["solves"]) else "completed"
     except Exception as exc:
         row["status"]="execution_error";row["error"]=repr(exc)
