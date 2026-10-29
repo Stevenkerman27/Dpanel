@@ -20,3 +20,5 @@ $env:TMP='<scratch>'; $env:TEMP=$env:TMP; $env:TMPDIR=$env:TMP
 | `kutta_variants.py` | Kutta estimators that avoid the trailing-edge-adjacent cell |
 
 All four are single-file scripts with a `main()`; they print tables and write nothing.
+
+| `te_jump_integral.py` | exact edgewise `mu_upper-mu_lower-Gamma` integral/L2/max residual; reports it separately from pressure and signed-speed Kutta; deliberately perturbs Gamma to confirm the audit detects incompatibility |
