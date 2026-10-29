@@ -51,6 +51,14 @@ def status(state,cap):
         return "nonlinear_failure_not_converged"
     if state.get("solution_status")=="implausible_solution":
         return "implausible_solution"
+    cl=float(state.get("CL",0.))
+    cd=float(state.get("CD_pressure",0.))
+    mu_norm=float(np.linalg.norm(state.get("mu",[])))
+    gamma_norm=float(np.linalg.norm(state.get("gamma",[])))
+    if not np.isfinite([cl,cd,mu_norm,gamma_norm]).all():
+        return "implausible_solution"
+    if abs(cl)>20. or abs(cd)>1. or gamma_norm>50.*max(mu_norm,1e-30):
+        return "implausible_solution"
     return "solver_success"
 
 
@@ -112,7 +120,8 @@ def run_model(name,path,args):
                                             else float(state["pressure_kutta_rms"])),
                         nonlinear=state["nonlinear"],
                         group_results=state["group_results"] if "group_results" in state else None,
-                        mu_norm=state.get("mu_norm"),gamma_norm=state.get("gamma_norm"),
+                        mu_norm=float(np.linalg.norm(state.get("mu",[]))),
+                        gamma_norm=float(np.linalg.norm(state.get("gamma",[]))),
                         constrained_condition=state.get("constrained_condition"),
                         linear_singular_min=state.get("linear_singular_min"),
                         gamma_column_norm_min=state.get("gamma_column_norm_min"),
