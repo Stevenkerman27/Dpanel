@@ -219,7 +219,7 @@ def test_cad_sweep_exports_trace_audit_and_contact_jump_for_any_backend():
     assert summary["main"]["split_nodes"]==3
     assert summary["main"]["contact_jump_rows"]==2
     assert summary["main"]["unsplit_zero_gamma_tips"]==[9]
-    state=dict(mu=np.array([1.,0.,.5,.25]),gamma=np.array([1.]))
+    state=dict(mu=np.array([.5,0.,.25,0.]),gamma=np.array([1.]))
     report=contact_jump_diagnostics(mesh,state,{"slices":{"main":slice(0,1)}})
     assert report["main"]["rows"]==2
     assert report["main"]["rms"]==pytest.approx(0.)
