@@ -63,3 +63,20 @@ def test_pressure_kutta_galerkin_path_reports_termination_not_just_residual():
     assert isinstance(state["nonlinear"]["success"],bool)
     assert state["nonlinear"]["nfev"]<=3
     assert np.isfinite(state["pressure_kutta_rms"])
+
+
+def test_galerkin_solver_couples_two_independent_lifting_groups():
+    from panel.p1_lifting_g1 import make_wing
+    from panel.p1_lifting_g2 import combine_wings
+    main=make_wing(chord_panels=3,span_panels=3,wake_panels=1,camber=.02)
+    tail=make_wing(chord_panels=3,span_panels=3,span=1.8,chord=.55,
+                   wake_panels=1,camber=0.)
+    mesh=combine_wings([main,tail],names=["main","tail"],
+                       origins=[(0.,0.,0.),(1.6,0.,.35)])
+    ops=assemble_galerkin_multi(mesh,order=2)
+    state=solve_galerkin_multi(mesh,5.,kutta="signed_speed",operators=ops)
+    assert len(state["group_results"])==2
+    assert {g["name"] for g in state["group_results"]}=={"main","tail"}
+    assert state["jump_rms"]<1e-9
+    assert state["signed_kutta_rms"]<1e-9
+    assert np.isfinite(state["CL"]) and np.isfinite(state["CM_y"])
