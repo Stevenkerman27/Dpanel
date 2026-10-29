@@ -270,14 +270,22 @@ def from_dpanel_half_surface(path):
         root_label=int(station_map[root_candidates[0]])
         # Excluded contact stations may be removed only if the exporter
         # explicitly tied them to the physical TE-root circulation station.
-        unrelated=[int(i) for i in excluded
-                   if station_map[i]!=root_label and station_map[i]>=0]
-        if unrelated:
-            i=unrelated[0]
+        inboard=excluded[half_y[excluded] < te_root-tol]
+        bad_inboard=[int(i) for i in inboard if station_map[i]!=root_label]
+        outboard=excluded[half_y[excluded] > te_tip+tol]
+        bad_outboard=[int(i) for i in outboard if station_map[i]>=0]
+        if bad_inboard:
+            i=bad_inboard[0]
             raise ValueError(
                 f'Gamma station y={half_y[i]:.6f} lies inboard of the TE trace '
                 f'(root {te_root:.6f}) but is not tied to the TE-root DOF; '
                 'refusing a zero-support circulation basis')
+        if bad_outboard:
+            i=bad_outboard[0]
+            raise ValueError(
+                f'Gamma station y={half_y[i]:.6f} lies outboard of the TE tip '
+                f'({te_tip:.6f}) but is still an independent DOF; '
+                'refusing to discard a circulation basis function')
     else:
         raise ValueError('Gamma stations must include the actual TE-root y station')
     clipped=half_y[keep]
