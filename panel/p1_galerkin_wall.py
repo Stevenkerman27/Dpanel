@@ -60,7 +60,7 @@ def assemble_galerkin_wall(wing, freestream=(1.,0.,0.), order=3,
     nface, ndof = len(wing.faces), int(wing.ndof_mu)
     ngfull = int(wing.gamma_hat.shape[1])
     A = np.zeros((ndof, ndof))
-    W = np.zeros((ndof, max(0,ngfull-2)))
+    W = np.zeros((ndof, ngfull))
     b = np.zeros(ndof)
     M = p1_mass_matrix(wing)
     if include_wake:
