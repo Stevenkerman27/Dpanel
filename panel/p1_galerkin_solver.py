@@ -12,6 +12,8 @@ from scipy.optimize import least_squares
 from .p1_lifting_g1 import _doublet_matrix
 from .p1_lifting_g2 import _mesh, assemble_multi
 from .p1_galerkin_wall import _duffy_rule, _assemble_batched
+from .p1_solution_status import assess_solution
+from .p1_wake_contact import contact_jump_report
 
 
 def _mass_from_arrays(dof_face, areas, ndof):
@@ -155,17 +157,11 @@ def solve_galerkin_multi(mesh, alpha_deg=5., *, kutta="signed_speed",
     mu_norm=float(np.linalg.norm(mu));gamma_norm=float(np.linalg.norm(gamma))
     cl_value=float(force@lift/mesh.reference_area)
     cd_value=float(force@U/mesh.reference_area)
-    implausible=[]
-    if not np.isfinite([cl_value,cd_value,mu_norm,gamma_norm,constrained_condition]).all():
-        implausible.append("nonfinite_solution_or_condition")
-    if abs(cl_value)>20.:implausible.append("abs_CL_gt_20")
-    if abs(cd_value)>1.:implausible.append("abs_CD_pressure_gt_1")
-    if gamma_norm>50.*max(mu_norm,1e-30):implausible.append("gamma_norm_gt_50_mu_norm")
-    if constrained_condition>1e6:implausible.append("constrained_condition_gt_1e6")
-    if gamma_col_norms.size and float(gamma_col_norms.min()) < 0.1*max(float(np.median(gamma_col_norms)),1e-30):
-        implausible.append("near_zero_support_gamma_column")
-    solution_status="implausible_solution" if implausible else (
-        "solver_success" if nonlinear is None or nonlinear["success"] else "nonlinear_not_converged")
+    screening=assess_solution(dict(CL=cl_value,CD_pressure=cd_value,
+        mu_norm=mu_norm,gamma_norm=gamma_norm,constrained_condition=constrained_condition,
+        gamma_column_norm_min=float(gamma_col_norms.min()) if gamma_col_norms.size else 0.,
+        gamma_column_norm_median=float(np.median(gamma_col_norms)) if gamma_col_norms.size else 0.,
+        nonlinear=nonlinear))
     return dict(alpha_deg=float(alpha_deg),kutta=kutta,
         CL=cl_value,
         CL_gamma=float(sum(g["CL_gamma"] for g in group_results)),
@@ -184,6 +180,10 @@ def solve_galerkin_multi(mesh, alpha_deg=5., *, kutta="signed_speed",
         mu_norm=mu_norm,gamma_norm=gamma_norm,
         gamma_column_norm_min=float(gamma_col_norms.min()) if gamma_col_norms.size else 0.,
         gamma_column_norm_median=float(np.median(gamma_col_norms)) if gamma_col_norms.size else 0.,
-        solution_status=solution_status,implausible_reasons=implausible,
+        solution_status=screening['solution_status'],
+        implausible_reasons=screening['implausible_reasons'],
+        diagnostic_warnings=screening['diagnostic_warnings'],
+        plausibility_controls=screening['plausibility_controls'],
+        contact_jump=contact_jump_report(mesh,mu,gamma,ops['slices']),
         nonlinear=nonlinear,order=int(ops["order"]),
         physical_accuracy_accepted=False)
