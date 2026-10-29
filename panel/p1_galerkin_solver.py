@@ -33,7 +33,7 @@ def assemble_galerkin_multi(mesh, *, order=3, block=32):
     tris=ms.triangles
     nface=len(mesh.faces);nm=int(mesh.ndof_mu)
     groups=mesh.groups
-    ngs=[int(g.gamma_hat.shape[1]-2) for g in groups]
+    ngs=[int(g.gamma_hat.shape[1]) for g in groups]
     ng=sum(ngs)
     slices={};offset=0
     for g,n in zip(groups,ngs):
