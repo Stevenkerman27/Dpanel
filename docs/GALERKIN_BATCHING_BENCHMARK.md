@@ -23,6 +23,6 @@ The complete related suite (edge singularity, TE topology/jump, Galerkin wall/so
 
 ## CAD validation status
 
-The same CI run is still executing the CAD stage. It first assembles all four committed CAD-derived surfaces (`elliptic_s075`, `conv_s075`, `swept30_s075`, `bwb_s055`) and then solves two representative cases (`elliptic_s075`, `swept30_s075`) with signed-speed Kutta, comparing collocation and Galerkin on identical geometry. No CAD solve outcome is claimed in this document until the job completes and its JSON receipt is reviewed.
+The linked CI run completed successfully. It assembled all four committed CAD-derived surfaces (`elliptic_s075`, `conv_s075`, `swept30_s075`, `bwb_s055`) and solved two representative cases (`elliptic_s075`, `swept30_s075`) with signed-speed Kutta, comparing collocation and Galerkin on identical geometry. The later Issue #77 workflow additionally runs the repaired `conv_s075` plus unchanged `swept30_s075` control and exports per-model receipts.
 
 `physical_accuracy_accepted=false`: the speed benchmark validates assembly equivalence and performance only; it does not certify absolute aerodynamic accuracy.
