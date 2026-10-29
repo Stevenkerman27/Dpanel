@@ -40,6 +40,11 @@ class Wing:
     section: str
     reference_area: float
     reference_point: np.ndarray
+    contact_geo: object = None
+    contact_pairs: object = None
+    contact_gamma_hat: object = None
+    trace_audit: object = None
+    te_face_pairs: object = None
 
 
 def _airfoil(x, *, thickness=.12, camber=.0):
@@ -251,7 +256,7 @@ def _from_dpanel_half_surface_edges(path):
 
 
 
-def from_dpanel_half_surface(path):
+def _from_dpanel_half_surface_te_only(path):
     """Load a true positive-y DPanel half-surface and create a FULL mirrored G1.
 
     The cross-TE pairing comes from the declared ``upper_te_faces`` /
@@ -342,6 +347,13 @@ def from_dpanel_half_surface(path):
                 vertices,full_wake,ys,Ghat,chord,float(ys[-1]-ys[0]),
                 f'half CAD mirrored: {Path(path).name}',ref_area,rp)
 
+def from_dpanel_half_surface(path):
+    """Load a CAD half-surface with all declared TE and wake/body trace cuts."""
+    from .p1_wake_contact import with_declared_contact_cuts
+    data = json.loads(Path(path).read_text(encoding='utf-8'))
+    return with_declared_contact_cuts(_from_dpanel_half_surface_te_only(path), data)
+
+
 def _mesh_as_kernel(wing):
     tri=wing.xyz[wing.faces]
     area2=np.linalg.norm(np.cross(tri[:,1]-tri[:,0],tri[:,2]-tri[:,0]),axis=1)
@@ -416,24 +428,29 @@ def assemble(wing):
     H=_interpolation_basis(wing.te_pair_y,wing.gamma_y)
     # Tip Gamma degrees are prescribed zero and are not unknowns.
     GH=H[:,1:-1]
+    if wing.contact_pairs is not None and len(wing.contact_pairs):
+        Cc=np.zeros((len(wing.contact_pairs),nt))
+        for i,(u,l) in enumerate(wing.contact_pairs):
+            Cc[i,u]+=1.; Cc[i,l]-=1.
+        C=np.vstack((C,Cc))
+        GH=np.vstack((GH,wing.contact_gamma_hat))
 
     # Define face-bank signed tangent speed near TE, at spanwise source strips.
     grad=_gradient_map(wing,mesh)
-    Vface=np.array([1.,0.,0.]);K=np.zeros((len(C),nt));pairs=[]
+    Vface=np.array([1.,0.,0.]);K=np.zeros((len(wing.te_pairs),nt));pairs=[]
     for k, (uid,lid) in enumerate(wing.te_pairs):
-        yy=wing.te_pair_y[k]; idx=[]
-        for side,node in ((1,uid),(-1,lid)):
-            adjacent=np.flatnonzero(np.any(wing.dof_face==node,axis=1)&(wing.face_bank==side))
-            if not len(adjacent):
-                # A bank may contain only non-TE-adjacent triangles in a generic
-                # CAD fixture; inspect geometry rather than guessing a physical cut.
-                adjacent=np.flatnonzero(wing.face_bank==side)
-            if not len(adjacent): raise ValueError('Missing upper/lower TE bank faces')
-            pair_xyz=wing.xyz[wing.te_geo[k]] if len(wing.te_geo)==len(wing.te_pairs) else np.array([wing.chord,yy,0.])
-            metric=4*(mesh.centers[adjacent,0]-pair_xyz[0])**2+(mesh.centers[adjacent,1]-yy)**2
-            inds=adjacent[np.argsort(metric)[:2]]
-            idx.append(inds)
-        top,bot=idx
+        if wing.te_face_pairs is not None:
+            top,bot=wing.te_face_pairs[k]
+        else:
+            yy=wing.te_pair_y[k]; idx=[]
+            for side,node in ((1,uid),(-1,lid)):
+                adjacent=np.flatnonzero(np.any(wing.dof_face==node,axis=1)&(wing.face_bank==side))
+                if not len(adjacent):
+                    raise ValueError('Missing upper/lower TE bank support')
+                pair_xyz=wing.xyz[wing.te_geo[k]] if len(wing.te_geo)==len(wing.te_pairs) else np.array([wing.chord,yy,0.])
+                metric=4*(mesh.centers[adjacent,0]-pair_xyz[0])**2+(mesh.centers[adjacent,1]-yy)**2
+                idx.append(adjacent[np.argsort(metric)[:2]])
+            top,bot=idx
         K[k]=np.mean(np.einsum('i,fij->fj',Vface,grad[top]),axis=0)-np.mean(np.einsum('i,fij->fj',Vface,grad[bot]),axis=0)
         pairs.append((top,bot))
     return dict(A=A,W=W,C=C,GH=GH,K=K,mesh=mesh,grad=grad,te_pairs=pairs)
@@ -441,7 +458,7 @@ def assemble(wing):
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100):
-    ops=assemble(wing);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(C)
+    ops=assemble(wing);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(K)
     alpha=np.deg2rad(alpha_deg);U=np.array([np.cos(alpha),0,np.sin(alpha)])
     rhs=-ops['mesh'].centers@U
     scale=np.sqrt(ops['mesh'].areas/np.mean(ops['mesh'].areas))
