@@ -131,6 +131,54 @@ def _interpolation_basis(values, stations):
     return out
 
 
+
+def _gamma_stations_on_te_support(half_y, te_y, data, tol):
+    """Remove wake/contact-only stations from the independent lifting Gamma basis.
+
+    Contact stations may be excluded only when the CAD writer's station map
+    explicitly ties them to the physical TE-root DOF. This prevents silently
+    discarding an independent physical unknown.
+    """
+    half_y=np.asarray(half_y,float)
+    te_y=np.asarray(te_y,float)
+    positive_te=te_y[te_y>=-tol]
+    if not len(positive_te):
+        raise ValueError('No nonnegative TE stations found in half-surface')
+    root=float(np.min(positive_te));tip=float(np.max(positive_te))
+    station_map=np.asarray(data.get('gamma_station_dof',np.arange(len(half_y))),int)
+    if station_map.shape!=(len(half_y),):
+        raise ValueError('gamma_station_dof length must match gamma_stations')
+    keep=(half_y>=root-tol)&(half_y<=tip+tol)
+    excluded=np.flatnonzero(~keep)
+    root_candidates=np.flatnonzero(np.abs(half_y-root)<=tol)
+    if not len(root_candidates):
+        raise ValueError('Gamma stations must include the actual TE-root y station')
+    root_label=int(station_map[root_candidates[0]])
+    inboard=excluded[half_y[excluded]<root-tol]
+    bad_inboard=[int(i) for i in inboard if station_map[i]!=root_label]
+    outboard=excluded[half_y[excluded]>tip+tol]
+    bad_outboard=[int(i) for i in outboard if station_map[i]>=0]
+    if bad_inboard:
+        i=bad_inboard[0]
+        raise ValueError(
+            f'Gamma station y={half_y[i]:.6f} lies inboard of the TE trace '
+            f'(root {root:.6f}) but is not tied to the TE-root DOF; '
+            'refusing a zero-support circulation basis')
+    if bad_outboard:
+        i=bad_outboard[0]
+        raise ValueError(
+            f'Gamma station y={half_y[i]:.6f} lies outboard of the TE tip '
+            f'({tip:.6f}) but is still an independent DOF; '
+            'refusing to discard a circulation basis function')
+    clipped=half_y[keep]
+    if len(clipped)<2 or abs(clipped[-1]-tip)>tol:
+        raise ValueError('Gamma stations do not cover the actual TE root-to-tip span')
+    if abs(clipped[0]-root)>tol:
+        clipped=np.r_[root,clipped]
+    if abs(clipped[-1]-tip)>tol:
+        clipped=np.r_[clipped,tip]
+    return np.unique(clipped)
+
 def _from_dpanel_half_surface_edges(path):
     """Legacy adapter for surfaces that only declare trailing_edges vertex pairs.
 
@@ -164,7 +212,11 @@ def _from_dpanel_half_surface_edges(path):
     te_y=np.mean(vertices[full_te][:,:,1],axis=1)
     order=np.argsort(te_y)
     full_te=full_te[order];te_y=te_y[order]
-    ys=np.r_[-half_y[:0:-1],half_y]
+    half_y=_gamma_stations_on_te_support(half_y,te_y,data,tol)
+    if abs(float(half_y[0]))<=tol:
+        ys=np.r_[-half_y[:0:-1],half_y]
+    else:
+        ys=np.r_[-half_y[::-1],half_y]
     inner=(te_y>ys[0]+tol)&(te_y<ys[-1]-tol)
     full_te=full_te[inner];te_y=te_y[inner]
     # Some meshes have multiple geometric TE face pairs at a given station.
@@ -249,53 +301,7 @@ def from_dpanel_half_surface(path):
     te_y=vertices[te_nodes,1]
     order=np.argsort(te_y,kind='stable')
     te_nodes=te_nodes[order];te_y=te_y[order]
-    # The exported wake stations may include a fuselage-contact interval
-    # inboard of the actual wing TE (e.g. y=0, 0.2, 0.249996 at a T-tail
-    # root). Those stations are needed to mesh the wake/contact topology but
-    # must not become independent circulation DOFs: their W columns have
-    # near-zero wall support while the TE/Kutta constraints still act on them.
-    # Build the solver's Gamma basis only on the actual positive-y TE span.
-    positive_te=te_y[te_y>=-tol]
-    if not len(positive_te):
-        raise ValueError('No nonnegative TE stations found in half-surface')
-    te_root=float(np.min(positive_te))
-    te_tip=float(np.max(positive_te))
-    station_map=np.asarray(data.get('gamma_station_dof',np.arange(len(half_y))),int)
-    if station_map.shape!=(len(half_y),):
-        raise ValueError('gamma_station_dof length must match gamma_stations')
-    keep=(half_y>=te_root-tol)&(half_y<=te_tip+tol)
-    excluded=np.flatnonzero(~keep)
-    root_candidates=np.flatnonzero(np.abs(half_y-te_root)<=tol)
-    if len(root_candidates):
-        root_label=int(station_map[root_candidates[0]])
-        # Excluded contact stations may be removed only if the exporter
-        # explicitly tied them to the physical TE-root circulation station.
-        inboard=excluded[half_y[excluded] < te_root-tol]
-        bad_inboard=[int(i) for i in inboard if station_map[i]!=root_label]
-        outboard=excluded[half_y[excluded] > te_tip+tol]
-        bad_outboard=[int(i) for i in outboard if station_map[i]>=0]
-        if bad_inboard:
-            i=bad_inboard[0]
-            raise ValueError(
-                f'Gamma station y={half_y[i]:.6f} lies inboard of the TE trace '
-                f'(root {te_root:.6f}) but is not tied to the TE-root DOF; '
-                'refusing a zero-support circulation basis')
-        if bad_outboard:
-            i=bad_outboard[0]
-            raise ValueError(
-                f'Gamma station y={half_y[i]:.6f} lies outboard of the TE tip '
-                f'({te_tip:.6f}) but is still an independent DOF; '
-                'refusing to discard a circulation basis function')
-    else:
-        raise ValueError('Gamma stations must include the actual TE-root y station')
-    clipped=half_y[keep]
-    if len(clipped)<2 or abs(clipped[-1]-te_tip)>tol:
-        raise ValueError('Gamma stations do not cover the actual TE root-to-tip span')
-    if abs(clipped[0]-te_root)>tol:
-        clipped=np.r_[te_root,clipped]
-    if abs(clipped[-1]-te_tip)>tol:
-        clipped=np.r_[clipped,te_tip]
-    half_y=np.unique(clipped)
+    half_y=_gamma_stations_on_te_support(half_y,te_y,data,tol)
     # If the actual half-wing TE root is off the symmetry plane, mirror
     # that root station too. The usual [-half_y[1:], half_y] construction is
     # only valid when half_y[0] == 0; otherwise it silently drops the negative
