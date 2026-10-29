@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: issue77-gamma-\${{ github.event.pull_request.number || github.ref }}
+  group: issue77-gamma-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
