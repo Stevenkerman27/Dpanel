@@ -133,3 +133,73 @@ def test_g1_g2_jump_rows_include_contact_without_adding_kutta_rows():
     assert b['J'].shape[0] == len(w.te_pairs)+1
     assert b['K'].shape[0] == len(w.te_pairs)
     np.testing.assert_allclose(b['J'], np.column_stack((a['C'],-a['GH'])))
+
+
+def test_cut_with_two_incident_wake_faces_is_rejected():
+    x,f,w,e,k,h = octahedron_contact_ring()
+    x=np.vstack((x,[0.,0.,3.]))
+    h=np.vstack((h,[1.]))
+    # Edge (2,3) is now internal to the wake sheet, not its boundary.
+    w=np.vstack((w,[3,2,10]))
+    with pytest.raises(ValueError,match="must be a wake boundary edge"):
+        split_wall_trace_fans(x,f,w,e,k,h)
+
+
+def test_unorientable_declared_bank_is_rejected(monkeypatch):
+    import panel.p1_wake_contact as contact
+    x,f,w,e,k,h = octahedron_contact_ring()
+    original=contact._edge_table
+    calls={"n":0}
+    def malformed_edge_table(faces):
+        calls["n"]+=1
+        table=original(faces)
+        if calls["n"]==2:
+            key=tuple(sorted(map(int,e[0])))
+            face,_,_=table[key][0]
+            # Simulate corrupted oriented-edge metadata while preserving the
+            # undirected key; the defensive bank-orientation check must fire.
+            table[key]=[(face,key[0],key[0])]
+        return table
+    monkeypatch.setattr(contact,"_edge_table",malformed_edge_table)
+    with pytest.raises(ValueError,match="Cannot orient cut banks"):
+        contact.split_wall_trace_fans(x,f,w,e,k,h)
+
+
+def test_three_cut_fans_meeting_at_one_vertex_are_rejected():
+    x,f,w,e,k,h = octahedron_contact_ring()
+    x=np.vstack((x,[3.,3.,3.]))
+    h=np.vstack((h,[1.]))
+    # The equatorial ring already cuts two edges incident to vertex 2.
+    # Add a third conforming wall/wake cut on edge (0,2).
+    w=np.vstack((w,[2,0,10]))
+    e=np.vstack((e,[0,2]))
+    k=np.r_[k,"smooth_wall_contact"]
+    with pytest.raises(ValueError,match="Branched cut at vertex 2"):
+        split_wall_trace_fans(x,f,w,e,k,h)
+
+
+def test_open_cut_endpoint_with_nonzero_gamma_basis_is_rejected():
+    x,f,_,_,_,h = octahedron_contact_ring()
+    x=np.vstack((x,[2.,2.,2.]))
+    h=np.vstack((h,[1.]))
+    # A single shared edge is an open cut: the wall fan remains connected
+    # around each endpoint, so a nonzero Gamma trace cannot be left unsplit.
+    wake=np.array([[2,3,10]],int)
+    edges=np.array([[2,3]],int)
+    kinds=np.array(["smooth_wall_contact"])
+    with pytest.raises(ValueError,match="Unsplit cut endpoint"):
+        split_wall_trace_fans(x,f,wake,edges,kinds,h)
+
+
+def test_contact_adapter_rejects_changed_mirrored_geometry():
+    from dataclasses import replace
+    from panel.p1_lifting_g1 import _from_dpanel_half_surface_te_only
+    from panel.p1_wake_contact import with_declared_contact_cuts
+    path=ROOT/'cases/geom_robust/surfaces/conv_s075/surface.json'
+    data=json.loads(path.read_text(encoding="utf-8"))
+    wing=_from_dpanel_half_surface_te_only(path)
+    xyz=wing.xyz.copy()
+    xyz[0,0]+=1e-4
+    changed=replace(wing,xyz=xyz)
+    with pytest.raises(ValueError,match="unchanged mirrored geometry"):
+        with_declared_contact_cuts(changed,data)
