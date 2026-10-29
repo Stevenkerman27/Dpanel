@@ -55,8 +55,8 @@ def test_g1_adapter_audits_generated_te_dofs_without_modifying_state():
     wing=make_wing(chord_panels=4,span_panels=4,wake_panels=2)
     mu=np.zeros(wing.ndof_mu)
     gamma=np.array([.1,.2,.1])
-    mu[wing.te_upper[1:-1]]=0.
-    mu[wing.te_lower[1:-1]]=-gamma
+    mu[wing.te_up[1:-1]]=0.
+    mu[wing.te_down[1:-1]]=-gamma
     before=mu.copy()
     r=audit_g1_te_jump(wing,mu,gamma)
     assert r["status"]=="pass",r
