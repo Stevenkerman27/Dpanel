@@ -246,12 +246,51 @@ def from_dpanel_half_surface(path):
                              'refusing to guess a TE bank pairing'%int(fu))
         nodes.extend(int(v) for v in shared)
     te_nodes=np.unique(np.asarray(nodes,int))
-    ys=np.r_[-half_y[:0:-1],half_y]
     te_y=vertices[te_nodes,1]
     order=np.argsort(te_y,kind='stable')
     te_nodes=te_nodes[order];te_y=te_y[order]
+    # The exported wake stations may include a fuselage-contact interval
+    # inboard of the actual wing TE (e.g. y=0, 0.2, 0.249996 at a T-tail
+    # root). Those stations are needed to mesh the wake/contact topology but
+    # must not become independent circulation DOFs: their W columns have
+    # near-zero wall support while the TE/Kutta constraints still act on them.
+    # Build the solver's Gamma basis only on the actual positive-y TE span.
+    positive_te=te_y[te_y>=-tol]
+    if not len(positive_te):
+        raise ValueError('No nonnegative TE stations found in half-surface')
+    te_root=float(np.min(positive_te))
+    te_tip=float(np.max(positive_te))
+    station_map=np.asarray(data.get('gamma_station_dof',np.arange(len(half_y))),int)
+    if station_map.shape!=(len(half_y),):
+        raise ValueError('gamma_station_dof length must match gamma_stations')
+    keep=(half_y>=te_root-tol)&(half_y<=te_tip+tol)
+    excluded=np.flatnonzero(~keep)
+    root_candidates=np.flatnonzero(np.abs(half_y-te_root)<=tol)
+    if len(root_candidates):
+        root_label=int(station_map[root_candidates[0]])
+        # Excluded contact stations may be removed only if the exporter
+        # explicitly tied them to the physical TE-root circulation station.
+        unrelated=[int(i) for i in excluded
+                   if station_map[i]!=root_label and station_map[i]>=0]
+        if unrelated:
+            i=unrelated[0]
+            raise ValueError(
+                f'Gamma station y={half_y[i]:.6f} lies inboard of the TE trace '
+                f'(root {te_root:.6f}) but is not tied to the TE-root DOF; '
+                'refusing a zero-support circulation basis')
+    else:
+        raise ValueError('Gamma stations must include the actual TE-root y station')
+    clipped=half_y[keep]
+    if len(clipped)<2 or abs(clipped[-1]-te_tip)>tol:
+        raise ValueError('Gamma stations do not cover the actual TE root-to-tip span')
+    if abs(clipped[0]-te_root)>tol:
+        clipped=np.r_[te_root,clipped]
+    if abs(clipped[-1]-te_tip)>tol:
+        clipped=np.r_[clipped,te_tip]
+    half_y=np.unique(clipped)
+    ys=np.r_[-half_y[:0:-1],half_y]
     if te_y[0]<ys[0]-tol or te_y[-1]>ys[-1]+tol:
-        raise ValueError('TE nodes fall outside the declared gamma station span')
+        raise ValueError('TE nodes fall outside the clipped gamma station span')
     used_wall=np.unique(full_faces)
     compact=np.full(len(vertices),-1,dtype=int)
     compact[used_wall]=np.arange(len(used_wall))
