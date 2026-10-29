@@ -134,3 +134,7 @@ def test_component_pressure_load_split_sums_to_total_pressure_force(tmp_path):
     assert sum(x["faces"] for x in result.values())==4
     assert sum(x["CD_pressure"] for x in result.values())==pytest.approx(
         np.sum(-(state["cp"]*ms.areas)*ms.normals[:,0])/geom.reference_area)
+    for component in result.values():
+        assert component["drag_cancellation_ratio"]>=1.
+        assert len(component["top_abs_cp_faces"])==2
+        assert len(component["top_positive_drag_faces"])==2
