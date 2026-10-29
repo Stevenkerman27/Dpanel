@@ -76,6 +76,4 @@ mesh-sensitive.
 The closed-form segment formula was independently exercised against four
 manufactured cases: aligned traces, unmatched interior Gamma knot, cancellation
 of signed residual, and partition-of-unity identity for the weak moments.
-These four checks passed. The full G1/G2 repository tests and the actual
-runner have not been executed in this sandbox because it cannot clone the
-repository; local execution of the commands above remains required.
+An isolated copy of the diagnostic module and its five pure-function tests was actually run in the sandbox: **5 passed / exit 0 in 0.06 s**. The G1/G2 adapter integration tests, full repository tests and actual runner have not been executed in this sandbox because it cannot clone the repository; local execution of the commands above remains required. Receipt: /mnt/data/dpanel_te_jump_integral_sandbox_receipt.json.
