@@ -56,7 +56,8 @@ def run_case(c, span, alpha, camber, wake_panels, methods):
             nonlinear=state["nonlinear"],
             nonlinear_success=(None if state["nonlinear"] is None else bool(state["nonlinear"]["success"])),
             nonlinear_nfev=(None if state["nonlinear"] is None else int(state["nonlinear"]["nfev"])),
-            status=("iteration_limit" if state["nonlinear"] is not None and not state["nonlinear"]["success"] else "solver_success"),
+            status=("solver_success" if state["nonlinear"] is None or state["nonlinear"]["success"] else
+                    ("iteration_limit" if int(state["nonlinear"]["nfev"]) >= 200 else "solver_failure")),
             te_jump=jump,
             deliberate_gamma_perturbation=(
                 None if pert is None else dict(
@@ -90,6 +91,7 @@ def main(argv=None):
                          thread_env={k:os.environ.get(k) for k in
                                      ("OPENBLAS_NUM_THREADS","OMP_NUM_THREADS","MKL_NUM_THREADS")}),
         options=dict(chord_panels=a.chord_panels,span_panels=a.span_panels,alpha=a.alpha,
+                     max_nfev=200,
                      camber=a.camber,wake_panels=a.wake_panels,methods=a.methods),
         cases=[])
     t=time.perf_counter()
