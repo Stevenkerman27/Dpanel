@@ -1,0 +1,78 @@
+name: Issue 77 Gamma support and CAD solve regression
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - "panel/p1_lifting_g1.py"
+      - "panel/p1_galerkin_solver.py"
+      - "tools/issue71/galerkin_cad_sweep.py"
+      - "test/test_p1_galerkin_cad.py"
+      - "test/test_p1_galerkin_solver.py"
+      - ".github/workflows/issue77-gamma-support.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issue77-gamma-\${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: .
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install --upgrade numpy scipy pytest 'jax[cpu]'
+      - name: Run related solver and CAD regressions
+        run: >
+          python -m pytest
+          test/test_p1_edge_singularity.py
+          test/test_p1_te_trace_audit.py
+          test/test_p1_te_jump_integral.py
+          test/test_p1_galerkin_wall.py
+          test/test_p1_galerkin_solver.py
+          test/test_p1_galerkin_cad.py
+          test/test_p1_lifting_g1.py
+          test/test_p1_lifting_g2.py
+          -q
+
+  cad-solves:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      PYTHONPATH: .
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install --upgrade numpy scipy pytest 'jax[cpu]'
+      - name: Solve all four CAD-derived models after Gamma support fix
+        run: >
+          python tools/issue71/galerkin_cad_sweep.py
+          --models elliptic_s075 conv_s075 swept30_s075 bwb_s055
+          --methods signed_speed --order 2 --max-nfev 80
+          --out runs/issue77_cad_solve.json
+      - name: Upload per-model diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue77-cad-solve
+          path: runs/issue77_cad_solve.json
+          if-no-files-found: warn
