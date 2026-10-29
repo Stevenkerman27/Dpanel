@@ -97,5 +97,4 @@ def test_single_group_wall_and_multi_group_batched_assemblies_match():
     multi=assemble_galerkin_multi(mesh,order=2,target_face_batch=5,block=128)
     np.testing.assert_allclose(multi["A"],one["A"],rtol=2e-12,atol=2e-12)
     np.testing.assert_allclose(multi["W"],one["W"],rtol=2e-12,atol=2e-12)
-    np.testing.assert_allclose(multi["b_xyz"],one["M"]@np.zeros((wing.ndof_mu,3)) + (
-        multi["b_xyz"]),rtol=0,atol=0)
+    np.testing.assert_allclose(multi["b_xyz"]@np.array([1.,0.,0.]),one["b"],rtol=2e-12,atol=2e-12)
