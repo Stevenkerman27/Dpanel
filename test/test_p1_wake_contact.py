@@ -203,3 +203,24 @@ def test_contact_adapter_rejects_changed_mirrored_geometry():
     changed=replace(wing,xyz=xyz)
     with pytest.raises(ValueError,match="unchanged mirrored geometry"):
         with_declared_contact_cuts(changed,data)
+
+
+def test_cad_sweep_exports_trace_audit_and_contact_jump_for_any_backend():
+    from types import SimpleNamespace
+    from tools.issue71.galerkin_cad_sweep import trace_audit_summary, contact_jump_diagnostics
+    audit=dict(split_nodes=3,contact_jump_rows=2,unsplit_zero_gamma_tips=[9],
+               contact_edges=2,trailing_edges=4,wall_potential_dofs=13,
+               contact_constraints_are_not_kutta=True)
+    group=SimpleNamespace(name="main",trace_audit=audit,
+        contact_pairs=np.array([[0,1],[2,3]]),
+        contact_gamma_hat=np.array([[.5],[.25]]))
+    mesh=SimpleNamespace(groups=(group,))
+    summary=trace_audit_summary(mesh)
+    assert summary["main"]["split_nodes"]==3
+    assert summary["main"]["contact_jump_rows"]==2
+    assert summary["main"]["unsplit_zero_gamma_tips"]==[9]
+    state=dict(mu=np.array([1.,0.,.5,.25]),gamma=np.array([1.]))
+    report=contact_jump_diagnostics(mesh,state,{"slices":{"main":slice(0,1)}})
+    assert report["main"]["rows"]==2
+    assert report["main"]["rms"]==pytest.approx(0.)
+    assert report["main"]["condition"]=="wake_body_potential_jump_not_kutta"
