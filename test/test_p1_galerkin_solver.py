@@ -18,7 +18,10 @@ def fixture():
 def test_galerkin_assembly_shapes_and_mass_dual_data():
     mesh=fixture()
     ops=assemble_galerkin_multi(mesh,order=2)
+    from panel.p1_lifting_g2 import assemble_multi
+    collocation=assemble_multi(mesh)
     n=mesh.ndof_mu
+    assert ops["W"].shape[1]==collocation["W"].shape[1]
     assert ops["A"].shape==(n,n)
     assert ops["W"].shape[0]==n
     assert ops["M"].shape==(n,n)
