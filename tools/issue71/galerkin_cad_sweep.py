@@ -152,6 +152,7 @@ def run_model(name,path,args):
         mesh=combine_wings([wing],names=[name],origins=[(0.,0.,0.)],
             reference_area=wing.reference_area,reference_chord=wing.chord,
             reference_point=wing.reference_point)
+        row["mesh_input"]["trace_audit_by_group"]=trace_audit_summary(mesh)
         row["stages"]["geometry_seconds"]=time.perf_counter()-t
         t=time.perf_counter()
         coll=assemble_multi(mesh)
