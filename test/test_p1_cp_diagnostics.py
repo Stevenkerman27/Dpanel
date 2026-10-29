@@ -98,3 +98,25 @@ def test_degenerate_triangle_and_bad_step_fail_loudly():
                             np.array([[0,1,2]]),np.array([[0,1,2]]),[0.,1.,2.])
     with pytest.raises(ValueError):
         potential_gradient_fd4(total_phi,np.zeros((1,3)),0.)
+
+
+def test_zero_drag_cancellation_ratio_is_null_with_explicit_reason():
+    cp=np.array([1.,-1.]);areas=np.ones(2)
+    normals=np.array([[0.,0.,1.],[0.,0.,1.]])
+    centers=np.zeros((2,3))
+    d=pressure_load_diagnostic(cp,areas,normals,centers,1.,[1.,0.,0.],[0.,0.,1.])
+    assert d["CD_pressure"]==pytest.approx(0.)
+    assert d["drag_abs_sum"]==pytest.approx(0.)
+    assert d["drag_cancellation_ratio"] is None
+    assert d["drag_cancellation_status"]=="no_drag_contributions"
+
+
+def test_nonzero_face_drag_with_zero_net_is_reported_as_complete_cancellation():
+    cp=np.array([.2,-.2]);areas=np.ones(2)
+    normals=np.array([[1.,0.,0.],[1.,0.,0.]])
+    centers=np.zeros((2,3))
+    d=pressure_load_diagnostic(cp,areas,normals,centers,1.,[1.,0.,0.],[0.,0.,1.])
+    assert d["CD_pressure"]==pytest.approx(0.)
+    assert d["drag_abs_sum"]==pytest.approx(.4)
+    assert d["drag_cancellation_ratio"] is None
+    assert d["drag_cancellation_status"]=="complete_cancellation"
