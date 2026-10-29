@@ -6,7 +6,7 @@ from panel.p1_galerkin_wall import p1_mass_matrix, assemble_galerkin_wall
 
 def test_exact_assembled_P1_mass_matrix_is_symmetric_positive_definite():
     from panel.p1_lifting_g1 import make_wing
-    wing=make_wing(chord_panels=2,span_panels=2,wake_panels=1)
+    wing=make_wing(chord_panels=3,span_panels=3,wake_panels=1)
     M=p1_mass_matrix(wing)
     np.testing.assert_allclose(M,M.T,atol=1e-14)
     assert np.linalg.eigvalsh(M).min()>0
@@ -19,7 +19,7 @@ def test_exact_assembled_P1_mass_matrix_is_symmetric_positive_definite():
 
 def test_galerkin_rhs_integrates_linear_freestream_exactly():
     from panel.p1_lifting_g1 import make_wing
-    wing=make_wing(chord_panels=2,span_panels=2,wake_panels=1)
+    wing=make_wing(chord_panels=3,span_panels=3,wake_panels=1)
     U=np.array([.8,0.,.6])
     out=assemble_galerkin_wall(wing,freestream=U,order=2,include_wake=False)
     exact=-sum(
@@ -34,7 +34,7 @@ def test_galerkin_rhs_integrates_linear_freestream_exactly():
 
 def test_galerkin_matrix_has_the_exact_P1_self_jump_mass_term():
     from panel.p1_lifting_g1 import make_wing, _doublet_matrix, _mesh_as_kernel
-    wing=make_wing(chord_panels=2,span_panels=2,wake_panels=1)
+    wing=make_wing(chord_panels=3,span_panels=3,wake_panels=1)
     mesh=_mesh_as_kernel(wing)
     f=0; tri=mesh.triangles[f]
     # Degree-two exact 3-point rule on target triangle.
@@ -55,3 +55,21 @@ def test_invalid_quadrature_order_is_rejected():
     from panel.p1_galerkin_wall import _duffy_rule
     with pytest.raises(ValueError):
         _duffy_rule(1)
+
+
+def test_closed_body_constant_doublet_weak_identity():
+    from panel.p1_lifting_g1 import make_wing
+    wing=make_wing(chord_panels=3,span_panels=3,wake_panels=1)
+    out=assemble_galerkin_wall(wing,order=3,include_wake=False)
+    residual=out["A"]@np.ones(wing.ndof_mu)+out["M"]@np.ones(wing.ndof_mu)
+    relative=np.linalg.norm(residual)/np.linalg.norm(out["M"]@np.ones(wing.ndof_mu))
+    assert relative<1e-7
+
+
+def test_galerkin_operator_is_finite_at_two_quadrature_orders():
+    from panel.p1_lifting_g1 import make_wing
+    wing=make_wing(chord_panels=3,span_panels=3,wake_panels=1)
+    a2=assemble_galerkin_wall(wing,order=2,include_wake=False)
+    a3=assemble_galerkin_wall(wing,order=3,include_wake=False)
+    assert np.isfinite(a2["A"]).all() and np.isfinite(a3["A"]).all()
+    assert np.linalg.norm(a3["A"]-a2["A"])<np.linalg.norm(a2["A"])*2.
