@@ -74,7 +74,7 @@ jobs:
           --models elliptic_s075 conv_s075 swept30_s075 bwb_s055
           --assembly-only --order 2
           --out runs/issue71_cad_assembly_ci.json
-      - name: Solve two representative CAD models with both closures available
+      - name: Solve two representative CAD models with signed-speed Kutta
         run: >
           python tools/issue71/galerkin_cad_sweep.py
           --models elliptic_s075 swept30_s075
