@@ -90,7 +90,7 @@ def audit_te_jump_integral(te_y, mu_jump, gamma_y, gamma_values, *, atol=1e-10):
         weak_moment_linf=float(np.max(np.abs(moments))),
         scale=scale,
         edges=edges,
-        integral_alone_can_hide_cancellation=(
+        integral_alone_can_hide_cancellation=bool(
             abs(signed_integral) <= atol*scale*(y[-1]-y[0]) and
             np.max(np.abs(residual)) > 10*atol*scale))
 
@@ -99,8 +99,8 @@ def audit_g1_te_jump(wing, mu, gamma, *, atol=1e-10):
     """Audit a solved G1 Wing, including shared geometric tip endpoints."""
     mu = _vec("mu", mu)
     gamma = _vec("gamma", gamma)
-    upper = np.asarray(wing.te_upper, dtype=int)
-    lower = np.asarray(wing.te_lower, dtype=int)
+    upper = np.asarray(wing.te_up, dtype=int)
+    lower = np.asarray(wing.te_down, dtype=int)
     y = np.asarray(wing.xyz, float)[np.asarray(wing.te_geo, dtype=int), 1]
     order = np.argsort(y)
     y, upper, lower = y[order], upper[order], lower[order]
