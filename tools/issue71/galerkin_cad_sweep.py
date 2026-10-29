@@ -113,6 +113,25 @@ def component_pressure_loads(path,state,ms,geometry,alpha_deg):
         )
     return result
 
+
+def trace_audit_summary(mesh):
+    """Keep topology acceptance evidence beside every CAD solve receipt."""
+    fields=("wall_geometric_nodes","wall_potential_dofs","split_nodes",
+            "te_jump_rows","contact_jump_rows","unsplit_zero_gamma_tips",
+            "contact_edges","trailing_edges","contact_constraints_are_not_kutta")
+    out={}
+    for group in mesh.groups:
+        audit=getattr(group,"trace_audit",None)
+        if audit is not None:
+            out[group.name]={key:clean(audit[key]) for key in fields if key in audit}
+    return out
+
+
+def contact_jump_diagnostics(mesh,state,ops):
+    """Evaluate the wall trace jump for either Galerkin or collocation states."""
+    from panel.p1_wake_contact import contact_jump_report
+    return contact_jump_report(mesh,state["mu"],state["gamma"],ops["slices"])
+
 def run_model(name,path,args):
     from panel.p1_lifting_g1 import from_dpanel_half_surface
     from panel.p1_lifting_g2 import combine_wings,assemble_multi,solve_multi
@@ -128,7 +147,8 @@ def run_model(name,path,args):
             half_faces=int(len(json.loads(path.read_text())["faces"])),
             full_faces=int(len(wing.faces)),full_vertices=int(len(wing.xyz)),
             mu_dofs=int(wing.ndof_mu),gamma_dofs=int(wing.gamma_hat.shape[1]),
-            te_pairs=int(len(wing.te_pairs)),wake_faces=int(len(wing.wake_faces)))
+            te_pairs=int(len(wing.te_pairs)),wake_faces=int(len(wing.wake_faces)),
+            trace_audit=clean(wing.trace_audit or {}))
         mesh=combine_wings([wing],names=[name],origins=[(0.,0.,0.)],
             reference_area=wing.reference_area,reference_chord=wing.chord,
             reference_point=wing.reference_point)
@@ -178,7 +198,7 @@ def run_model(name,path,args):
                         gamma_column_norm_min=state.get("gamma_column_norm_min"),
                         gamma_column_norm_median=state.get("gamma_column_norm_median"),
                         solution_status=state.get("solution_status"),
-                        contact_jump=state.get("contact_jump",{}),
+                        contact_jump=contact_jump_diagnostics(mesh,state,ops),
                         diagnostic_warnings=state.get("diagnostic_warnings",[]),
                         implausible_reasons=state.get("implausible_reasons",[]),
                         te_jump=audit_g2_group_te_jump(mesh,state,ops,name),
