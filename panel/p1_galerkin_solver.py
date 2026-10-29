@@ -69,7 +69,7 @@ def assemble_galerkin_multi(mesh, *, order=3, block=32):
                     W[row,slices[groups[gidx].name]]+=wk@Dg
     return dict(A=A,W=W,M=M,b_xyz=bxyz,mesh=ms,base_mesh=mesh,
                 J=base["J"],K=base["K"],grad=base["grad"],
-                slices=slices,te_face_pairs=base["te_face_pairs"],
+                slices=slices,te_face_pairs=[p for group_pairs in base["te_face_pairs"] for p in group_pairs],
                 group_info=base["group_info"],order=order,
                 formulation="P1 Galerkin target-test projection",
                 self_jump="exact full P1 mass contribution -0.5*M_local",
