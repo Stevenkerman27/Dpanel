@@ -112,7 +112,7 @@ def component_pressure_loads(path,state,ms,geometry,alpha_deg):
                 for i in high_cp],
             top_positive_drag_faces=[dict(face=int(i),center=ms.centers[i].tolist(),
                 cp=float(cp[i]),area=float(ms.areas[i]),CD_face=float(cd_face[i]))
-                for i in high_drag])
+                for i in high_drag]
         )
     return result
 
