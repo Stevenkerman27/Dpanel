@@ -7,6 +7,8 @@ on:
       - "panel/p1_*.py"
       - "tools/issue71/*.py"
       - "test/test_p1_*.py"
+      - "docs/ISSUE77_*.md"
+      - "docs/issue77/**"
       - ".github/workflows/issue77-gamma-support.yml"
   workflow_dispatch:
 
