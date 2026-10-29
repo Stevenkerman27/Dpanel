@@ -24,7 +24,7 @@ from panel.p1_te_jump_integral import audit_g2_group_te_jump, audit_te_jump_inte
 
 def jsonable(x):
     if isinstance(x,np.ndarray): return x.tolist()
-    if isinstance(x,(np.floating,np.integer)): return x.item()
+    if isinstance(x,(np.floating,np.integer,np.bool_)): return x.item()
     if isinstance(x,dict): return {str(k):jsonable(v) for k,v in x.items()}
     if isinstance(x,(tuple,list)): return [jsonable(v) for v in x]
     return x
@@ -53,7 +53,11 @@ def run_case(c, span, alpha, camber, wake_panels, methods):
             gamma_sum=float(np.sum(state["gamma"])),wall_rms=float(state["wall_rms"]),
             jump_rms=float(state["jump_rms"]),signed_kutta_rms=float(state["signed_kutta_rms"]),
             pressure_kutta_rms=float(state["pressure_kutta_rms"]),
-            nonlinear=state["nonlinear"],te_jump=jump,
+            nonlinear=state["nonlinear"],
+            nonlinear_success=(None if state["nonlinear"] is None else bool(state["nonlinear"]["success"])),
+            nonlinear_nfev=(None if state["nonlinear"] is None else int(state["nonlinear"]["nfev"])),
+            status=("iteration_limit" if state["nonlinear"] is not None and not state["nonlinear"]["success"] else "solver_success"),
+            te_jump=jump,
             deliberate_gamma_perturbation=(
                 None if pert is None else dict(
                     nodal_residual_max=pert["nodal_residual_max"],
