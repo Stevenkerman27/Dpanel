@@ -117,3 +117,16 @@ def test_invalid_inputs_fail_closed():
         segment_biot_savart([0., 1., 0.], [0., 0., 0.], [0., 0., 0.])
     with pytest.raises(FloatingPointError, match="singular vortex segment"):
         segment_biot_savart([0.5, 0., 0.], [0., 0., 0.], [1., 0., 0.])
+
+
+def test_curved_polyline_pv_of_one_straight_self_segment_is_not_total_self_induction():
+    # The query lies inside segment 0 but not on segment 1. The straight
+    # segment's symmetric PV is zero, while the rest of the bent filament
+    # still induces a nonzero velocity. This intentionally does NOT claim an
+    # analytic curvature correction for the complete filament.
+    vertices = np.array([[-1., 0., 0.], [0., 0., 0.], [0.5, 0.8, 0.2]])
+    point = np.array([-0.4, 0., 0.])
+    remaining = segment_biot_savart(point, vertices[1], vertices[2], 1.0)
+    total = polyline_biot_savart(point, vertices, 1.0, on_segment="straight_pv_zero")
+    np.testing.assert_allclose(total, remaining, rtol=1e-14, atol=1e-14)
+    assert np.linalg.norm(total) > 0.0
