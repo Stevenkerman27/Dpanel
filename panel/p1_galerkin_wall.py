@@ -85,7 +85,7 @@ def assemble_galerkin_wall(wing, freestream=(1.,0.,0.), order=3,
         Dwall = _doublet_matrix(tris, points, self_faces=np.full(len(points),f),
                                 face_dofs=wing.dof_face, ndof=ndof, block=block)
         Dwake = None
-        if include_wake and ngfull > 2:
+        if include_wake and ngfull > 0:
             Dw_nodes = _doublet_matrix(wake_tris, points, face_dofs=wake_dofs,
                                        ndof=nwake, block=block)
             Dwake = Dw_nodes @ H
