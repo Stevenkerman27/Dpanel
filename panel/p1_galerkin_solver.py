@@ -162,7 +162,7 @@ def solve_galerkin_multi(mesh, alpha_deg=5., *, kutta="signed_speed",
     if abs(cd_value)>1.:implausible.append("abs_CD_pressure_gt_1")
     if gamma_norm>50.*max(mu_norm,1e-30):implausible.append("gamma_norm_gt_50_mu_norm")
     if constrained_condition>1e6:implausible.append("constrained_condition_gt_1e6")
-    if gamma_col_norms.size and float(gamma_col_norms.min()) < 1e-4*max(float(np.median(gamma_col_norms)),1e-30):
+    if gamma_col_norms.size and float(gamma_col_norms.min()) < 0.1*max(float(np.median(gamma_col_norms)),1e-30):
         implausible.append("near_zero_support_gamma_column")
     solution_status="implausible_solution" if implausible else (
         "solver_success" if nonlinear is None or nonlinear["success"] else "nonlinear_not_converged")
