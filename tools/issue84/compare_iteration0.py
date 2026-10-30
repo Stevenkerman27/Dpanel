@@ -39,6 +39,9 @@ def compare_runs(reference, candidate, *, state_atol=1e-10, state_rtol=1e-10):
         key: [ref_params.get(key), cand_params.get(key)]
         for key in invariant_parameters if ref_params.get(key) != cand_params.get(key)
     }
+    for key in ("reference_area", "reference_chord"):
+        if ref_receipt.get(key) != cand_receipt.get(key):
+            parameter_differences[key] = [ref_receipt.get(key), cand_receipt.get(key)]
     geometry_keys = [k for k in ref if k.endswith(("_xyz", "_faces", "_dof_face",
                                                     "_gamma_hat", "_roots",
                                                     "_predecessor", "_used"))]
