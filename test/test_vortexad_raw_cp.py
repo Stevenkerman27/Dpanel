@@ -51,6 +51,11 @@ def test_raw_cp_is_preserved_and_cutoff_effect_is_measured():
     csdl = pytest.importorskip("csdl_alpha")
     pytest.importorskip("jax")
     vortex = pytest.importorskip("VortexAD")
+    mesh = Path(vortex.SAMPLE_GEOMETRY_PATH) / "pm" / "naca0012_LE_TE_cluster.stl"
+    if not mesh.is_file():
+        pytest.skip(f"VortexAD sample mesh data missing from this install: {mesh} "
+                    "(the wheel ships no STL under core/geometry/sample_meshes/pm; "
+                    "use a source checkout on PYTHONPATH or copy the STL files)")
 
     raw = _run(csdl, vortex, None)
     default = _run(csdl, vortex, -5.0)
