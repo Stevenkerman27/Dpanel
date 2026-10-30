@@ -695,5 +695,10 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
                 recorded_method=recorded_method, evaluated_method=method,
                 recorded_core_radius=recorded_core, evaluated_core_radius=selected_core,
                 quadrature_order=selected_order,
+                replay_mode=("reproduce_recorded_samples" if method == recorded_method
+                             and selected_core == recorded_core
+                             and selected_order == int(arrays['sampling_order'])
+                             else "alternate_velocity_on_frozen_state"),
+                evaluation_finite=all(np.isfinite(v) for v in differences.values()),
                 strength_solve_kernel="frozen_unregularized_P1_BEM_state",
                 physical_accuracy_accepted=False)
