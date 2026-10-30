@@ -77,13 +77,18 @@ def compare_runs(reference, candidate, *, state_atol=1e-10, state_rtol=1e-10):
         slip[group] = dict(
             reference=ref_diag.get("overall", {}).get("slip_rms"),
             candidate=cand_diag.get("overall", {}).get("slip_rms"))
+    reference_order = int(ref.get("sampling_order", -1))
+    candidate_order = int(cand.get("sampling_order", -1))
     return dict(
-        schema="dpanel.issue84.iteration0_ab.v1",
+        schema="dpanel.issue84.iteration0_ab.v2",
         reference=str(reference), candidate=str(candidate),
         reference_method=ref_iter.get("velocity_method"),
         candidate_method=cand_iter.get("velocity_method"),
         reference_core_radius=ref_iter.get("core_radius"),
         candidate_core_radius=cand_iter.get("core_radius"),
+        reference_quadrature_order=reference_order,
+        candidate_quadrature_order=candidate_order,
+        quadrature_order_match=(reference_order == candidate_order),
         parameter_differences=parameter_differences,
         missing_candidate_arrays=missing,
         geometry_differences=geometry_differences,
