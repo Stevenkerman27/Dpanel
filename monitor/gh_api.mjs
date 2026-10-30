@@ -26,14 +26,23 @@ function recordOwnAction(apiPath, method, body) {
       if (parsed && Number.isFinite(parsed.number)) number = Number(parsed.number);
     } catch {}
   }
-  const entry = { kind: "api", number, at: new Date().toISOString() };
+  const entries = [{ kind: "api", number, at: new Date().toISOString() }];
+  // 发/改评论时补一条带 commentId 的精确记账，供监听器逐条比对（见 monitor/README.md「评论级事件」）。
+  if (/\/(?:issues|pulls)\/\d+\/comments$/.test(apiPath) && method !== "DELETE" && body) {
+    try {
+      const parsed = JSON.parse(body);
+      if (parsed && Number.isFinite(parsed.id)) {
+        entries.push({ kind: "comment", number, commentId: parsed.id, at: new Date().toISOString() });
+      }
+    } catch {}
+  }
   const ledger = path.join(HERE, "state", "own_actions.json");
   let list = [];
   try {
     list = JSON.parse(fs.readFileSync(ledger, "utf8"));
   } catch {}
   const cutoff = Date.now() - 3 * 24 * 3600 * 1000;
-  list = list.filter((a) => Date.parse(a.at) > cutoff).concat([entry]);
+  list = list.filter((a) => Date.parse(a.at) > cutoff).concat(entries);
   fs.mkdirSync(path.dirname(ledger), { recursive: true });
   fs.writeFileSync(ledger, JSON.stringify(list, null, 2), "utf8");
 }

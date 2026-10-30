@@ -14,9 +14,15 @@ const cfg = JSON.parse(fs.readFileSync(path.join(HERE, "config.json"), "utf8"));
 const OWN_ACTIONS = path.join(HERE, "state", "own_actions.json");
 
 // 记录本地发出的评论：监听器靠这本账把我自己发的帖子与云端同账号发的区分开。
-function recordOwnAction(apiPath) {
+// 必须带 commentId：云端在同一线程上的评论会落在同一个时间窗口里，只有 id 才能区分。
+function recordOwnAction(apiPath, commentId) {
   const m = /repos\/[^/]+\/[^/]+\/(?:issues|pulls)\/(\d+)\/comments/.exec(apiPath);
-  const entry = { kind: "comment", number: m ? Number(m[1]) : null, at: new Date().toISOString() };
+  const entry = {
+    kind: "comment",
+    number: m ? Number(m[1]) : null,
+    commentId: Number.isFinite(commentId) ? commentId : null,
+    at: new Date().toISOString(),
+  };
   let list = [];
   try {
     list = JSON.parse(fs.readFileSync(OWN_ACTIONS, "utf8"));
@@ -58,7 +64,7 @@ if (res.status === 201) {
   try {
     j = JSON.parse(res.body);
   } catch {}
-  recordOwnAction(apiPathRaw);
+  recordOwnAction(apiPathRaw, j.id);
   console.log("OK", j.html_url, "id:", j.id, "bytes:", Buffer.byteLength(body, "utf8"), "route:", res.route);
   process.exit(0);
 }
