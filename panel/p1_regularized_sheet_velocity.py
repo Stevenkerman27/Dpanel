@@ -76,7 +76,7 @@ class RegularizedP1SheetField:
     """
 
     def __init__(self, parts, *, freestream=(1.0, 0.0, 0.0),
-                 core_radius, quadrature_order=16):
+                 core_radius, quadrature_order=48):
         self.freestream = np.asarray(freestream, float).copy()
         self.core_radius = float(core_radius)
         if (self.freestream.shape != (3,) or not np.isfinite(self.freestream).all()
@@ -85,6 +85,9 @@ class RegularizedP1SheetField:
         if type(quadrature_order) is not int or quadrature_order < 4:
             raise ValueError("quadrature_order must be an integer >= 4")
         self.quadrature_order = quadrature_order
+        self._triangle_area2 = np.linalg.norm(np.cross(
+            np.concatenate(tri_parts)[:, 1]-np.concatenate(tri_parts)[:, 0],
+            np.concatenate(tri_parts)[:, 2]-np.concatenate(tri_parts)[:, 0]), axis=1)
         self._quadrature = {}
         tri_parts, normal_parts, gamma_parts, edge_a, edge_b, edge_mu = [], [], [], [], [], []
         for xyz, faces, values in parts:
@@ -138,13 +141,48 @@ class RegularizedP1SheetField:
         source = np.einsum("qv,fvi->fqi", bary, self.triangles)
         r = point[None, None, :]-source
         den = (np.einsum("fqi,fqi->fq", r, r)+self.core_radius**2)**1.5
-        cross_norm = np.linalg.norm(np.cross(
-            self.triangles[:, 1]-self.triangles[:, 0],
-            self.triangles[:, 2]-self.triangles[:, 0]), axis=1)
         # Duffy map Jacobian is |(x1-x0) x (x2-x0)| * (1-u).
         area_integral = np.einsum(
-            "fq,fqi->fi", weights[None, :]/den, r)*cross_norm[:, None]
+            "fq,fqi->fi", weights[None, :]/den, r)*self._triangle_area2[:, None]
         return np.sum(np.cross(self.gamma, area_integral), axis=0)
+
+
+
+    def evaluate_many(self, points, *, order=None, chunk_size=24):
+        """Evaluate a batch of field points with bounded-memory vectorization.
+
+        The expensive triangle/quadrature geometry is shared across targets.
+        Chunking caps temporary storage at O(chunk_size * n_faces * order**2).
+        """
+        pts = np.asarray(points, float)
+        if pts.ndim != 2 or pts.shape[1] != 3 or not np.isfinite(pts).all():
+            raise ValueError("points must be a finite (N,3) array")
+        n = self.quadrature_order if order is None else order
+        if type(n) is not int or n < 4 or type(chunk_size) is not int or chunk_size < 1:
+            raise ValueError("invalid quadrature order or chunk_size")
+        if n not in self._quadrature:
+            q, w = np.polynomial.legendre.leggauss(n)
+            q, w = (q+1.0)/2.0, w/2.0
+            u, v = np.meshgrid(q, q, indexing="ij")
+            weights = (w[:, None]*w[None, :]*(1.0-u)).reshape(-1)
+            bary = np.stack(((1.0-u)*(1.0-v), u, (1.0-u)*v), axis=-1).reshape(-1, 3)
+            self._quadrature[n] = (bary, weights)
+        bary, weights = self._quadrature[n]
+        source = np.einsum("qv,fvi->fqi", bary, self.triangles)
+        out = np.empty_like(pts)
+        for first in range(0, len(pts), chunk_size):
+            p = pts[first:first+chunk_size]
+            r = p[:, None, None, :]-source[None, :, :, :]
+            den = (np.einsum("cfqi,cfqi->cfq", r, r)+self.core_radius**2)**1.5
+            area_integral = np.einsum(
+                "cfq,cfqi->cfi", weights[None, None, :]/den, r)
+            area_integral *= self._triangle_area2[None, :, None]
+            area = np.sum(np.cross(self.gamma[None, :, :], area_integral), axis=1)
+            edge = np.stack([self._edge_velocity(point) for point in p])
+            out[first:first+len(p)] = self.freestream-(edge+area)/(4*np.pi)
+        if not np.isfinite(out).all():
+            raise FloatingPointError("nonfinite regularized P1 batch velocity")
+        return out
 
     def __call__(self, point, *, order=None):
         p = np.asarray(point, float)
