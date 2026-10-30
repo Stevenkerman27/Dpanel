@@ -69,6 +69,7 @@ def compare_runs(reference, candidate, *, state_atol=1e-10, state_rtol=1e-10):
             velocity_differences[key] = dict(
                 max=float(np.max(np.linalg.norm(delta, axis=-1))),
                 rms=float(np.sqrt(np.mean(np.sum(delta*delta, axis=-1)))))
+    loads_match = all(abs(value) <= 1e-9 for value in load_differences.values())
     slip = {}
     for group, ref_diag in ref_iter.get("wakes", {}).items():
         cand_diag = cand_iter.get("wakes", {}).get(group, {})
@@ -87,10 +88,11 @@ def compare_runs(reference, candidate, *, state_atol=1e-10, state_rtol=1e-10):
         geometry_differences=geometry_differences,
         state_differences=state_differences,
         load_differences=load_differences,
+        loads_match=loads_match,
         velocity_differences=velocity_differences,
         slip_rms=slip,
         same_frozen_case=(not parameter_differences and not geometry_differences
-                          and not state_differences and not missing),
+                          and not state_differences and not missing and loads_match),
         physical_accuracy_accepted=False)
 
 
