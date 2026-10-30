@@ -247,6 +247,10 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
     accepted=bool(result.success) or bool(int(result.status)==0 and stationary and at_floor and kutta_ok)
     return dict(success=accepted,message=str(result.message),nfev=int(result.nfev),
                 status=int(result.status),
+                cost=(None if getattr(result,'cost',None) is None else float(result.cost)),
+                optimality=(None if getattr(result,'optimality',None) is None
+                            else float(result.optimality)),
+                floor_method='least_squares of min ||B null(J) z - bw|| (lapack gelsd)',
                 accepted_at_residual_floor=bool(accepted and not bool(result.success)),
                 gradient_absolute=gradient_absolute,gradient_relative=gradient_relative,
                 residual_norm=r_norm,wall_rms=wall_rms,wall_floor_rms=wall_floor,

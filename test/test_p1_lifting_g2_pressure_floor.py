@@ -138,3 +138,85 @@ def test_cad_fixture_floor_stop_is_accepted():
     assert nl['accepted_at_residual_floor'] is True
     assert nl['pressure_rms'] < 1e-4
     assert nl['wall_over_floor'] <= 1.05
+
+def test_pressure_boundary_passes_below_and_fails_above():
+    op, rhs, z, floor = _system()
+    ok = pressure_kutta_acceptance(
+        result=_Stop(False, 0, 80), fun=_evaluate(op, rhs, z, 9.9e-5)[0],
+        jac=_evaluate(op, rhs, z, 9.9e-5)[1], z=z, wall_operator=op, wall_rhs=rhs,
+        pressure_residual=np.array([9.9e-5]))
+    bad = pressure_kutta_acceptance(
+        result=_Stop(False, 0, 80), fun=_evaluate(op, rhs, z, 1.01e-4)[0],
+        jac=_evaluate(op, rhs, z, 1.01e-4)[1], z=z, wall_operator=op, wall_rhs=rhs,
+        pressure_residual=np.array([1.01e-4]))
+    assert ok['criteria']['kutta'] is True and ok['success'] is True
+    assert bad['criteria']['kutta'] is False and bad['success'] is False
+    assert ok['criteria']['wall_at_floor'] and bad['criteria']['wall_at_floor']
+    assert ok['criteria']['stationary'] and bad['criteria']['stationary']
+
+
+def test_wall_floor_boundary_passes_at_1p04_and_fails_at_1p06():
+    op, rhs, z, floor = _system()
+    rng = np.random.default_rng(11)
+    direction = rng.standard_normal(z.size)
+
+    def z_at(ratio):
+        lo, hi = 0.0, 1.0
+        for _ in range(80):
+            mid = 0.5 * (lo + hi)
+            if np.linalg.norm(op @ (z + mid * direction) - rhs) / np.sqrt(op.shape[0]) < ratio * floor:
+                lo = mid
+            else:
+                hi = mid
+        return z + 0.5 * (lo + hi) * direction
+
+    results = {}
+    for ratio in (1.04, 1.06):
+        zz = z_at(ratio)
+        fun, jac = _evaluate(op, rhs, zz)
+        results[ratio] = pressure_kutta_acceptance(
+            result=_Stop(False, 0, 80), fun=fun, jac=jac, z=zz,
+            wall_operator=op, wall_rhs=rhs, pressure_residual=np.array([1e-7]),
+            gradient_tolerance=1.0)
+    assert results[1.04]['wall_over_floor'] == pytest.approx(1.04, abs=0.005)
+    assert results[1.06]['wall_over_floor'] == pytest.approx(1.06, abs=0.005)
+    assert results[1.04]['criteria']['wall_at_floor'] is True
+    assert results[1.06]['criteria']['wall_at_floor'] is False
+    assert results[1.04]['success'] is True and results[1.06]['success'] is False
+
+
+def test_gradient_boundary_flips_the_stationary_criterion():
+    op, rhs, z, floor = _system()
+    payload = 1e-7
+    baseline = pressure_kutta_acceptance(
+        result=_Stop(False, 0, 80), fun=_evaluate(op, rhs, z, payload)[0],
+        jac=_evaluate(op, rhs, z, payload)[1], z=z, wall_operator=op, wall_rhs=rhs,
+        pressure_residual=np.array([payload]))
+    g = baseline['gradient_relative']
+    assert g > 0
+    loose = pressure_kutta_acceptance(
+        result=_Stop(False, 0, 80), fun=_evaluate(op, rhs, z, payload)[0],
+        jac=_evaluate(op, rhs, z, payload)[1], z=z, wall_operator=op, wall_rhs=rhs,
+        pressure_residual=np.array([payload]), gradient_tolerance=g * 1.5)
+    tight = pressure_kutta_acceptance(
+        result=_Stop(False, 0, 80), fun=_evaluate(op, rhs, z, payload)[0],
+        jac=_evaluate(op, rhs, z, payload)[1], z=z, wall_operator=op, wall_rhs=rhs,
+        pressure_residual=np.array([payload]), gradient_tolerance=g * 0.5)
+    assert loose['criteria']['stationary'] is True and loose['success'] is True
+    assert tight['criteria']['stationary'] is False and tight['success'] is False
+    assert loose['gradient_relative'] == pytest.approx(tight['gradient_relative'], abs=1e-18)
+
+
+def test_records_raw_least_squares_stop_and_floor_method():
+    op, rhs, z, floor = _system()
+    stop = _Stop(False, 0, 80)
+    stop.cost = 7.24171408e-4
+    stop.optimality = 3.370396655870039e-05
+    fun, jac = _evaluate(op, rhs, z)
+    out = pressure_kutta_acceptance(result=stop, fun=fun, jac=jac, z=z,
+                                    wall_operator=op, wall_rhs=rhs,
+                                    pressure_residual=np.array([1e-7]))
+    assert out['cost'] == pytest.approx(7.24171408e-4)
+    assert out['optimality'] == pytest.approx(3.370396655870039e-05)
+    assert out['message'] == 'stop' and out['status'] == 0 and out['nfev'] == 80
+    assert 'gelsd' in out['floor_method']
