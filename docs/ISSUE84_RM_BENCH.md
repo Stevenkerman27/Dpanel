@@ -74,7 +74,7 @@ The RM path collapses the epsilon channel by roughly **200x** at the worst node,
 switches on the order-doubling channel, whose worst on-sheet value is **4.31e-3**, i.e. above the
 production `quadrature_tol = 2e-3`.
 
-## 3. Is any quadrature order certified near the sheet? No.
+## 3. Is any quadrature order certified near the sheet? No — the mechanism is sliver triangles
 
 `panel/p1_regularized_sheet_velocity.py:135-150` builds the area term from a **fixed
 tensor-product Gauss–Legendre rule of order n** mapped by a Duffy collapse of **one vertex**
@@ -104,6 +104,68 @@ aliasing — both orders can alias.
 
 Raising the global order is therefore not an acceptable fix, and **lowering it is clearly wrong**:
 at r/core = 30, order 16 is 3.45e-3 while order 48 is 1.86e-4 (17x worse).
+
+### 3.1 Erratum and mechanism (2026-10-30): the failures are wake slivers, not near-sheet distance
+
+The first version of this section attributed the aliasing to "distance to the sheet". That
+attribution is wrong. Decomposing the worst band point by source part
+(`tools/issue84/sliver_aliasing.py`, `docs/issue84/sliver_aliasing.json`, worst point = band
+r/core 0.3, wake face 349) gives
+
+| part | abs(area_32 - area_192) | relative to its own order-192 value | abs(edge) |
+|---|---|---|---|
+| wall sheet (872 faces) | **1.288e-17** | 5.55e-15 | 2.399e-03 |
+| main-wing wake (770 faces) | **3.885** | **2.276** | 1.635e-02 |
+| raised-tail wake (24 faces) | 1.941e-20 | 4.46e-15 | 8.752e-06 |
+
+so 100% of the error comes from the main-wing wake sheet, and the wall part is exact to machine
+precision at the same point and the same order.
+
+Per-triangle contributions at the same point show which wake triangles do it: the six largest
+are all slivers with edges 0.05 / 26.0 / 26.0, aspect ratio 260–520, diameter 26:
+
+| triangle | aspect | \|c_32\| / \|c_192\| |
+|---|---|---|
+| 348 | 520.0 | **48.42** |
+| 346 | 260.0 | 8.08 |
+| 347 | 520.0 | 0.40 |
+| 352 | 260.0 | 5.28 |
+| 350 | 520.0 | **48.55** |
+| 351 | 260.0 | 0.40 |
+
+The ratio is not a small truncation error: the order-32 rule overestimates one triangle by 48x and
+underestimates another by 2.5x. That is exactly what a vertex-collapsed Duffy map does when the
+kernel peak is compressed by the triangle aspect ratio — the collapsed coordinate direction has
+to resolve a feature of width ~core spread over 26 units of length, i.e. 2600:1.
+
+Aspect-ratio statistics of the two sheets (longest edge / shortest edge):
+
+| sheet | faces | median | p90 | max | >50 | >200 | >500 |
+|---|---|---|---|---|---|---|---|
+| wall | 872 | 1.57 | 2.94 | 28.2 | 0 | 0 | 0 |
+| main-wing wake | 770 | 8.71 | 260.0 | **1405.7** | **104** | 100 | 36 |
+| raised-tail wake | 24 | 2.27 | 2.27 | 2.27 | 0 | 0 | 0 |
+
+104 of 770 main-wing wake triangles (13.5%) exceed 50:1 and 36 exceed 500:1, and the wake sheet is
+26 chords long, so the thin direction is unavoidable at the far-field truncation. **The wall mesh
+is clean**, which is why every wall-only measurement in this project has been stable.
+
+Consequences for the C3 request:
+
+1. The correct discriminator is **triangle aspect ratio**, not distance to the sheet. A
+   near-sheet point above a well-shaped triangle is accurate (single-triangle GL/Duffy reaches
+   7.1e-14 by order 96, see `runs/pr85_git/tools/issue84/adaptive_sheet_quad.py`), and the wall
+   part of a 0.3*core point is exact.
+2. Isotropic midpoint subdivision (`adaptive_sheet_quad.py`) is not the fix: it branches on
+   `sqrt(area)`, which is *small* for a sliver, so it either under-refines the long direction or
+   explodes. Longest-edge bisection down to 4*core needs **59,052 pieces per sliver** — correct in
+   principle, unusable in practice.
+3. What is needed is a **projection-aware split**: split the triangle along the projection of the
+   field point (or integrate in a coordinate frame aligned with the sliver's long axis so the
+   collapsed direction is the short one). That is not implemented here.
+4. Until then no order in this document may be described as certified near the wake: order 48 is
+   the best of the set at r/core = 0.3 (3.61e-2) but it is still not certified, and the 2.1 GB
+   peak of the order-96 reference (section 1) rules out that path for production anyway.
 
 ## 4. Far field is correct (independent check)
 
@@ -178,10 +240,14 @@ a bounded but order-dependent near-sheet error. That is progress, not certificat
    a pass at (48, 96) is necessary, not sufficient. If the RM path is to be used for production
    gates, record at least a three-order sequence (e.g. 48/96/192) per node, or implement the
    refinement below.
-3. **The real fix is graded/local integration**: split the Duffy map at the projection of the field
-   point (or subdivide the nearest panels) so that the peak `max(core, d)` is resolved. That is a
-   research item and is **not implemented here**; until it exists, RM near-sheet values carry an
-   order-dependent error of 1e-2…1e-1·U inside r/core ≲ 3 and must be reported that way.
+3. **The real fix is projection-aware splitting of wake slivers** (section 3.1): split the
+   triangle along the projection of the field point, or integrate in a frame aligned with the
+   sliver's long axis, so that the collapsed Duffy direction is the short one. Isotropic
+   subdivision and longest-edge bisection are both ruled out as production fixes (13.5% of wake
+   triangles are >50:1; bisection needs 59k pieces per sliver). Not implemented here; until it
+   exists, RM near-sheet values carry an order-dependent error of 1e-2…1e-1·U inside r/core ≲ 3
+   and must be reported that way. A wake **aspect-ratio gate** (>50:1 count, from
+   `sliver_aliasing.json`) is the cheap standing check that a mesh does not enter this regime.
 4. The epsilon channel is no longer the reason G2 is blocked; the remaining G2 blockers are the
    eligibility bookkeeping of #65 Phase B2 (`root 90 / eligible 276 / convergence 102 / rejected 102`)
    and, with RM, this quadrature channel.
@@ -199,3 +265,5 @@ a bounded but order-dependent near-sheet error. That is progress, not certificat
 | `runs/issue84/rm_gate_channels.py`, `rm_gate_channels.json` | gate channels at orders 16/48/96 |
 | `runs/issue84/g2_replay_c48b/` | frozen replay receipt + replay.json |
 | `runs/issue84/wake_rejection_g2_rm48.json`, `.csv` | full-mesh gate counts with RM at order 48 |
+| `tools/issue84/sliver_aliasing.py`, `docs/issue84/sliver_aliasing.json` | part/per-triangle attribution of the near-sheet aliasing, wake aspect-ratio census (section 3.1) |
+| `tools/issue84/adaptive_sheet_quad.py` | isotropic midpoint subdivision experiment: single-triangle convergence, subdivision non-monotonicity (negative result) |
