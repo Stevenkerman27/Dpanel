@@ -1,0 +1,56 @@
+{
+ "all_pass": true,
+ "checks": [
+  {
+   "check": "A1 single-part constructor + evaluate",
+   "n_triangles": 1,
+   "status": "PASS",
+   "triangle_area2": [
+    1.0
+   ],
+   "velocity": [
+    1.0464224962620885,
+    0.07672445244483098,
+    -0.20930104190271992
+   ]
+  },
+  {
+   "check": "A2 regularized test uses a real attribute",
+   "file": "D:\\3D\\Projects\\panel\\runs\\pr85_git\\test\\test_p1_regularized_sheet_velocity.py",
+   "grad_face_occurrences": 0,
+   "status": "PASS",
+   "varying_gamma_occurrences": 2
+  },
+  {
+   "check": "A4a analytic_edges is the default evaluator",
+   "has_regularized_attribute": false,
+   "instance_method": "analytic_edges",
+   "signature_default": "analytic_edges",
+   "status": "PASS",
+   "velocity": [
+    1.0128373641542345,
+    0.03572234569464376,
+    -0.08208601372054564
+   ]
+  },
+  {
+   "check": "A4b RM still requires an explicit positive core",
+   "errors": {
+    "RegularizedP1SheetField_without_core": "TypeError: RegularizedP1SheetField.__init__() missing 1 required keyword-only argument: 'core_radius'",
+    "TotalVelocity_without_core": "ValueError: rm_regularized_p1 requires an explicit positive core_radius"
+   },
+   "status": "PASS"
+  },
+  {
+   "check": "A4c no report claims physical accuracy",
+   "files_scanned_with_flag": 47,
+   "occurrences": 69,
+   "status": "PASS",
+   "true_occurrences": []
+  }
+ ],
+ "numpy": "2.4.6",
+ "python": "3.11.17",
+ "root": "D:\\3D\\Projects\\panel\\runs\\pr85_git",
+ "schema": "dpanel.issue84.default_path_guard.v1"
+}

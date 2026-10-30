@@ -1,0 +1,348 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "classes": {
+    "main_wing": {
+      "eligible": 276,
+      "opposed_tangent": 0,
+      "sampling_epsilon": 102,
+      "sampling_quadrature": 0,
+      "zero_speed": 0
+    },
+    "raised_tail": {
+      "eligible": 15,
+      "opposed_tangent": 0,
+      "sampling_epsilon": 0,
+      "sampling_quadrature": 0,
+      "zero_speed": 0
+    }
+  },
+  "core_radius": null,
+  "csv": "runs\\issue84\\wake_rejection_g2_analytic.csv",
+  "eps_fraction": 0.05,
+  "epsilon_tol": 0.02,
+  "groups": {
+    "main_wing": {
+      "classes": {
+        "eligible": 276,
+        "opposed_tangent": 0,
+        "sampling_epsilon": 102,
+        "sampling_quadrature": 0,
+        "zero_speed": 0
+      },
+      "eligible": 276,
+      "epsilon_error_max": 0.19337655543015753,
+      "epsilon_error_median": 0.010360695541581231,
+      "quadrature_error_max": 0.0,
+      "rejected_dist_wall_min": 0.0,
+      "rejected_h_over_scale_min": 0.00625,
+      "rejected_near_tip": 14,
+      "rejected_on_boundary": 29,
+      "rejected_within_1_face_of_edge": 39,
+      "rejected_within_1_h_of_edge": 29,
+      "roots": 90,
+      "rows": 378
+    },
+    "raised_tail": {
+      "classes": {
+        "eligible": 15,
+        "opposed_tangent": 0,
+        "sampling_epsilon": 0,
+        "sampling_quadrature": 0,
+        "zero_speed": 0
+      },
+      "eligible": 15,
+      "epsilon_error_max": 0.005763318262575544,
+      "epsilon_error_median": 0.0010767577691340262,
+      "quadrature_error_max": 0.0,
+      "rejected_dist_wall_min": null,
+      "rejected_h_over_scale_min": null,
+      "rejected_near_tip": 0,
+      "rejected_on_boundary": 0,
+      "rejected_within_1_face_of_edge": 0,
+      "rejected_within_1_h_of_edge": 0,
+      "roots": 5,
+      "rows": 15
+    }
+  },
+  "input_sha256": [
+    "d04e439cddb2a80ff9d376257ed9a57d5613f538e111a0ba97f3fbb5f6405d5a"
+  ],
+  "kutta": "pressure",
+  "ladder": [
+    1.0,
+    0.5,
+    0.25,
+    0.125
+  ],
+  "loads": {
+    "CD_pressure": 0.006357145692946399,
+    "CL": 0.43406115014632407,
+    "CL_gamma": 0.43843173700189036,
+    "CM_y": -0.11965433057432534,
+    "pressure_kutta_rms": 9.026496367145126e-07,
+    "signed_kutta_rms": 0.04479958281246911,
+    "wall_rms": 0.001216961726581878
+  },
+  "main_half_surface": [
+    "D:\\3D\\Projects\\panel\\runs\\half_cad_wingbody_v1\\surface.json"
+  ],
+  "nonlinear": {
+    "message": "The maximum number of function evaluations is exceeded.",
+    "nfev": 80,
+    "success": false
+  },
+  "notes": [
+    "Read-only diagnostic. The production gates are unchanged.",
+    "analytic_edges has no finite core, so h/core is not applicable.",
+    "quadrature_error is 0 (NOT APPLICABLE) for analytic_edges and active for rm_regularized_p1."
+  ],
+  "numpy": "2.4.6",
+  "python": "3.11.17",
+  "quadrature_order": 48,
+  "quadrature_tol": 0.002,
+  "repro": [
+    {
+      "epsilon_error": 0.19337655543015753,
+      "group": "main_wing",
+      "ladder_trace": {
+        "increments": [
+          0.0,
+          0.19318642626292679,
+          0.1933384870617497,
+          0.1933765554301575
+        ],
+        "means": [
+          0.17343170059645724,
+          -0.5869626769005434,
+          -0.0024375368416154064,
+          0.027803109312357854,
+          -0.7138915905382717,
+          -0.0009014458299580475,
+          -0.11790104529785117,
+          -0.8409652107622912,
+          0.0006363941527101624,
+          -0.2636241033869514,
+          -0.9680750696717972,
+          0.0021746721506586963
+        ],
+        "offsets": [
+          0.003310142811732888,
+          0.001655071405866444,
+          0.000827535702933222,
+          0.000413767851466611
+        ],
+        "uref": 1.0
+      },
+      "node": 56,
+      "normal": [
+        -1.3151194009806818e-14,
+        7.543331018428901e-14,
+        1.0
+      ],
+      "quadrature_error": 0.0,
+      "reasons": [
+        "sampling_epsilon"
+      ],
+      "sample_offset": 0.000413767851466611,
+      "scale": 0.06620285623465776,
+      "xyz": [
+        1.4709157008456744,
+        0.059472024653011685,
+        0.0
+      ]
+    },
+    {
+      "epsilon_error": 0.19311190164543388,
+      "group": "main_wing",
+      "ladder_trace": {
+        "increments": [
+          0.0,
+          0.19292188774266228,
+          0.193073856316741,
+          0.19311190164543388
+        ],
+        "means": [
+          0.17436805088187113,
+          0.5882875551882483,
+          0.0010291735245890055,
+          0.028978356314766474,
+          0.7150944051767477,
+          0.00018402272703474387,
+          -0.11648690155008012,
+          0.8420457787919228,
+          -0.0006653797402790262,
+          -0.2619710629075186,
+          0.9690333453417623,
+          -0.0015158460762428605
+        ],
+        "offsets": [
+          0.003310142811732888,
+          0.001655071405866444,
+          0.000827535702933222,
+          0.000413767851466611
+        ],
+        "uref": 1.0
+      },
+      "node": 452,
+      "normal": [
+        -1.3151194009806817e-14,
+        -7.543331018428901e-14,
+        1.0
+      ],
+      "quadrature_error": 0.0,
+      "reasons": [
+        "sampling_epsilon"
+      ],
+      "sample_offset": 0.000413767851466611,
+      "scale": 0.06620285623465776,
+      "xyz": [
+        1.4709157008456744,
+        -0.059472024653011685,
+        0.0
+      ]
+    }
+  ],
+  "schema": "dpanel.issue84.wake_node_rejection.v1",
+  "seconds": 12.943935499992222,
+  "totals": {
+    "eligible": 291,
+    "opposed_tangent": 0,
+    "sampling_epsilon": 102,
+    "sampling_quadrature": 0,
+    "zero_speed": 0
+  },
+  "velocity_method": "analytic_edges",
+  "wake_faces": [
+    770,
+    24
+  ],
+  "wall_faces": 872,
+  "worst": {
+    "main_wing": {
+      "opposed_tangent": [],
+      "sampling_epsilon": [
+        {
+          "dist_sheet_edge": 0.0,
+          "dist_wall": 0.0,
+          "eps": 0.19337655543015753,
+          "group": "main_wing",
+          "h_over_edge": 0.0,
+          "h_over_scale": 0.00625,
+          "local_aspect_max": 4.232715412807771,
+          "near_tip": false,
+          "node": 56,
+          "on_sheet_boundary": true,
+          "quad": 0.0,
+          "speed": 1.0033303232762338
+        },
+        {
+          "dist_sheet_edge": 0.0,
+          "dist_wall": 0.0,
+          "eps": 0.19311190164543388,
+          "group": "main_wing",
+          "h_over_edge": 0.0,
+          "h_over_scale": 0.00625,
+          "local_aspect_max": 4.232715412807771,
+          "near_tip": false,
+          "node": 452,
+          "on_sheet_boundary": true,
+          "quad": 0.0,
+          "speed": 1.0038210796623415
+        },
+        {
+          "dist_sheet_edge": 0.0,
+          "dist_wall": 0.29179738540047717,
+          "eps": 0.13494593017409096,
+          "group": "main_wing",
+          "h_over_edge": 0.0,
+          "h_over_scale": 0.00625,
+          "local_aspect_max": 5.921003770529292,
+          "near_tip": true,
+          "node": 626,
+          "on_sheet_boundary": true,
+          "quad": 0.0,
+          "speed": 1.6251121453908437
+        },
+        {
+          "dist_sheet_edge": 0.0,
+          "dist_wall": 3.0748983723043595,
+          "eps": 0.13494053735527856,
+          "group": "main_wing",
+          "h_over_edge": 0.0,
+          "h_over_scale": 0.00625,
+          "local_aspect_max": 260.0019230698121,
+          "near_tip": true,
+          "node": 407,
+          "on_sheet_boundary": true,
+          "quad": 0.0,
+          "speed": 1.5364189809548698
+        },
+        {
+          "dist_sheet_edge": 0.0,
+          "dist_wall": 1.9395169017710485,
+          "eps": 0.1349405370871195,
+          "group": "main_wing",
+          "h_over_edge": 0.0,
+          "h_over_scale": 0.006250000000000001,
+          "local_aspect_max": 12.947928188742726,
+          "near_tip": true,
+          "node": 622,
+          "on_sheet_boundary": true,
+          "quad": 0.0,
+          "speed": 1.5350486849291518
+        },
+        {
+          "dist_sheet_edge": 0.0,
+          "dist_wall": 1.3147503368368645,
+          "eps": 0.13494053641053497,
+          "group": "main_wing",
+          "h_over_edge": 0.0,
+          "h_over_scale": 0.00625,
+          "local_aspect_max": 9.341426422864554,
+          "near_tip": true,
+          "node": 623,
+          "on_sheet_boundary": true,
+          "quad": 0.0,
+          "speed": 1.5331124656150423
+        },
+        {
+          "dist_sheet_edge": 0.0,
+          "dist_wall": 1.112821212440572,
+          "eps": 0.13494053393073777,
+          "group": "main_wing",
+          "h_over_edge": 0.0,
+          "h_over_scale": 0.00625,
+          "local_aspect_max": 6.736879750027115,
+          "near_tip": true,
+          "node": 624,
+          "on_sheet_boundary": true,
+          "quad": 0.0,
+          "speed": 1.5304984050374988
+        },
+        {
+          "dist_sheet_edge": 0.0,
+          "dist_wall": 0.6347457978661124,
+          "eps": 0.13494052904648685,
+          "group": "main_wing",
+          "h_over_edge": 0.0,
+          "h_over_scale": 0.00625,
+          "local_aspect_max": 4.883966535217939,
+          "near_tip": true,
+          "node": 625,
+          "on_sheet_boundary": true,
+          "quad": 0.0,
+          "speed": 1.5263638143241938
+        }
+      ],
+      "sampling_quadrature": [],
+      "zero_speed": []
+    },
+    "raised_tail": {
+      "opposed_tangent": [],
+      "sampling_epsilon": [],
+      "sampling_quadrature": [],
+      "zero_speed": []
+    }
+  }
+}
