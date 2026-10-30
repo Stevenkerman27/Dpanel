@@ -55,6 +55,13 @@ def main(argv=None):
     parser.add_argument('--max-nfev', type=int, default=80)
     parser.add_argument('--replay-snapshot', type=Path)
     parser.add_argument('--expected-state-sha')
+    parser.add_argument('--replay-velocity-method',
+                        choices=('analytic_edges', 'legacy_gauss', 'rm_regularized_p1'),
+                        default=None, help='Override only the sampled velocity kernel when replaying a frozen state')
+    parser.add_argument('--replay-core-radius', type=float, default=None,
+                        help='Explicit RM core radius for frozen-state replay')
+    parser.add_argument('--replay-quadrature-order', type=int, default=None,
+                        help='Override area quadrature order for frozen-state replay')
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=False)
@@ -75,7 +82,11 @@ def main(argv=None):
                 raise ValueError('--expected-state-sha is required for frozen-state replay')
             with np.load(args.replay_snapshot, allow_pickle=False) as archive:
                 arrays = {k: archive[k] for k in archive.files}
-            replay = replay_snapshot(arrays, args.expected_state_sha)
+            replay = replay_snapshot(
+                arrays, args.expected_state_sha,
+                velocity_method=args.replay_velocity_method,
+                core_radius=args.replay_core_radius,
+                quadrature_order=args.replay_quadrature_order)
             _write_json(args.out/'replay.json', replay)
             receipt.update(exit_code=0 if replay['bitwise_equal'] else 3, status='frozen_state_replay')
             return receipt['exit_code']
