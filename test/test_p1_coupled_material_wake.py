@@ -506,3 +506,31 @@ def test_rm_regularized_g1_iteration_zero_preserves_unregularized_strength_solve
     assert row["strength_solve_kernel"] == "unregularized_P1_BEM_operators"
     assert result["kernel"] == "RM_regularized_P1_edge_plus_interior_gradient"
     assert not result["physical_accuracy_accepted"] and not result["converged"]
+
+
+
+def generated_g2_mesh():
+    from panel.p1_lifting_g1 import make_wing
+    from panel.p1_lifting_g2 import combine_wings
+    main = make_wing(chord_panels=4, span_panels=4, wake_panels=2)
+    tail = make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55,
+                     camber=0., wake_panels=2)
+    return combine_wings([main, tail], names=["main_wing", "raised_tail"],
+                         origins=[(0., 0., 0.), (1.6, 0., .35)],
+                         reference_chord=main.chord, reference_point=main.reference_point)
+
+
+def test_rm_regularized_g2_iteration_zero_preserves_all_group_strengths():
+    from panel.p1_lifting_g2 import solve_multi
+    mesh = generated_g2_mesh()
+    canonical = solve_multi(mesh, 5., kutta="signed_speed")
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0,
+        velocity_method="rm_regularized_p1", core_radius=0.03, order=12)
+    for key in ("mu", "gamma", "cp"):
+        np.testing.assert_allclose(result["state"][key], canonical[key],
+                                   atol=1e-10, rtol=1e-10)
+    assert len(result["state"]["group_results"]) == 2
+    assert set(result["history"][0]["wakes"]) == {"main_wing", "raised_tail"}
+    assert result["history"][0]["core_radius"] == pytest.approx(0.03)
+    assert not result["physical_accuracy_accepted"] and not result["converged"]
