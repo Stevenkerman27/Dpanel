@@ -83,6 +83,17 @@ class TotalVelocity:
         self.area_quadrature = area_quadrature
         self.fan_order = fan_order
         self.fan_strips = fan_strips
+        # Fail closed: an area-quadrature choice that the selected evaluator cannot
+        # honour would otherwise be accepted and silently ignored.
+        if area_quadrature not in ("legacy_duffy", "projection_fan"):
+            raise ValueError("area_quadrature must be legacy_duffy or projection_fan")
+        if type(fan_order) is not int or fan_order < 2:
+            raise ValueError("fan_order must be an integer >= 2")
+        if type(fan_strips) is not int or fan_strips < 1:
+            raise ValueError("fan_strips must be an integer >= 1")
+        if area_quadrature != "legacy_duffy" and method != "rm_regularized_p1":
+            raise ValueError(
+                "area_quadrature=projection_fan requires method='rm_regularized_p1'")
         if method == "analytic_edges":
             from .p1_analytic_sheet_velocity import AnalyticSheetField
             self._analytic = AnalyticSheetField(parts, freestream=self.free)

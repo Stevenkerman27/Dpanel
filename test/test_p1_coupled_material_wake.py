@@ -241,7 +241,7 @@ def test_integration_accepted_geometry_is_resolved_and_material_labels_frozen(mo
     monkeypatch.setattr(g2, 'solve_multi', tracked)
     # Manufactured smooth flow isolates coupling/geometry from the singular-PV research question.
     class SmoothField(UniformField):
-        def __init__(self, model, state, *, method='analytic_edges', core_radius=None):
+        def __init__(self, model, state, *, method='analytic_edges', core_radius=None, **kwargs):
             self.free = np.array([1., 0., .02])
             self.method = method
     monkeypatch.setattr(b2, 'TotalVelocity', SmoothField)
@@ -493,6 +493,28 @@ def test_rm_regularized_total_velocity_requires_explicit_core():
     explicit = TotalVelocity(mesh, state, method="analytic_edges")
     point = np.array([0.3, -0.4, 1.7])
     np.testing.assert_array_equal(default(point), explicit(point))
+
+
+def test_projection_fan_options_fail_closed():
+    mesh, state = small_field()
+    # An unknown quadrature name must not fall through to the legacy path.
+    with pytest.raises(ValueError, match="area_quadrature must be"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.1,
+                      area_quadrature="bogus")
+    # Requesting the fan while the analytic evaluator is selected can never be honoured.
+    with pytest.raises(ValueError, match="requires method='rm_regularized_p1'"):
+        TotalVelocity(mesh, state, method="analytic_edges",
+                      area_quadrature="projection_fan")
+    # Fan controls are validated even before the regularized field is built.
+    with pytest.raises(ValueError, match="fan_order must be"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.1,
+                      area_quadrature="projection_fan", fan_order=1)
+    with pytest.raises(ValueError, match="fan_strips must be"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.1,
+                      area_quadrature="projection_fan", fan_strips=0)
+    # The legacy default is untouched.
+    legacy = TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.1)
+    assert legacy.area_quadrature == "legacy_duffy"
 
 
 def test_rm_regularized_g1_iteration_zero_preserves_unregularized_strength_solve():
