@@ -32,7 +32,7 @@ For explicit core radius \(a>0\), use the same Rosenhead–Moore denominator in 
 \right].
 \]
 
-Opposite-oriented traces on a shared continuous P1 edge cancel before evaluating the edge integral. A true potential cut retains its jump. The edge integral is analytic, including the linear-strength first moment. The area integral uses a Duffy-mapped tensor-product Gauss–Legendre rule.
+Opposite-oriented traces on a shared continuous P1 edge cancel before evaluating the edge integral. A true potential cut retains its jump. The edge integral is analytic, including the linear-strength first moment. The area integral uses a Duffy-mapped tensor-product Gauss–Legendre rule. The public default is 48 points per Duffy coordinate. In the B2 batch path, far faces use an 8-point rule and faces within `2*circumradius + 2*a` of a target are recomputed at the requested high order. This is a performance heuristic, not an error estimator; the selected order must be checked against a higher-order run.
 
 This is a regularized P1 **velocity reconstruction** for the wake-geometry iteration. The existing \(\mu/\Gamma\) solve and its \(A/J/K/W\) potential operators remain unregularized. Consequently this experiment is not a fully regularized BEM formulation and does not claim a self-consistent viscous-core solution. It is an A/B model study that asks how an explicit near-sheet core changes the kinematic wake update while holding the strength solve fixed.
 
@@ -45,7 +45,7 @@ This is a regularized P1 **velocity reconstruction** for the wake-geometry itera
 - `test/test_p1_regularized_sheet_velocity.py`: independent edge/area quadrature, P1 gradient, edge cancellation, zero-core limit and on-sheet finiteness.
 - `test/test_p1_coupled_material_wake.py`: integration tests for explicit-core selection and unchanged strength solve.
 
-The default remains `analytic_edges`. The old `legacy_gauss` mode remains available for historical A/B checks. No core is inferred or silently selected.
+The default remains `analytic_edges`. The old `legacy_gauss` mode remains available for historical A/B checks. No core is inferred or silently selected. RM-P1 uses an explicit positive core and a default high-order Duffy rule of 48; the B2 batched evaluator uses far-order 8 plus high-order recomputation for near faces. Do not use order 12 for near-wake core sweeps.
 
 ## Required tests
 
@@ -54,7 +54,7 @@ python -m pytest test/test_p1_regularized_sheet_velocity.py test/test_p1_coupled
 python -m py_compile panel/p1_regularized_sheet_velocity.py panel/p1_coupled_material_wake.py panel/run_p1_coupled_material_wake.py tools/issue84/compare_iteration0.py
 ~~~
 
-No current-branch local execution receipt is available yet. Do not report these as passed until the local agent checks out the exact PR head and returns the actual environment, command, exit codes and output.
+No current-branch local execution receipt is available yet. The consolidated branch now also includes batch evaluation, replay overrides, order reporting, a tolerant floating-point gradient assertion and an explicit O(a^2) zero-core regression. Do not report these as passed until the local agent checks out the final PR head and returns the actual environment, command, exit codes and output.
 
 ## Generated G1/G2 comparison plan
 
@@ -64,7 +64,7 @@ Example G1:
 
 ~~~bash
 python -m panel.run_p1_coupled_material_wake --case g1 --alpha 5 --kutta pressure --iterations 0 --velocity-method analytic_edges --out runs/issue84/g1_analytic
-python -m panel.run_p1_coupled_material_wake --case g1 --alpha 5 --kutta pressure --iterations 0 --velocity-method rm_regularized_p1 --core-radius 0.01 --quadrature-order 12 --out runs/issue84/g1_rm_a001
+python -m panel.run_p1_coupled_material_wake --case g1 --alpha 5 --kutta pressure --iterations 0 --velocity-method rm_regularized_p1 --core-radius 0.01 --quadrature-order 48 --out runs/issue84/g1_rm_a001
 python -m tools.issue84.compare_iteration0 --reference runs/issue84/g1_analytic --candidate runs/issue84/g1_rm_a001 --out runs/issue84/g1_a001_compare.json
 ~~~
 
@@ -82,3 +82,27 @@ Real CAD is optional and may only be run if `runs/half_cad_wingbody_v1/surface.j
 - Iteration-0 solved strengths and loads must be identical across velocity methods to solver tolerance because the BEM solve is unchanged.
 - The velocity and geometry-update differences are the subject of the experiment.
 - No claim of physical free-wake convergence or absolute aerodynamic accuracy is permitted from this PR alone.
+
+
+## Independent near-sheet accuracy envelope (single-triangle audit)
+
+The local independent audit measured the following **total velocity** relative errors for core (a=0.05), using a refined composite-Duffy reference. Here (d) is target-to-sheet distance in the same geometry length unit:
+
+| (d) | Duffy order 16 | Duffy order 48 | Duffy order 96 |
+|---:|---:|---:|---:|
+| 0.10 | 0.40% | 2.3e-8 | 2.8e-15 |
+| 0.05 | 3.40% | 1.6e-5 | 1.8e-10 |
+| 0.02 | 8.60% | 2.6e-4 | 4.8e-8 |
+| 0.01 | 10.28% | 4.3e-4 | 1.3e-7 |
+
+This table is specific to the tested triangle, core and offsets. It is not a universal bound for CAD meshes. The area term alone can have much larger relative error because it partially cancels the edge term. The acceptance metric is the **total vector velocity**, not the isolated area term. For any new geometry/core combination, compare at least order 48 against 96 at representative closest-offset samples.
+
+## Frozen-state replay for G2
+
+A failed pressure-Kutta nonlinear solve must not be used as a valid A/B baseline. The B2 runner now accepts:
+
+~~~bash
+python -m panel.run_p1_coupled_material_wake --replay-snapshot <iteration_000.npz> --expected-state-sha <sha256> --replay-velocity-method rm_regularized_p1 --replay-core-radius 0.01 --replay-quadrature-order 48 --out runs/issue84/g2_replay_rm
+~~~
+
+This re-evaluates the alternate velocity on the exact saved (mu,Gamma), geometry, alpha and material labels; it does not re-solve the pressure-Kutta system. A successful finite replay is a velocity-kernel comparison only. It does not make the failed nonlinear state a converged G2 solution. The receipt identifies the recorded and evaluated methods, core radius, order and frozen unregularized strength-solve provenance.
