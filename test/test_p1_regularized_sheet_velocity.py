@@ -203,3 +203,34 @@ def test_near_sheet_quadrature_converges_with_order():
     delta_48_96 = np.linalg.norm(values_by_order[1]-values_by_order[2])
     assert delta_48_96 < delta_24_48
     assert delta_48_96/np.linalg.norm(values_by_order[2]) < 5e-4
+
+
+
+def test_projection_fan_field_matches_projection_module_scalar_and_batch():
+    from panel.p1_projection_duffy import field_velocity
+    xyz, faces, values = fixture()
+    points = np.array([[0.37, -0.42, 1.3], xyz.mean(axis=0)+[0., 0., 0.02],
+                       xyz[0]+[0., 0., 0.01]])
+    field = RegularizedP1SheetField(
+        [(xyz, faces, values)], core_radius=0.05,
+        area_quadrature="projection_fan", fan_order=32, fan_strips=8)
+    for point in points:
+        direct = field_velocity(field, point, order=32, strips=8)
+        np.testing.assert_allclose(field(point), direct, rtol=2e-14, atol=2e-14)
+    batch = field.evaluate_many(points, chunk_size=2)
+    scalar = np.stack([field(point) for point in points])
+    np.testing.assert_allclose(batch, scalar, rtol=2e-14, atol=2e-14)
+
+
+def test_projection_fan_is_opt_in_and_legacy_remains_default():
+    xyz, faces, values = fixture()
+    legacy = RegularizedP1SheetField([(xyz, faces, values)], core_radius=0.05)
+    explicit = RegularizedP1SheetField([(xyz, faces, values)], core_radius=0.05,
+                                       area_quadrature="legacy_duffy")
+    fan = RegularizedP1SheetField([(xyz, faces, values)], core_radius=0.05,
+                                  area_quadrature="projection_fan",
+                                  fan_order=24, fan_strips=8)
+    point = np.array([0.3, -0.4, 1.6])
+    np.testing.assert_array_equal(legacy(point), explicit(point))
+    assert legacy.area_quadrature == "legacy_duffy"
+    assert fan.area_quadrature == "projection_fan"
