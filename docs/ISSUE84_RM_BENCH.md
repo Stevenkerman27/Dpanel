@@ -12,23 +12,34 @@ thread pinning unless stated).
 
 ## 1. Scalar vs batched evaluation
 
-`runs/issue84/rm_bench.py`, 104 points (24 near-sheet, 40 on-sheet, 40 far), 1666 sheet
-panels, order 48.
+`tools/issue84/rm_bench.py`, 104 points (24 near-sheet, 40 on-sheet, 40 far), 1666 sheet
+panels, order 48, frozen state above.
 
 | quantity | value |
 |---|---|
 | frozen snapshot bit-identical | **True** |
-| batched (`evaluate_many`, chunk 2) | 11.03 s → **106.1 ms/point** |
-| scalar loop (`field(point)`) | 23.09 s → **222.0 ms/point** |
-| speed-up | **2.09x** |
+| batched (`evaluate_many`, chunk 2) | 8.50 s → **81.7 ms/point** |
+| scalar loop (`field(point)`)` | 22.59 s → **217.2 ms/point** |
+| speed-up | **2.66x** |
 | max abs difference scalar vs batched | **0.0** (bit-identical) |
-| order-96 reference batch | 49.41 s |
-| peak RSS (solve + all evaluations) | 2105.8 MB |
+| order-96 reference batch | 33.05 s |
+| peak RSS after solve | 158.1 MB |
+| peak RSS after order-48 batch | **612.1 MB** |
+| peak RSS after order-48 scalar loop | 612.1 MB (no further growth) |
+| peak RSS after order-96 reference | 2105.8 MB |
 
-Both rows above were measured while a second RM job was running; the quiet-machine run of the
-same script gave 8.22 s (79.0 ms/pt) vs 22.45 s (215.9 ms/pt) = **2.73x**. The ratio is the
-transferable number, the absolute times are not. Scalar and batched agree **bit for bit**, so the
-batching change is a pure performance change.
+Two facts worth separating:
+
+* Scalar and batched agree **bit for bit**, and scalar does not need more memory than batched
+  (612.1 MB after both). The batched path is therefore a pure cost reduction: 2.7x at identical
+  output and identical peak.
+* The 2.1 GB peak reported by the script belongs to the **order-96 reference**, not to the
+  production order-48 path: order 96 allocates 4x the quadrature points per panel
+  (158 MB → 612 MB at order 48 → 2106 MB at order 96). Any statement that RM-P1 costs 2 GB at
+  order 48 would be wrong.
+
+A concurrent run of the same script (while the full-mesh gate job was running) gave
+11.03 s vs 23.09 s = 2.09x, i.e. the ratio is what transfers, the absolute seconds are not.
 
 ## 2. Frozen replay cost (872 wall faces, 1666 panels total)
 

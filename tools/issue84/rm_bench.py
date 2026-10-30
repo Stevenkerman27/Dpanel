@@ -88,9 +88,16 @@ res = {"core_radius": core, "faces": int(len(field.triangles)),
        "points": int(len(points)), "frozen_snapshot_bit_identical": bool(frozen_ok),
        "scalar_loop": {}, "batched": {}, "order_sweep": {}, "agreement": {}}
 
-t = time.time(); ref = field.evaluate_many(points, order=96); t_b96 = time.time()-t
+res["peak_after_solve_mb"] = peak_rss_mb()
 t = time.time(); bat = field.evaluate_many(points, order=48); t_b48 = time.time()-t
+res["peak_after_batch_mb"] = peak_rss_mb()
 t = time.time(); sca = np.stack([field(p, order=48) for p in points]); t_s48 = time.time()-t
+res["peak_after_scalar_mb"] = peak_rss_mb()
+t = time.time(); ref = field.evaluate_many(points, order=96); t_b96 = time.time()-t
+res["peak_after_order96_mb"] = peak_rss_mb()
+print("peak RSS: solve %.1f | +batch48 %.1f | +scalar48 %.1f | +order96 %.1f MB"
+      % (res["peak_after_solve_mb"], res["peak_after_batch_mb"],
+         res["peak_after_scalar_mb"], res["peak_after_order96_mb"]))
 res["batched"] = dict(order=48, seconds=t_b48, ms_per_point=1000*t_b48/len(points))
 res["scalar_loop"] = dict(order=48, seconds=t_s48, ms_per_point=1000*t_s48/len(points))
 res["batched"]["order96_seconds"] = t_b96
