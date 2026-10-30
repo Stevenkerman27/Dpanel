@@ -52,9 +52,11 @@ def main(argv=None):
     parser.add_argument("--core-radius", type=float, default=0.01)
     parser.add_argument("--legacy-order", type=int, default=48)
     parser.add_argument("--orders", type=int, nargs="+", default=(16, 32, 48))
-    parser.add_argument("--strips", type=int, nargs="+", default=(8, 32))
+    parser.add_argument("--configs", nargs="+", default=None,
+                        help="explicit order:strips list; overrides --orders/--strips")
+    parser.add_argument("--strips", type=int, nargs="+", default=(8,))
     parser.add_argument("--reference-order", type=int, default=48)
-    parser.add_argument("--reference-strips", type=int, default=32)
+    parser.add_argument("--reference-strips", type=int, default=16)
     parser.add_argument("--stability-order", type=int, default=48)
     parser.add_argument("--stability-strips", type=int, default=64)
     parser.add_argument("--stability-points", type=int, default=8)
@@ -67,7 +69,10 @@ def main(argv=None):
     mesh, alpha_deg = build_case(args.main_half_surface, case=args.case, alpha_deg=args.alpha)
     ops = assemble_multi(mesh)
     state = solve_multi(mesh, alpha_deg, kutta="pressure", operators=ops)
-    configs = [(o, s) for o in args.orders for s in args.strips]
+    if args.configs:
+        configs = [tuple(int(part) for part in item.split(":")) for item in args.configs]
+    else:
+        configs = [(o, s) for o in args.orders for s in args.strips]
     fields = {}
     for order, strips in configs:
         fields[(order, strips)] = TotalVelocity(
