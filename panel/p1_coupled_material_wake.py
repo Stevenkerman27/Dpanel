@@ -638,7 +638,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                 strength_solve_kernel="unregularized_P1_BEM_operators")
 
 
-def replay_snapshot(arrays, expected_sha):
+def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=None,
+                    quadrature_order=None):
     """Re-evaluate frozen total-flow samples without re-solving/changing mu/Gamma.
 
     A mismatch in the recorded content SHA is an error. Bitwise equality is
@@ -659,15 +660,18 @@ def replay_snapshot(arrays, expected_sha):
                            dof_face=arrays['wall_dof_face'], groups=tuple(groups))
     # Legacy snapshots (without sampling_kernel) are intentionally still
     # replayable using their original 48-point Gauss integration.
-    method = str(arrays['sampling_kernel']) if 'sampling_kernel' in arrays else "legacy_gauss"
-    core_radius = (float(arrays['sampling_core_radius'])
-                   if 'sampling_core_radius' in arrays
-                   and np.isfinite(arrays['sampling_core_radius']) else None)
+    recorded_method = str(arrays['sampling_kernel']) if 'sampling_kernel' in arrays else "legacy_gauss"
+    recorded_core = (float(arrays['sampling_core_radius'])
+                     if 'sampling_core_radius' in arrays
+                     and np.isfinite(arrays['sampling_core_radius']) else None)
+    method = recorded_method if velocity_method is None else velocity_method
+    selected_core = recorded_core if core_radius is None else float(core_radius)
+    selected_order = int(arrays['sampling_order']) if quadrature_order is None else int(quadrature_order)
     field = TotalVelocity(mesh, dict(mu=arrays['mu'], gamma=arrays['gamma'],
                                    alpha_deg=float(arrays['alpha_deg'])),
-                          method=method, core_radius=core_radius)
+                          method=method, core_radius=selected_core)
     kwargs = dict(eps_fraction=float(arrays['sampling_eps_fraction']),
-                  ladder=arrays['sampling_ladder'], order=int(arrays['sampling_order']))
+                  ladder=arrays['sampling_ladder'], order=selected_order)
     differences = {}
     equal = True
     for gi, group in enumerate(groups):
@@ -688,4 +692,8 @@ def replay_snapshot(arrays, expected_sha):
                 equal &= bool(np.array_equal(value, arrays[name]))
                 differences[name] = float(np.max(np.abs(value-arrays[name])))
     return dict(state_sha256=expected_sha, bitwise_equal=equal, max_differences=differences,
+                recorded_method=recorded_method, evaluated_method=method,
+                recorded_core_radius=recorded_core, evaluated_core_radius=selected_core,
+                quadrature_order=selected_order,
+                strength_solve_kernel="frozen_unregularized_P1_BEM_state",
                 physical_accuracy_accepted=False)
