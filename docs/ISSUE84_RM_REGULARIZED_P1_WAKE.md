@@ -32,7 +32,7 @@ For explicit core radius \(a>0\), use the same Rosenhead–Moore denominator in 
 \right].
 \]
 
-Opposite-oriented traces on a shared continuous P1 edge cancel before evaluating the edge integral. A true potential cut retains its jump. The edge integral is analytic, including the linear-strength first moment. The area integral uses a Duffy-mapped tensor-product Gauss–Legendre rule. The public default is 48 points per Duffy coordinate. In the B2 batch path, far faces use an 8-point rule and faces within `2*circumradius + 2*a` of a target are recomputed at the requested high order. This is a performance heuristic, not an error estimator; the selected order must be checked against a higher-order run.
+Opposite-oriented traces on a shared continuous P1 edge cancel before evaluating the edge integral. A true potential cut retains its jump. The edge integral is analytic, including the linear-strength first moment. The area integral uses a Duffy-mapped tensor-product Gauss–Legendre rule. The public default is 48 points per Duffy coordinate. B2 uses bounded-memory batched target evaluation to reduce Python-call overhead. The present batch path still applies the requested Duffy order to every face; near/far adaptive face quadrature remains a follow-on optimization and is not claimed as implemented.
 
 This is a regularized P1 **velocity reconstruction** for the wake-geometry iteration. The existing \(\mu/\Gamma\) solve and its \(A/J/K/W\) potential operators remain unregularized. Consequently this experiment is not a fully regularized BEM formulation and does not claim a self-consistent viscous-core solution. It is an A/B model study that asks how an explicit near-sheet core changes the kinematic wake update while holding the strength solve fixed.
 
