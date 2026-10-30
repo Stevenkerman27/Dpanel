@@ -45,14 +45,15 @@ def triangle_data(xyz, faces):
 
 
 class TotalVelocity:
-    """U + wall + ALL wakes, with actual per-face P1 nodal values.
+    """U + wall + ALL wakes, preserving each sheet's P1 gradient.
 
-    Arrays are copied so a solved state cannot be mutated underneath an audit.
-    Analytic straight-edge P1 integration is the opt-in B2 default; the prior
-    48-point whole-edge Gauss evaluator is preserved for A/B and old snapshots.
-    No self faces, source terms, or cross-group interactions are omitted.
+    analytic_edges is the default unregularized P1 evaluator. rm_regularized_p1
+    applies one explicit Rosenhead–Moore core to BOTH the P1 edge traces and
+    in-panel distributed-vorticity term. It changes only velocity
+    reconstruction for wake kinematics; solve_multi's potential operators
+    remain unregularized and unchanged.
     """
-    def __init__(self, mesh, state, *, method="analytic_edges"):
+    def __init__(self, mesh, state, *, method="analytic_edges", core_radius=None):
         parts = [(mesh.xyz, mesh.faces, np.asarray(state['mu'])[mesh.dof_face])]
         offset = 0
         for group in mesh.groups:
@@ -77,11 +78,19 @@ class TotalVelocity:
         self.free = np.array([np.cos(theta), 0., np.sin(theta)])
         self._quadrature = {}
         self.method = method
+        self.core_radius = None
         if method == "analytic_edges":
             from .p1_analytic_sheet_velocity import AnalyticSheetField
             self._analytic = AnalyticSheetField(parts, freestream=self.free)
+        elif method == "rm_regularized_p1":
+            if core_radius is None or not np.isfinite(core_radius) or core_radius <= 0:
+                raise ValueError("rm_regularized_p1 requires an explicit positive core_radius")
+            from .p1_regularized_sheet_velocity import RegularizedP1SheetField
+            self.core_radius = float(core_radius)
+            self._regularized = RegularizedP1SheetField(
+                parts, freestream=self.free, core_radius=self.core_radius)
         elif method != "legacy_gauss":
-            raise ValueError("unknown sheet-velocity integration method")
+            raise ValueError("unknown P1 sheet-velocity integration method")
         if not np.isfinite(self.mu_face).all() or not np.isfinite(self.grad_face).all():
             raise FloatingPointError("nonfinite solved P1 strength")
 
@@ -90,16 +99,15 @@ class TotalVelocity:
         if p.shape != (3,) or not np.isfinite(p).all():
             raise ValueError("field point must be a finite (3,) array")
         if self.method == "analytic_edges":
-            # Analytically integrated edge moments: order is accepted for the
-            # old CLI/snapshot contract, but cannot change the physical value.
             return self._analytic(p)
+        if self.method == "rm_regularized_p1":
+            return self._regularized(p, order=order)
         if order not in self._quadrature:
             z, w = np.polynomial.legendre.leggauss(order)
             self._quadrature[order] = ((z+1)/2, w/2)
         z, w = self._quadrature[order]
         tri, n = self.triangles, self.normals
         center = tri.mean(axis=1)
-        # Match Phase A's tangential projection, including roundoff handling.
         grad = self.grad_face - n*np.einsum('fi,fi->f', self.grad_face, n)[:, None]
         boundary = np.zeros_like(n)
         surface = np.zeros_like(n)
@@ -128,8 +136,16 @@ class TotalVelocity:
         omega = 2*np.arctan2(num, den)
         induced = (boundary + np.cross(np.cross(grad, n),
                                         surface-omega[:, None]*n)).sum(axis=0)/(4*np.pi)
-        # Production D = -Omega/(4*pi); apply this sign ONCE, to wall and wakes.
         return self.free-induced
+
+
+    def evaluate_many(self, points, *, order=48):
+        pts = np.asarray(points, float)
+        if pts.ndim != 2 or pts.shape[1] != 3 or not np.isfinite(pts).all():
+            raise ValueError("points must be a finite (N,3) array")
+        if self.method == "rm_regularized_p1":
+            return self._regularized.evaluate_many(pts, order=order)
+        return np.stack([self(point, order=order) for point in pts])
 
 
 def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
@@ -153,23 +169,44 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
     plus, minus = np.empty_like(points, dtype=float), np.empty_like(points, dtype=float)
     errors, qerrors = np.zeros(len(points)), np.zeros(len(points))
     uref = float(np.linalg.norm(field.free))
-    for i, (p, n, scale) in enumerate(zip(points, normals, scales)):
+    if hasattr(field, "evaluate_many"):
         previous = None
         for factor in factors:
-            h = eps_fraction*scale*factor
-            up, um = field(p+h*n, order=order), field(p-h*n, order=order)
+            h = eps_fraction*scales*factor
+            targets = np.concatenate((points+h[:, None]*normals,
+                                      points-h[:, None]*normals), axis=0)
+            values = field.evaluate_many(targets, order=order)
+            up, um = values[:len(points)], values[len(points):]
             mean = (up+um)/2
             if previous is not None:
-                errors[i] = np.linalg.norm(mean-previous)/uref
+                errors = np.linalg.norm(mean-previous, axis=1)/uref
             previous = mean
-        plus[i], minus[i] = up, um
+        plus[:], minus[:] = up, um
         if getattr(field, "method", None) == "analytic_edges":
-            # No edge quadrature exists to refine. Zero is a not-applicable
-            # quadrature estimate, NOT a claim of PV/roundoff convergence.
-            qerrors[i] = 0.
+            qerrors[:] = 0.
         else:
-            refined = (field(p+h*n, order=2*order)+field(p-h*n, order=2*order))/2
-            qerrors[i] = np.linalg.norm(refined-mean)/uref
+            h = eps_fraction*scales*factors[-1]
+            targets = np.concatenate((points+h[:, None]*normals,
+                                      points-h[:, None]*normals), axis=0)
+            refined = field.evaluate_many(targets, order=2*order)
+            refined_mean = (refined[:len(points)]+refined[len(points):])/2
+            qerrors = np.linalg.norm(refined_mean-mean, axis=1)/uref
+    else:
+        for i, (p, n, scale) in enumerate(zip(points, normals, scales)):
+            previous = None
+            for factor in factors:
+                h = eps_fraction*scale*factor
+                up, um = field(p+h*n, order=order), field(p-h*n, order=order)
+                mean_i = (up+um)/2
+                if previous is not None:
+                    errors[i] = np.linalg.norm(mean_i-previous)/uref
+                previous = mean_i
+            plus[i], minus[i] = up, um
+            if getattr(field, "method", None) == "analytic_edges":
+                qerrors[i] = 0.
+            else:
+                refined = (field(p+h*n, order=2*order)+field(p-h*n, order=2*order))/2
+                qerrors[i] = np.linalg.norm(refined-mean_i)/uref
     if not all(np.isfinite(a).all() for a in (plus, minus, errors, qerrors)):
         raise FloatingPointError("nonfinite velocity/epsilon/quadrature diagnostic")
     return dict(plus=plus, minus=minus, mean=(plus+minus)/2,
@@ -376,7 +413,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 epsilon_tol=.02, quadrature_tol=.002,
                                 geometry_tol=.002, slip_tol=.01,
                                 max_nfev=80, max_backtracks=8, gates=None,
-                                velocity_method="analytic_edges", save_callback=None):
+                                velocity_method="analytic_edges", core_radius=None,
+                                save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -391,8 +429,13 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             or not all(np.isfinite(v) and v > 0 for v in
                        (epsilon_tol, quadrature_tol, geometry_tol, slip_tol))):
         raise ValueError("invalid iteration or convergence controls")
-    if velocity_method not in ("analytic_edges", "legacy_gauss"):
+    if velocity_method not in ("analytic_edges", "legacy_gauss", "rm_regularized_p1"):
         raise ValueError("unsupported P1 wake velocity method")
+    if velocity_method == "rm_regularized_p1":
+        if core_radius is None or not np.isfinite(core_radius) or core_radius <= 0:
+            raise ValueError("rm_regularized_p1 requires an explicit positive core_radius")
+    elif core_radius is not None:
+        raise ValueError("core_radius is only valid with velocity_method='rm_regularized_p1'")
     gates = GeometryGates() if gates is None else gates
     if (not np.isfinite(gates.max_area_ratio) or gates.max_area_ratio <= 1
             or not 0 < gates.max_fold_deg < 90 or not gates.max_step_fraction > 0
@@ -427,17 +470,19 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         else:
             state = solve_multi(current, alpha_deg, kutta=kutta,
                                 max_nfev=max_nfev, operators=ops)
-        field = TotalVelocity(current, state, method=velocity_method)
+        field = TotalVelocity(current, state, method=velocity_method, core_radius=core_radius)
         arrays = dict(mu=state['mu'], gamma=state['gamma'], cp=state['cp'],
                       alpha_deg=np.asarray(alpha_deg), wall_xyz=current.xyz,
                       wall_faces=current.faces, wall_dof_face=current.dof_face,
                       sampling_eps_fraction=np.asarray(eps_fraction),
                       sampling_ladder=np.asarray(ladder, float), sampling_order=np.asarray(order),
-                      sampling_kernel=np.asarray(field.method))
+                      sampling_kernel=np.asarray(field.method),
+                      sampling_core_radius=np.asarray(np.nan if core_radius is None else core_radius))
         record = {k: state[k] for k in (*load_names, 'wall_rms', 'jump_rms',
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
         record.update(iteration=iteration, velocity_method=velocity_method,
+                      core_radius=core_radius, strength_solve_kernel="unregularized_P1_BEM_operators",
                       groups=state['group_results'],
                       CLp_minus_CLgamma=float(state['CL']-state['CL_gamma']),
                       CL_relative_gap=float((state['CL']-state['CL_gamma'])/
@@ -495,7 +540,9 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             diag.update(edge_integration=field.method,
                         edge_quadrature_error_interpretation=(
                             "not_applicable_exact_straight_edge_integrals"
-                            if field.method == "analytic_edges" else "48_vs_96_gauss"),
+                            if field.method == "analytic_edges" else
+                            "Duffy_area_quadrature_order_vs_double_order"
+                            if field.method == "rm_regularized_p1" else "48_vs_96_gauss"),
                         area_min=float(area.min()), aspect_p90=float(np.percentile(
                         edges.max(axis=1)/edges.min(axis=1), 90)),
                         fixed_roots=len(mat.roots), node_epsilon_error_max=float(samples['epsilon_error'].max()),
@@ -584,11 +631,15 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                 method='P1-coupled-rooted-material-arclength-Picard',
                 kernel=("analytic_P1_straight_edges_with_shared_trace_cancellation"
                         if velocity_method == "analytic_edges" else
+                        "RM_regularized_P1_edge_plus_interior_gradient"
+                        if velocity_method == "rm_regularized_p1" else
                         "legacy_fixed_order_edge_gauss"),
-                velocity_method=velocity_method)
+                velocity_method=velocity_method, core_radius=core_radius,
+                strength_solve_kernel="unregularized_P1_BEM_operators")
 
 
-def replay_snapshot(arrays, expected_sha):
+def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=None,
+                    quadrature_order=None):
     """Re-evaluate frozen total-flow samples without re-solving/changing mu/Gamma.
 
     A mismatch in the recorded content SHA is an error. Bitwise equality is
@@ -609,11 +660,18 @@ def replay_snapshot(arrays, expected_sha):
                            dof_face=arrays['wall_dof_face'], groups=tuple(groups))
     # Legacy snapshots (without sampling_kernel) are intentionally still
     # replayable using their original 48-point Gauss integration.
-    method = str(arrays['sampling_kernel']) if 'sampling_kernel' in arrays else "legacy_gauss"
+    recorded_method = str(arrays['sampling_kernel']) if 'sampling_kernel' in arrays else "legacy_gauss"
+    recorded_core = (float(arrays['sampling_core_radius'])
+                     if 'sampling_core_radius' in arrays
+                     and np.isfinite(arrays['sampling_core_radius']) else None)
+    method = recorded_method if velocity_method is None else velocity_method
+    selected_core = recorded_core if core_radius is None else float(core_radius)
+    selected_order = int(arrays['sampling_order']) if quadrature_order is None else int(quadrature_order)
     field = TotalVelocity(mesh, dict(mu=arrays['mu'], gamma=arrays['gamma'],
-                                   alpha_deg=float(arrays['alpha_deg'])), method=method)
+                                   alpha_deg=float(arrays['alpha_deg'])),
+                          method=method, core_radius=selected_core)
     kwargs = dict(eps_fraction=float(arrays['sampling_eps_fraction']),
-                  ladder=arrays['sampling_ladder'], order=int(arrays['sampling_order']))
+                  ladder=arrays['sampling_ladder'], order=selected_order)
     differences = {}
     equal = True
     for gi, group in enumerate(groups):
@@ -634,4 +692,13 @@ def replay_snapshot(arrays, expected_sha):
                 equal &= bool(np.array_equal(value, arrays[name]))
                 differences[name] = float(np.max(np.abs(value-arrays[name])))
     return dict(state_sha256=expected_sha, bitwise_equal=equal, max_differences=differences,
+                recorded_method=recorded_method, evaluated_method=method,
+                recorded_core_radius=recorded_core, evaluated_core_radius=selected_core,
+                quadrature_order=selected_order,
+                replay_mode=("reproduce_recorded_samples" if method == recorded_method
+                             and selected_core == recorded_core
+                             and selected_order == int(arrays['sampling_order'])
+                             else "alternate_velocity_on_frozen_state"),
+                evaluation_finite=all(np.isfinite(v) for v in differences.values()),
+                strength_solve_kernel="frozen_unregularized_P1_BEM_state",
                 physical_accuracy_accepted=False)
