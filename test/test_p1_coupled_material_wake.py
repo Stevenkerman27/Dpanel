@@ -534,3 +534,29 @@ def test_rm_regularized_g2_iteration_zero_preserves_all_group_strengths():
     assert set(result["history"][0]["wakes"]) == {"main_wing", "raised_tail"}
     assert result["history"][0]["core_radius"] == pytest.approx(0.03)
     assert not result["physical_accuracy_accepted"] and not result["converged"]
+
+
+
+def test_frozen_snapshot_replay_can_override_velocity_without_resolving_strengths():
+    mesh = generated_mesh()
+    saved = {}
+    def capture(iteration, current, state, record, arrays):
+        saved.update({key: np.asarray(value).copy() for key, value in arrays.items()})
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0, save_callback=capture)
+    sha = result["history"][0]["state_sha256"]
+    replay_same = __import__(
+        "panel.p1_coupled_material_wake", fromlist=["replay_snapshot"]).replay_snapshot(
+            saved, sha)
+    assert replay_same["replay_mode"] == "reproduce_recorded_samples"
+    assert replay_same["bitwise_equal"]
+    replay_rm = __import__(
+        "panel.p1_coupled_material_wake", fromlist=["replay_snapshot"]).replay_snapshot(
+            saved, sha, velocity_method="rm_regularized_p1",
+            core_radius=0.03, quadrature_order=24)
+    assert replay_rm["replay_mode"] == "alternate_velocity_on_frozen_state"
+    assert replay_rm["evaluation_finite"]
+    assert replay_rm["evaluated_method"] == "rm_regularized_p1"
+    assert replay_rm["evaluated_core_radius"] == pytest.approx(0.03)
+    assert replay_rm["quadrature_order"] == 24
+    assert replay_rm["strength_solve_kernel"] == "frozen_unregularized_P1_BEM_state"
