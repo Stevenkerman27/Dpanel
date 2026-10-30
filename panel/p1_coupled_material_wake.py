@@ -160,23 +160,44 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
     plus, minus = np.empty_like(points, dtype=float), np.empty_like(points, dtype=float)
     errors, qerrors = np.zeros(len(points)), np.zeros(len(points))
     uref = float(np.linalg.norm(field.free))
-    for i, (p, n, scale) in enumerate(zip(points, normals, scales)):
+    if hasattr(field, "evaluate_many"):
         previous = None
         for factor in factors:
-            h = eps_fraction*scale*factor
-            up, um = field(p+h*n, order=order), field(p-h*n, order=order)
+            h = eps_fraction*scales*factor
+            targets = np.concatenate((points+h[:, None]*normals,
+                                      points-h[:, None]*normals), axis=0)
+            values = field.evaluate_many(targets, order=order)
+            up, um = values[:len(points)], values[len(points):]
             mean = (up+um)/2
             if previous is not None:
-                errors[i] = np.linalg.norm(mean-previous)/uref
+                errors = np.linalg.norm(mean-previous, axis=1)/uref
             previous = mean
-        plus[i], minus[i] = up, um
+        plus[:], minus[:] = up, um
         if getattr(field, "method", None) == "analytic_edges":
-            # No edge quadrature exists to refine. Zero is a not-applicable
-            # quadrature estimate, NOT a claim of PV/roundoff convergence.
-            qerrors[i] = 0.
+            qerrors[:] = 0.
         else:
-            refined = (field(p+h*n, order=2*order)+field(p-h*n, order=2*order))/2
-            qerrors[i] = np.linalg.norm(refined-mean)/uref
+            h = eps_fraction*scales*factors[-1]
+            targets = np.concatenate((points+h[:, None]*normals,
+                                      points-h[:, None]*normals), axis=0)
+            refined = field.evaluate_many(targets, order=2*order)
+            refined_mean = (refined[:len(points)]+refined[len(points):])/2
+            qerrors = np.linalg.norm(refined_mean-mean, axis=1)/uref
+    else:
+        for i, (p, n, scale) in enumerate(zip(points, normals, scales)):
+            previous = None
+            for factor in factors:
+                h = eps_fraction*scale*factor
+                up, um = field(p+h*n, order=order), field(p-h*n, order=order)
+                mean_i = (up+um)/2
+                if previous is not None:
+                    errors[i] = np.linalg.norm(mean_i-previous)/uref
+                previous = mean_i
+            plus[i], minus[i] = up, um
+            if getattr(field, "method", None) == "analytic_edges":
+                qerrors[i] = 0.
+            else:
+                refined = (field(p+h*n, order=2*order)+field(p-h*n, order=2*order))/2
+                qerrors[i] = np.linalg.norm(refined-mean_i)/uref
     if not all(np.isfinite(a).all() for a in (plus, minus, errors, qerrors)):
         raise FloatingPointError("nonfinite velocity/epsilon/quadrature diagnostic")
     return dict(plus=plus, minus=minus, mean=(plus+minus)/2,
