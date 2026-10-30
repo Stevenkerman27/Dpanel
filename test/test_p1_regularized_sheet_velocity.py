@@ -171,3 +171,30 @@ def test_zero_area_and_invalid_strength_data_are_rejected():
         RegularizedP1SheetField([(bad, faces, values)], core_radius=0.1)
     with pytest.raises(ValueError, match="nodal strengths"):
         RegularizedP1SheetField([(xyz, faces, values[:, :2])], core_radius=0.1)
+
+
+
+def test_batch_evaluation_matches_scalar_for_near_and_far_points():
+    xyz, faces, values = fixture()
+    field = RegularizedP1SheetField([(xyz, faces, values)], core_radius=0.05,
+                                   quadrature_order=48)
+    points = np.array([[0.3, -0.4, 1.6], xyz.mean(axis=0),
+                       0.5*(xyz[0]+xyz[1]), [0.2, 0.1, 0.03]])
+    batch = field.evaluate_many(points, order=48, chunk_size=2)
+    scalar = np.stack([field(p, order=48) for p in points])
+    np.testing.assert_allclose(batch, scalar, rtol=2e-14, atol=2e-14)
+
+
+def test_near_sheet_quadrature_converges_with_order():
+    xyz, faces, values = fixture()
+    point = xyz.mean(axis=0)+np.array([0., 0., 0.01])
+    core = 0.05
+    values_by_order = [
+        RegularizedP1SheetField([(xyz, faces, values)], core_radius=core,
+                               quadrature_order=n)(point, order=n)
+        for n in (24, 48, 96)
+    ]
+    delta_24_48 = np.linalg.norm(values_by_order[0]-values_by_order[1])
+    delta_48_96 = np.linalg.norm(values_by_order[1]-values_by_order[2])
+    assert delta_48_96 < delta_24_48
+    assert delta_48_96/np.linalg.norm(values_by_order[2]) < 5e-4
