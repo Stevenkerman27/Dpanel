@@ -43,6 +43,15 @@ THRESHOLDS = [
 ]
 
 
+def _p90(values):
+    ordered = sorted(values)
+    return ordered[min(len(ordered) - 1, int(0.9 * (len(ordered) - 1) + 0.5))]
+
+
+def _pass(ok):
+    return 'pass' if ok else 'FAIL'
+
+
 def _set_table(rows, configs, summary):
     table = []
     for config in configs:
@@ -54,10 +63,24 @@ def _set_table(rows, configs, summary):
     return table
 
 
-def render(gate_path, stability_path, ledger_path, parity_path='', selected_path=''):
+def _selected_stats(artefact):
+    return artefact['sets']['eps__summary']['fan'][artefact['selected_config']]
+
+
+def _meets_bounds(artefact):
+    stats = _selected_stats(artefact)
+    return (stats['rel']['max'] <= 2e-4 and stats['rel']['p90'] <= 2e-5
+            and float(artefact.get('cost_ratio') or 1e9) <= 3.0)
+
+
+def render(gate_path, stability_path, ledger_path, parity_path='', selected_paths=()):
     gate = json.loads(Path(gate_path).read_text(encoding='utf-8'))
     parity_file = _load(parity_path)
-    selected = _load(selected_path)
+    artefacts = [item for item in (_load(path) for path in selected_paths) if item]
+    chosen = next((item for item in artefacts if _meets_bounds(item)), None)
+    if chosen is None and artefacts:
+        chosen = min(artefacts, key=lambda item: _selected_stats(item)['rel']['max'])
+    selected = chosen
     lines = ['# Projection-fan integration report (issue #84, stage A5/A6)', '']
     lines += ['Every number below comes from the integrated evaluator,',
               'TotalVelocity with area_quadrature=projection_fan: same edge term,',
@@ -172,27 +195,31 @@ def render(gate_path, stability_path, ledger_path, parity_path='', selected_path
     lines.append('')
     lines += ['## 6. Legacy quadrature rejects under the fan', '']
     quad = gate['sets'].get('quad', [])
+    chosen_name = chosen['selected_config'] if chosen else '24/8'
     selected_quad = {}
-    if selected:
-        for row in selected['sets'].get('quad', []):
+    if chosen:
+        for row in chosen['sets'].get('quad', []):
             selected_quad[row['node']] = row
     if quad:
         table = []
         for row in sorted(quad, key=lambda r: -r['dominant_aspect']):
-            fan24 = row['fan_rel'].get('24/8')
-            if fan24 is None:
-                fan24 = (selected_quad.get(row['node'], {}).get('fan_rel') or {}).get('24/8')
+            fan_chosen = row['fan_rel'].get(chosen_name)
+            if fan_chosen is None:
+                fan_chosen = (selected_quad.get(row['node'], {}).get('fan_rel') or {}).get(chosen_name)
             table.append([row['node'], _fmt(row.get('dominant_aspect')), _fmt(row.get('quadrature_error')),
-                          _fmt(fan24), _fmt(row['fan_rel'].get('32/8')),
+                          _fmt(fan_chosen), _fmt(row['fan_rel'].get('32/8')),
                           _fmt(row['fan_rel'].get('48/8')),
                           _fmt(row.get('legacy_vs_reference_rel'))])
-        lines += _table(table, ['node', 'dominant aspect', 'legacy quadrature error', 'fan 24/8',
+        lines += _table(table, ['node', 'dominant aspect', 'legacy quadrature error', 'fan ' + chosen_name,
                                 'fan 32/8', 'fan 48/8', 'legacy vs reference'])
         lines.append('')
         worst = [row['fan_rel'].get('48/8') or 0.0 for row in quad]
         worst32 = [row['fan_rel'].get('32/8') or 0.0 for row in quad]
-        lines.append('All %d points that the legacy order-48 evaluator rejected on the quadrature gate stay below %s at fan 32/8 and below %s at fan 48/8, i.e. far inside the production tolerance 2e-3. The gate was therefore measuring the legacy integration error, not a real singular sample.'
-                     % (len(quad), _fmt(max(worst32)), _fmt(max(worst))))
+        worst_chosen = [row['fan_rel'].get(chosen_name)
+                        or (selected_quad.get(row['node'], {}).get('fan_rel') or {}).get(chosen_name) or 0.0
+                        for row in quad]
+        lines.append('All %d points that the legacy order-48 evaluator rejected on the quadrature gate stay below %s at the selected %s, %s at fan 32/8 and %s at fan 48/8, i.e. far inside the production tolerance 2e-3. The gate was therefore measuring the legacy integration error, not a real singular sample.'
+                     % (len(quad), _fmt(max(worst_chosen)), chosen_name, _fmt(max(worst32)), _fmt(max(worst))))
         lines.append('')
     lines += ['## 7. Accuracy-cost Pareto (102 epsilon-gate points)', '']
     eps = gate['sets'].get('eps', [])
@@ -204,11 +231,12 @@ def render(gate_path, stability_path, ledger_path, parity_path='', selected_path
             rel = [row['fan_rel'].get(config) or 0.0 for row in eps]
             sec = [row['fan_seconds'].get(config) or 0.0 for row in eps]
             pareto.append([config, _fmt(max(rel)), _fmt(_st.median(sec)), _fmt(_st.median(sec) / max(legacy_median, 1e-9))])
-        if selected and selected.get('selected_config'):
-            name = selected['selected_config']
-            stats = selected['sets']['eps__summary']['fan'][name]
-            pareto.append([name + ' (selected)', _fmt(stats['rel']['max']), _fmt(stats['seconds']['median']),
-                           _fmt(selected.get('cost_ratio'))])
+        for artefact in artefacts:
+            name = artefact['selected_config']
+            stats = _selected_stats(artefact)
+            tag = ' (selected)' if artefact is chosen else ''
+            pareto.append([name + tag, _fmt(stats['rel']['max']), _fmt(stats['seconds']['median']),
+                           _fmt(artefact.get('cost_ratio'))])
         lines += _table(pareto, ['config', 'max rel error', 'median s/point', 'x legacy order 48'])
         lines.append('')
     if selected:
@@ -221,13 +249,41 @@ def render(gate_path, stability_path, ledger_path, parity_path='', selected_path
         lines += ['### Selected configuration %s on all 109 points' % selected['selected_config'], '']
         lines += _table(rows, ['set', 'points', 'median', 'p90', 'max', 'median s/point'])
         lines.append('')
-        lines.append('Cost ratio against legacy order 48 on the epsilon set: %s; reference self-convergence %s.'
-                     % (_fmt(selected.get('cost_ratio')), _fmt((selected.get('reference_stability') or {}).get('rel_max'))))
+        stab = (selected.get('reference_stability') or {}).get('rel_max')
+        source_note = 'measured on the selected configuration'
+        if not stab:
+            stab = (_load(stability_path) or {}).get('reference_stability', {}).get('rel_max')
+            source_note = 'from the strips/order study, since the selected sweep skipped the stability stage'
+        lines.append('Cost ratio against legacy order 48 on the epsilon set: %s; reference self-convergence %s (%s).'
+                     % (_fmt(selected.get('cost_ratio')), _fmt(stab), source_note))
         lines.append('')
     lines += ['## 8. Selected configuration', '']
-    lines.append('* 24/8 (fan order 24, 8 strips) is the selected configuration: maximum relative error 5.0e-5 over the 109 points (bound 2e-4), median 2.9e-7, cost 2.28x legacy order 48 (bound 3x).')
-    lines.append('* 32/8 reaches 1.7e-5 but costs 3.84x legacy on the same points, which violates the declared cost bound; 48/8 reaches 2.0e-8 at 8.31x.')
-    lines.append('* 16/8 costs only 1.14x but its maximum error 7.8e-4 exceeds the accuracy bound, so it stays a diagnostic configuration only.')
+    if eps:
+        rows = []
+        for config in configs:
+            rel = [row['fan_rel'].get(config) or 0.0 for row in eps]
+            sec = [row['fan_seconds'].get(config) or 0.0 for row in eps]
+            ratio = _st.median(sec) / max(legacy_median, 1e-9)
+            rows.append([config, _fmt(max(rel)), _fmt(_p90(rel)), _fmt(ratio),
+                         _pass(max(rel) <= 2e-4), _pass(_p90(rel) <= 2e-5), _pass(ratio <= 3.0)])
+        for artefact in artefacts:
+            stats = _selected_stats(artefact)
+            rows.append([artefact['selected_config'], _fmt(stats['rel']['max']), _fmt(stats['rel']['p90']),
+                         _fmt(artefact.get('cost_ratio')), _pass(stats['rel']['max'] <= 2e-4),
+                         _pass(stats['rel']['p90'] <= 2e-5),
+                         _pass(float(artefact.get('cost_ratio') or 1e9) <= 3.0)])
+        lines += _table(rows, ['config', 'max rel error', 'p90 rel error', 'x legacy order 48',
+                               'max <= 2e-4', 'p90 <= 2e-5', 'cost <= 3x'])
+        lines.append('')
+    if chosen:
+        stats = _selected_stats(chosen)
+        lines.append('* %s (fan order %s, %s strips) is the selected configuration: maximum relative error %s, p90 %s, median %s over the 109 points, at %sx the legacy order-48 wall clock.'
+                     % (chosen['selected_config'], chosen['selected_config'].split('/')[0],
+                        chosen['selected_config'].split('/')[1], _fmt(stats['rel']['max']),
+                        _fmt(stats['rel']['p90']), _fmt(stats['rel']['median']), _fmt(chosen.get('cost_ratio'))))
+    else:
+        lines.append('* No measured configuration satisfies every declared bound; the cheapest maximum-error configuration is quoted above and no selection is claimed.')
+    lines.append('* The bounds are the ones declared before the sweep: maximum relative error at most 2e-4, p90 at most 2e-5 and wall clock within 3x legacy order 48. A configuration that misses any of them is reported as failing rather than re-bounded after the fact.')
     lines.append('* Strips beyond 8 buy nothing measurable: 32/32 is 1.5e-5 against 1.7e-5 for 32/8 at four times the cost, so the surviving error is set by the quadrature order, not by the strip count.')
     lines.append('* analytic_edges remains the default; projection_fan is opt-in through area_quadrature, and the production tolerances (epsilon_tol 0.02, quadrature_tol 2e-3) are unchanged.')
     lines.append('')
@@ -245,7 +301,9 @@ def main(argv=None):
     parser.add_argument('--stability', default='')
     parser.add_argument('--ledger', default='docs/issue84/wake_ledger_g2_summary.json')
     parser.add_argument('--parity', default='docs/issue84/fan_parity_selected.json')
-    parser.add_argument('--selected', default='docs/issue84/projection_fan_order24.json')
+    parser.add_argument('--selected', nargs='+',
+                        default=['docs/issue84/projection_fan_order24.json',
+                                 'docs/issue84/projection_fan_order28.json'])
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args(argv)
     text = render(args.gate, args.stability, args.ledger, args.parity, args.selected)
