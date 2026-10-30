@@ -69,7 +69,8 @@ def compare_runs(reference, candidate, *, state_atol=1e-10, state_rtol=1e-10):
             velocity_differences[key] = dict(
                 max=float(np.max(np.linalg.norm(delta, axis=-1))),
                 rms=float(np.sqrt(np.mean(np.sum(delta*delta, axis=-1)))))
-    loads_match = all(abs(value) <= 1e-9 for value in load_differences.values())
+    loads_match = (set(load_differences) == set(LOADS)
+                   and all(abs(value) <= 1e-9 for value in load_differences.values()))
     slip = {}
     for group, ref_diag in ref_iter.get("wakes", {}).items():
         cand_diag = cand_iter.get("wakes", {}).get(group, {})
