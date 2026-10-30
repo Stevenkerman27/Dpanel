@@ -565,3 +565,69 @@ def test_frozen_snapshot_replay_can_override_velocity_without_resolving_strength
     assert replay_rm["evaluated_core_radius"] == pytest.approx(0.03)
     assert replay_rm["quadrature_order"] == 24
     assert replay_rm["strength_solve_kernel"] == "frozen_unregularized_P1_BEM_state"
+
+
+
+def test_total_velocity_projection_fan_matches_direct_regularized_field():
+    from panel.p1_regularized_sheet_velocity import RegularizedP1SheetField
+    mesh, state = small_field()
+    core = 0.08
+    field = TotalVelocity(mesh, state, method="rm_regularized_p1",
+                          core_radius=core, area_quadrature="projection_fan",
+                          fan_order=24, fan_strips=8)
+    wall = (mesh.xyz, mesh.faces, np.asarray(state["mu"])[mesh.dof_face])
+    group = mesh.groups[0]
+    nodal = group.gamma_hat @ state["gamma"]
+    wake = (group.wake_xyz, group.wake_faces, nodal[group.wake_faces])
+    oracle = RegularizedP1SheetField(
+        [wall, wake], freestream=field.free, core_radius=core,
+        area_quadrature="projection_fan", fan_order=24, fan_strips=8)
+    point = np.array([0.3, -0.4, 1.7])
+    np.testing.assert_allclose(field(point), oracle(point), rtol=1e-13, atol=1e-14)
+    assert field.area_quadrature == "projection_fan"
+    assert field.fan_order == 24 and field.fan_strips == 8
+
+
+def test_solve_callback_snapshot_records_projection_fan_controls():
+    mesh = generated_mesh()
+    captured = {}
+    def save(iteration, current, state, record, arrays):
+        captured["record"] = record
+        captured["arrays"] = {k: np.asarray(v).copy() for k, v in arrays.items()}
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0,
+        velocity_method="rm_regularized_p1", core_radius=0.04,
+        area_quadrature="projection_fan", fan_order=24, fan_strips=8,
+        save_callback=save)
+    assert captured["record"]["area_quadrature"] == "projection_fan"
+    assert captured["record"]["fan_order"] == 24
+    assert captured["record"]["fan_strips"] == 8
+    assert str(captured["arrays"]["sampling_area_quadrature"]) == "projection_fan"
+    assert int(captured["arrays"]["sampling_fan_order"]) == 24
+    assert int(captured["arrays"]["sampling_fan_strips"]) == 8
+    assert result["area_quadrature"] == "projection_fan"
+
+
+def test_snapshot_replay_overrides_projection_fan_and_preserves_old_snapshot_default():
+    from panel.p1_coupled_material_wake import replay_snapshot
+    mesh = generated_mesh()
+    captured = {}
+    def save(iteration, current, state, record, arrays):
+        captured.update({k: np.asarray(v).copy() for k, v in arrays.items()})
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0,
+        velocity_method="rm_regularized_p1", core_radius=0.04,
+        save_callback=save)
+    sha = result["history"][0]["state_sha256"]
+    fan = replay_snapshot(captured, sha, area_quadrature="projection_fan",
+                          fan_order=24, fan_strips=8)
+    assert fan["evaluated_area_quadrature"] == "projection_fan"
+    assert fan["fan_order"] == 24 and fan["fan_strips"] == 8
+    # Legacy snapshot without the new keys remains legacy_duffy by default.
+    old = dict(captured)
+    for key in ("sampling_area_quadrature", "sampling_fan_order", "sampling_fan_strips"):
+        old.pop(key, None)
+    old_sha = __import__("panel.p1_coupled_material_wake",
+                         fromlist=["snapshot_hash"]).snapshot_hash(old)
+    replay = replay_snapshot(old, old_sha)
+    assert replay["evaluated_area_quadrature"] == "legacy_duffy"
