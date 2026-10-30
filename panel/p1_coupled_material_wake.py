@@ -139,6 +139,15 @@ class TotalVelocity:
         return self.free-induced
 
 
+    def evaluate_many(self, points, *, order=48):
+        pts = np.asarray(points, float)
+        if pts.ndim != 2 or pts.shape[1] != 3 or not np.isfinite(pts).all():
+            raise ValueError("points must be a finite (N,3) array")
+        if self.method == "rm_regularized_p1":
+            return self._regularized.evaluate_many(pts, order=order)
+        return np.stack([self(point, order=order) for point in pts])
+
+
 def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
     """Finite one-sided samples: epsilon sensitivity plus legacy Gauss-order audit.
 
