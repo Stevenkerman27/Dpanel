@@ -249,6 +249,12 @@ def node_table(mesh, state, group, field, *, eps_fraction, ladder, order,
     return table
 
 
+def _finite_or_none(value):
+    """JSON has no NaN/Infinity: report 'not applicable' as null instead."""
+    value = float(value)
+    return value if np.isfinite(value) else None
+
+
 def classify(rows):
     counts = {name: 0 for name in REASONS}
     counts["eligible"] = 0
@@ -305,6 +311,9 @@ def main(argv=None):
     parser.add_argument("--case", default="g2", choices=("g1", "g2"))
     parser.add_argument("--alpha", type=float, default=5.)
     parser.add_argument("--order", type=int, default=48)
+    parser.add_argument("--velocity-method", default="analytic_edges",
+                        choices=("analytic_edges", "rm_regularized_p1"))
+    parser.add_argument("--core-radius", type=float, default=None)
     parser.add_argument("--eps-fraction", type=float, default=.05)
     parser.add_argument("--ladder", type=float, nargs="+", default=(1., .5, .25, .125))
     parser.add_argument("--epsilon-tol", type=float, default=.02)
@@ -317,7 +326,8 @@ def main(argv=None):
     mesh, alpha_deg = build_case(args.main_half_surface, case=args.case, alpha_deg=args.alpha)
     ops = assemble_multi(mesh)
     state = solve_multi(mesh, alpha_deg, kutta="pressure", operators=ops)
-    field = TotalVelocity(mesh, state, method="analytic_edges")
+    field = TotalVelocity(mesh, state, method=args.velocity_method,
+                          core_radius=args.core_radius)
 
     groups = list(mesh.groups)
     payload = dict(
@@ -325,7 +335,8 @@ def main(argv=None):
         python=platform.python_version(), numpy=np.__version__,
         main_half_surface=[str(Path(p)) for p in args.main_half_surface],
         input_sha256=[hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in args.main_half_surface],
-        case=args.case, alpha_deg=alpha_deg, kutta="pressure", velocity_method="analytic_edges",
+        case=args.case, alpha_deg=alpha_deg, kutta="pressure",
+        velocity_method=args.velocity_method, core_radius=args.core_radius,
         quadrature_order=args.order, eps_fraction=args.eps_fraction, ladder=list(args.ladder),
         epsilon_tol=args.epsilon_tol, quadrature_tol=args.quadrature_tol,
         wall_faces=int(len(mesh.faces)), wake_faces=[int(len(g.wake_faces)) for g in groups],
@@ -338,6 +349,8 @@ def main(argv=None):
         groups={}, classes={}, worst={}, repro=[], notes=[
             "Read-only diagnostic. The production gates are unchanged.",
             "analytic_edges has no finite core, so h/core is not applicable.",
+            "quadrature_error is 0 (NOT APPLICABLE) for analytic_edges and active for"
+            " rm_regularized_p1.",
         ])
     all_rows = []
     for gi, group in enumerate(groups):
@@ -366,9 +379,9 @@ def main(argv=None):
                            and r["dist_sheet_edge"] <= 1.5*r["scale"])),
                        rejected_near_tip=int(sum(1 for r in rows if not r["eligible"]
                                                  and r["near_tip"])),
-                       rejected_h_over_scale_min=float(min([r["h_over_scale"] for r in rows
+                       rejected_h_over_scale_min=_finite_or_none(min([r["h_over_scale"] for r in rows
                                                             if not r["eligible"]] or [np.nan])),
-                       rejected_dist_wall_min=float(min([r["dist_wall"] for r in rows
+                       rejected_dist_wall_min=_finite_or_none(min([r["dist_wall"] for r in rows
                                                          if not r["eligible"]] or [np.nan])))
         payload["groups"][group.name] = summary
         payload["classes"][group.name] = counts

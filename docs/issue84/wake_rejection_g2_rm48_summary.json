@@ -1,0 +1,83 @@
+{
+  "schema": "dpanel.issue84.wake_node_rejection.v1",
+  "note": "RM core 0.01, quadrature order 48, frozen g2 state (state_sha256 83d30119...); same tool/parameters as the analytic_edges run of item B, only the velocity method changed.",
+  "velocity_method": "rm_regularized_p1",
+  "core_radius": 0.01,
+  "quadrature_order": 48,
+  "eps_fraction": 0.05,
+  "ladder": [
+    1,
+    0.5,
+    0.25,
+    0.125
+  ],
+  "epsilon_tol": 0.02,
+  "quadrature_tol": 0.002,
+  "wall_faces": 872,
+  "wake_faces": [
+    770,
+    24
+  ],
+  "loads": {
+    "CD_pressure": 0.006357145692946399,
+    "CL": 0.43406115014632407,
+    "CL_gamma": 0.43843173700189036,
+    "CM_y": -0.11965433057432534,
+    "pressure_kutta_rms": 9.026496367145126e-7,
+    "signed_kutta_rms": 0.04479958281246911,
+    "wall_rms": 0.001216961726581878
+  },
+  "totals": {
+    "eligible": 386,
+    "opposed_tangent": 0,
+    "sampling_epsilon": 0,
+    "sampling_quadrature": 7,
+    "zero_speed": 0
+  },
+  "groups": {
+    "main_wing": {
+      "classes": {
+        "eligible": 371,
+        "opposed_tangent": 0,
+        "sampling_epsilon": 0,
+        "sampling_quadrature": 7,
+        "zero_speed": 0
+      },
+      "eligible": 371,
+      "epsilon_error_max": 0.0016415143019363016,
+      "epsilon_error_median": 0.000023445903618856075,
+      "quadrature_error_max": 0.004307639221245774,
+      "rejected_dist_wall_min": 2.8714108030722456,
+      "rejected_h_over_scale_min": 0.00625,
+      "rejected_near_tip": 4,
+      "rejected_on_boundary": 4,
+      "rejected_within_1_face_of_edge": 6,
+      "rejected_within_1_h_of_edge": 4,
+      "roots": 90,
+      "rows": 378
+    },
+    "raised_tail": {
+      "classes": {
+        "eligible": 15,
+        "opposed_tangent": 0,
+        "sampling_epsilon": 0,
+        "sampling_quadrature": 0,
+        "zero_speed": 0
+      },
+      "eligible": 15,
+      "epsilon_error_max": 0.0008247647186574639,
+      "epsilon_error_median": 0.00015305499658166915,
+      "quadrature_error_max": 4.957410697226106e-9,
+      "rejected_dist_wall_min": null,
+      "rejected_h_over_scale_min": null,
+      "rejected_near_tip": 0,
+      "rejected_on_boundary": 0,
+      "rejected_within_1_face_of_edge": 0,
+      "rejected_within_1_h_of_edge": 0,
+      "roots": 5,
+      "rows": 15
+    }
+  },
+  "seconds": 552.1686683000298,
+  "peak_rss_mb": 2107
+}
