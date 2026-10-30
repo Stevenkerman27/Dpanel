@@ -8,21 +8,43 @@ from panel.regularized_vortex_filament import (
 
 
 def independent_regularized_line_integral(point, start, end, circulation, core_radius,
-                                          order=240):
-    """Independent Gauss–Legendre integral of dl x r / (r^2+a^2)^(3/2)."""
+                                          order=240, subintervals=1):
+    """Composite Gauss-Legendre integral of dl x r / (r^2+a^2)^(3/2).
+
+    Subdivision is essential near the core: one high-order panel can still
+    underresolve the narrow peak when the offset is much smaller than a.
+    """
     p = np.asarray(point, float)
-    a, b = np.asarray(start, float), np.asarray(end, float)
+    a = np.asarray(start, float)
+    b = np.asarray(end, float)
     d = b-a
     length = np.linalg.norm(d)
     tangent = d/length
     q, w = np.polynomial.legendre.leggauss(order)
-    s = (q+1.0)*length/2.0
-    weights = w*length/2.0
-    source = a[None, :] + s[:, None]*tangent
-    r = p[None, :] - source
-    den = (np.einsum("ij,ij->i", r, r) + core_radius**2)**1.5
-    integrand = np.cross(np.broadcast_to(tangent, r.shape), r)/den[:, None]
-    return circulation/(4*np.pi)*np.sum(weights[:, None]*integrand, axis=0)
+    xi = (q+1.0)/2.0
+    s = (np.arange(subintervals)[:, None]+xi[None, :])*(length/subintervals)
+    weights = np.broadcast_to(w[None, :]*(length/(2*subintervals)), s.shape)
+    source = a[None, None, :] + s[:, :, None]*tangent[None, None, :]
+    r = p[None, None, :] - source
+    den = (np.einsum("sqi,sqi->sq", r, r) + core_radius**2)**1.5
+    integrand = np.cross(np.broadcast_to(tangent, r.shape), r)/den[:, :, None]
+    return circulation/(4*np.pi)*np.sum(weights[:, :, None]*integrand, axis=(0, 1))
+
+
+def independent_rm_circular_ring_speed(radius, circulation, core_radius,
+                                       order=24, subintervals=256):
+    """Direct azimuthal quadrature of the continuous RM circular-ring integral.
+
+    The field point lies on the circular filament. This is independent of the
+    polygonal segment implementation and is used as its continuous-loop oracle.
+    """
+    q, w = np.polynomial.legendre.leggauss(order)
+    theta = (np.arange(subintervals)[:, None] + (q[None, :]+1.0)/2.0) * (
+        2*np.pi/subintervals)
+    weights = np.broadcast_to(w[None, :]*(np.pi/subintervals), theta.shape)
+    numerator = radius**2*(1.0-np.cos(theta))
+    denominator = (core_radius**2 + 2*radius**2*(1.0-np.cos(theta)))**1.5
+    return circulation/(4*np.pi)*np.sum(weights*numerator/denominator)
 
 
 def rotation():
@@ -44,6 +66,18 @@ def test_regularized_segment_matches_independent_quadrature():
         got = regularized_segment_velocity(p, a, b, 1.4, core)
         expected = independent_regularized_line_integral(p, a, b, 1.4, core)
         np.testing.assert_allclose(got, expected, rtol=2e-12, atol=2e-13)
+
+
+@pytest.mark.parametrize("offset_factor", [0.1, 0.05, 0.01])
+def test_regularized_segment_matches_composite_quadrature_near_core(offset_factor):
+    start = np.array([-1., 0., 0.])
+    end = np.array([1., 0., 0.])
+    core = 0.01
+    point = np.array([0., offset_factor*core, 0.])
+    got = regularized_segment_velocity(point, start, end, 1.0, core)
+    expected = independent_regularized_line_integral(
+        point, start, end, 1.0, core, order=24, subintervals=64)
+    np.testing.assert_allclose(got, expected, rtol=2e-12, atol=2e-13)
 
 
 def test_orientation_and_circulation_sign():
@@ -109,23 +143,44 @@ def test_polyline_sums_regularized_segments_and_supports_diagnostic_exclusion():
         regularized_polyline_velocity(p, vertices, gamma, core, excluded_segments=(2,))
 
 
-def test_fixed_core_curved_loop_refinement_is_finite_and_core_sensitive():
+def test_fixed_core_curved_loop_refinement_matches_continuous_rm_oracle():
+    radius, circulation = 1.0, 1.0
     speeds = {}
     for core in (0.05, 0.1, 0.2):
-        for n in (64, 128, 256, 512):
+        exact = independent_rm_circular_ring_speed(radius, circulation, core)
+        for n in (64, 128, 256, 512, 4096):
             theta = 2*np.pi*np.arange(n)/n
-            ring = np.column_stack((np.cos(theta), np.sin(theta), np.zeros(n)))
+            ring = np.column_stack((radius*np.cos(theta),
+                                    radius*np.sin(theta), np.zeros(n)))
             ring = np.vstack((ring, ring[0]))
             point = 0.5*(ring[0]+ring[1])
-            u = regularized_polyline_velocity(point, ring, 1., core)
+            u = regularized_polyline_velocity(point, ring, circulation, core)
+            speed = np.linalg.norm(u)
             assert np.isfinite(u).all()
-            speeds[(core, n)] = np.linalg.norm(u)
-        # At fixed positive core, the final refinement is bounded and small
-        # relative to the induced speed; this is numerical convergence evidence,
-        # not evidence that the selected core is physically calibrated.
-        last_change = abs(speeds[(core, 512)]-speeds[(core, 256)])
-        assert last_change/speeds[(core, 512)] < 0.02
-    assert len({round(speeds[(core, 512)], 5) for core in (0.05, 0.1, 0.2)}) == 3
+            speeds[(core, n)] = speed
+            if n == 4096:
+                np.testing.assert_allclose(speed, exact, rtol=5e-5, atol=1e-10)
+        errors = [abs(speeds[(core, n)]-exact) for n in (64, 128, 256, 512, 4096)]
+        assert all(later < earlier for earlier, later in zip(errors, errors[1:]))
+    assert len({round(speeds[(core, 4096)], 5) for core in (0.05, 0.1, 0.2)}) == 3
+
+
+def test_rm_circular_ring_thin_core_self_induction_law():
+    radius, circulation, core = 1.0, 1.0, 0.05
+    n = 4096
+    theta = 2*np.pi*np.arange(n)/n
+    ring = np.column_stack((radius*np.cos(theta),
+                            radius*np.sin(theta), np.zeros(n)))
+    ring = np.vstack((ring, ring[0]))
+    point = 0.5*(ring[0]+ring[1])
+    numerical = np.linalg.norm(
+        regularized_polyline_velocity(point, ring, circulation, core))
+    asymptotic = (circulation/(4*np.pi*radius)) * (
+        np.log(8*radius/core)-1.0)
+    # The -1 constant belongs to this Rosenhead–Moore core convention.
+    # Finite-core corrections are O((a/R)^2), so this is an asymptotic,
+    # not exact finite-a, equality.
+    np.testing.assert_allclose(numerical, asymptotic, rtol=5e-4, atol=1e-10)
 
 
 @pytest.mark.parametrize("core", [0., -0.1, np.nan, np.inf])
