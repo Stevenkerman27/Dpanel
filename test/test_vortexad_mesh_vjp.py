@@ -46,7 +46,10 @@ def test_vortexad_mesh_coordinate_vjp_centered_difference():
     pytest.importorskip("jax")
     vortex = pytest.importorskip("VortexAD")
     mesh_path = Path(vortex.SAMPLE_GEOMETRY_PATH) / "pm" / "naca0012_LE_TE_cluster.stl"
-    assert mesh_path.is_file(), f"Missing upstream mesh: {mesh_path}"
+    if not mesh_path.is_file():
+        pytest.skip(f"VortexAD sample mesh data missing from this install: {mesh_path} "
+                    "(the wheel ships no STL under core/geometry/sample_meshes/pm; "
+                    "use a source checkout on PYTHONPATH or copy the STL files)")
 
     import meshio
     from VortexAD.utils.unstructured_grids.cell_adjacency import find_cell_adjacency

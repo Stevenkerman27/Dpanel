@@ -277,8 +277,16 @@ def mirror_gate(op, tol=1e-9, station_tol=1e-6, station_scale=None, freestream=N
 
     Returns status "ok" only for an exactly mirror-paired bijection including
     every panel, every circulation station and every trailing-edge edge. Any
-    unpaired panel, non-involutive pairing, centreline-straddling triangle or
-    mismatched TE pair yields status "blocked" with the evidence attached.
+    unpaired panel, non-involutive pairing, panel that lies on the symmetry
+    plane (a self-mirror changes the unknown count) or mismatched TE pair yields
+    status "blocked" with the evidence attached.
+
+    TE pairing is bank-consistent: a y -> -y reflection keeps z, so the mirror of
+    an upper-bank TE face must be an upper-bank TE face, and likewise for the
+    lower bank. Comparing the mirrored upper faces against the set of all
+    *lower* faces would demand that the reflection swap the z banks, which no XZ
+    symmetric mesh can satisfy; see panel/symmetry.py te_bank_gate for the same
+    argument on the node-level audit.
     """
     scale = float(np.linalg.norm(op.center.max(axis=0) - op.center.min(axis=0)))
     atol = tol * max(scale, 1e-12)
@@ -295,9 +303,14 @@ def mirror_gate(op, tol=1e-9, station_tol=1e-6, station_scale=None, freestream=N
     spair = np.argmin(sdiff, axis=1)
     sunpaired = int(np.sum(sdiff[np.arange(len(op.station_y)), spair] > stol))
     sinvolution = bool(np.all(spair[spair] == np.arange(len(op.station_y))))
-    te_mirror = pair[op.upper]
-    lower_set = set(op.lower.tolist())
-    te_paired = int(sum(1 for j in te_mirror if j in lower_set))
+    upper = np.asarray(op.upper, dtype=np.int64)
+    lower = np.asarray(op.lower, dtype=np.int64)
+    upper_set = set(upper.tolist())
+    lower_set = set(lower.tolist())
+    upper_paired = int(sum(1 for j in pair[upper] if j in upper_set))
+    lower_paired = int(sum(1 for j in pair[lower] if j in lower_set))
+    te_paired = min(upper_paired, lower_paired)
+    on_plane = self_panels - straddling
     reasons = []
     if unpaired:
         reasons.append("%d/%d panels have no exact mirror partner (tol %.1e)" % (unpaired, op.nf, atol))
@@ -307,12 +320,16 @@ def mirror_gate(op, tol=1e-9, station_tol=1e-6, station_scale=None, freestream=N
         reasons.append("mirror map is not an involution")
     if straddling:
         reasons.append("%d centreline panel(s) would need a self-mirror, which changes the unknown count" % straddling)
+    if on_plane:
+        reasons.append("%d panel(s) lie on the symmetry plane and are self-mirrored, which changes the unknown count" % on_plane)
     if sunpaired:
         reasons.append("%d/%d circulation stations have no mirror partner (tol %.1e)" % (sunpaired, len(op.station_y), stol))
     if not sinvolution:
         reasons.append("station mirror map is not an involution")
     if te_paired != op.n_te:
-        reasons.append("%d/%d TE edges do not mirror onto an existing lower-TE edge" % (op.n_te - te_paired, op.n_te))
+        reasons.append("%d/%d TE edges do not mirror onto a TE edge of the same bank "
+                       "(upper %d/%d, lower %d/%d; XZ keeps z, so upper->upper and lower->lower)"
+                       % (op.n_te - te_paired, op.n_te, upper_paired, op.n_te, lower_paired, op.n_te))
     sideslip = None
     if freestream is not None:
         flow = np.asarray(freestream, dtype=np.float64)
@@ -329,6 +346,7 @@ def mirror_gate(op, tol=1e-9, station_tol=1e-6, station_scale=None, freestream=N
         "bijective": bijective,
         "involution": involution,
         "self_panels": self_panels,
+        "self_panels_on_plane": on_plane,
         "centreline_straddling": straddling,
         "nearest_mirror_median": float(np.median(residual)),
         "nearest_mirror_max": float(residual.max()),
@@ -338,6 +356,8 @@ def mirror_gate(op, tol=1e-9, station_tol=1e-6, station_scale=None, freestream=N
         "station_involution": sinvolution,
         "te_edges": int(op.n_te),
         "te_edges_paired": te_paired,
+        "te_edges_paired_upper": upper_paired,
+        "te_edges_paired_lower": lower_paired,
         "sideslip_ratio": sideslip,
         "mirror": pair,
         "station_mirror": spair,
