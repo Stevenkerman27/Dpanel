@@ -76,7 +76,9 @@ class RegularizedP1SheetField:
     """
 
     def __init__(self, parts, *, freestream=(1.0, 0.0, 0.0),
-                 core_radius, quadrature_order=48):
+                 core_radius, quadrature_order=48,
+                 area_quadrature="legacy_duffy", fan_order=16, fan_strips=8,
+                 fan_swap=False):
         self.freestream = np.asarray(freestream, float).copy()
         self.core_radius = float(core_radius)
         if (self.freestream.shape != (3,) or not np.isfinite(self.freestream).all()
@@ -85,6 +87,16 @@ class RegularizedP1SheetField:
         if type(quadrature_order) is not int or quadrature_order < 4:
             raise ValueError("quadrature_order must be an integer >= 4")
         self.quadrature_order = quadrature_order
+        if area_quadrature not in ("legacy_duffy", "projection_fan"):
+            raise ValueError("area_quadrature must be legacy_duffy or projection_fan")
+        if type(fan_order) is not int or fan_order < 2:
+            raise ValueError("fan_order must be an integer >= 2")
+        if type(fan_strips) is not int or fan_strips < 1:
+            raise ValueError("fan_strips must be an integer >= 1")
+        self.area_quadrature = area_quadrature
+        self.fan_order = fan_order
+        self.fan_strips = fan_strips
+        self.fan_swap = bool(fan_swap)
         self._quadrature = {}
         tri_parts, normal_parts, gamma_parts, edge_a, edge_b, edge_mu = [], [], [], [], [], []
         for xyz, faces, values in parts:
@@ -133,6 +145,12 @@ class RegularizedP1SheetField:
         return np.einsum("ei,e->i", np.cross(tangent, rho), weighted)
 
     def _area_velocity(self, point, order):
+        if self.area_quadrature == "projection_fan":
+            from .p1_projection_duffy import area_terms
+            terms = area_terms(self.triangles, np.asarray(point, float),
+                               self.core_radius, order=self.fan_order,
+                               strips=self.fan_strips, swap=self.fan_swap)
+            return np.sum(np.cross(self.gamma, terms), axis=0)
         if order not in self._quadrature:
             q, w = np.polynomial.legendre.leggauss(order)
             q, w = (q+1.0)/2.0, w/2.0
@@ -170,6 +188,12 @@ class RegularizedP1SheetField:
             weights = (w[:, None]*w[None, :]*(1.0-u)).reshape(-1)
             bary = np.stack(((1.0-u)*(1.0-v), u, (1.0-u)*v), axis=-1).reshape(-1, 3)
             self._quadrature[n] = (bary, weights)
+        if self.area_quadrature == "projection_fan":
+            out = np.stack([self.freestream-(self._edge_velocity(point)
+                +self._area_velocity(point, n))/(4*np.pi) for point in pts])
+            if not np.isfinite(out).all():
+                raise FloatingPointError("nonfinite projection-fan batch velocity")
+            return out
         bary, weights = self._quadrature[n]
         source = np.einsum("qv,fvi->fqi", bary, self.triangles)
         out = np.empty_like(pts)
