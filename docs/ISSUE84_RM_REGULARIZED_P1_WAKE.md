@@ -1,6 +1,6 @@
 # Issue #84 — RM-regularized P1 wake velocity reconstruction
 
-Status: opt-in research mode. No production default changes. \`physical_accuracy_accepted=false\`.
+Status: opt-in research mode. No production default changes. `physical_accuracy_accepted=false`.
 
 ## Why this is not a constant-strength filament replacement
 
@@ -38,41 +38,41 @@ This is a regularized P1 **velocity reconstruction** for the wake-geometry itera
 
 ## Code
 
-- \`panel/p1_regularized_sheet_velocity.py\`: RM-regularized P1 edge plus in-panel gradient velocity field.
-- \`panel/p1_coupled_material_wake.py\`: new opt-in \`velocity_method="rm_regularized_p1"\`; requires explicit \`core_radius\`.
-- \`panel/run_p1_coupled_material_wake.py\`: CLI exposes \`--velocity-method rm_regularized_p1 --core-radius <length>\`.
-- \`tools/issue84/compare_iteration0.py\`: verifies same frozen geometry, strengths, alpha and Kutta before comparing iteration-0 velocity samples and slip.
-- \`test/test_p1_regularized_sheet_velocity.py\`: independent edge/area quadrature, P1 gradient, edge cancellation, zero-core limit and on-sheet finiteness.
-- \`test/test_p1_coupled_material_wake.py\`: integration tests for explicit-core selection and unchanged strength solve.
+- `panel/p1_regularized_sheet_velocity.py`: RM-regularized P1 edge plus in-panel gradient velocity field.
+- `panel/p1_coupled_material_wake.py`: new opt-in `velocity_method="rm_regularized_p1"`; requires explicit `core_radius`.
+- `panel/run_p1_coupled_material_wake.py`: CLI exposes `--velocity-method rm_regularized_p1 --core-radius <length>`.
+- `tools/issue84/compare_iteration0.py`: verifies same frozen geometry, strengths, alpha and Kutta before comparing iteration-0 velocity samples and slip.
+- `test/test_p1_regularized_sheet_velocity.py`: independent edge/area quadrature, P1 gradient, edge cancellation, zero-core limit and on-sheet finiteness.
+- `test/test_p1_coupled_material_wake.py`: integration tests for explicit-core selection and unchanged strength solve.
 
-The default remains \`analytic_edges\`. The old \`legacy_gauss\` mode remains available for historical A/B checks. No core is inferred or silently selected.
+The default remains `analytic_edges`. The old `legacy_gauss` mode remains available for historical A/B checks. No core is inferred or silently selected.
 
 ## Required tests
 
-\`\`\`bash
+~~~bash
 python -m pytest test/test_p1_regularized_sheet_velocity.py test/test_p1_coupled_material_wake.py -q
 python -m py_compile panel/p1_regularized_sheet_velocity.py panel/p1_coupled_material_wake.py panel/run_p1_coupled_material_wake.py tools/issue84/compare_iteration0.py
-\`\`\`
+~~~
 
 No current-branch local execution receipt is available yet. Do not report these as passed until the local agent checks out the exact PR head and returns the actual environment, command, exit codes and output.
 
 ## Generated G1/G2 comparison plan
 
-Run the same generated geometry, alpha, Kutta and reference quantities with \`iterations=0\`. The strength solve is intentionally unchanged; compare the saved iteration-0 states and velocity samples.
+Run the same generated geometry, alpha, Kutta and reference quantities with `iterations=0`. The strength solve is intentionally unchanged; compare the saved iteration-0 states and velocity samples.
 
 Example G1:
 
-\`\`\`bash
+~~~bash
 python -m panel.run_p1_coupled_material_wake --case g1 --alpha 5 --kutta pressure --iterations 0 --velocity-method analytic_edges --out runs/issue84/g1_analytic
 python -m panel.run_p1_coupled_material_wake --case g1 --alpha 5 --kutta pressure --iterations 0 --velocity-method rm_regularized_p1 --core-radius 0.01 --quadrature-order 12 --out runs/issue84/g1_rm_a001
 python -m tools.issue84.compare_iteration0 --reference runs/issue84/g1_analytic --candidate runs/issue84/g1_rm_a001 --out runs/issue84/g1_a001_compare.json
-\`\`\`
+~~~
 
 Repeat for G2 and for a declared sensitivity set, e.g. \(a/c=0.005,0.01,0.02\). These are sensitivity values, not a claim that one is physically calibrated. Do not select a core because it moves \(C_L\) toward a reference number.
 
 Only after iteration-0 comparisons pass should short 3–4 iteration geometry updates be run for G1 and G2 at the same core values. Preserve every run directory; never overwrite earlier receipts. Report slip, epsilon/area-quadrature sensitivity, rejected nodes, geometry updates, \(\mathrm{CL}_p\), \(\mathrm{CL}_\Gamma\), Kutta residuals and the full iteration history. A finite or bounded run is not automatically converged.
 
-Real CAD is optional and may only be run if \`runs/half_cad_wingbody_v1/surface.json\` exists in the local checkout. Record its SHA-256; do not substitute an invented fixture.
+Real CAD is optional and may only be run if `runs/half_cad_wingbody_v1/surface.json` exists in the local checkout. Record its SHA-256; do not substitute an invented fixture.
 
 ## Acceptance boundary
 
