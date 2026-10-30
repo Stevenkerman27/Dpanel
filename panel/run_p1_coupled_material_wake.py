@@ -43,10 +43,13 @@ def main(argv=None):
     parser.add_argument('--eps-fraction', type=float, default=.05)
     parser.add_argument('--ladder', type=float, nargs='+', default=[1., .5, .25, .125])
     parser.add_argument('--quadrature-order', type=int, default=48,
-                        help='Legacy Gauss order; ignored by analytic straight-edge integration')
-    parser.add_argument('--velocity-method', choices=('analytic_edges', 'legacy_gauss'),
+                        help='Legacy edge Gauss order; RM-P1 uses this as Duffy area order; ignored by analytic edges')
+    parser.add_argument('--velocity-method',
+                        choices=('analytic_edges', 'legacy_gauss', 'rm_regularized_p1'),
                         default='analytic_edges',
-                        help='Analytic P1 edges by default, legacy finite Gauss as A/B diagnostic')
+                        help='Default analytic P1; rm_regularized_p1 is opt-in and requires --core-radius')
+    parser.add_argument('--core-radius', type=float, default=None,
+                        help='Explicit Rosenhead–Moore core length in geometry units; required only for rm_regularized_p1')
     parser.add_argument('--epsilon-tol', type=float, default=.02)
     parser.add_argument('--quadrature-tol', type=float, default=.002)
     parser.add_argument('--max-nfev', type=int, default=80)
@@ -115,7 +118,8 @@ def main(argv=None):
                    eps_fraction=args.eps_fraction, ladder=args.ladder,
                    order=args.quadrature_order, epsilon_tol=args.epsilon_tol,
                    quadrature_tol=args.quadrature_tol, max_nfev=args.max_nfev,
-                   velocity_method=args.velocity_method, save_callback=save)
+                   velocity_method=args.velocity_method, core_radius=args.core_radius,
+                   save_callback=save)
         report = {k: v for k, v in result.items() if k not in ('mesh', 'state')}
         report['negative_pressure_drag_warning'] = (
             'CD_pressure is a signed near-field pressure integral subject to '
