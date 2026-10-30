@@ -456,3 +456,53 @@ def test_unconverged_initial_pressure_kutta_is_distinct_from_later_failure(monke
     assert result["history"][0]["nonlinear_failure_phase"] == "initial_fixed_wake"
     assert result["history"][0]["outgoing_update"] is None
     assert not result["converged"]
+
+
+
+def test_rm_regularized_total_velocity_matches_all_p1_parts_and_keeps_gradient():
+    from panel.p1_regularized_sheet_velocity import RegularizedP1SheetField
+    mesh, state = small_field()
+    core = 0.11
+    field = TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=core)
+    wall = (mesh.xyz, mesh.faces, np.asarray(state["mu"])[mesh.dof_face])
+    group = mesh.groups[0]
+    wake_nodal = group.gamma_hat @ state["gamma"]
+    wake = (group.wake_xyz, group.wake_faces, wake_nodal[group.wake_faces])
+    oracle = RegularizedP1SheetField([wall, wake], freestream=field.free,
+                                     core_radius=core, quadrature_order=16)
+    for point in (np.array([0.3, -0.4, 1.7]),
+                  group.wake_xyz[group.wake_faces[0]].mean(axis=0)):
+        np.testing.assert_allclose(field(point, order=16), oracle(point, order=16),
+                                   rtol=1e-13, atol=1e-14)
+    assert np.linalg.norm(field.grad_face) > 0
+
+
+def test_rm_regularized_total_velocity_requires_explicit_core():
+    mesh, state = small_field()
+    with pytest.raises(ValueError, match="explicit positive core_radius"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1")
+    with pytest.raises(ValueError, match="explicit positive core_radius"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.0)
+    # The existing default remains the unregularized analytic P1 evaluator.
+    default = TotalVelocity(mesh, state)
+    explicit = TotalVelocity(mesh, state, method="analytic_edges")
+    point = np.array([0.3, -0.4, 1.7])
+    np.testing.assert_array_equal(default(point), explicit(point))
+
+
+def test_rm_regularized_g1_iteration_zero_preserves_unregularized_strength_solve():
+    from panel.p1_lifting_g2 import solve_multi
+    mesh = generated_mesh()
+    canonical = solve_multi(mesh, 5., kutta="signed_speed")
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0,
+        velocity_method="rm_regularized_p1", core_radius=0.03, order=12)
+    for key in ("mu", "gamma", "cp"):
+        np.testing.assert_allclose(result["state"][key], canonical[key],
+                                   atol=1e-10, rtol=1e-10)
+    row = result["history"][0]
+    assert row["velocity_method"] == "rm_regularized_p1"
+    assert row["core_radius"] == pytest.approx(0.03)
+    assert row["strength_solve_kernel"] == "unregularized_P1_BEM_operators"
+    assert result["kernel"] == "RM_regularized_P1_edge_plus_interior_gradient"
+    assert not result["physical_accuracy_accepted"] and not result["converged"]
