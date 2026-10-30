@@ -216,6 +216,52 @@ def assemble_multi(mesh: MultiLiftingMesh):
                 slices=slices,te_face_pairs=TEface,group_info=groups_receipt)
 
 
+def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure_residual,
+                              gradient_tolerance=1e-6,pressure_tolerance=1e-4,
+                              wall_floor_ratio=1.05):
+    """Classify a pressure-Kutta least-squares stop as converged-to-floor or failed.
+
+    The weighted wall block is a genuine least-squares problem: collocation rows
+    outnumber mu+Gamma DOFs on CAD meshes (e.g. 872 rows vs 487 DOFs on
+    runs/half_cad_wingbody_v1), so its residual has an irreducible floor. The
+    Kutta rows are satisfied to ~1e-6 while ftol/gtol=1e-11 stay unreachable,
+    and least_squares returns status 0 with success=False after spending its
+    whole budget on roundoff-sized reductions. Accept such a stop only when the
+    residual is stationary relative to the operator scale (relative projected
+    gradient), the Kutta rows are satisfied, and the wall residual sits on the
+    floor of the linear subproblem. Nothing else is relaxed.
+    """
+    rows=int(wall_operator.shape[0])
+    residual=np.asarray(fun(z),float)
+    jf=np.asarray(jac(z),float)
+    jf_norm=float(np.linalg.norm(jf));r_norm=float(np.linalg.norm(residual))
+    gradient_absolute=float(np.linalg.norm(jf.T@residual,np.inf))
+    gradient_relative=gradient_absolute/(jf_norm*r_norm+1e-300)
+    z_floor,_,_,_=lstsq(wall_operator,wall_rhs,lapack_driver='gelsd')
+    wall_floor=float(np.linalg.norm(wall_operator@z_floor-wall_rhs)/np.sqrt(rows))
+    wall_rms=float(np.linalg.norm(residual[:rows])/np.sqrt(rows))
+    pressure_rms=float(np.linalg.norm(pressure_residual)/np.sqrt(len(pressure_residual)))
+    stationary=bool(gradient_relative<=gradient_tolerance)
+    at_floor=bool(wall_floor>0 and wall_rms<=wall_floor_ratio*wall_floor)
+    kutta_ok=bool(pressure_rms<=pressure_tolerance)
+    accepted=bool(result.success) or bool(int(result.status)==0 and stationary and at_floor and kutta_ok)
+    return dict(success=accepted,message=str(result.message),nfev=int(result.nfev),
+                status=int(result.status),
+                cost=(None if getattr(result,'cost',None) is None else float(result.cost)),
+                optimality=(None if getattr(result,'optimality',None) is None
+                            else float(result.optimality)),
+                floor_method='least_squares of min ||B null(J) z - bw|| (lapack gelsd)',
+                accepted_at_residual_floor=bool(accepted and not bool(result.success)),
+                gradient_absolute=gradient_absolute,gradient_relative=gradient_relative,
+                residual_norm=r_norm,wall_rms=wall_rms,wall_floor_rms=wall_floor,
+                wall_over_floor=(None if wall_floor<=0 else float(wall_rms/wall_floor)),
+                pressure_rms=pressure_rms,
+                criteria=dict(stationary=stationary,wall_at_floor=at_floor,kutta=kutta_ok),
+                tolerances=dict(gradient_relative=gradient_tolerance,
+                                pressure_rms=pressure_tolerance,
+                                wall_floor_ratio=wall_floor_ratio))
+
+
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
                 max_nfev=80,operators=None):
     """Solve wall P1 mu and ALL independent wake Gamma simultaneously."""
@@ -254,7 +300,9 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
         rr=least_squares(fun,Nj.T@x,jac=d_fun,max_nfev=max_nfev,
                          xtol=1e-11,ftol=1e-11,gtol=1e-11)
         x=Nj@rr.x
-        nonlinear=dict(success=bool(rr.success),message=rr.message,nfev=rr.nfev)
+        nonlinear=pressure_kutta_acceptance(
+            result=rr,fun=fun,jac=d_fun,z=rr.x,
+            wall_operator=B@Nj,wall_rhs=bw,pressure_residual=pressure(x))
     elif kutta!='signed_speed':
         raise ValueError('kutta=pressure or signed_speed')
     else:
