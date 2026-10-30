@@ -77,6 +77,10 @@ def test_material_strength_gradient_recomputed_not_carried_in_global_axes():
 
 class UniformField:
     free = np.array([1., 0., 0.])
+    # TotalVelocity records the velocity method in the sampling kernel; the mock
+    # field advertises the production default so the coupling diagnostics take
+    # the analytic-edge branch.
+    method = 'analytic_edges'
     def __call__(self, p, *, order):
         return self.free.copy()
 
@@ -237,8 +241,9 @@ def test_integration_accepted_geometry_is_resolved_and_material_labels_frozen(mo
     monkeypatch.setattr(g2, 'solve_multi', tracked)
     # Manufactured smooth flow isolates coupling/geometry from the singular-PV research question.
     class SmoothField(UniformField):
-        def __init__(self, model, state):
+        def __init__(self, model, state, *, method='analytic_edges', core_radius=None):
             self.free = np.array([1., 0., .02])
+            self.method = method
     monkeypatch.setattr(b2, 'TotalVelocity', SmoothField)
     result = b2.solve_coupled_material_wake(mesh, 5., kutta='signed_speed', iterations=1)
     assert result['history'][0]['outgoing_update']['accepted']
@@ -314,7 +319,7 @@ def mock_coupling(monkeypatch, field):
     old.with_wake_xyz = with_xyz
     monkeypatch.setitem(sys.modules, 'panel.p1_lifting_g2', g2)
     monkeypatch.setitem(sys.modules, 'panel.p1_steady_free_wake', old)
-    monkeypatch.setattr(b2, 'TotalVelocity', lambda model, state: field)
+    monkeypatch.setattr(b2, 'TotalVelocity', lambda model, state, **kw: field)
     return mesh, calls
 
 

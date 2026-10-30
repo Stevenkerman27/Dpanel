@@ -101,8 +101,13 @@ def test_in_plane_p1_gradient_is_retained_not_reduced_to_edge_filaments():
     constant_values = np.full_like(values, np.mean(values))
     constant = RegularizedP1SheetField([(xyz, faces, constant_values)], core_radius=core)
     assert np.linalg.norm(varying.gamma[0]) > 0
-    assert np.linalg.norm(constant.gamma[0]) <= 1e-15 * max(
-        1.0, np.linalg.norm(constant.grad_face[0]))
+    # A globally constant P1 trace has no edge jump, so its edge strength is
+    # zero up to the round-off of the signed per-edge accumulation. Compare
+    # against the varying sheet's own edge strength instead of demanding exact
+    # zero, which is not attainable for a signed floating-point sum.
+    scale = np.linalg.norm(varying.gamma)
+    assert scale > 0
+    assert np.linalg.norm(constant.gamma[0]) <= 1e-12 * scale
     assert np.linalg.norm(varying(point)-constant(point)) > 1e-5
 
 

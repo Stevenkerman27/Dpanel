@@ -85,9 +85,6 @@ class RegularizedP1SheetField:
         if type(quadrature_order) is not int or quadrature_order < 4:
             raise ValueError("quadrature_order must be an integer >= 4")
         self.quadrature_order = quadrature_order
-        self._triangle_area2 = np.linalg.norm(np.cross(
-            np.concatenate(tri_parts)[:, 1]-np.concatenate(tri_parts)[:, 0],
-            np.concatenate(tri_parts)[:, 2]-np.concatenate(tri_parts)[:, 0]), axis=1)
         self._quadrature = {}
         tri_parts, normal_parts, gamma_parts, edge_a, edge_b, edge_mu = [], [], [], [], [], []
         for xyz, faces, values in parts:
@@ -103,6 +100,12 @@ class RegularizedP1SheetField:
         if not tri_parts:
             raise ValueError("at least one nonempty P1 sheet part is required")
         self.triangles = np.concatenate(tri_parts)
+        # Cache the doubled area in the same order as self.triangles: compute it
+        # from the concatenated array so that the per-part lists no longer have
+        # to be kept alive after construction.
+        self._triangle_area2 = np.linalg.norm(np.cross(
+            self.triangles[:, 1]-self.triangles[:, 0],
+            self.triangles[:, 2]-self.triangles[:, 0]), axis=1)
         self.normals = np.concatenate(normal_parts)
         self.gamma = np.concatenate(gamma_parts)
         self.edge_a = np.concatenate(edge_a) if edge_a else np.empty((0, 3))
