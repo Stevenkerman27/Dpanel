@@ -88,7 +88,14 @@ def main(argv=None):
                 core_radius=args.replay_core_radius,
                 quadrature_order=args.replay_quadrature_order)
             _write_json(args.out/'replay.json', replay)
-            receipt.update(exit_code=0 if replay['bitwise_equal'] else 3, status='frozen_state_replay')
+            replay_ok = (replay['bitwise_equal']
+                         if replay['replay_mode'] == 'reproduce_recorded_samples'
+                         else replay['evaluation_finite'])
+            receipt.update(exit_code=0 if replay_ok else 3,
+                           status=replay['replay_mode'],
+                           replay_method=replay['evaluated_method'],
+                           replay_core_radius=replay['evaluated_core_radius'],
+                           replay_quadrature_order=replay['quadrature_order'])
             return receipt['exit_code']
         import scipy
         from .p1_lifting_g1 import make_wing, from_dpanel_half_surface
