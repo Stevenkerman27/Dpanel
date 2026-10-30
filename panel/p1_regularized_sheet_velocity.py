@@ -148,7 +148,7 @@ class RegularizedP1SheetField:
 
 
 
-    def evaluate_many(self, points, *, order=None, chunk_size=24):
+    def evaluate_many(self, points, *, order=None, chunk_size=2):
         """Evaluate a batch of field points with bounded-memory vectorization.
 
         The expensive triangle/quadrature geometry is shared across targets.
