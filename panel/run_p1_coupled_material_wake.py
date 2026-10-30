@@ -50,6 +50,10 @@ def main(argv=None):
                         help='Default analytic P1; rm_regularized_p1 is opt-in and requires --core-radius')
     parser.add_argument('--core-radius', type=float, default=None,
                         help='Explicit Rosenhead–Moore core length in geometry units; required only for rm_regularized_p1')
+    parser.add_argument('--area-quadrature', choices=('legacy_duffy', 'projection_fan'),
+                        default='legacy_duffy', help='RM-P1 area integration; projection_fan is opt-in')
+    parser.add_argument('--fan-order', type=int, default=16)
+    parser.add_argument('--fan-strips', type=int, default=8)
     parser.add_argument('--epsilon-tol', type=float, default=.02)
     parser.add_argument('--quadrature-tol', type=float, default=.002)
     parser.add_argument('--max-nfev', type=int, default=80)
@@ -62,12 +66,15 @@ def main(argv=None):
                         help='Explicit RM core radius for frozen-state replay')
     parser.add_argument('--replay-quadrature-order', type=int, default=None,
                         help='Override area quadrature order for frozen-state replay')
+    parser.add_argument('--replay-area-quadrature', choices=('legacy_duffy', 'projection_fan'), default=None)
+    parser.add_argument('--replay-fan-order', type=int, default=None)
+    parser.add_argument('--replay-fan-strips', type=int, default=None)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
     parameters = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()}
-    receipt = dict(schema='dpanel.issue65.b2.v1', command=sys.argv if argv is None else argv,
+    receipt = dict(schema='dpanel.issue65.b2.v3', command=sys.argv if argv is None else argv,
                    code_sha=_git('rev-parse', 'HEAD'), git_status=_git('status', '--porcelain'),
                    python=sys.version, platform=platform.platform(), numpy=np.__version__,
                    thread_environment={k: os.environ.get(k) for k in
@@ -86,7 +93,10 @@ def main(argv=None):
                 arrays, args.expected_state_sha,
                 velocity_method=args.replay_velocity_method,
                 core_radius=args.replay_core_radius,
-                quadrature_order=args.replay_quadrature_order)
+                quadrature_order=args.replay_quadrature_order,
+                area_quadrature=args.replay_area_quadrature,
+                fan_order=args.replay_fan_order,
+                fan_strips=args.replay_fan_strips)
             _write_json(args.out/'replay.json', replay)
             replay_ok = (replay['bitwise_equal']
                          if replay['replay_mode'] == 'reproduce_recorded_samples'
@@ -137,6 +147,8 @@ def main(argv=None):
                    order=args.quadrature_order, epsilon_tol=args.epsilon_tol,
                    quadrature_tol=args.quadrature_tol, max_nfev=args.max_nfev,
                    velocity_method=args.velocity_method, core_radius=args.core_radius,
+                   area_quadrature=args.area_quadrature,
+                   fan_order=args.fan_order, fan_strips=args.fan_strips,
                    save_callback=save)
         report = {k: v for k, v in result.items() if k not in ('mesh', 'state')}
         report['negative_pressure_drag_warning'] = (
