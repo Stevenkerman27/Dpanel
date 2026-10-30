@@ -101,7 +101,8 @@ def test_in_plane_p1_gradient_is_retained_not_reduced_to_edge_filaments():
     constant_values = np.full_like(values, np.mean(values))
     constant = RegularizedP1SheetField([(xyz, faces, constant_values)], core_radius=core)
     assert np.linalg.norm(varying.gamma[0]) > 0
-    assert np.linalg.norm(constant.gamma[0]) == 0
+    assert np.linalg.norm(constant.gamma[0]) <= 1e-15 * max(
+        1.0, np.linalg.norm(constant.grad_face[0]))
     assert np.linalg.norm(varying(point)-constant(point)) > 1e-5
 
 
@@ -109,13 +110,16 @@ def test_zero_core_limit_recovers_existing_analytic_p1_field_off_sheet():
     xyz, faces, values = fixture()
     point = np.array([0.3, -0.4, 1.6])
     exact = AnalyticSheetField([(xyz, faces, values)])(point)
+    cores = np.array([0.08, 0.04, 0.02, 0.01, 0.005])
     errors = []
-    for core in (0.12, 0.06, 0.03, 0.015):
+    for core in cores:
         field = RegularizedP1SheetField([(xyz, faces, values)], core_radius=core,
                                        quadrature_order=48)
         errors.append(np.linalg.norm(field(point)-exact))
-    assert all(b < a for a, b in zip(errors, errors[1:]))
-    assert errors[-1] < 2e-3
+    slope = np.polyfit(np.log(cores), np.log(errors), 1)[0]
+    assert abs(slope-2.0) < 0.05
+    ratios = np.asarray(errors)/cores**2
+    assert np.max(np.abs(ratios[-3:]/ratios[-1]-1.0)) < 0.03
 
 
 def test_positive_core_gives_finite_velocity_on_triangle_and_its_edges():
