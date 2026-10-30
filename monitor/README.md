@@ -98,7 +98,17 @@ node monitor\post_comment.mjs <apiPath> <bodyFile> --delete <commentId>   # 顺�
 
 ### 自身操作账本（`state/own_actions.json`）
 
-云端 agent 与本地用的是**同一个 GitHub 账号**，所以只按 actor 过滤会把云端工作一并吞掉。现在的做法：本地每次通过 `post_comment.mjs` / `gh_api.mjs` 做写操作（POST/PUT/PATCH/DELETE）都记一条 `{kind, number, at}` 到账本；监听器看到本人账号的事件时，若 30 分钟内账本里有同号记录，标「已核对为我的操作」，否则标「**可能是你手动操作**」——两种都照常上报，不再静默丢弃。
+云端 agent 与本地用的是**同一个 GitHub 账号**，所以只按 actor 过滤会把云端工作一并吞掉。现在的做法：本地每次通过 `post_comment.mjs` / `gh_api.mjs` 做写操作（POST/PUT/PATCH/DELETE）都记一条 `{kind, number, at}` 到账本；发评论时再额外记一条精确的 `{kind:"comment", number, commentId, at}`（`commentId` 取 API 响应体的 `id`）。监听器把本人账号的事件分成「已核对为我的操作」与「**可能是你手动操作**」两类。
+
+配对规则（2026-10-30 收紧）：
+
+| 事件 | 认作「我的」的条件 |
+|---|---|
+| `comment`（`id = "#<commentId>"`）| 账本里存在**同一个 commentId**，且 30 分钟内 |
+| `issue` / `pull`（`id = "#<number>"`）| 账本里有同号记录，且 30 分钟内 |
+| `commit` | 账本里有 `kind:"push"`，且 30 分钟内 |
+
+粗粒度记账（合并、关闭、改标签）**不能替任何一条评论作证**：评论事件只认 commentId。
 
 `gh_api.mjs` 记录 PR 创建/合并/关闭、issue 关闭等（`number` 从路径取）；`gh_push.mjs` 在 push 成功时记一条 `kind: "push"`，监听器把它与 30 分钟内的 commit 事件配对。提交本身**不再按作者丢弃**（同账号，云端也这样推），只是打标签。
 
@@ -135,12 +145,24 @@ HEAD 与将发布的路径。
 
 `--wait` 只在「**不是我刚做的事**」时退出并唤醒 agent：
 
-- 事件的 actor 是本人账号、且能在 `state/own_actions.json` 里配对上（评论按 issue/PR 编号，推送按 refspec + 30 分钟窗口）→ 只记账，打印 `本人操作 N 条（已核对），不唤醒；累计抑制 M 条`，继续轮询。
+- 事件的 actor 是本人账号、且能在 `state/own_actions.json` 里配对上（评论按 **commentId** 精确配对，issue/PR 按编号，推送按 refspec，均限 30 分钟窗口）→ 只记账，打印 `本人操作 N 条（已核对），不唤醒；累计抑制 M 条`，继续轮询。
 - 本人账号但账本里没有 → 照样唤醒（可能是你手动在网页上操作的），标签 `（本人账号·可能是你手动操作）`。
 - 其他人 → 照样唤醒。
 - `--wake-all` 恢复旧行为（连本人已核对也唤醒），用来排查监听器本身。
 
-**为什么不是加延时**：轮询间隔默认 900 s，加 1 s 延时不改变任何东西；真正的问题不是「太快」，而是「这件事我已经知道」。判定依据必须是账本配对（谁做的），不是时间（多近做的）。时间只在配对时用来划窗口（30 分钟），避免把半小时后云端的同编号操作误判成我的。
+**为什么不是加延时**：轮询间隔默认 900 s，加 1 s 延时不改变任何东西；真正的问题不是「太快」，而是「这件事我已经知道」。判定依据必须是账本配对（谁做的），不是时间（多近做的）。
+
+### 评论级事件（2026-10-30，修一次真实漏报）
+
+**事故**：2026-10-30 14:20:53Z 我在 PR #85 发回执（记账 `{kind:"api", number:85}`），云端 14:35:28Z 在同一 PR 上给出下一阶段指令。旧实现里 watcher **没有评论级事件**，只比较 issue/PR 的 `updated_at`，生成 `kind:"issue", id:"#85"` 事件；`isLocalAction` 又只按「编号 + 30 分钟窗口」匹配，于是这条云端评论被判成「本人已核对」→ 只记账不唤醒，**并且 seen 已前移**，之后 `--once` 永远报「0 条新事件」。直到用户手动提示才发现。
+
+**修法**：
+
+1. `net.mjs` 的 `recordMutation` 对 `POST /issues/{n}/comments`、`POST /pulls/{n}/comments` 额外记 `{kind:"comment", number, commentId}`；
+2. watcher 在 issue/PR 的 `updated_at` 变化时拉 `/issues/{n}/comments?since=…`，为每条**未见过的**评论发一个 `kind:"comment", id:"#<commentId>"` 事件（带作者、正文摘要），并把见过的 id 存在 `state.seen.comments[number]`（每号最多 200 条）；
+3. `isLocalAction` 对 `kind:"comment"` 要求 **commentId 精确相等**，粗粒度 `kind:"api"` 记录不得替任何评论作证。
+
+回归测试：`node monitor/test_self_filter.mjs`（9 条断言，含「云端 14.6 分钟后的评论不得被吞」）。
 
 **`post_comment.mjs --delete` 语义**：带 `--delete` 就是删除动作，删完直接退出，不再读 body file 重发（早期版本会「删了又发一条」，2026-10-28 修）。
 

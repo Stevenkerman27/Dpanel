@@ -5,7 +5,8 @@
  *
  * 用法：
  *   node monitor/github_watch.mjs --once            立即轮询一次
- *   node monitor/github_watch.mjs --wait            静默轮询，发现新事件立即退出（用于唤醒 agent）
+ *   node monitor/github_watch.mjs --wait            静默轮询，发现「非本人已核对」事件立即退出（用于唤醒 agent）
+ *   node monitor/github_watch.mjs --wait --wake-all 连本人已核对的事件也唤醒（旧行为）
  *   node monitor/github_watch.mjs --loop            常驻轮询（默认 900 秒）
  *   node monitor/github_watch.mjs --loop --interval 300
  *   node monitor/github_watch.mjs --report          输出上次汇报后的未读事件并标记已读
@@ -121,14 +122,20 @@ function loadOwnActions() {
 }
 
 function isLocalAction(ev, actions) {
-  const num = String(ev.id || "").replace("#", "");
+  const raw = String(ev.id || "").replace("#", "");
   const at = Date.parse(ev.at || ev.ts || "");
   if (!Number.isFinite(at)) return false;
+  const isComment = ev.kind === "comment";
   return actions.some((a) => {
     const delta = Math.abs(at - Date.parse(a.at || ""));
     if (!Number.isFinite(delta) || delta > 30 * 60 * 1000) return false;
     if (a.kind === "push") return ev.kind === "commit";
-    return a.number != null && String(a.number) === num;
+    // 评论事件带精确 commentId：只有账本里同一个 commentId 才能认作我的。
+    // 粗粒度 api 记账（合并、关闭、改标签等）不得替任何一条评论作证，否则云端在同一
+    // PR/issue 上随后发的评论会被当成「本人已核对」吞掉。
+    if (isComment) return a.commentId != null && raw === String(a.commentId);
+    if (a.commentId != null) return false;
+    return a.number != null && String(a.number) === raw;
   });
 }
 
@@ -217,6 +224,56 @@ function firstLine(s, max = 90) {
   return line.length > max ? line.slice(0, max - 1) + "…" : line;
 }
 
+// 拉取某个 issue/PR 上「上次轮询之后」的评论，返回未见过的那些（自己发的也算，交给 self 过滤）。
+// 没有它，watcher 只能看到「issue/PR 有更新」这种粗事件，无法区分云端评论与我自己的评论。
+async function fetchNewComments(cfg, state, number, prevUpdatedAt) {
+  const key = String(number);
+  state.seen.comments = state.seen.comments || {};
+  const known = new Set(state.seen.comments[key] || []);
+  const prevMs = Date.parse(prevUpdatedAt || "");
+  const sinceMs = known.size
+    ? Date.now() - 7 * 86400 * 1000
+    : Number.isFinite(prevMs)
+      ? prevMs
+      : Date.now() - 86400 * 1000;
+  const url =
+    "https://api.github.com/repos/" + cfg.repo + "/issues/" + number +
+    "/comments?per_page=100&since=" + encodeURIComponent(new Date(sinceMs).toISOString());
+  const res = await apiGet(url, null, cfg);
+  if (res.status !== 200) return null;
+  let list = [];
+  try {
+    list = JSON.parse(res.body);
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(list)) return null;
+  const fresh = list.filter((c) => !known.has(c.id));
+  state.seen.comments[key] = list.map((c) => c.id).slice(-200);
+  return fresh;
+}
+
+async function pushCommentEvents(cfg, state, events, number, prevUpdatedAt, title, fallbackUrl, selfLoginSet) {
+  const fresh = await fetchNewComments(cfg, state, number, prevUpdatedAt);
+  if (!fresh || !fresh.length) return false;
+  for (const c of fresh) {
+    events.push({
+      kind: "comment",
+      id: "#" + c.id,
+      number,
+      title: firstLine(title),
+      author: c.user?.login || "unknown",
+      url: c.html_url || fallbackUrl,
+      at: c.created_at,
+      action: "新评论",
+      excerpt: firstLine(String(c.body || "").replace(/\r/g, "").replace(/\n+/g, " "), 160),
+      self: selfLoginSet.has(String(c.user?.login || "").toLowerCase()),
+      ts: new Date().toISOString(),
+    });
+  }
+  return true;
+}
+
 function learnSelfLogins(commits, cfg, selfEmails, selfLogins) {
   const learned = new Set(selfLogins);
   for (const c of commits) {
@@ -301,8 +358,9 @@ async function pollOnce(state, cfg) {
         state.seen.pulls[key] = { updated_at: p.updated_at, state: p.state, merged_at: p.merged_at, title: firstLine(p.title) };
       } else if (prev.updated_at !== p.updated_at || prev.state !== p.state) {
         if (!isBaseline) {
+          const commented = await pushCommentEvents(cfg, state, events, p.number, prev.updated_at, p.title, p.html_url, selfLoginSet);
           const act = p.merged_at ? "PR 已合并" : p.state === "closed" ? "PR 已关闭" : "PR 有更新";
-          events.push({
+          if (!commented) events.push({
             kind: "pull",
             id: "#" + p.number,
             title: firstLine(p.title),
@@ -350,17 +408,20 @@ async function pollOnce(state, cfg) {
         state.seen.issues[key] = { updated_at: i.updated_at, state: i.state, title: firstLine(i.title) };
       } else if (prev.updated_at !== i.updated_at || prev.state !== i.state) {
         if (!isBaseline) {
-          events.push({
-            kind: "issue",
-            id: "#" + i.number,
-            title: firstLine(i.title),
-            author: i.user?.login || "unknown",
-            url: i.html_url,
-            at: i.updated_at,
-            action: i.state === "closed" ? "issue 已关闭" : "issue 有更新",
-            self: bySelf,
-            ts: new Date().toISOString(),
-          });
+          const commented = await pushCommentEvents(cfg, state, events, i.number, prev.updated_at, i.title, i.html_url, selfLoginSet);
+          if (!commented) {
+            events.push({
+              kind: "issue",
+              id: "#" + i.number,
+              title: firstLine(i.title),
+              author: i.user?.login || "unknown",
+              url: i.html_url,
+              at: i.updated_at,
+              action: i.state === "closed" ? "issue 已关闭" : "issue 有更新",
+              self: bySelf,
+              ts: new Date().toISOString(),
+            });
+          }
         }
         state.seen.issues[key] = { updated_at: i.updated_at, state: i.state, title: firstLine(i.title) };
       }
@@ -427,7 +488,7 @@ async function pollOnce(state, cfg) {
 
 /* ---------------- 报告 ---------------- */
 
-const KIND_LABEL = { commit: "提交", pull: "PR", issue: "Issue", discussion: "Discussion" };
+const KIND_LABEL = { comment: "评论", commit: "提交", pull: "PR", issue: "Issue", discussion: "Discussion" };
 
 function renderEvents(events) {
   if (!events.length) return "无新事件。";
@@ -437,14 +498,15 @@ function renderEvents(events) {
     groups.get(e.kind).push(e);
   }
   const lines = [];
-  for (const kind of ["pull", "issue", "commit", "discussion"]) {
+  for (const kind of ["comment", "pull", "issue", "commit", "discussion"]) {
     const list = groups.get(kind);
     if (!list) continue;
     lines.push("#### " + (KIND_LABEL[kind] || kind) + "（" + list.length + "）");
     for (const e of list) {
       const author = e.author ? " @" + e.author : "";
       const tag = e.self ? (e.localAction ? "（本人账号·已核对为我的操作）" : "（本人账号·可能是你手动操作）") : "";
-      lines.push("- " + e.action + " " + e.id + " " + e.title + author + tag + " — " + e.url);
+      const excerpt = e.excerpt ? " ｜ " + e.excerpt : "";
+      lines.push("- " + e.action + " " + e.id + " " + e.title + author + tag + excerpt + " — " + e.url);
     }
     lines.push("");
   }
@@ -585,6 +647,7 @@ async function waitForEvents(cfg, intervalSeconds) {
   process.on("SIGINT", stop);
   process.on("SIGTERM", stop);
   let failures = 0;
+  let suppressedCount = 0;
   for (;;) {
     const res = await runOnce(cfg, { quiet: true });
     watcher.heartbeatAt = Date.now();
@@ -601,9 +664,20 @@ async function waitForEvents(cfg, intervalSeconds) {
       note("[等待] " + new Date().toLocaleString("zh-CN", { hour12: false }) + " 轮询完成，新事件 " + (res.events?.length || 0) + " 条");
     }
     if (res.events && res.events.length) {
-      console.log("WAKE: " + res.events.length + " 条新事件 " + new Date().toLocaleString("zh-CN", { hour12: false }));
-      console.log(renderEvents(res.events));
-      process.exit(0);
+      // 只唤醒「不是我刚做的事」：本人账号且已在本机账本里核对过的事件只记账，
+      // 不打断会话（否则每次发评论/推送都会把自己叫醒一次）。
+      const wakeAll = process.argv.includes("--wake-all");
+      const unverified = wakeAll ? res.events : res.events.filter((e) => !(e.self && e.localAction));
+      if (!unverified.length) {
+        suppressedCount += res.events.length;
+        note("[等待] " + new Date().toLocaleString("zh-CN", { hour12: false }) + " 本人操作 " + res.events.length + " 条（已核对），不唤醒；累计抑制 " + suppressedCount + " 条");
+      } else {
+        const skipped = res.events.length - unverified.length;
+        console.log("WAKE: " + unverified.length + " 条新事件 " + new Date().toLocaleString("zh-CN", { hour12: false })
+          + (skipped ? "（另有本人已核对 " + skipped + " 条不重复通知）" : ""));
+        console.log(renderEvents(unverified));
+        process.exit(0);
+      }
     }
     await new Promise((r) => setTimeout(r, Math.max(60, intervalSeconds) * 1000));
   }
@@ -634,6 +708,8 @@ async function loop(cfg, intervalSeconds) {
   }
 }
 
+export { isLocalAction };
+
 async function main() {
   const cfg = loadConfig();
   ensureStateDir();
@@ -658,4 +734,5 @@ async function main() {
   if (res.error) process.exitCode = 2;
 }
 
-main();
+const isMainModule = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isMainModule) main();
