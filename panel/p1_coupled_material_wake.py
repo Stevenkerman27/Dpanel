@@ -53,7 +53,8 @@ class TotalVelocity:
     reconstruction for wake kinematics; solve_multi's potential operators
     remain unregularized and unchanged.
     """
-    def __init__(self, mesh, state, *, method="analytic_edges", core_radius=None):
+    def __init__(self, mesh, state, *, method="analytic_edges", core_radius=None,
+                 area_quadrature="legacy_duffy", fan_order=16, fan_strips=8):
         parts = [(mesh.xyz, mesh.faces, np.asarray(state['mu'])[mesh.dof_face])]
         offset = 0
         for group in mesh.groups:
@@ -79,6 +80,9 @@ class TotalVelocity:
         self._quadrature = {}
         self.method = method
         self.core_radius = None
+        self.area_quadrature = area_quadrature
+        self.fan_order = fan_order
+        self.fan_strips = fan_strips
         if method == "analytic_edges":
             from .p1_analytic_sheet_velocity import AnalyticSheetField
             self._analytic = AnalyticSheetField(parts, freestream=self.free)
@@ -88,7 +92,9 @@ class TotalVelocity:
             from .p1_regularized_sheet_velocity import RegularizedP1SheetField
             self.core_radius = float(core_radius)
             self._regularized = RegularizedP1SheetField(
-                parts, freestream=self.free, core_radius=self.core_radius)
+                parts, freestream=self.free, core_radius=self.core_radius,
+                area_quadrature=area_quadrature, fan_order=fan_order,
+                fan_strips=fan_strips)
         elif method != "legacy_gauss":
             raise ValueError("unknown P1 sheet-velocity integration method")
         if not np.isfinite(self.mu_face).all() or not np.isfinite(self.grad_face).all():
@@ -414,7 +420,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 geometry_tol=.002, slip_tol=.01,
                                 max_nfev=80, max_backtracks=8, gates=None,
                                 velocity_method="analytic_edges", core_radius=None,
-                                save_callback=None):
+                                area_quadrature="legacy_duffy", fan_order=16,
+                                fan_strips=8, save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -470,18 +477,25 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         else:
             state = solve_multi(current, alpha_deg, kutta=kutta,
                                 max_nfev=max_nfev, operators=ops)
-        field = TotalVelocity(current, state, method=velocity_method, core_radius=core_radius)
+        field = TotalVelocity(current, state, method=velocity_method, core_radius=core_radius,
+                              area_quadrature=area_quadrature,
+                              fan_order=fan_order, fan_strips=fan_strips)
         arrays = dict(mu=state['mu'], gamma=state['gamma'], cp=state['cp'],
                       alpha_deg=np.asarray(alpha_deg), wall_xyz=current.xyz,
                       wall_faces=current.faces, wall_dof_face=current.dof_face,
                       sampling_eps_fraction=np.asarray(eps_fraction),
                       sampling_ladder=np.asarray(ladder, float), sampling_order=np.asarray(order),
                       sampling_kernel=np.asarray(field.method),
-                      sampling_core_radius=np.asarray(np.nan if core_radius is None else core_radius))
+                      sampling_core_radius=np.asarray(np.nan if core_radius is None else core_radius),
+                      sampling_area_quadrature=np.asarray(area_quadrature),
+                      sampling_fan_order=np.asarray(fan_order),
+                      sampling_fan_strips=np.asarray(fan_strips))
         record = {k: state[k] for k in (*load_names, 'wall_rms', 'jump_rms',
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
         record.update(iteration=iteration, velocity_method=velocity_method,
+                      area_quadrature=area_quadrature, fan_order=fan_order,
+                      fan_strips=fan_strips,
                       core_radius=core_radius, strength_solve_kernel="unregularized_P1_BEM_operators",
                       groups=state['group_results'],
                       CLp_minus_CLgamma=float(state['CL']-state['CL_gamma']),
@@ -635,11 +649,14 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                         if velocity_method == "rm_regularized_p1" else
                         "legacy_fixed_order_edge_gauss"),
                 velocity_method=velocity_method, core_radius=core_radius,
+                area_quadrature=area_quadrature, fan_order=fan_order,
+                fan_strips=fan_strips,
                 strength_solve_kernel="unregularized_P1_BEM_operators")
 
 
 def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=None,
-                    quadrature_order=None):
+                    quadrature_order=None, area_quadrature=None, fan_order=None,
+                    fan_strips=None):
     """Re-evaluate frozen total-flow samples without re-solving/changing mu/Gamma.
 
     A mismatch in the recorded content SHA is an error. Bitwise equality is
@@ -667,9 +684,17 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
     method = recorded_method if velocity_method is None else velocity_method
     selected_core = recorded_core if core_radius is None else float(core_radius)
     selected_order = int(arrays['sampling_order']) if quadrature_order is None else int(quadrature_order)
+    recorded_area = str(arrays['sampling_area_quadrature']) if 'sampling_area_quadrature' in arrays else "legacy_duffy"
+    recorded_fan_order = int(arrays['sampling_fan_order']) if 'sampling_fan_order' in arrays else 16
+    recorded_fan_strips = int(arrays['sampling_fan_strips']) if 'sampling_fan_strips' in arrays else 8
+    selected_area = recorded_area if area_quadrature is None else area_quadrature
+    selected_fan_order = recorded_fan_order if fan_order is None else int(fan_order)
+    selected_fan_strips = recorded_fan_strips if fan_strips is None else int(fan_strips)
     field = TotalVelocity(mesh, dict(mu=arrays['mu'], gamma=arrays['gamma'],
                                    alpha_deg=float(arrays['alpha_deg'])),
-                          method=method, core_radius=selected_core)
+                          method=method, core_radius=selected_core,
+                          area_quadrature=selected_area, fan_order=selected_fan_order,
+                          fan_strips=selected_fan_strips)
     kwargs = dict(eps_fraction=float(arrays['sampling_eps_fraction']),
                   ladder=arrays['sampling_ladder'], order=selected_order)
     differences = {}
@@ -695,9 +720,15 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
                 recorded_method=recorded_method, evaluated_method=method,
                 recorded_core_radius=recorded_core, evaluated_core_radius=selected_core,
                 quadrature_order=selected_order,
+                recorded_area_quadrature=recorded_area,
+                evaluated_area_quadrature=selected_area,
+                fan_order=selected_fan_order, fan_strips=selected_fan_strips,
                 replay_mode=("reproduce_recorded_samples" if method == recorded_method
                              and selected_core == recorded_core
                              and selected_order == int(arrays['sampling_order'])
+                             and selected_area == recorded_area
+                             and selected_fan_order == recorded_fan_order
+                             and selected_fan_strips == recorded_fan_strips
                              else "alternate_velocity_on_frozen_state"),
                 evaluation_finite=all(np.isfinite(v) for v in differences.values()),
                 strength_solve_kernel="frozen_unregularized_P1_BEM_state",
