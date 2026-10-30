@@ -43,8 +43,16 @@ T 是 Kutta 行、M 是环量质量矩阵。`solve(r)` 前向用 `sla.lu_solve`�
 ### 1.4 半模门控与 R A E 降阶
 
 `mirror_gate(op, tol=1e-9, station_tol=1e-6, freestream=None)` 逐项判定：面元镜像配对是否双射、
-是否对合、是否有中心线面元需要自镜像、TE 边是否镜像到已有下 TE 边、站位图是否自映射、
+是否对合、是否有面元需要自镜像（`self_panels_on_plane` 报贴在对称面上的面元、`centreline_straddling`
+报跨对称面的面元，两者都改变未知量计数）、TE 边是否镜像到**同一 bank** 的 TE 边（XZ 反射 y→−y 保 z，
+所以 upper→upper、lower→lower；逐项报 `te_edges_paired_upper/_lower`）、站位图是否自映射、
 来流是否含侧滑（`|v_y|/|v| > 1e-12` 直接拒绝）。任何一项不满足都返回 `status="blocked"` 并列出原因。
+
+> 2026-10-30 更正：旧判据把 `pair[op.upper]` 与**全部 lower 面**求交，等价于要求反射交换 z bank，
+> 任何 XZ 对称网格都不满足 → 真对称网格会被误判 `blocked`。节点级审计 `panel/symmetry.py` 的
+> `te_bank_gate` 一直是 bank 一致的写法，两者现已统一。
+
+
 
 `HalfModelReduction(nf, ng, mirror, station_mirror)` 只在门控通过时使用：`expand` 把半模状态镜像成全模，
 `restrict` 折叠全模残差，`apply = R A E`，`apply_transpose = Eᵀ Aᵀ Rᵀ`（镜像方向梯度不丢）。
