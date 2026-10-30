@@ -89,7 +89,23 @@ exit 0
 
 The same local run reported `python -m pytest test/ -q` as 603 passed, 11 failed, 8 skipped in 141.16s. The 11 failures were reproduced on a clean checkout of master `dfb723c` with the same test set: 2 `test_matrix_free_symmetry_gate`, 6 `test_p1_coupled_material_wake`, and 3 `test_vortexad_*`. The `test/test_p1_*` subset passed 47 tests. The local environment also could not import the legacy `test_torch_*` dependencies from its `.conda_env` because Torch resides under `runs/torch_site`; this is an environment/path limitation, not a result for the new regularized kernel.
 
-Two improvements have since been committed to this PR: composite subinterval quadrature at offsets down to 0.01 core radii, and continuous-ring plus thin-core self-induction assertions. **Those new tests have not yet been executed.** The receipt above applies only to the prior commit and must not be presented as validation of the current PR head.
+### Current-head revalidation
+
+At current PR head `186ee66979876e3f3d787f41f95ef6fb1f0775b4`, the local agent reran the revised test set on Python 3.11.17 / NumPy 2.4.6:
+
+```text
+python -m py_compile panel/regularized_vortex_filament.py test/test_regularized_vortex_filament.py
+exit 0
+python -m pytest test/test_regularized_vortex_filament.py -q
+16 passed, 1 warning in 0.53s
+exit 0
+```
+
+The warning is the previously observed Windows pytest-cache permission warning. The local agent independently compared the continuous circular-ring quadrature against SciPy `quad` (relative differences from 0 to 1.07e-14 for the reported core radii), and checked the near-core composite quadrature at offsets 0.1a, 0.05a and 0.01a with a separate 24-point × 800-subinterval oracle (relative differences 0 to 6.55e-13, including offsets deliberately placed away from quadrature subinterval boundaries).
+
+The full-repository baseline remains 603 passed, 11 failed, 8 skipped on both the PR source revision and clean master `dfb723c`; the same 11 failures were identified in the matrix-free symmetry, coupled P1 wake and VortexAD groups. The P1 subset passed 47 tests. These baseline failures are not claimed as passing and were not changed by this research PR.
+
+One non-blocking test-margin note: the thin-core asymptotic-law assertion at a/R=0.05 measured a relative residual of 4.11e-4 against a 5e-4 tolerance. This is dominated by the finite-core O((a/R)^2) correction, not polygon discretization. Do not tighten this tolerance without either moving to a smaller a/R or including a separately justified finite-core correction.
 
 ## Important interpretation boundary
 
