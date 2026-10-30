@@ -166,6 +166,13 @@ function recordMutation(apiPath, method, json) {
   let number = m ? Number(m[1]) : null;
   if (number == null && json && Number.isFinite(json.number)) number = Number(json.number);
   const entries = [{ kind: "api", number, at, path: apiPath }];
+  // 评论写入另记一条带 commentId 的精确记账：云端与本机共用同一账号，
+  // 只有 commentId 相等才能证明「这条评论是我刚发的」。按编号 + 30 分钟窗口匹配会把
+  // 云端随后在同一个 PR/issue 上的评论误判为本人操作而吞掉（见 monitor/README.md「评论级事件」）。
+  const isCommentWrite = !/\/comments\/[0-9]+$/.test(apiPath) && /\/(?:issues|pulls)\/\d+\/comments$/.test(apiPath);
+  if (isCommentWrite && json && Number.isFinite(json.id)) {
+    entries.push({ kind: "comment", number, commentId: json.id, at, path: apiPath });
+  }
   // merge 与 git/refs 写入会产生新 commit：同时记一条 push，让监听器把 commit 事件也认作我的。
   if (/\/merge$/.test(apiPath) || /\/git\/refs/.test(apiPath)) entries.push({ kind: "push", refspec: apiPath, at });
   try {
