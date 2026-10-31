@@ -56,6 +56,23 @@ def adaptive_field(mesh, state, core, *, fan_order, fan_strips, refinement,
                          adaptive_max_escalations=int(escalations))
 
 
+def _record_frame(geometry, record):
+    """Sampling frame of a recorded point: its own normal and scale.
+
+    The production and reference subsets must reuse the frame the adaptive
+    value was recorded with; substituting the nearest triangle normal/scale
+    compares two different sampling sites and fabricates an error.
+    """
+    stored = record.get("normal")
+    if stored is not None:
+        vector = np.asarray(stored, float)
+        return vector/np.linalg.norm(vector), float(record["scale"]), "recorded"
+    _d, _g, _f, normal, _scale = _nearest_wake_triangle(
+        geometry, np.asarray(record["xyz"], float))
+    vector = np.asarray(normal, float)
+    return vector/np.linalg.norm(vector), float(record["scale"]), "reconstructed"
+
+
 def special_points(groups, geometry):
     """Tip, trailing-edge, root, sliver and high-aspect targets near the wake sheet."""
     rows = []
@@ -149,6 +166,8 @@ def main(argv=None):
     parser.add_argument("--production-points", type=int, default=24)
     parser.add_argument("--reference-points", type=int, default=3)
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--resume", action="store_true",
+                        help="continue an interrupted run in --out, skipping recorded points")
     parser.add_argument("--seed", type=int, default=20261031)
     parser.add_argument("--out", type=Path,
                         default=Path("docs/issue84/adaptive_area_acceptance.json"))
@@ -207,6 +226,25 @@ def main(argv=None):
                    error_metric="||v - v_reference|| / ||v_reference|| on the mean total velocity",
                    thresholds=dict(THRESHOLDS), points=[], status="running")
     args.out.parent.mkdir(parents=True, exist_ok=True)
+    done = {}
+    if args.resume and args.out.exists():
+        prior = json.loads(args.out.read_text(encoding="utf-8"))
+        same = (prior.get("schema") == payload["schema"]
+                and prior.get("case") == payload["case"]
+                and prior.get("alpha_deg") == payload["alpha_deg"]
+                and prior.get("core_radius") == payload["core_radius"]
+                and prior.get("production") == payload["production"]
+                and prior.get("refinement") == payload["refinement"]
+                and prior.get("reference") == payload["reference"]
+                and prior.get("adaptive") == payload["adaptive"])
+        if not same:
+            raise SystemExit("--resume: existing %s was produced with a different "
+                             "configuration" % args.out)
+        done = {int(p["index"]): p for p in prior.get("points", [])}
+        payload["points"] = [done[i] for i in sorted(done)]
+        payload["status"] = "running"
+        payload["resumed_from"] = len(done)
+        print("resuming: %d/%d points already recorded" % (len(done), len(rows)), flush=True)
 
     def flush():
         payload["total_seconds"] = time.perf_counter()-started
@@ -216,6 +254,8 @@ def main(argv=None):
     ladder = np.array([1.0, .5, .25, .125])
     kwargs = dict(eps_fraction=.05, ladder=ladder, order=48)
     for index, row in enumerate(rows):
+        if index in done:
+            continue
         point = np.asarray(row["xyz"], float)[None, :]
         normal = np.asarray(row["normal"], float)[None, :]
         normal = normal/np.linalg.norm(normal)
@@ -227,6 +267,7 @@ def main(argv=None):
             adaptive, "_regularized") else adaptive.last_adaptive
         record = dict(index=index, set=row["set"], xyz=point[0],
                       group=row.get("group"), scale=float(scales[0]),
+                      normal=np.asarray(normal[0], float),
                       adaptive_quadrature_error=float(sample["quadrature_error"][0]),
                       adaptive_epsilon_error=float(sample["epsilon_error"][0]),
                       near_faces=int(diagnostics["near_faces"]),
@@ -250,8 +291,8 @@ def main(argv=None):
         step = max(1, len(payload["points"])//args.production_points)
         for record in payload["points"][::step][:args.production_points]:
             point = np.asarray(record["xyz"], float)[None, :]
-            _d, _g, _f, normal, scale = _nearest_wake_triangle(geometry, point[0])
-            normal = np.asarray(normal, float)[None, :]/np.linalg.norm(normal)
+            vector, scale, _source = _record_frame(geometry, record)
+            normal = vector[None, :]
             scales = np.array([max(float(scale), 1e-9)])
             t0 = time.perf_counter()
             sample = limits(prod_field, point, normal, scales, tag="production", **kwargs)
@@ -267,14 +308,15 @@ def main(argv=None):
         step = max(1, len(payload["points"])//args.reference_points)
         for record in payload["points"][::step][:args.reference_points]:
             point = np.asarray(record["xyz"], float)[None, :]
-            _d, _g, _f, normal, scale = _nearest_wake_triangle(geometry, point[0])
-            normal = np.asarray(normal, float)[None, :]/np.linalg.norm(normal)
+            vector, scale, frame_source = _record_frame(geometry, record)
+            normal = vector[None, :]
             scales = np.array([max(float(scale), 1e-9)])
             t0 = time.perf_counter()
             ref = limits(reference_field, point, normal, scales, tag="reference", **kwargs)
             value = np.asarray(record["velocity"], float)
             denominator = max(float(np.linalg.norm(ref["mean"][0])), 1e-30)
             entry = dict(index=int(record["index"]), set=record["set"],
+                         frame_source=frame_source,
                          adaptive_quadrature_error=record["adaptive_quadrature_error"],
                          true_error=float(np.linalg.norm(value-ref["mean"][0])/denominator),
                          reference_seconds=time.perf_counter()-t0)
