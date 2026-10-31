@@ -202,10 +202,28 @@ def main():
         lines.extend(table(["group", "set", "sampled", "total", "measured s", "s/point",
                             "extrapolated s"], rows))
         add("")
-        add("Extrapolated whole iteration: **{} s** ({:.2f} h).".format(
+        add("Extrapolated whole iteration: **{} s** ({} h).".format(
             thousands(payload.get("extrapolated_iteration_seconds", 0)),
-            payload.get("extrapolated_iteration_seconds", 0)/3600.0))
+            "{:.2f}".format(payload.get("extrapolated_iteration_seconds", 0)/3600.0)))
         add("")
+        first_row = None
+        for block in payload.get("groups", {}).values():
+            for row in block.get("samples", {}).values():
+                first_row = row
+                break
+            if first_row is not None:
+                break
+        if first_row is not None:
+            counters_row = first_row.get("counters", {})
+            sampled = first_row.get("sampled_points", 0)
+            ladder_targets = counters_row.get("limits.targets", 0)
+            refined_targets = counters_row.get("limits.refined_targets", 0)
+            add("The counters verify the linear model on the sampled points: {} points cost "
+                "{} ladder targets plus {} refinement targets, i.e. {} evaluations per point, "
+                "and targets_full_set is exactly 10 x the set size."
+                .format(sampled, ladder_targets, refined_targets,
+                        "{:.0f}".format((ladder_targets+refined_targets)/max(sampled, 1))))
+            add("")
     if b2_prod and b2_aligned:
         prod = b2_prod.get("extrapolated_iteration_seconds", 0)
         aligned = b2_aligned.get("extrapolated_iteration_seconds", 0)

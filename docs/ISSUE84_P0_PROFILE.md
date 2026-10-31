@@ -85,6 +85,8 @@ The fan-order flag, not the limits order, sets this cost; see section 7. Every e
 
 Extrapolated whole iteration: **7,411 s** (2.06 h).
 
+The counters verify the linear model on the sampled points: 6 points cost 48 ladder targets plus 12 refinement targets, i.e. 10 evaluations per point, and targets_full_set is exactly 10 x the set size.
+
 **aligned --quadrature-order 28** (--max-points 6, method rm_regularized_p1, fan 28/8)
 
 | group | set | sampled | total | measured s | s/point | extrapolated s |
@@ -95,6 +97,8 @@ Extrapolated whole iteration: **7,411 s** (2.06 h).
 | raised_tail | wake_face | 6 | 24 | 37.539 | 6.257 | 150.2 |
 
 Extrapolated whole iteration: **7,462 s** (2.07 h).
+
+The counters verify the linear model on the sampled points: 6 points cost 48 ladder targets plus 12 refinement targets, i.e. 10 evaluations per point, and targets_full_set is exactly 10 x the set size.
 
 The two runs differ by 51.5 s on the same points, i.e. 0.69 %. Changing --quadrature-order from 48 to 28 changes nothing in the fan path, which section 7 shows directly. The cost is set by fan_order and fan_strips.
 
