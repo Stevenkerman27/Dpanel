@@ -15,6 +15,8 @@ import os
 import numpy as np
 
 from .p1_coupled_material_wake import solve_coupled_material_wake, snapshot_hash, replay_snapshot
+from .velocity_profile import enable as _profile_enable, reset as _profile_reset
+from .velocity_profile import write as _profile_write
 
 
 def _git(*args):
@@ -69,10 +71,15 @@ def main(argv=None):
     parser.add_argument('--replay-area-quadrature', choices=('legacy_duffy', 'projection_fan'), default=None)
     parser.add_argument('--replay-fan-order', type=int, default=None)
     parser.add_argument('--replay-fan-strips', type=int, default=None)
+    parser.add_argument('--profile-json', type=Path, default=None,
+                        help='Opt-in kernel profiling counters/timers (issue #84 P0); inert when omitted')
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
+    if args.profile_json is not None:
+        _profile_reset()
+        _profile_enable(True)
     parameters = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()}
     receipt = dict(schema='dpanel.issue65.b2.v3', command=sys.argv if argv is None else argv,
                    code_sha=_git('rev-parse', 'HEAD'), git_status=_git('status', '--porcelain'),
@@ -169,6 +176,10 @@ def main(argv=None):
         print(str(exc), file=sys.stderr)
     finally:
         receipt['seconds'] = time.perf_counter()-started
+        if args.profile_json is not None:
+            _profile_enable(False)
+            _profile_write(args.profile_json, status=receipt.get('status'),
+                           wall_seconds=receipt['seconds'], parameters=parameters)
         _write_json(args.out/'receipt.json', receipt)
     return receipt['exit_code']
 

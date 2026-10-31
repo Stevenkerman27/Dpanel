@@ -22,6 +22,8 @@ from types import SimpleNamespace
 
 import numpy as np
 
+from . import velocity_profile as _profile
+
 
 def triangle_data(xyz, faces):
     """Geometry and P1 shape gradients; reject degenerate/nonfinite triangles."""
@@ -115,6 +117,7 @@ class TotalVelocity:
         p = np.asarray(point, float)
         if p.shape != (3,) or not np.isfinite(p).all():
             raise ValueError("field point must be a finite (3,) array")
+        _profile.add("total.call.count")
         if self.method == "analytic_edges":
             return self._analytic(p)
         if self.method == "rm_regularized_p1":
@@ -160,16 +163,22 @@ class TotalVelocity:
         pts = np.asarray(points, float)
         if pts.ndim != 2 or pts.shape[1] != 3 or not np.isfinite(pts).all():
             raise ValueError("points must be a finite (N,3) array")
+        _profile.add("total.evaluate_many.calls")
+        _profile.add("total.evaluate_many.targets", len(pts))
+        _profile.add("total.evaluate_many.method."+self.method)
         if self.method == "rm_regularized_p1":
             return self._regularized.evaluate_many(pts, order=order)
         return np.stack([self(point, order=order) for point in pts])
 
 
-def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
+def limits(field, points, normals, scales, *, eps_fraction, ladder, order, tag=""):
     """Finite one-sided samples: epsilon sensitivity plus legacy Gauss-order audit.
 
     In analytic-edge mode, edge quadrature does not exist: its reported
     quadrature_error is 0 (NOT APPLICABLE), not a PV-convergence certificate.
+
+    tag only labels the profiling counters (wake_face, free_node, replay_*): it never
+    changes a value, so a labelled and an unlabelled call are bitwise identical.
     """
     factors = np.asarray(ladder, float)
     if (factors.ndim != 1 or len(factors) < 2 or not np.isfinite(factors).all()
@@ -183,6 +192,10 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
             or not np.isfinite(scales).all()
             or not np.allclose(np.linalg.norm(normals, axis=1), 1., atol=1e-10)):
         raise ValueError("invalid sampling points/normals/scales")
+    _profile.add("limits.calls")
+    _profile.add("limits.points", len(points))
+    _profile.add("limits.tag."+str(tag)+".calls")
+    _profile.add("limits.tag."+str(tag)+".points", len(points))
     plus, minus = np.empty_like(points, dtype=float), np.empty_like(points, dtype=float)
     errors, qerrors = np.zeros(len(points)), np.zeros(len(points))
     uref = float(np.linalg.norm(field.free))
@@ -192,6 +205,9 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
             h = eps_fraction*scales*factor
             targets = np.concatenate((points+h[:, None]*normals,
                                       points-h[:, None]*normals), axis=0)
+            _profile.add("limits.ladder_steps")
+            _profile.add("limits.targets", len(targets))
+            _profile.add("limits.tag."+str(tag)+".targets", len(targets))
             values = field.evaluate_many(targets, order=order)
             up, um = values[:len(points)], values[len(points):]
             mean = (up+um)/2
@@ -205,13 +221,19 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
             h = eps_fraction*scales*factors[-1]
             targets = np.concatenate((points+h[:, None]*normals,
                                       points-h[:, None]*normals), axis=0)
+            _profile.add("limits.refined_calls")
+            _profile.add("limits.refined_targets", len(targets))
+            _profile.add("limits.tag."+str(tag)+".refined_targets", len(targets))
             refined = field.evaluate_many(targets, order=2*order)
             refined_mean = (refined[:len(points)]+refined[len(points):])/2
             qerrors = np.linalg.norm(refined_mean-mean, axis=1)/uref
     else:
+        _profile.add("limits.scalar_points", len(points))
         for i, (p, n, scale) in enumerate(zip(points, normals, scales)):
             previous = None
             for factor in factors:
+                _profile.add("limits.ladder_steps")
+                _profile.add("limits.targets", 2)
                 h = eps_fraction*scale*factor
                 up, um = field(p+h*n, order=order), field(p-h*n, order=order)
                 mean_i = (up+um)/2
@@ -523,7 +545,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             mat = materials[group.name]
             tri, normal, area, _shape, edges = triangle_data(group.wake_xyz, group.wake_faces)
             face_samples = limits(field, tri.mean(axis=1), normal, edges.min(axis=1),
-                                  eps_fraction=eps_fraction, ladder=ladder, order=order)
+                                  eps_fraction=eps_fraction, ladder=ladder, order=order,
+                                  tag="wake_face")
             distance, _roots = material_paths(mat)
             relative_s = distance[group.wake_faces].mean(axis=1)/max(distance.max(), 1e-30)
             diag = area_diagnostics(face_samples, normal, area, relative_s)
@@ -537,7 +560,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             if np.any(lengths <= 1e-14):
                 raise ValueError(group.name+': undefined area-weighted node normal')
             samples = limits(field, group.wake_xyz[free_nodes], normals[free_nodes]/lengths[:, None],
-                             scales[free_nodes], eps_fraction=eps_fraction, ladder=ladder, order=order)
+                             scales[free_nodes], eps_fraction=eps_fraction, ladder=ladder, order=order,
+                             tag="free_node")
             velocity = np.zeros_like(group.wake_xyz)
             velocity[free_nodes] = samples['mean']
             finite_limit = ((samples['epsilon_error'] <= epsilon_tol)
@@ -720,8 +744,10 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
             np.minimum.at(scale, group.wake_faces[:, k], edges.min(axis=1))
         free = arrays[p+'free_nodes']
         normals[free] /= np.linalg.norm(normals[free], axis=1)[:, None]
-        samples = dict(face=limits(field, tri.mean(axis=1), normal, edges.min(axis=1), **kwargs),
-                       node=limits(field, group.wake_xyz[free], normals[free], scale[free], **kwargs))
+        samples = dict(face=limits(field, tri.mean(axis=1), normal, edges.min(axis=1),
+                                   tag="replay_face", **kwargs),
+                       node=limits(field, group.wake_xyz[free], normals[free], scale[free],
+                                   tag="replay_node", **kwargs))
         for location, values in samples.items():
             for key, value in values.items():
                 name = p+location+'_'+key

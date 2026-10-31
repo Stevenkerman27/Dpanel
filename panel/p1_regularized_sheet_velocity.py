@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from . import velocity_profile as _profile
+
 
 def _triangle_geometry(xyz, faces, values):
     xyz = np.asarray(xyz, float)
@@ -126,8 +128,10 @@ class RegularizedP1SheetField:
         self.n_boundary_edges = len(self.edge_a)
 
     def _edge_velocity(self, point):
+        _profile.add("field.edge_velocity.calls")
         if not self.n_boundary_edges:
             return np.zeros(3)
+        _profile.begin("field.edge_velocity")
         d = self.edge_b-self.edge_a
         length = np.linalg.norm(d, axis=1)
         tangent = d/length[:, None]
@@ -142,15 +146,20 @@ class RegularizedP1SheetField:
         i1 = axial*i0 + 1.0/root0-1.0/root1
         slope = (self.edge_mu[:, 1]-self.edge_mu[:, 0])/length
         weighted = self.edge_mu[:, 0]*i0+slope*i1
-        return np.einsum("ei,e->i", np.cross(tangent, rho), weighted)
+        velocity = np.einsum("ei,e->i", np.cross(tangent, rho), weighted)
+        _profile.end("field.edge_velocity")
+        return velocity
 
     def _area_velocity(self, point, order):
+        _profile.add("field.area_velocity.calls")
         if self.area_quadrature == "projection_fan":
+            _profile.add("field.area_velocity.fan_calls")
             from .p1_projection_duffy import area_terms
             terms = area_terms(self.triangles, np.asarray(point, float),
                                self.core_radius, order=self.fan_order,
                                strips=self.fan_strips, swap=self.fan_swap)
             return np.sum(np.cross(self.gamma, terms), axis=0)
+        _profile.add("field.area_velocity.legacy_calls")
         if order not in self._quadrature:
             q, w = np.polynomial.legendre.leggauss(order)
             q, w = (q+1.0)/2.0, w/2.0
@@ -181,6 +190,12 @@ class RegularizedP1SheetField:
         n = self.quadrature_order if order is None else order
         if type(n) is not int or n < 4 or type(chunk_size) is not int or chunk_size < 1:
             raise ValueError("invalid quadrature order or chunk_size")
+        _profile.add("field.evaluate_many.calls")
+        _profile.add("field.evaluate_many.targets", len(pts))
+        if self.area_quadrature == "projection_fan":
+            _profile.add("field.evaluate_many.fan_targets", len(pts))
+            _profile.add("field.evaluate_many.fan_chunks",
+                         -(-len(pts)//max(1, int(chunk_size))) if chunk_size else len(pts))
         if n not in self._quadrature:
             q, w = np.polynomial.legendre.leggauss(n)
             q, w = (q+1.0)/2.0, w/2.0
@@ -218,6 +233,7 @@ class RegularizedP1SheetField:
         n = self.quadrature_order if order is None else order
         if type(n) is not int or n < 4:
             raise ValueError("quadrature order must be an integer >= 4")
+        _profile.add("field.call.count")
         induced = self._edge_velocity(p)+self._area_velocity(p, n)
         velocity = self.freestream-induced/(4.0*np.pi)
         if not np.isfinite(velocity).all():
