@@ -159,7 +159,39 @@ Three sampling rounds ran for --iterations 2 (12 limits calls, 28,488 = 3 x 9,49
 
 test/test_p1_readonly_caches.py (5 tests) covers cache identity, read-only flags, clear_caches, bad orders, bitwise equality of cold and warm area_terms and of the field velocity.
 
-## 11. Reproduce
+## 11. P2 kernel variants, measured
+
+| configuration | v1 production ms/pt | v2 inv-den ms/pt | v2 speedup | v3 no inner chunk ms/pt | v3 speedup | max rel. diff vs v1 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 28/8 | 689.5 | 626.5 | 1.10x | 625.7 | 1.10x | 3.6e-16 |
+| 48/8 | 1,759.1 | 1,584.4 | 1.11x | 1,583.6 | 1.11x | 3.7e-16 |
+
+* three kernel shapes were timed on the same 109 targets, same geometry, same order and strips: production (chunked einsum with an (s,q,3) division), inverse-denominator einsum, and no inner chunk loop at all. Results agree to 3.6e-16 relative, so the differences are rounding, not a different integral;
+* both rewrites save about 10 % (28/8 689.5 to 626.5 ms, 48/8 1,759.1 to 1,584.4 ms). Chunking is therefore not the cost: the same 10 % cap applies to any Python-level batching of this kernel, because the work is 14,382 sub-triangles x order**2 nodes per target and every node is touched once;
+* a batch over target points cannot remove that volume either - each target has its own projection point and therefore its own fan - so P2 is a 1.1x item, not an hours-to-minutes item.
+
+## 12. P3 near/far split prototype, measured
+
+| near/far ratio | near faces | median rel. error | max rel. error | s/target | vs production 28/8 |
+| --- | --- | --- | --- | --- | --- |
+| 2.0 (far order 6) | 11.1% | 1.08e-06 | 9.81e-05 | 0.093 | 6.45x |
+| 2.0 (far order 8) | 11.1% | 1.08e-06 | 9.81e-05 | 0.095 | 6.33x |
+| 2.0 (far order 10) | 11.1% | 1.08e-06 | 9.81e-05 | 0.097 | 6.23x |
+| 3.0 (far order 6) | 16.1% | 1.08e-06 | 9.81e-05 | 0.126 | 4.77x |
+| 3.0 (far order 8) | 16.1% | 1.08e-06 | 9.81e-05 | 0.128 | 4.71x |
+| 3.0 (far order 10) | 16.1% | 1.08e-06 | 9.81e-05 | 0.130 | 4.64x |
+| 4.0 (far order 6) | 19.7% | 1.08e-06 | 9.81e-05 | 0.147 | 4.09x |
+| 4.0 (far order 8) | 19.7% | 1.08e-06 | 9.81e-05 | 0.149 | 4.04x |
+| 4.0 (far order 10) | 19.7% | 1.08e-06 | 9.81e-05 | 0.149 | 4.02x |
+
+Reference: the full projection fan at 48/32 (6.6 s per target); production fan 28/8 differs from it by at most 9.81e-05 relative.
+
+* the near/far split is the first measured lever that moves the seconds rather than the percent: with the fan only on the faces within a few longest-edge lengths of the target and a plain order-6 Duffy map elsewhere, a target costs fractions of a second;
+* two facts in that table matter more than the speedups: the error is identical (1.08e-6 median, 9.81e-5 max) in every cell, and it equals the error of production fan 28/8 against the same reference. On this subset the far faces therefore do not move the answer at all - what is left is the near fan's own error - so neither a lower far order nor a larger near radius costs anything measurable;
+* it is not yet admissible as a production path: the subset is the near-sheet rejection set, where the 1/d^2 far kernel is smallest. Points far from the sheet make exactly those faces dominant, and there the single-Duffy far map has no stated error bound (the 109-point sweep measured legacy max 3.19e-3 on near-sheet targets). A far kernel with a bound - multipole expansion, or a graded near set tied to distance and core - plus a far-point validation set is the missing piece;
+* therefore the P3 recommendation is a near/far architecture with an error budget, not a lower global order: lowering the order of the fan everywhere is what the 109 points already show cannot reach the declared 2e-4 threshold.
+
+## 13. Reproduce
 
 ```
 python -m pytest test/test_velocity_profile.py -q
@@ -171,5 +203,7 @@ python -m tools.issue84.b2_target_profile --main-half-surface runs/half_cad_wing
 python -m tools.issue84.fan_order_semantics --main-half-surface runs/half_cad_wingbody_v1/surface.json --case g2 --core-radius 0.01 --fan-strips 8 --points 4 --out docs/issue84/fan_order_semantics.json
 python -m tools.issue84.velocity_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --csv quad:runs/issue84/projection_gate_quad.csv --csv eps:runs/issue84/projection_gate_eps.csv --case g2 --alpha 5 --core-radius 0.01 --configs legacy_duffy 16:8 24:8 28:8 48:8 --out docs/issue84/velocity_profile_109_p1.json
 python -m pytest test/test_p1_readonly_caches.py -q
+python -m tools.issue84.fan_kernel_bench --main-half-surface <surface.json> --csv quad:<quad.csv> --csv eps:<eps.csv> --case g2 --alpha 5 --core-radius 0.01 --config 28:8 --config 48:8 --limit 0 --out docs/issue84/fan_kernel_bench.json
+python -m tools.issue84.far_field_split --main-half-surface <surface.json> --csv quad:<quad.csv> --csv eps:<eps.csv> --case g2 --alpha 5 --core-radius 0.01 --fan-order 28 --fan-strips 8 --reference-order 48 --reference-strips 32 --ratios 2 3 4 --far-orders 6 8 10 --limit 12 --out docs/issue84/far_field_split.json
 python -m tools.issue84.render_p0_profile_doc
 ```

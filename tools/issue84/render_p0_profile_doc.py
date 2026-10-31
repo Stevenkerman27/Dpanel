@@ -348,7 +348,82 @@ def main():
     else:
         add("velocity_profile_109.json or velocity_profile_109_p1.json is missing.")
     add("")
-    add("## 11. Reproduce")
+    add("## 11. P2 kernel variants, measured")
+    add("")
+    bench = load("fan_kernel_bench.json")
+    if bench:
+        rows = []
+        for key, entry in sorted(bench.get("configs", {}).items()):
+            variants = entry.get("variants", {})
+            rows.append([key,
+                         fmt(variants.get("v1", {}).get("milliseconds_per_point", 0.0), 1),
+                         fmt(variants.get("v2", {}).get("milliseconds_per_point", 0.0), 1),
+                         "{:.2f}x".format(variants.get("v2", {}).get("speedup_vs_v1", 0.0)),
+                         fmt(variants.get("v3", {}).get("milliseconds_per_point", 0.0), 1),
+                         "{:.2f}x".format(variants.get("v3", {}).get("speedup_vs_v1", 0.0)),
+                         "{:.1e}".format(variants.get("v3", {}).get(
+                             "max_relative_difference_vs_v1", 0.0))])
+        lines.extend(table(["configuration", "v1 production ms/pt", "v2 inv-den ms/pt",
+                            "v2 speedup", "v3 no inner chunk ms/pt", "v3 speedup",
+                            "max rel. diff vs v1"], rows))
+        add("")
+        add("* three kernel shapes were timed on the same 109 targets, same geometry, same order "
+            "and strips: production (chunked einsum with an (s,q,3) division), inverse-denominator "
+            "einsum, and no inner chunk loop at all. Results agree to 3.6e-16 relative, so the "
+            "differences are rounding, not a different integral;")
+        add("* both rewrites save about 10 % (28/8 689.5 to 626.5 ms, 48/8 1,759.1 to 1,584.4 ms). "
+            "Chunking is therefore not the cost: the same 10 % cap applies to any Python-level "
+            "batching of this kernel, because the work is 14,382 sub-triangles x order**2 nodes "
+            "per target and every node is touched once;")
+        add("* a batch over target points cannot remove that volume either - each target has its "
+            "own projection point and therefore its own fan - so P2 is a 1.1x item, not an "
+            "hours-to-minutes item.")
+    else:
+        add("docs/issue84/fan_kernel_bench.json is missing.")
+    add("")
+    add("## 12. P3 near/far split prototype, measured")
+    add("")
+    split = load("far_field_split.json")
+    if split:
+        rows = []
+        for key, cell in sorted(split.get("cells", {}).items(),
+                                key=lambda item: (item[1].get("ratio", 0.0),
+                                                  item[1].get("far_order", 0))):
+            rows.append(["{} (far order {})".format(cell.get("ratio"), cell.get("far_order")),
+                         "{:.1%}".format(cell.get("near_fraction_median", 0.0)),
+                         "{:.2e}".format(cell.get("rel_error_median", 0.0)),
+                         "{:.2e}".format(cell.get("rel_error_max", 0.0)),
+                         fmt(cell.get("seconds_median", 0.0), 3),
+                         "{:.2f}x".format(cell.get("speedup_vs_production_median", 0.0))])
+        lines.extend(table(["near/far ratio", "near faces", "median rel. error",
+                            "max rel. error", "s/target", "vs production 28/8"], rows))
+        add("")
+        add("Reference: the full projection fan at 48/32 ({} s per target); production fan 28/8 "
+            "differs from it by at most {:.2e} relative.".format(
+                fmt(split.get("reference_seconds_median", 0.0), 1),
+                split.get("production_relative_error_max", 0.0)))
+        add("")
+        add("* the near/far split is the first measured lever that moves the seconds rather than "
+            "the percent: with the fan only on the faces within a few longest-edge lengths of the "
+            "target and a plain order-6 Duffy map elsewhere, a target costs fractions of a second;")
+        add("* two facts in that table matter more than the speedups: the error is identical "
+            "(1.08e-6 median, 9.81e-5 max) in every cell, and it equals the error of production "
+            "fan 28/8 against the same reference. On this subset the far faces therefore do not "
+            "move the answer at all - what is left is the near fan's own error - so neither a "
+            "lower far order nor a larger near radius costs anything measurable;")
+        add("* it is not yet admissible as a production path: the subset is the near-sheet "
+            "rejection set, where the 1/d^2 far kernel is smallest. Points far from the sheet "
+            "make exactly those faces dominant, and there the single-Duffy far map has no stated "
+            "error bound (the 109-point sweep measured legacy max 3.19e-3 on near-sheet targets). "
+            "A far kernel with a bound - multipole expansion, or a graded near set tied to "
+            "distance and core - plus a far-point validation set is the missing piece;")
+        add("* therefore the P3 recommendation is a near/far architecture with an error budget, "
+            "not a lower global order: lowering the order of the fan everywhere is what the 109 "
+            "points already show cannot reach the declared 2e-4 threshold.")
+    else:
+        add("docs/issue84/far_field_split.json is missing.")
+    add("")
+    add("## 13. Reproduce")
     add("")
     add("```")
     add("python -m pytest test/test_velocity_profile.py -q")
@@ -360,6 +435,8 @@ def main():
     add("python -m tools.issue84.fan_order_semantics --main-half-surface runs/half_cad_wingbody_v1/surface.json --case g2 --core-radius 0.01 --fan-strips 8 --points 4 --out docs/issue84/fan_order_semantics.json")
     add("python -m tools.issue84.velocity_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --csv quad:runs/issue84/projection_gate_quad.csv --csv eps:runs/issue84/projection_gate_eps.csv --case g2 --alpha 5 --core-radius 0.01 --configs legacy_duffy 16:8 24:8 28:8 48:8 --out docs/issue84/velocity_profile_109_p1.json")
     add("python -m pytest test/test_p1_readonly_caches.py -q")
+    add("python -m tools.issue84.fan_kernel_bench --main-half-surface <surface.json> --csv quad:<quad.csv> --csv eps:<eps.csv> --case g2 --alpha 5 --core-radius 0.01 --config 28:8 --config 48:8 --limit 0 --out docs/issue84/fan_kernel_bench.json")
+    add("python -m tools.issue84.far_field_split --main-half-surface <surface.json> --csv quad:<quad.csv> --csv eps:<eps.csv> --case g2 --alpha 5 --core-radius 0.01 --fan-order 28 --fan-strips 8 --reference-order 48 --reference-strips 32 --ratios 2 3 4 --far-orders 6 8 10 --limit 12 --out docs/issue84/far_field_split.json")
     add("python -m tools.issue84.render_p0_profile_doc")
     add("```")
     add("")
