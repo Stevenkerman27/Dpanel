@@ -13,7 +13,10 @@ def test_vortexad_naca0012_forward_and_alpha_vjp():
     pytest.importorskip("jax")
     vortex = pytest.importorskip("VortexAD")
     mesh = Path(vortex.SAMPLE_GEOMETRY_PATH) / "pm" / "naca0012_LE_TE_cluster.stl"
-    assert mesh.is_file(), f"Upstream sample mesh missing: {mesh}"
+    if not mesh.is_file():
+        pytest.skip(f"VortexAD sample mesh data missing from this install: {mesh} "
+                    "(the wheel ships no STL under core/geometry/sample_meshes/pm; "
+                    "use a source checkout on PYTHONPATH or copy the STL files)")
 
     recorder = csdl.Recorder(inline=False)
     recorder.start()

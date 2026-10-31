@@ -27,7 +27,11 @@ solver stays on analytic_edges and this module is never imported by it.
 """
 from __future__ import annotations
 
+import functools
+
 import numpy as np
+
+from . import velocity_profile as _profile
 
 EDGE_NAMES = ("01", "12", "20")
 
@@ -125,10 +129,22 @@ def projection_fan(triangle, point, *, strips=1, swap=False, tol=1e-12):
             a, b = b, a
         pieces.extend(_strip_sector((qv, a, b), strips))
     sub = np.stack([np.stack(piece) for piece in pieces])
+    if _profile.enabled():
+        _profile.add("fan.calls")
+        _profile.add("fan.region."+region["kind"])
+        _profile.add("fan.subtriangles", len(pieces))
+        _profile.add("fan.strips", strips)
     return sub, {"region": region, "n_sub": len(pieces)}
 
 
+@functools.lru_cache(maxsize=32)
 def _duffy_nodes(order):
+    """Read-only Duffy nodes and weights for one order (cached, P1 of issue #84).
+
+    The arrays depend only on the order, so they are built once per (order) and handed
+    out read-only. Callers must not mutate them; the cache is keyed on the integer order
+    only, never on a field, a target or a core radius.
+    """
     if type(order) is not int or order < 2:
         raise ValueError("order must be an integer >= 2")
     x, w = np.polynomial.legendre.leggauss(order)
@@ -136,7 +152,19 @@ def _duffy_nodes(order):
     wu = w / 2.0
     uu, vv = np.meshgrid(u, u, indexing="ij")
     ww = (wu[:, None] * wu[None, :] * uu).reshape(-1)
-    return uu.reshape(-1), vv.reshape(-1), ww
+    nodes = (uu.reshape(-1).copy(), vv.reshape(-1).copy(), ww)
+    for array in nodes:
+        array.setflags(write=False)
+    return nodes
+
+
+def clear_caches():
+    """Drop the cached Duffy node sets (tests and determinism checks)."""
+    _duffy_nodes.cache_clear()
+
+
+def cache_info():
+    return {"duffy_nodes": _duffy_nodes.cache_info()._asdict()}
 
 
 def _sub_area2(subs):
@@ -158,7 +186,14 @@ def area_terms(
         raise ValueError("triangles must be (N,3,3)")
     if not np.isfinite(core) or core <= 0.0:
         raise ValueError("core must be a positive finite radius")
-    u, v, w = _duffy_nodes(order)
+    _profile.add("area_terms.calls")
+    _profile.add("area_terms.triangles", len(tri))
+    hits = _duffy_nodes.cache_info().hits
+    with _profile.stage("area_terms.nodes"):
+        u, v, w = _duffy_nodes(order)
+        _profile.add("area_terms.node_sets")
+    if _profile.enabled() and _duffy_nodes.cache_info().hits > hits:
+        _profile.add("cache.duffy_hits")
     uu = u[None, :, None]
     vv = v[None, :, None]
     out = np.zeros((len(tri), 3))
@@ -170,13 +205,17 @@ def area_terms(
         f1 = min(len(tri), f0 + fstep)
         subs = []
         owner = []
+        _profile.begin("area_terms.projection")
         for f in range(f0, f1):
             piece, meta = projection_fan(tri[f], p, strips=strips, swap=swap)
             subs.append(piece)
             owner.append(np.full(len(piece), f, dtype=int))
             sub_counts[f] = meta["n_sub"]
+        _profile.end("area_terms.projection")
+        _profile.begin("area_terms.kernel")
         sub = np.concatenate(subs)
         own = np.concatenate(owner)
+        _profile.add("area_terms.subtriangles", len(own))
         a2 = _sub_area2(sub)
         # Duffy: x = q + u*a + u*v*(b-a); |dS| = a2 * u du dv
         q = sub[:, 0][:, None, :]
@@ -190,6 +229,7 @@ def area_terms(
             sl = slice(first, first + step)
             quad[sl] = np.einsum("q,sqi->si", w, r[sl] / den[sl, :, None])
         np.add.at(out, own, quad * a2[:, None])
+        _profile.end("area_terms.kernel")
         if return_sub_areas:
             kept.append((sub, own, a2))
     if return_sub_areas:
