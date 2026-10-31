@@ -148,3 +148,20 @@ def test_subdivision_rung_rejects_invalid_configuration():
                    dict(subdivision_levels=2, subdivision_fan=(48,))):
         with pytest.raises(ValueError):
             adaptive_area_terms(tri, gamma, point, 0.01, budget=1e-14, **kwargs)
+
+
+def test_aggregate_estimate_cancels_where_the_per_face_sum_does_not():
+    # Two coincident faces with opposite strength: every per-face difference is
+    # nonzero, but the velocity they contribute is exactly zero, so the gate must
+    # report no aggregate error while the per-face sum stays large.
+    tri = np.array([[0., 0., 0.], [1., 0., 0.], [0., 1., 0.]])
+    triangles = np.stack([tri, tri])
+    gamma = np.array([[0.2, -0.1, 0.05], [-0.2, 0.1, -0.05]])
+    _terms, diagnostics = adaptive_area_terms(triangles, gamma,
+                                              np.array([0.3, 0.3, 0.004]), 0.01,
+                                              budget=2e-4)
+    assert diagnostics["estimated_error"] > 0.0
+    assert diagnostics["aggregate_estimated_error"] < 1e-12
+    assert diagnostics["relative_estimate"] > 0.0
+    assert diagnostics["aggregate_relative_estimate"] < 1e-12
+    assert np.asarray(diagnostics["aggregate_vector"]).shape == (3,)

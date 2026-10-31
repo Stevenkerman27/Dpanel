@@ -151,10 +151,20 @@ def adaptive_area_terms(
                                           order=order, chunk=chunk)
         return out
 
+    def weighted_vector(block, strengths):
+        """The velocity error proxy of a per-face difference: sum_f gamma_f x diff_f."""
+        if len(block) == 0:
+            return np.zeros(3)
+        if values.ndim == 2:
+            return np.sum(np.cross(strengths, block), axis=0)
+        return np.sum(strengths[:, None]*block, axis=0)
+
     base = near_terms(near_fan[0], near_fan[1], near) + far_terms(far_order, far_levels, ~near)
     refined = (near_terms(near_refinement[0], near_refinement[1], near)
                + far_terms(far_order + 4, far_levels + 1, ~near))
-    estimate = np.linalg.norm(refined - base, axis=1)
+    difference = refined - base
+    aggregate = weighted_vector(difference, values)
+    estimate = np.linalg.norm(difference, axis=1)
     weight = magnitude * (area2 / 2.0) / np.maximum(distance, core) ** 2
     scale = max(float(np.linalg.norm(base.sum(axis=0))), 1e-30)
     allowed_total = float(budget) * scale
@@ -192,12 +202,18 @@ def adaptive_area_terms(
         if near_over.any():
             coarse = near_terms(fan_order, strips, near_over)
             fine = near_terms(refined_fan[0], refined_fan[1], near_over)
+            delta = fine - coarse - difference
+            aggregate += weighted_vector(delta[near_over], values[near_over])
+            difference = np.where(near_over[:, None], fine - coarse, difference)
             estimate[near_over] = np.linalg.norm(fine[near_over] - coarse[near_over], axis=1)
             total[near_over] = fine[near_over]
         if far_over.any():
             coarse = far_terms(far_order + 4 * escalations, far_levels + escalations, far_over)
             fine = far_terms(far_order + 4 * escalations + 4, far_levels + escalations + 1,
                              far_over)
+            delta = fine - coarse - difference
+            aggregate += weighted_vector(delta[far_over], values[far_over])
+            difference = np.where(far_over[:, None], fine - coarse, difference)
             estimate[far_over] = np.linalg.norm(fine[far_over] - coarse[far_over], axis=1)
             total[far_over] = fine[far_over]
 
@@ -221,7 +237,9 @@ def adaptive_area_terms(
             aggregated_fine = np.zeros((len(stuck), 3))
             np.add.at(aggregated_coarse, local, coarse)
             np.add.at(aggregated_fine, local, fine)
-            estimate[stuck] = np.linalg.norm(aggregated_fine - aggregated_coarse, axis=1)
+            piece_difference = aggregated_fine - aggregated_coarse
+            aggregate += weighted_vector(piece_difference - difference[stuck], values[stuck])
+            estimate[stuck] = np.linalg.norm(piece_difference, axis=1)
             total[stuck] = aggregated_fine
             division_seconds = time.perf_counter() - begin
 
@@ -234,6 +252,9 @@ def adaptive_area_terms(
         budget=float(budget), allowed_total=allowed_total, velocity_scale=scale,
         estimated_error=float(estimate.sum()),
         relative_estimate=float(estimate.sum() / scale),
+        aggregate_estimated_error=float(np.linalg.norm(aggregate)),
+        aggregate_relative_estimate=float(np.linalg.norm(aggregate) / scale),
+        aggregate_vector=aggregate,
         escalations=escalations, escalated_faces=escalated_faces,
         subdivision_levels=int(subdivision_levels),
         subdivision_order=int(subdivision_order),

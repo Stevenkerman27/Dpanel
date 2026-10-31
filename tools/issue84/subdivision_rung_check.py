@@ -139,7 +139,10 @@ def main(argv=None):
                 subdivision_faces=int(diagnostics.get("subdivision_faces", 0)),
                 subdivision_pieces=int(diagnostics.get("subdivision_pieces", 0)),
                 subdivision_seconds=float(diagnostics.get("subdivision_seconds", 0.0)),
-                faces_over_budget=int(diagnostics["faces_over_budget"]))
+                faces_over_budget=int(diagnostics["faces_over_budget"]),
+                per_face_relative_estimate=float(diagnostics["relative_estimate"]),
+                aggregate_relative_estimate=float(
+                    diagnostics.get("aggregate_relative_estimate", float("nan"))))
         payload["points"].append(record)
         flush()
         summary = " ".join("L%s q=%.3e esc=%d sub=%d (%.1fs)" % (
