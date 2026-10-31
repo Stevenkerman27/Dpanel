@@ -251,7 +251,8 @@ def _plan_label(kwargs):
     return ",".join("%s=%s" % (key, kwargs[key]) for key in sorted(kwargs))
 
 
-def limits(field, points, normals, scales, *, eps_fraction, ladder, order, tag=""):
+def limits(field, points, normals, scales, *, eps_fraction, ladder, order, tag="",
+           audit_quadrature=True):
     """Finite one-sided samples: epsilon sensitivity plus legacy Gauss-order audit.
 
     In analytic-edge mode, edge quadrature does not exist: its reported
@@ -340,6 +341,10 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order, tag="
                                  "a-posteriori estimates")
             recent = np.asarray(estimates[-2*len(points):], float)
             qerrors = .5*(recent[:len(points)]+recent[len(points):])
+        elif not audit_quadrature:
+            # gate_mode='off': the refined evaluation exists only to audit the
+            # quadrature; skip it and report qerrors=0 (not applicable).
+            qerrors[:] = 0.
         else:
             h = eps_fraction*scales*factors[-1]
             targets = np.concatenate((points+h[:, None]*normals,
@@ -592,7 +597,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 fan_refinement_strips=None, near_ratio=2.0,
                                 adaptive_far_order=8, adaptive_far_levels=1,
                                 adaptive_budget=2e-4, adaptive_max_escalations=2,
-                                save_callback=None):
+                                gate_mode="enforce", save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -607,6 +612,9 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             or not all(np.isfinite(v) and v > 0 for v in
                        (epsilon_tol, quadrature_tol, geometry_tol, slip_tol))):
         raise ValueError("invalid iteration or convergence controls")
+    if gate_mode not in ("enforce", "audit", "off"):
+        raise ValueError("gate_mode must be 'enforce', 'audit' or 'off'")
+    audit_quadrature = gate_mode != 'off'
     if velocity_method not in ("analytic_edges", "legacy_gauss", "rm_regularized_p1"):
         raise ValueError("unsupported P1 wake velocity method")
     if velocity_method == "rm_regularized_p1":
@@ -706,7 +714,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             tri, normal, area, _shape, edges = triangle_data(group.wake_xyz, group.wake_faces)
             face_samples = limits(field, tri.mean(axis=1), normal, edges.min(axis=1),
                                   eps_fraction=eps_fraction, ladder=ladder, order=order,
-                                  tag="wake_face")
+                                  tag="wake_face", audit_quadrature=audit_quadrature)
             distance, _roots = material_paths(mat)
             relative_s = distance[group.wake_faces].mean(axis=1)/max(distance.max(), 1e-30)
             diag = area_diagnostics(face_samples, normal, area, relative_s)
@@ -721,14 +729,19 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                 raise ValueError(group.name+': undefined area-weighted node normal')
             samples = limits(field, group.wake_xyz[free_nodes], normals[free_nodes]/lengths[:, None],
                              scales[free_nodes], eps_fraction=eps_fraction, ladder=ladder, order=order,
-                             tag="free_node")
+                             tag="free_node", audit_quadrature=audit_quadrature)
             velocity = np.zeros_like(group.wake_xyz)
             velocity[free_nodes] = samples['mean']
             finite_limit = ((samples['epsilon_error'] <= epsilon_tol)
                             & (samples['quadrature_error'] <= quadrature_tol))
             fast = np.linalg.norm(samples['mean'], axis=1) > 1e-6
+            # Sampling-error thresholds are an audit of the integral, not a
+            # selection rule for which nodes may move: freezing a subset of one
+            # sheet distorts the wake and changes the loads (measured 1.4-2.6x).
+            # Only the mandated modes 'enforce' keep the legacy behaviour.
+            admitted = finite_limit if gate_mode == 'enforce' else fast
             eligible = np.zeros(len(velocity), bool)
-            eligible[free_nodes] = finite_limit & fast
+            eligible[free_nodes] = admitted & fast
             # Opposed endpoint velocities have an undefined average tangent.
             tangent_rejections = 0
             for node in mat.order:
@@ -745,7 +758,9 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             counts[group.name] = dict(root=len(mat.roots), eligible=int(eligible.sum()),
                                       convergence=int((~finite_limit).sum()),
                                       speed=int((finite_limit & ~fast).sum())+tangent_rejections,
-                                      rejected=int((~eligible[free_nodes]).sum()))
+                                      rejected=int((~eligible[free_nodes]).sum()),
+                                      gate_mode=gate_mode,
+                                      audit_rejected=int((~finite_limit).sum()))
             diag.update(edge_integration=field.method,
                         edge_quadrature_error_interpretation=(
                             "not_applicable_exact_straight_edge_integrals"
@@ -773,7 +788,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                           and d['quadrature_error_max'] <= quadrature_tol
                           and d['overall']['slip_rms'] <= slip_tol for d in record['wakes'].values())
         nonlinear_ok = state['nonlinear'] is None or state['nonlinear']['success']
-        candidate = bool(all_eligible and face_checks and map_residual <= geometry_tol and nonlinear_ok)
+        candidate = bool(gate_mode == 'enforce' and all_eligible and face_checks
+                         and map_residual <= geometry_tol and nonlinear_ok)
         record['kinematic_candidate'] = candidate
         record['state_sha256'] = snapshot_hash(arrays)
         record['outgoing_update'] = None
@@ -838,6 +854,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                 kinematic_candidate=history[-1]['kinematic_candidate'],
                 physical_accuracy_accepted=False,
                 method='P1-coupled-rooted-material-arclength-Picard',
+                gate_mode=gate_mode,
                 kernel=("analytic_P1_straight_edges_with_shared_trace_cancellation"
                         if velocity_method == "analytic_edges" else
                         "RM_regularized_P1_edge_plus_interior_gradient"

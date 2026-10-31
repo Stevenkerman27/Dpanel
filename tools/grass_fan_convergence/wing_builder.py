@@ -177,9 +177,23 @@ def build_wing(sections, *, span_panels=3, chord_panels=8, wake_panels=3,
     if not np.all(np.diff(station_y) > 1e-12):
         raise ValueError(name + ": TE stations are not strictly increasing in y")
 
-    ring = origin[faces[:, 0]] % perimeter
-    cap = origin[faces[:, 0]] == tip_node
-    bank = np.where(cap, 0, np.where(ring < chord_panels, 1, -1))
+    # Classify bank from every vertex of a face, not from its first vertex: the
+    # leading-edge (ring 0) and trailing-edge (ring chord_panels) vertices are
+    # shared by both surfaces, so a single-vertex test silently swaps the bank of
+    # every face that touches them, and the swap is antisymmetric after mirroring.
+    half_of = origin[faces]                      # (nface, 3) half-mesh indices
+    ring = half_of % perimeter
+    cap = (half_of == tip_node).any(axis=1)
+    upper = ((ring >= 1) & (ring <= chord_panels - 1)).any(axis=1)
+    lower = ((ring >= chord_panels + 1) & (ring <= 2 * chord_panels - 1)).any(axis=1)
+    if np.any(upper == lower):
+        raise ValueError(name + ": cannot classify the bank of %d faces"
+                         % int(np.count_nonzero(upper == lower)))
+    bank = np.where(cap, 0, np.where(upper, 1, -1))
+    if int(np.count_nonzero(bank == 0)) != int(np.count_nonzero(cap)):
+        raise ValueError(name + ": tip-cap bookkeeping does not match the bank")
+    if not (np.any(bank > 0) and np.any(bank < 0)):
+        raise ValueError(name + ": bank classification produced a single surface")
 
     # Independent lower trace at every interior TE station.
     interior = np.arange(1, len(stations) - 1)
