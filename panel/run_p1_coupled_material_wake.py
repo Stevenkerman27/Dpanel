@@ -69,10 +69,11 @@ def main(argv=None):
                         help='Projection-fan gate refinement order; default max(48, 2*fan_order)')
     parser.add_argument('--fan-refinement-strips', type=int, default=None,
                         help='Projection-fan gate refinement strips; default fan_strips')
-    parser.add_argument('--gate-mode', choices=('enforce', 'audit', 'off'), default='enforce',
-                        help="Sampling-error thresholds: 'enforce' freezes nodes that fail them "
-                             "(legacy, distorts the sheet), 'audit' records them without freezing, "
-                             "'off' also skips the refined quadrature evaluation")
+    parser.add_argument('--gate-mode', choices=('enforce', 'audit', 'off'), default='audit',
+                        help="Sampling-error thresholds: 'audit' (default) records them without "
+                             "freezing, 'off' also skips the refined quadrature evaluation, "
+                             "'enforce' freezes the failing nodes (legacy, distorts the sheet; "
+                             "use only to reproduce pre-2026-10-31 readings)")
     parser.add_argument('--epsilon-tol', type=float, default=.02)
     parser.add_argument('--quadrature-tol', type=float, default=.002)
     parser.add_argument('--max-nfev', type=int, default=80)

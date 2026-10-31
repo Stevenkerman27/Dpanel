@@ -16,7 +16,8 @@ thick_wing_topology / thick_wing_half_mesh / cst_airfoil_codec），DPanel 侧�
    1.00–3.88 倍（十个几何里九个 1.73–3.88 倍）。门控原本只是“积分误差审计”，
    冻结子集等于在同一张尾迹片内造出不连续，改的是问题本身。
 3. **已实现三级门控**（panel/p1_coupled_material_wake.py 的 gate_mode）：
-   enforce（旧行为，冻结）/ audit（只记录，不冻结）/ off（连更细 fan 的审计求值都省掉）。
+   enforce（冻结，旧行为，现仅用于复现历史读数）/ audit（只记录，不冻结，
+   2026-10-31 起为默认）/ off（连更细 fan 的审计求值都省掉）。
    audit 与 off 在十个几何上逐位相同，off 在扇区核上省 31% 墙钟。
 4. **核公式差异未决。** analytic_edges 与 RM-P1（projection_fan）在同一个几何上
    CL 差 0.02%–20%（上反+扭转翼 20%），且对 RM 的 core 半径几乎不敏感
@@ -58,11 +59,15 @@ thick_wing_topology / thick_wing_half_mesh / cst_airfoil_codec），DPanel 侧�
   扇区配置只通过“尾迹节点速度 → 尾迹几何更新 → 壁面载荷”影响系数，
   所以 iterations=0 时四列读数完全相同，不能用来比较。
 - 四组配置，每组自带成对 refinement（base 与 2 倍 order 的对比就是审计）：
-  analytic（analytic_edges 核，生产门控）、analytic_open（同核，全部节点接受）、
+  analytic（analytic_edges 核，legacy 冻结门控；本报告为复现历史读数显式 pin 成
+  enforce）、analytic_open（同核，全部节点接受）、
   8:2/16:2、16:4/32:4（RM-P1 + projection_fan，core 半径 0.01）。
 - 另有一套 open 列：8:2/16:2@open（eps 与 quadrature 容差放到 1e3，等价于全接受），
   用来把“节点集合”与“核/求积”分开。
 - order=48（legacy 边求积；扇区路径下由 fan 配置接管）。
+- 每个列在 tools/grass_fan_convergence/run_sweep.py::config_kwargs 里显式 pin 了
+  gate_mode（analytic 与扇区列 = enforce，analytic_open 与 @open = audit），
+  这样 2026-10-31 把默认值改成 audit 之后，本报告的数字仍可逐位复现。
 
 ## 4. 扇区 order/strips 对系数的影响
 
@@ -109,6 +114,7 @@ thick_wing_topology / thick_wing_half_mesh / cst_airfoil_codec），DPanel 侧�
 三种模式的定义（panel/p1_coupled_material_wake.py）：
 
 - enforce：遗留行为，误差超阈的节点不推进；本轮之前的所有读数都是这一档。
+  2026-10-31 起它不再是默认值，只用于复现历史读数（用户决定，见第 5 节末与第 11 节）。
 - audit：照常计算 eps 与 quadrature 误差并记录到 eligibility（rejected 恒 0），永不冻结。
 - off：连“更细 fan 复算”的那次求值也跳过，quadrature 误差记 0（不适用）。
 
@@ -220,8 +226,11 @@ CL 在 8 次更新里只从 +0.21561 走到 +0.21734（0.6%），说明载荷很
 
 1. **核公式 20% 差异**（上反加扭转翼）：analytic_edges 与 RM-P1 需要一个独立判据
    （制造解或文献值）来裁决，否则任何绝对载荷都不可信。
-2. **门控默认值**：建议生产默认改成 audit（旧行为只在复现历史读数时用），
-   但这会改变既有 analytic 列的含义，等用户确认后再改——当前函数默认仍是 enforce。
+2. **门控默认值（已定，2026-10-31 用户决定）**：生产默认改为 audit ——
+   solve_coupled_material_wake 与 CLI 都是 default='audit'；本报告 analytic 列
+   显式 pin 成 enforce 只为复现旧读数。候选判定不再要求 gate_mode == 'enforce'，
+   改成 whole-sheet 判据：audit 下所有有限节点都推进（all_eligible 恒真），
+   条件退化为“整片误差 + 映射残差 + 非线性”三项。
 3. **绝对载荷**：配点在尖缘上不收敛，需要把 Galerkin 弱形式接进耦合尾迹循环
    （现在 panel/p1_coupled_material_wake.py 仍硬编码 solve_multi）。
 4. 椭圆翼 8:2 被拒 6 个节点，值得查清是尺度还是边界节点。

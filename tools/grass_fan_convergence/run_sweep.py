@@ -63,13 +63,15 @@ def _jsonable(value):
 
 def config_kwargs(label, *, core_radius):
     """label is 'analytic' or 'order:strips/refine_order:refine_strips'."""
+    # The production default is gate_mode='audit' since 2026-10-31; every label
+    # used in the delivered report is pinned explicitly so the recorded numbers
+    # stay reproducible.
     if label == "analytic":
-        return dict(velocity_method="analytic_edges")
+        return dict(velocity_method="analytic_edges", gate_mode="enforce")
     if label == "analytic_open":
         # Same kernel, but every wake node is accepted: isolates the effect of
         # the per-node gate (which nodes get advected) from the kernel itself.
-        return dict(velocity_method="analytic_edges", epsilon_tol=1e3,
-                    quadrature_tol=1e3)
+        return dict(velocity_method="analytic_edges", gate_mode="audit")
     open_gate = label.endswith("@open")
     if open_gate:
         # Same fan configuration, but every wake node is accepted: the kernel
@@ -83,9 +85,9 @@ def config_kwargs(label, *, core_radius):
     kwargs = dict(velocity_method="rm_regularized_p1", core_radius=core_radius,
                   area_quadrature="projection_fan", fan_order=fan_order,
                   fan_strips=fan_strips, fan_refinement_order=ref_order,
-                  fan_refinement_strips=ref_strips)
+                  fan_refinement_strips=ref_strips, gate_mode="enforce")
     if open_gate:
-        kwargs.update(epsilon_tol=1e3, quadrature_tol=1e3)
+        kwargs.update(gate_mode="audit")
     return kwargs
 
 

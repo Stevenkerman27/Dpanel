@@ -597,7 +597,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 fan_refinement_strips=None, near_ratio=2.0,
                                 adaptive_far_order=8, adaptive_far_levels=1,
                                 adaptive_budget=2e-4, adaptive_max_escalations=2,
-                                gate_mode="enforce", save_callback=None):
+                                gate_mode="audit", save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -737,8 +737,9 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             fast = np.linalg.norm(samples['mean'], axis=1) > 1e-6
             # Sampling-error thresholds are an audit of the integral, not a
             # selection rule for which nodes may move: freezing a subset of one
-            # sheet distorts the wake and changes the loads (measured 1.4-2.6x).
-            # Only the mandated modes 'enforce' keep the legacy behaviour.
+            # sheet distorts the wake and changes the loads (measured 1.7-3.9x
+            # on ten wings). Production defaults to 'audit'; 'enforce' keeps the
+            # legacy freeze for reproducing pre-2026-10-31 readings.
             admitted = finite_limit if gate_mode == 'enforce' else fast
             eligible = np.zeros(len(velocity), bool)
             eligible[free_nodes] = admitted & fast
@@ -788,7 +789,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                           and d['quadrature_error_max'] <= quadrature_tol
                           and d['overall']['slip_rms'] <= slip_tol for d in record['wakes'].values())
         nonlinear_ok = state['nonlinear'] is None or state['nonlinear']['success']
-        candidate = bool(gate_mode == 'enforce' and all_eligible and face_checks
+        # Under 'audit' every finite node moves, so all_eligible is trivially
+        # true and this reduces to the whole-sheet test; under 'enforce' it also
+        # requires that no node was frozen.
+        candidate = bool(all_eligible and face_checks
                          and map_residual <= geometry_tol and nonlinear_ok)
         record['kinematic_candidate'] = candidate
         record['state_sha256'] = snapshot_hash(arrays)

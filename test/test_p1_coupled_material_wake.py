@@ -351,12 +351,31 @@ def test_mock_coupling_cannot_report_frozen_nodes_as_converged(monkeypatch, fail
     mesh, calls = mock_coupling(monkeypatch, BadField())
     if failure == 'wall':
         monkeypatch.setattr('panel.p1_coupled_material_wake.geometry_failure', lambda *a: 'wall')
-    result = solve_coupled_material_wake(mesh, iterations=2)
+    # Legacy 'enforce' mode: the failing nodes are frozen, so the sheet cannot
+    # move at all and the run must stop as blocked rather than iterate.
+    result = solve_coupled_material_wake(mesh, iterations=2, gate_mode='enforce')
     assert result['status'].startswith('blocked_')
     assert not result['converged'] and not result['kinematic_candidate']
     assert len(calls) == 1  # initial canonical solve only
     update = result['history'][0]['outgoing_update']
     assert not update['accepted'] and update['reason_counts'][failure] > 0
+
+
+def test_audit_mode_never_freezes_and_withholds_the_candidate(monkeypatch):
+    """Production mode: divergent sampling is reported, not used to pick nodes."""
+    class BadField(UniformField):
+        def __call__(self, p, *, order):
+            return np.array([1., 0., np.log(abs(p[2])+1e-30)])
+
+    mesh, _calls = mock_coupling(monkeypatch, BadField())
+    result = solve_coupled_material_wake(mesh, iterations=2)  # default is audit
+    assert result['gate_mode'] == 'audit'
+    record = result['history'][0]
+    for diag in record['wakes'].values():
+        assert diag['eligibility']['rejected'] == 0
+        assert diag['eligibility']['audit_rejected'] > 0
+        assert diag['node_epsilon_error_max'] > 0.02
+    assert not result['converged'] and not result['kinematic_candidate']
 
 
 def frozen_sample():
