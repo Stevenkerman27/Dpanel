@@ -81,7 +81,9 @@ class RegularizedP1SheetField:
                  core_radius, quadrature_order=48,
                  area_quadrature="legacy_duffy", fan_order=16, fan_strips=8,
                  fan_swap=False, fan_refinement_order=None,
-                 fan_refinement_strips=None):
+                 fan_refinement_strips=None, near_ratio=2.0,
+                 adaptive_far_order=8, adaptive_far_levels=1,
+                 adaptive_budget=2e-4, adaptive_max_escalations=2):
         self.freestream = np.asarray(freestream, float).copy()
         self.core_radius = float(core_radius)
         if (self.freestream.shape != (3,) or not np.isfinite(self.freestream).all()
@@ -90,8 +92,10 @@ class RegularizedP1SheetField:
         if type(quadrature_order) is not int or quadrature_order < 4:
             raise ValueError("quadrature_order must be an integer >= 4")
         self.quadrature_order = quadrature_order
-        if area_quadrature not in ("legacy_duffy", "projection_fan"):
-            raise ValueError("area_quadrature must be legacy_duffy or projection_fan")
+        if area_quadrature not in ("legacy_duffy", "projection_fan",
+                                   "projection_fan_adaptive"):
+            raise ValueError("area_quadrature must be legacy_duffy, projection_fan or "
+                             "projection_fan_adaptive")
         if type(fan_order) is not int or fan_order < 2:
             raise ValueError("fan_order must be an integer >= 2")
         if type(fan_strips) is not int or fan_strips < 1:
@@ -118,6 +122,28 @@ class RegularizedP1SheetField:
                 "projection_fan refinement must differ from the base fan configuration")
         self.fan_refinement_order = fan_refinement_order
         self.fan_refinement_strips = fan_refinement_strips
+        # Near/far adaptive integration (issue #84 task 2). The field gates itself with an
+        # a-posteriori difference estimator, so limits() must not run an external refined
+        # pass; quadrature_is_internal tells the gate where the estimate comes from.
+        if not np.isfinite(near_ratio) or near_ratio <= 0.0:
+            raise ValueError("near_ratio must be a positive finite multiple of the "
+                             "circumradius")
+        if type(adaptive_far_order) is not int or adaptive_far_order < 4:
+            raise ValueError("adaptive_far_order must be an integer >= 4")
+        if type(adaptive_far_levels) is not int or adaptive_far_levels < 0:
+            raise ValueError("adaptive_far_levels must be an integer >= 0")
+        if not np.isfinite(adaptive_budget) or adaptive_budget <= 0.0:
+            raise ValueError("adaptive_budget must be a positive finite relative error")
+        if type(adaptive_max_escalations) is not int or adaptive_max_escalations < 0:
+            raise ValueError("adaptive_max_escalations must be an integer >= 0")
+        self.near_ratio = float(near_ratio)
+        self.adaptive_far_order = adaptive_far_order
+        self.adaptive_far_levels = adaptive_far_levels
+        self.adaptive_budget = float(adaptive_budget)
+        self.adaptive_max_escalations = adaptive_max_escalations
+        self.quadrature_is_internal = area_quadrature == "projection_fan_adaptive"
+        self._adaptive_estimates = []
+        self.last_adaptive = None
         self._quadrature = {}
         tri_parts, normal_parts, gamma_parts, edge_a, edge_b, edge_mu = [], [], [], [], [], []
         for xyz, faces, values in parts:
@@ -199,6 +225,21 @@ class RegularizedP1SheetField:
         ask for it through quadrature_arguments().
         '''
         _profile.add("field.area_velocity.calls")
+        if self.area_quadrature == "projection_fan_adaptive":
+            _profile.add("field.area_velocity.adaptive_calls")
+            from .p1_adaptive_area import adaptive_area_terms
+            terms, diagnostics = adaptive_area_terms(
+                self.triangles, self.gamma, np.asarray(point, float), self.core_radius,
+                near_ratio=self.near_ratio,
+                near_fan=(self.fan_order, self.fan_strips),
+                near_refinement=(self.fan_refinement_order,
+                                 self.fan_refinement_strips),
+                far_order=self.adaptive_far_order,
+                far_levels=self.adaptive_far_levels, budget=self.adaptive_budget,
+                max_escalations=self.adaptive_max_escalations)
+            self.last_adaptive = diagnostics
+            self._adaptive_estimates.append(float(diagnostics["relative_estimate"]))
+            return np.sum(np.cross(self.gamma, terms), axis=0)
         if self.area_quadrature == "projection_fan":
             _profile.add("field.area_velocity.fan_calls")
             fan_order_used = self.fan_order if fan_order is None else fan_order
@@ -240,6 +281,9 @@ class RegularizedP1SheetField:
         '''
         if type(order) is not int or order < 4:
             raise ValueError('quadrature order must be an integer >= 4')
+        if self.quadrature_is_internal:
+            raise ValueError('projection_fan_adaptive gates internally: there is no '
+                             'external refined configuration to compare against')
         if self.area_quadrature == 'projection_fan':
             base = dict(fan_order=self.fan_order, fan_strips=self.fan_strips)
             refined = dict(fan_order=self.fan_refinement_order,
@@ -249,11 +293,30 @@ class RegularizedP1SheetField:
 
     def quadrature_plan(self, order):
         '''JSON-serialisable description of the gate that limits() will run.'''
+        if self.quadrature_is_internal:
+            return dict(method='projection_fan_adaptive',
+                        base=dict(near_ratio=self.near_ratio,
+                                  near_fan_order=self.fan_order,
+                                  near_fan_strips=self.fan_strips,
+                                  far_order=self.adaptive_far_order,
+                                  far_levels=self.adaptive_far_levels,
+                                  budget=self.adaptive_budget),
+                        refined=dict(estimator='a_posteriori_difference',
+                                     near_refinement_order=self.fan_refinement_order,
+                                     near_refinement_strips=self.fan_refinement_strips,
+                                     max_escalations=self.adaptive_max_escalations),
+                        legacy_order=None, internal=True)
         base, refined = self.quadrature_arguments(order)
         return dict(method=self.area_quadrature, base=dict(base),
                     refined=dict(refined),
                     legacy_order=(None if self.area_quadrature == 'projection_fan'
                                   else int(order)))
+
+    def pop_adaptive_estimates(self):
+        '''Per-target relative a-posteriori estimates produced by the last calls.'''
+        estimates = list(self._adaptive_estimates)
+        self._adaptive_estimates.clear()
+        return estimates
 
     def evaluate_many(self, points, *, order=None, chunk_size=2,
                       fan_order=None, fan_strips=None):
@@ -270,7 +333,7 @@ class RegularizedP1SheetField:
             raise ValueError("invalid quadrature order or chunk_size")
         _profile.add("field.evaluate_many.calls")
         _profile.add("field.evaluate_many.targets", len(pts))
-        if self.area_quadrature == "projection_fan":
+        if self.area_quadrature in ("projection_fan", "projection_fan_adaptive"):
             _profile.add("field.evaluate_many.fan_targets", len(pts))
             _profile.add("field.evaluate_many.fan_chunks",
                          -(-len(pts)//max(1, int(chunk_size))) if chunk_size else len(pts))
@@ -281,7 +344,7 @@ class RegularizedP1SheetField:
             weights = (w[:, None]*w[None, :]*(1.0-u)).reshape(-1)
             bary = np.stack(((1.0-u)*(1.0-v), u, (1.0-u)*v), axis=-1).reshape(-1, 3)
             self._quadrature[n] = (bary, weights)
-        if self.area_quadrature == "projection_fan":
+        if self.area_quadrature in ("projection_fan", "projection_fan_adaptive"):
             out = np.stack([self.freestream-(self._edge_velocity(point)
                 +self._area_velocity(point, n, fan_order=fan_order,
                                      fan_strips=fan_strips))/(4*np.pi)

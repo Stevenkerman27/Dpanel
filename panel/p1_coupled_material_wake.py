@@ -58,7 +58,9 @@ class TotalVelocity:
     """
     def __init__(self, mesh, state, *, method="analytic_edges", core_radius=None,
                  area_quadrature="legacy_duffy", fan_order=16, fan_strips=8,
-                 fan_refinement_order=None, fan_refinement_strips=None):
+                 fan_refinement_order=None, fan_refinement_strips=None,
+                 near_ratio=2.0, adaptive_far_order=8, adaptive_far_levels=1,
+                 adaptive_budget=2e-4, adaptive_max_escalations=2):
         parts = [(mesh.xyz, mesh.faces, np.asarray(state['mu'])[mesh.dof_face])]
         offset = 0
         for group in mesh.groups:
@@ -91,8 +93,10 @@ class TotalVelocity:
         self.fan_refinement_strips = fan_refinement_strips
         # Fail closed: an area-quadrature choice that the selected evaluator cannot
         # honour would otherwise be accepted and silently ignored.
-        if area_quadrature not in ("legacy_duffy", "projection_fan"):
-            raise ValueError("area_quadrature must be legacy_duffy or projection_fan")
+        if area_quadrature not in ("legacy_duffy", "projection_fan",
+                                   "projection_fan_adaptive"):
+            raise ValueError("area_quadrature must be legacy_duffy, projection_fan or "
+                             "projection_fan_adaptive")
         if type(fan_order) is not int or fan_order < 2:
             raise ValueError("fan_order must be an integer >= 2")
         if type(fan_strips) is not int or fan_strips < 1:
@@ -112,16 +116,32 @@ class TotalVelocity:
                 parts, freestream=self.free, core_radius=self.core_radius,
                 area_quadrature=area_quadrature, fan_order=fan_order,
                 fan_strips=fan_strips, fan_refinement_order=fan_refinement_order,
-                fan_refinement_strips=fan_refinement_strips)
+                fan_refinement_strips=fan_refinement_strips, near_ratio=near_ratio,
+                adaptive_far_order=adaptive_far_order,
+                adaptive_far_levels=adaptive_far_levels,
+                adaptive_budget=adaptive_budget,
+                adaptive_max_escalations=adaptive_max_escalations)
             # The gate plan is a property of the field, not of the caller: limits()
             # must compare the base fan against the refined fan, never the same
             # configuration twice (issue #84 task 1).
             self.fan_refinement_order = self._regularized.fan_refinement_order
             self.fan_refinement_strips = self._regularized.fan_refinement_strips
+            self.near_ratio = self._regularized.near_ratio
+            self.adaptive_far_order = self._regularized.adaptive_far_order
+            self.adaptive_far_levels = self._regularized.adaptive_far_levels
+            self.adaptive_budget = self._regularized.adaptive_budget
+            self.adaptive_max_escalations = self._regularized.adaptive_max_escalations
+            self.quadrature_is_internal = self._regularized.quadrature_is_internal
         elif method != "legacy_gauss":
             raise ValueError("unknown P1 sheet-velocity integration method")
         if not np.isfinite(self.mu_face).all() or not np.isfinite(self.grad_face).all():
             raise FloatingPointError("nonfinite solved P1 strength")
+
+    def pop_adaptive_estimates(self):
+        '''Per-target a-posteriori estimates from the internal adaptive gate.'''
+        if self.method == "rm_regularized_p1":
+            return self._regularized.pop_adaptive_estimates()
+        return []
 
     def quadrature_arguments(self, order):
         '''Base and refined quadrature keywords for the sampling gate.'''
@@ -142,8 +162,10 @@ class TotalVelocity:
             raise ValueError("field point must be a finite (3,) array")
         _profile.add("total.call.count")
         if fan_order is not None or fan_strips is not None:
-            if self.method != "rm_regularized_p1" or self.area_quadrature != "projection_fan":
-                raise ValueError("fan overrides require rm_regularized_p1 with projection_fan")
+            if (self.method != "rm_regularized_p1" or self.area_quadrature
+                    not in ("projection_fan", "projection_fan_adaptive")):
+                raise ValueError("fan overrides require rm_regularized_p1 with a fan "
+                                 "area quadrature")
         if self.method == "analytic_edges":
             return self._analytic(p)
         if self.method == "rm_regularized_p1":
@@ -194,8 +216,10 @@ class TotalVelocity:
         _profile.add("total.evaluate_many.targets", len(pts))
         _profile.add("total.evaluate_many.method."+self.method)
         if fan_order is not None or fan_strips is not None:
-            if self.method != "rm_regularized_p1" or self.area_quadrature != "projection_fan":
-                raise ValueError("fan overrides require rm_regularized_p1 with projection_fan")
+            if (self.method != "rm_regularized_p1" or self.area_quadrature
+                    not in ("projection_fan", "projection_fan_adaptive")):
+                raise ValueError("fan overrides require rm_regularized_p1 with a fan "
+                                 "area quadrature")
         if self.method == "rm_regularized_p1":
             return self._regularized.evaluate_many(pts, order=order,
                                                    fan_order=fan_order,
@@ -245,12 +269,21 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order, tag="
     accepts_order = _accepts_quadrature_order(field)
     analytic = (getattr(field, "method", None) == "analytic_edges"
                 or not accepts_order)
+    internal = bool(getattr(field, "quadrature_is_internal", False))
     if not accepts_order:
+        base_kwargs, refined_kwargs = {}, {}
+    if internal:
         base_kwargs, refined_kwargs = {}, {}
     if analytic:
         plan = dict(method=getattr(field, "method", None) or "analytic_edges",
                     base=dict(base_kwargs), refined=dict(base_kwargs), legacy_order=None,
                     note="edge quadrature does not exist; quadrature_error is not applicable")
+    elif internal:
+        if hasattr(field, "quadrature_plan"):
+            plan = field.quadrature_plan(order)
+        else:
+            plan = dict(method="projection_fan_adaptive", base={}, refined={},
+                        legacy_order=None, internal=True)
     else:
         if hasattr(field, "quadrature_plan"):
             plan = field.quadrature_plan(order)
@@ -291,6 +324,15 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order, tag="
         plus[:], minus[:] = up, um
         if analytic:
             qerrors[:] = 0.
+        elif internal:
+            _profile.add("limits.internal_gate")
+            estimates = (field.pop_adaptive_estimates()
+                         if hasattr(field, "pop_adaptive_estimates") else [])
+            if len(estimates) < 2*len(points):
+                raise ValueError("internal quadrature field reported no per-target "
+                                 "a-posteriori estimates")
+            recent = np.asarray(estimates[-2*len(points):], float)
+            qerrors = .5*(recent[:len(points)]+recent[len(points):])
         else:
             h = eps_fraction*scales*factors[-1]
             targets = np.concatenate((points+h[:, None]*normals,
@@ -318,6 +360,15 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order, tag="
             plus[i], minus[i] = up, um
             if analytic:
                 qerrors[i] = 0.
+            elif internal:
+                _profile.add("limits.internal_gate")
+                estimates = (field.pop_adaptive_estimates()
+                             if hasattr(field, "pop_adaptive_estimates") else [])
+
+                if len(estimates) < 2:
+                    raise ValueError("internal quadrature field reported no "
+                                     "a-posteriori estimate")
+                qerrors[i] = .5*(estimates[-2]+estimates[-1])
             else:
                 refined = (field(p+h*n, **refined_kwargs)
                            +field(p-h*n, **refined_kwargs))/2
@@ -531,7 +582,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 velocity_method="analytic_edges", core_radius=None,
                                 area_quadrature="legacy_duffy", fan_order=16,
                                 fan_strips=8, fan_refinement_order=None,
-                                fan_refinement_strips=None, save_callback=None):
+                                fan_refinement_strips=None, near_ratio=2.0,
+                                adaptive_far_order=8, adaptive_far_levels=1,
+                                adaptive_budget=2e-4, adaptive_max_escalations=2,
+                                save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -591,7 +645,12 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                               area_quadrature=area_quadrature,
                               fan_order=fan_order, fan_strips=fan_strips,
                               fan_refinement_order=fan_refinement_order,
-                              fan_refinement_strips=fan_refinement_strips)
+                              fan_refinement_strips=fan_refinement_strips,
+                              near_ratio=near_ratio,
+                              adaptive_far_order=adaptive_far_order,
+                              adaptive_far_levels=adaptive_far_levels,
+                              adaptive_budget=adaptive_budget,
+                              adaptive_max_escalations=adaptive_max_escalations)
         plan = (field.quadrature_plan(order) if hasattr(field, "quadrature_plan")
                 else dict(method=getattr(field, "method", "injected_field"),
                           base={}, refined={}, legacy_order=int(order)))
@@ -610,7 +669,13 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                       sampling_fan_refinement_order=np.asarray(
                           -1 if fan_refinement_order is None else int(fan_refinement_order)),
                       sampling_fan_refinement_strips=np.asarray(
-                          -1 if fan_refinement_strips is None else int(fan_refinement_strips)))
+                          -1 if fan_refinement_strips is None else int(fan_refinement_strips)),
+                      sampling_near_ratio=np.asarray(float(near_ratio)),
+                      sampling_adaptive_far_order=np.asarray(int(adaptive_far_order)),
+                      sampling_adaptive_far_levels=np.asarray(int(adaptive_far_levels)),
+                      sampling_adaptive_budget=np.asarray(float(adaptive_budget)),
+                      sampling_adaptive_max_escalations=np.asarray(
+                          int(adaptive_max_escalations)))
         record = {k: state[k] for k in (*load_names, 'wall_rms', 'jump_rms',
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
@@ -780,7 +845,9 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
 def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=None,
                     quadrature_order=None, area_quadrature=None, fan_order=None,
                     fan_strips=None, fan_refinement_order=None,
-                    fan_refinement_strips=None):
+                    fan_refinement_strips=None, near_ratio=None,
+                    adaptive_far_order=None, adaptive_far_levels=None,
+                    adaptive_budget=None, adaptive_max_escalations=None):
     """Re-evaluate frozen total-flow samples without re-solving/changing mu/Gamma.
 
     A mismatch in the recorded content SHA is an error. Bitwise equality is
@@ -824,13 +891,34 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
                              else int(fan_refinement_order))
     selected_refine_strips = (recorded_refine_strips if fan_refinement_strips is None
                               else int(fan_refinement_strips))
+    def _recorded(key, fallback):
+        if key not in arrays:
+            return fallback
+        value = float(np.asarray(arrays[key]).reshape(-1)[0])
+        return value
+
+    selected_near = (float(near_ratio) if near_ratio is not None
+                     else _recorded('sampling_near_ratio', 2.0))
+    selected_far_order = (int(adaptive_far_order) if adaptive_far_order is not None
+                          else int(_recorded('sampling_adaptive_far_order', 8)))
+    selected_far_levels = (int(adaptive_far_levels) if adaptive_far_levels is not None
+                           else int(_recorded('sampling_adaptive_far_levels', 1)))
+    selected_budget = (float(adaptive_budget) if adaptive_budget is not None
+                       else _recorded('sampling_adaptive_budget', 2e-4))
+    selected_escalations = (int(adaptive_max_escalations)
+                            if adaptive_max_escalations is not None
+                            else int(_recorded('sampling_adaptive_max_escalations', 2)))
     field = TotalVelocity(mesh, dict(mu=arrays['mu'], gamma=arrays['gamma'],
                                    alpha_deg=float(arrays['alpha_deg'])),
                           method=method, core_radius=selected_core,
                           area_quadrature=selected_area, fan_order=selected_fan_order,
                           fan_strips=selected_fan_strips,
                           fan_refinement_order=selected_refine_order,
-                          fan_refinement_strips=selected_refine_strips)
+                          fan_refinement_strips=selected_refine_strips,
+                          near_ratio=selected_near, adaptive_far_order=selected_far_order,
+                          adaptive_far_levels=selected_far_levels,
+                          adaptive_budget=selected_budget,
+                          adaptive_max_escalations=selected_escalations)
     plan = field.quadrature_plan(selected_order)
     kwargs = dict(eps_fraction=float(arrays['sampling_eps_fraction']),
                   ladder=arrays['sampling_ladder'], order=selected_order)

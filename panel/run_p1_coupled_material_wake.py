@@ -52,8 +52,17 @@ def main(argv=None):
                         help='Default analytic P1; rm_regularized_p1 is opt-in and requires --core-radius')
     parser.add_argument('--core-radius', type=float, default=None,
                         help='Explicit Rosenhead–Moore core length in geometry units; required only for rm_regularized_p1')
-    parser.add_argument('--area-quadrature', choices=('legacy_duffy', 'projection_fan'),
-                        default='legacy_duffy', help='RM-P1 area integration; projection_fan is opt-in')
+    parser.add_argument('--area-quadrature',
+                        choices=('legacy_duffy', 'projection_fan', 'projection_fan_adaptive'),
+                        default='legacy_duffy',
+                        help='RM-P1 area integration; the fan modes are opt-in')
+    parser.add_argument('--near-ratio', type=float, default=2.0,
+                        help='Near/far split: near when the point-to-triangle distance is at most this multiple of the circumradius')
+    parser.add_argument('--adaptive-far-order', type=int, default=8)
+    parser.add_argument('--adaptive-far-levels', type=int, default=1)
+    parser.add_argument('--adaptive-budget', type=float, default=2e-4,
+                        help='Relative a-posteriori error budget of the adaptive area quadrature')
+    parser.add_argument('--adaptive-max-escalations', type=int, default=2)
     parser.add_argument('--fan-order', type=int, default=16)
     parser.add_argument('--fan-strips', type=int, default=8)
     parser.add_argument('--fan-refinement-order', type=int, default=None,
@@ -72,7 +81,14 @@ def main(argv=None):
                         help='Explicit RM core radius for frozen-state replay')
     parser.add_argument('--replay-quadrature-order', type=int, default=None,
                         help='Override area quadrature order for frozen-state replay')
-    parser.add_argument('--replay-area-quadrature', choices=('legacy_duffy', 'projection_fan'), default=None)
+    parser.add_argument('--replay-area-quadrature',
+                        choices=('legacy_duffy', 'projection_fan', 'projection_fan_adaptive'),
+                        default=None)
+    parser.add_argument('--replay-near-ratio', type=float, default=None)
+    parser.add_argument('--replay-adaptive-far-order', type=int, default=None)
+    parser.add_argument('--replay-adaptive-far-levels', type=int, default=None)
+    parser.add_argument('--replay-adaptive-budget', type=float, default=None)
+    parser.add_argument('--replay-adaptive-max-escalations', type=int, default=None)
     parser.add_argument('--replay-fan-order', type=int, default=None)
     parser.add_argument('--replay-fan-strips', type=int, default=None)
     parser.add_argument('--replay-fan-refinement-order', type=int, default=None)
@@ -108,6 +124,11 @@ def main(argv=None):
                 core_radius=args.replay_core_radius,
                 quadrature_order=args.replay_quadrature_order,
                 area_quadrature=args.replay_area_quadrature,
+                near_ratio=args.replay_near_ratio,
+                adaptive_far_order=args.replay_adaptive_far_order,
+                adaptive_far_levels=args.replay_adaptive_far_levels,
+                adaptive_budget=args.replay_adaptive_budget,
+                adaptive_max_escalations=args.replay_adaptive_max_escalations,
                 fan_order=args.replay_fan_order,
                 fan_strips=args.replay_fan_strips,
                 fan_refinement_order=args.replay_fan_refinement_order,
@@ -163,6 +184,11 @@ def main(argv=None):
                    quadrature_tol=args.quadrature_tol, max_nfev=args.max_nfev,
                    velocity_method=args.velocity_method, core_radius=args.core_radius,
                    area_quadrature=args.area_quadrature,
+                near_ratio=args.near_ratio,
+                adaptive_far_order=args.adaptive_far_order,
+                adaptive_far_levels=args.adaptive_far_levels,
+                adaptive_budget=args.adaptive_budget,
+                adaptive_max_escalations=args.adaptive_max_escalations,
                    fan_order=args.fan_order, fan_strips=args.fan_strips,
                    fan_refinement_order=args.fan_refinement_order,
                    fan_refinement_strips=args.fan_refinement_strips,
