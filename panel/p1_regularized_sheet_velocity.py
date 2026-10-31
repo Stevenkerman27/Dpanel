@@ -126,6 +126,26 @@ class RegularizedP1SheetField:
         self.edge_b = np.concatenate(edge_b) if edge_b else np.empty((0, 3))
         self.edge_mu = np.concatenate(edge_mu) if edge_mu else np.empty((0, 2))
         self.n_boundary_edges = len(self.edge_a)
+        # Read-only per-triangle geometry, computed once per field (issue #84 P1). These are
+        # pure functions of self.triangles, so they are safe to share and are what a later
+        # near/far split would branch on; nothing here may depend on a target point.
+        edges = np.linalg.norm(np.stack((
+            self.triangles[:, 1]-self.triangles[:, 0],
+            self.triangles[:, 2]-self.triangles[:, 1],
+            self.triangles[:, 0]-self.triangles[:, 2]), axis=1), axis=2)
+        self.triangle_edge_lengths = edges
+        self.triangle_centroid = self.triangles.mean(axis=1)
+        self.triangle_longest = edges.max(axis=1)
+        self.triangle_shortest = edges.min(axis=1)
+        self.triangle_aspect = self.triangle_longest/np.maximum(self.triangle_shortest, 1e-300)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            self.triangle_circumradius = np.where(
+                self._triangle_area2 > 0.0,
+                np.prod(edges, axis=1)/(2.0*self._triangle_area2), np.inf)
+        for array in (edges, self.triangle_centroid, self.triangle_longest,
+                      self.triangle_shortest, self.triangle_aspect,
+                      self.triangle_circumradius):
+            array.setflags(write=False)
 
     def _edge_velocity(self, point):
         _profile.add("field.edge_velocity.calls")

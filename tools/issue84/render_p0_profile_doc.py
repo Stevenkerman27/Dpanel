@@ -307,7 +307,48 @@ def main():
         "iteration from hours to minutes needs a cheaper per-face integration for the far "
         "field, decided only after the P2 batching measurement.")
     add("")
-    add("## 10. Reproduce")
+    add("## 10. P1 read-only caches, measured")
+    add("")
+    before_109 = load("velocity_profile_109.json")
+    after_109 = load("velocity_profile_109_p1.json")
+    if before_109 and after_109:
+        rows = []
+        for key in ("legacy_duffy/48", "16/8", "24/8", "28/8", "48/8"):
+            try:
+                before = before_109["configs"][key]["eps"]
+                after = after_109["configs"][key]["eps"]
+            except KeyError:
+                continue
+            rows.append([key,
+                         fmt(before["milliseconds_per_point"], 1),
+                         fmt(after["milliseconds_per_point"], 1),
+                         "{:+.2f} %".format(100.0*(after["milliseconds_per_point"]
+                                                    /before["milliseconds_per_point"]-1.0)),
+                         fmt(before["seconds"].get("area_terms.nodes", 0.0), 5),
+                         fmt(after["seconds"].get("area_terms.nodes", 0.0), 5)])
+        lines.extend(table(["configuration", "ms/point before", "ms/point after", "change",
+                            "node-set s before", "node-set s after"], rows))
+        add("")
+        add("* p1_projection_duffy._duffy_nodes is now an lru_cache keyed on the order only and "
+            "hands out read-only arrays; the node-set stage drops from 0.0235 s to 0.0002 s over "
+            "102 targets at order 16 (cache.duffy_hits = 102), but that stage was 0.1 % of a "
+            "target;")
+        add("* RegularizedP1SheetField now builds read-only per-triangle edge lengths, centroid, "
+            "longest/shortest edge, aspect and circumradius once per field. Nothing in the "
+            "production path consumes them yet - they exist for a near/far split - so they "
+            "cannot show a speedup, and the measured changes above are noise plus the node cache;")
+        add("* verdict: P1 is in place and worth at most about 1.5 %, so node sets, triangle "
+            "geometry and fan partitions are not where an iteration goes. Any hour-to-minute "
+            "change has to come from the per-target kernel volume itself (14,382 sub-triangles x "
+            "order**2 nodes at fan 28/8), i.e. from P2/P3, not from caching.")
+        add("")
+        add("test/test_p1_readonly_caches.py (5 tests) covers cache identity, read-only flags, "
+            "clear_caches, bad orders, bitwise equality of cold and warm area_terms and of the "
+            "field velocity.")
+    else:
+        add("velocity_profile_109.json or velocity_profile_109_p1.json is missing.")
+    add("")
+    add("## 11. Reproduce")
     add("")
     add("```")
     add("python -m pytest test/test_velocity_profile.py -q")
@@ -317,6 +358,8 @@ def main():
     add("python -m tools.issue84.b2_target_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --method rm_regularized_p1 --core-radius 0.01 --area-quadrature projection_fan --fan-order 28 --fan-strips 8 --quadrature-order 48 --max-points 6 --out docs/issue84/b2_target_profile_prod.json")
     add("python -m tools.issue84.b2_target_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --method rm_regularized_p1 --core-radius 0.01 --area-quadrature projection_fan --fan-order 28 --fan-strips 8 --quadrature-order 28 --max-points 6 --out docs/issue84/b2_target_profile_aligned.json")
     add("python -m tools.issue84.fan_order_semantics --main-half-surface runs/half_cad_wingbody_v1/surface.json --case g2 --core-radius 0.01 --fan-strips 8 --points 4 --out docs/issue84/fan_order_semantics.json")
+    add("python -m tools.issue84.velocity_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --csv quad:runs/issue84/projection_gate_quad.csv --csv eps:runs/issue84/projection_gate_eps.csv --case g2 --alpha 5 --core-radius 0.01 --configs legacy_duffy 16:8 24:8 28:8 48:8 --out docs/issue84/velocity_profile_109_p1.json")
+    add("python -m pytest test/test_p1_readonly_caches.py -q")
     add("python -m tools.issue84.render_p0_profile_doc")
     add("```")
     add("")

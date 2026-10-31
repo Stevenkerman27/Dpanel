@@ -143,7 +143,23 @@ Three sampling rounds ran for --iterations 2 (12 limits calls, 28,488 = 3 x 9,49
 * Reuse across the ladder exists at the level of quadrature nodes and triangle geometry, which is what P1 caches.
 * The 91-97 % kernel share is work, not overhead: batching it (P2) removes Python loops and temporaries but not the sub_triangles * order**2 volume. Cutting the iteration from hours to minutes needs a cheaper per-face integration for the far field, decided only after the P2 batching measurement.
 
-## 10. Reproduce
+## 10. P1 read-only caches, measured
+
+| configuration | ms/point before | ms/point after | change | node-set s before | node-set s after |
+| --- | --- | --- | --- | --- | --- |
+| legacy_duffy/48 | 217.4 | 216.2 | -0.58 % | 0.00000 | 0.00000 |
+| 16/8 | 239.4 | 235.7 | -1.54 % | 0.02346 | 0.00017 |
+| 24/8 | 468.8 | 465.5 | -0.70 % | 0.02896 | 0.00018 |
+| 28/8 | 618.3 | 619.1 | +0.13 % | 0.03159 | 0.00020 |
+| 48/8 | 1,740.8 | 1,738.5 | -0.13 % | 0.04958 | 0.00019 |
+
+* p1_projection_duffy._duffy_nodes is now an lru_cache keyed on the order only and hands out read-only arrays; the node-set stage drops from 0.0235 s to 0.0002 s over 102 targets at order 16 (cache.duffy_hits = 102), but that stage was 0.1 % of a target;
+* RegularizedP1SheetField now builds read-only per-triangle edge lengths, centroid, longest/shortest edge, aspect and circumradius once per field. Nothing in the production path consumes them yet - they exist for a near/far split - so they cannot show a speedup, and the measured changes above are noise plus the node cache;
+* verdict: P1 is in place and worth at most about 1.5 %, so node sets, triangle geometry and fan partitions are not where an iteration goes. Any hour-to-minute change has to come from the per-target kernel volume itself (14,382 sub-triangles x order**2 nodes at fan 28/8), i.e. from P2/P3, not from caching.
+
+test/test_p1_readonly_caches.py (5 tests) covers cache identity, read-only flags, clear_caches, bad orders, bitwise equality of cold and warm area_terms and of the field velocity.
+
+## 11. Reproduce
 
 ```
 python -m pytest test/test_velocity_profile.py -q
@@ -153,5 +169,7 @@ python -m panel.run_p1_coupled_material_wake --case g2 --main-half-surface runs/
 python -m tools.issue84.b2_target_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --method rm_regularized_p1 --core-radius 0.01 --area-quadrature projection_fan --fan-order 28 --fan-strips 8 --quadrature-order 48 --max-points 6 --out docs/issue84/b2_target_profile_prod.json
 python -m tools.issue84.b2_target_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --method rm_regularized_p1 --core-radius 0.01 --area-quadrature projection_fan --fan-order 28 --fan-strips 8 --quadrature-order 28 --max-points 6 --out docs/issue84/b2_target_profile_aligned.json
 python -m tools.issue84.fan_order_semantics --main-half-surface runs/half_cad_wingbody_v1/surface.json --case g2 --core-radius 0.01 --fan-strips 8 --points 4 --out docs/issue84/fan_order_semantics.json
+python -m tools.issue84.velocity_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --csv quad:runs/issue84/projection_gate_quad.csv --csv eps:runs/issue84/projection_gate_eps.csv --case g2 --alpha 5 --core-radius 0.01 --configs legacy_duffy 16:8 24:8 28:8 48:8 --out docs/issue84/velocity_profile_109_p1.json
+python -m pytest test/test_p1_readonly_caches.py -q
 python -m tools.issue84.render_p0_profile_doc
 ```

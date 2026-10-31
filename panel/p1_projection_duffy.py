@@ -27,6 +27,8 @@ solver stays on analytic_edges and this module is never imported by it.
 """
 from __future__ import annotations
 
+import functools
+
 import numpy as np
 
 from . import velocity_profile as _profile
@@ -135,7 +137,14 @@ def projection_fan(triangle, point, *, strips=1, swap=False, tol=1e-12):
     return sub, {"region": region, "n_sub": len(pieces)}
 
 
+@functools.lru_cache(maxsize=32)
 def _duffy_nodes(order):
+    """Read-only Duffy nodes and weights for one order (cached, P1 of issue #84).
+
+    The arrays depend only on the order, so they are built once per (order) and handed
+    out read-only. Callers must not mutate them; the cache is keyed on the integer order
+    only, never on a field, a target or a core radius.
+    """
     if type(order) is not int or order < 2:
         raise ValueError("order must be an integer >= 2")
     x, w = np.polynomial.legendre.leggauss(order)
@@ -143,7 +152,19 @@ def _duffy_nodes(order):
     wu = w / 2.0
     uu, vv = np.meshgrid(u, u, indexing="ij")
     ww = (wu[:, None] * wu[None, :] * uu).reshape(-1)
-    return uu.reshape(-1), vv.reshape(-1), ww
+    nodes = (uu.reshape(-1).copy(), vv.reshape(-1).copy(), ww)
+    for array in nodes:
+        array.setflags(write=False)
+    return nodes
+
+
+def clear_caches():
+    """Drop the cached Duffy node sets (tests and determinism checks)."""
+    _duffy_nodes.cache_clear()
+
+
+def cache_info():
+    return {"duffy_nodes": _duffy_nodes.cache_info()._asdict()}
 
 
 def _sub_area2(subs):
@@ -167,9 +188,12 @@ def area_terms(
         raise ValueError("core must be a positive finite radius")
     _profile.add("area_terms.calls")
     _profile.add("area_terms.triangles", len(tri))
+    hits = _duffy_nodes.cache_info().hits
     with _profile.stage("area_terms.nodes"):
         u, v, w = _duffy_nodes(order)
         _profile.add("area_terms.node_sets")
+    if _profile.enabled() and _duffy_nodes.cache_info().hits > hits:
+        _profile.add("cache.duffy_hits")
     uu = u[None, :, None]
     vv = v[None, :, None]
     out = np.zeros((len(tri), 3))
