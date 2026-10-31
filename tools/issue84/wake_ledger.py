@@ -146,6 +146,40 @@ def _ledger_rows(iteration, mesh, record, arrays, wall_xyz, wall_faces, tol):
     return rows, sets
 
 
+def _jsonable(value):
+    if isinstance(value, dict):
+        return {str(key): _jsonable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple, set)):
+        return [_jsonable(item) for item in value]
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.bool_):
+        return bool(value)
+    if isinstance(value, (np.floating, np.integer)):
+        return value.item()
+    return value
+
+
+def _write_payload(args, head, collected, result=None, seconds=None, partial=True):
+    """Write the ledger so far; a killed multi-hour run still leaves evidence."""
+    payload = dict(head)
+    payload["partial"] = bool(partial)
+    if result is not None:
+        payload["status"] = result["status"]
+        payload["converged"] = bool(result["converged"])
+        payload["gate_mode"] = result.get("gate_mode")
+        payload["velocity_method"] = result.get("velocity_method")
+        payload["area_quadrature"] = result.get("area_quadrature")
+        payload["fan_order"] = result.get("fan_order")
+        payload["fan_strips"] = result.get("fan_strips")
+    if seconds is not None:
+        payload["seconds"] = seconds
+    payload["iterations_out"] = _jsonable(collected)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8")
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--main-half-surface", nargs="+", required=True)
@@ -154,11 +188,35 @@ def main(argv=None):
     parser.add_argument("--kutta", default="pressure", choices=("pressure", "signed_speed"))
     parser.add_argument("--iterations", type=int, default=1)
     parser.add_argument("--max-nfev", type=int, default=80)
+    parser.add_argument("--max-backtracks", type=int, default=8)
     parser.add_argument("--epsilon-tol", type=float, default=0.02)
     parser.add_argument("--quadrature-tol", type=float, default=0.002)
     parser.add_argument("--boundary-only", action="store_true")
+    parser.add_argument("--gate-mode", default="audit",
+                        choices=("enforce", "audit", "off"),
+                        help="Sampling-error gate mode; audit is the production default")
+    parser.add_argument("--velocity-method", default="analytic_edges",
+                        choices=("analytic_edges", "legacy_gauss", "rm_regularized_p1"))
+    parser.add_argument("--core-radius", type=float, default=None)
+    parser.add_argument("--area-quadrature", default="legacy_duffy",
+                        choices=("legacy_duffy", "projection_fan",
+                                 "projection_fan_adaptive"))
+    parser.add_argument("--order", type=int, default=48)
+    parser.add_argument("--fan-order", type=int, default=16)
+    parser.add_argument("--fan-strips", type=int, default=8)
+    parser.add_argument("--fan-refinement-order", type=int, default=None)
+    parser.add_argument("--fan-refinement-strips", type=int, default=None)
     parser.add_argument("--out", type=Path, default=Path("runs/issue84/wake_ledger_g2.json"))
     args = parser.parse_args(argv)
+    solver_kwargs = dict(gate_mode=args.gate_mode, velocity_method=args.velocity_method,
+                         area_quadrature=args.area_quadrature, order=args.order,
+                         fan_order=args.fan_order, fan_strips=args.fan_strips)
+    if args.core_radius is not None:
+        solver_kwargs["core_radius"] = args.core_radius
+    if args.fan_refinement_order is not None:
+        solver_kwargs["fan_refinement_order"] = args.fan_refinement_order
+    if args.fan_refinement_strips is not None:
+        solver_kwargs["fan_refinement_strips"] = args.fan_refinement_strips
     started = time.perf_counter()
     mesh, alpha_deg = build_case(args.main_half_surface, case=args.case, alpha_deg=args.alpha)
     collected = []
@@ -170,8 +228,11 @@ def main(argv=None):
         counters = {}
         for group_name, diagnostics in record.get("wakes", {}).items():
             counters[group_name] = dict(diagnostics["eligibility"])
+        loads = {name: float(state[name]) for name in
+                 ("CL", "CL_gamma", "CD_pressure", "CM_y", "pressure_kutta_rms", "wall_rms")
+                 if name in state}
         collected.append(dict(iteration=int(iteration),
-                              status=None, counters=counters,
+                              status=None, counters=counters, loads=loads,
                               map_residual_chord=record.get("map_residual_chord"),
                               kinematic_candidate=record.get("kinematic_candidate"),
                               outgoing_update=(None if record.get("outgoing_update") is None
@@ -180,13 +241,22 @@ def main(argv=None):
                               trial_reasons=(record["outgoing_update"]["trial_reasons"]
                                              if record.get("outgoing_update") else []),
                               sets=sets, rows=rows))
+        # Flush after every iteration: a multi-hour fan run must not lose the
+        # earlier ledgers if the host kills the process.
+        _write_payload(args, payload_head, collected, result=None, seconds=None)
 
+    payload_head = dict(schema="dpanel.issue84.wake_ledger.v1",
+                        python=platform.python_version(), numpy=np.__version__,
+                        case=args.case, alpha_deg=float(alpha_deg), kutta=args.kutta,
+                        iterations=args.iterations, tolerances=tol,
+                        solver=solver_kwargs)
     result = solve_coupled_material_wake(mesh, alpha_deg, kutta=args.kutta,
                                          iterations=args.iterations,
                                          max_nfev=args.max_nfev,
+                                         max_backtracks=args.max_backtracks,
                                          epsilon_tol=args.epsilon_tol,
                                          quadrature_tol=args.quadrature_tol,
-                                         save_callback=callback)
+                                         save_callback=callback, **solver_kwargs)
     seconds = time.perf_counter() - started
 
     for entry in collected:
@@ -215,7 +285,13 @@ def main(argv=None):
                    python=platform.python_version(), numpy=np.__version__,
                    case=args.case, alpha_deg=float(alpha_deg), kutta=args.kutta,
                    iterations=args.iterations, tolerances=tol,
+                   solver=solver_kwargs, partial=False,
                    status=result["status"], converged=bool(result["converged"]),
+                   gate_mode=result.get("gate_mode"),
+                   velocity_method=result.get("velocity_method"),
+                   area_quadrature=result.get("area_quadrature"),
+                   fan_order=result.get("fan_order"),
+                   fan_strips=result.get("fan_strips"),
                    physical_accuracy_accepted=False,
                    wall_faces=int(len(mesh.faces)), seconds=seconds,
                    counter_definitions=dict(
@@ -232,7 +308,8 @@ def main(argv=None):
                        solve_status="panel/p1_coupled_material_wake.py:596-603"),
                    iterations_out=collected)
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.out.write_text(json.dumps(_jsonable(payload), indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8")
     print("status", result["status"], "converged", result["converged"],
           "seconds %.1f" % seconds)
     for entry in collected:

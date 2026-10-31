@@ -1,0 +1,125 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "declared_pairs": {
+    "edge": 208,
+    "total": 208,
+    "vertex": 0
+  },
+  "gate_mode": "audit",
+  "iterations": 6,
+  "kutta": "signed_speed",
+  "max_backtracks": 12,
+  "min_shared": 2,
+  "partial": false,
+  "rows": [
+    {
+      "CD_pressure": 0.007126885631336986,
+      "CL": 0.4413553954553846,
+      "CL_gamma": 0.44637269221791404,
+      "CM_y": -0.12213725704223075,
+      "accepted": false,
+      "displacement_rms": 0.0,
+      "iteration": 0,
+      "map_residual_chord": 22.98151598837876,
+      "moved": null,
+      "pressure_kutta_rms": 0.08401140664917878,
+      "relaxation": null,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall"
+      ],
+      "wakes": {
+        "main_wing": {
+          "convergence": 83,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.0012164059660768217
+    }
+  ],
+  "schema": "dpanel.issue84.t4_declared_sequence.v1",
+  "seconds": 14.925438900012523,
+  "status": "blocked_geometry",
+  "trials": [
+    {
+      "centroid": [
+        1.530307862978046,
+        0.0864906748843373,
+        0.0
+      ],
+      "group": "main_wing",
+      "reason": "wall",
+      "skipped_declared": 1,
+      "wake_triangle": 293,
+      "wall_triangle": 18
+    },
+    {
+      "centroid": [
+        1.530307862978046,
+        0.0864906748843373,
+        0.0
+      ],
+      "group": "main_wing",
+      "reason": "wall",
+      "skipped_declared": 1,
+      "wake_triangle": 293,
+      "wall_triangle": 18
+    },
+    {
+      "centroid": [
+        1.530307862978046,
+        0.0864906748843373,
+        0.0
+      ],
+      "group": "main_wing",
+      "reason": "wall",
+      "skipped_declared": 1,
+      "wake_triangle": 293,
+      "wall_triangle": 18
+    },
+    {
+      "centroid": [
+        1.530307862978046,
+        0.0864906748843373,
+        0.0
+      ],
+      "group": "main_wing",
+      "reason": "wall",
+      "skipped_declared": 1,
+      "wake_triangle": 293,
+      "wall_triangle": 18
+    },
+    {
+      "centroid": [
+        1.530307862978046,
+        0.0864906748843373,
+        0.0
+      ],
+      "group": "main_wing",
+      "reason": "wall",
+      "skipped_declared": 1,
+      "wake_triangle": 293,
+      "wall_triangle": 18
+    }
+  ]
+}
