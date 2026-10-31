@@ -83,7 +83,8 @@ class RegularizedP1SheetField:
                  fan_swap=False, fan_refinement_order=None,
                  fan_refinement_strips=None, near_ratio=2.0,
                  adaptive_far_order=8, adaptive_far_levels=1,
-                 adaptive_budget=2e-4, adaptive_max_escalations=2):
+                 adaptive_budget=2e-4, adaptive_max_escalations=2,
+                 adaptive_subdivision_levels=0, adaptive_subdivision_fan=(48, 8)):
         self.freestream = np.asarray(freestream, float).copy()
         self.core_radius = float(core_radius)
         if (self.freestream.shape != (3,) or not np.isfinite(self.freestream).all()
@@ -136,11 +137,22 @@ class RegularizedP1SheetField:
             raise ValueError("adaptive_budget must be a positive finite relative error")
         if type(adaptive_max_escalations) is not int or adaptive_max_escalations < 0:
             raise ValueError("adaptive_max_escalations must be an integer >= 0")
+        if (type(adaptive_subdivision_levels) is not int
+                or not 0 <= adaptive_subdivision_levels <= 4):
+            raise ValueError("adaptive_subdivision_levels must be an integer in 0..4")
+        try:
+            subdivision_order, subdivision_strips = (int(v) for v in adaptive_subdivision_fan)
+        except (TypeError, ValueError):
+            raise ValueError("adaptive_subdivision_fan must be an (order, strips) pair") from None
+        if subdivision_order < 4 or subdivision_strips < 1:
+            raise ValueError("adaptive_subdivision_fan order must be >= 4 and strips >= 1")
         self.near_ratio = float(near_ratio)
         self.adaptive_far_order = adaptive_far_order
         self.adaptive_far_levels = adaptive_far_levels
         self.adaptive_budget = float(adaptive_budget)
         self.adaptive_max_escalations = adaptive_max_escalations
+        self.adaptive_subdivision_levels = adaptive_subdivision_levels
+        self.adaptive_subdivision_fan = (subdivision_order, subdivision_strips)
         self.quadrature_is_internal = area_quadrature == "projection_fan_adaptive"
         self._adaptive_estimates = []
         self.last_adaptive = None
@@ -236,7 +248,9 @@ class RegularizedP1SheetField:
                                  self.fan_refinement_strips),
                 far_order=self.adaptive_far_order,
                 far_levels=self.adaptive_far_levels, budget=self.adaptive_budget,
-                max_escalations=self.adaptive_max_escalations)
+                max_escalations=self.adaptive_max_escalations,
+                subdivision_levels=self.adaptive_subdivision_levels,
+                subdivision_fan=self.adaptive_subdivision_fan)
             self.last_adaptive = diagnostics
             self._adaptive_estimates.append(float(diagnostics["relative_estimate"]))
             return np.sum(np.cross(self.gamma, terms), axis=0)
@@ -304,7 +318,12 @@ class RegularizedP1SheetField:
                         refined=dict(estimator='a_posteriori_difference',
                                      near_refinement_order=self.fan_refinement_order,
                                      near_refinement_strips=self.fan_refinement_strips,
-                                     max_escalations=self.adaptive_max_escalations),
+                                     max_escalations=self.adaptive_max_escalations,
+                                     subdivision_levels=self.adaptive_subdivision_levels,
+                                     subdivision_order=
+                                         self.adaptive_subdivision_fan[0],
+                                     subdivision_strips=
+                                         self.adaptive_subdivision_fan[1]),
                         legacy_order=None, internal=True)
         base, refined = self.quadrature_arguments(order)
         return dict(method=self.area_quadrature, base=dict(base),

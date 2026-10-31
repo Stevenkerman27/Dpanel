@@ -115,3 +115,36 @@ def test_adaptive_scalar_and_batch_paths_agree():
     scalar = np.stack([field(p) for p in points])
     field.pop_adaptive_estimates()
     assert np.allclose(batch, scalar, rtol=0.0, atol=1e-15)
+
+def test_subdivision_rung_triggers_and_equals_its_own_fan_aggregation():
+    xyz, faces, values, _gamma = sheet()
+    tri = xyz[faces[:1]]
+    gamma = np.array([[0.1, 0.2, 0.3]])
+    point = np.array([1.0/3.0, 1.0/3.0, 0.0])   # on the sheet plane: the near set
+    _loose, without = adaptive_area_terms(tri, gamma, point, 0.01, budget=2e-4)
+    terms, rung = adaptive_area_terms(tri, gamma, point, 0.01, budget=1e-14,
+                                      max_escalations=0, subdivision_levels=2,
+                                      subdivision_fan=(48, 8))
+    assert without["subdivision_faces"] == 0 and without["subdivision_pieces"] == 0
+    # max_escalations=0 keeps every near face over budget, so the rung must fire.
+    assert rung["escalations"] == 0
+    assert rung["subdivision_levels"] == 2
+    assert rung["subdivision_faces"] == 1
+    assert rung["subdivision_pieces"] == 4**2
+    assert rung["subdivision_seconds"] > 0.0
+    pieces = _subdivide(tri, 2)
+    aggregate = area_terms(pieces, point, 0.01, order=96, strips=16, chunk=1024).sum(axis=0)
+    assert np.allclose(terms[0], aggregate, rtol=0.0, atol=1e-18)
+    assert np.isfinite(terms).all()
+
+
+def test_subdivision_rung_rejects_invalid_configuration():
+    xyz, faces, _values, _gamma = sheet()
+    tri = xyz[faces[:1]]
+    gamma = np.array([[0.1, 0.2, 0.3]])
+    point = np.array([1.0/3.0, 1.0/3.0, 0.0])
+    for kwargs in (dict(subdivision_levels=5), dict(subdivision_levels=1.5),
+                   dict(subdivision_levels=2, subdivision_fan=(2, 8)),
+                   dict(subdivision_levels=2, subdivision_fan=(48,))):
+        with pytest.raises(ValueError):
+            adaptive_area_terms(tri, gamma, point, 0.01, budget=1e-14, **kwargs)

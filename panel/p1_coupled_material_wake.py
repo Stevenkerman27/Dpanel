@@ -60,7 +60,8 @@ class TotalVelocity:
                  area_quadrature="legacy_duffy", fan_order=16, fan_strips=8,
                  fan_refinement_order=None, fan_refinement_strips=None,
                  near_ratio=2.0, adaptive_far_order=8, adaptive_far_levels=1,
-                 adaptive_budget=2e-4, adaptive_max_escalations=2):
+                 adaptive_budget=2e-4, adaptive_max_escalations=2,
+                 adaptive_subdivision_levels=0, adaptive_subdivision_fan=(48, 8)):
         parts = [(mesh.xyz, mesh.faces, np.asarray(state['mu'])[mesh.dof_face])]
         offset = 0
         for group in mesh.groups:
@@ -120,7 +121,9 @@ class TotalVelocity:
                 adaptive_far_order=adaptive_far_order,
                 adaptive_far_levels=adaptive_far_levels,
                 adaptive_budget=adaptive_budget,
-                adaptive_max_escalations=adaptive_max_escalations)
+                adaptive_max_escalations=adaptive_max_escalations,
+                adaptive_subdivision_levels=adaptive_subdivision_levels,
+                adaptive_subdivision_fan=adaptive_subdivision_fan)
             # The gate plan is a property of the field, not of the caller: limits()
             # must compare the base fan against the refined fan, never the same
             # configuration twice (issue #84 task 1).
@@ -131,6 +134,10 @@ class TotalVelocity:
             self.adaptive_far_levels = self._regularized.adaptive_far_levels
             self.adaptive_budget = self._regularized.adaptive_budget
             self.adaptive_max_escalations = self._regularized.adaptive_max_escalations
+            self.adaptive_subdivision_levels = \
+                self._regularized.adaptive_subdivision_levels
+            self.adaptive_subdivision_fan = \
+                self._regularized.adaptive_subdivision_fan
             self.quadrature_is_internal = self._regularized.quadrature_is_internal
         elif method != "legacy_gauss":
             raise ValueError("unknown P1 sheet-velocity integration method")

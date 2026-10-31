@@ -104,7 +104,7 @@ def _face_geometry(triangles, point):
 def adaptive_area_terms(
     triangles, gamma, point, core, *, near_ratio=2.0, near_fan=(28, 8),
     near_refinement=(48, 8), far_order=8, far_levels=1, budget=2e-4,
-    max_escalations=2, chunk=4096,
+    max_escalations=2, subdivision_levels=0, subdivision_fan=(48, 8), chunk=4096,
 ):
     """Near/far adaptive area kernel with a global relative error budget.
 
@@ -113,6 +113,13 @@ def adaptive_area_terms(
     kernel magnitude. A face whose a-posteriori estimate exceeds its share is refined
     (near: fan strips or order up; far: one more subdivision level and a higher order)
     for at most max_escalations rounds.
+
+    Order escalation alone stalls on near-singular faces: on a 1405 aspect sliver the fan
+    stays within 1e-2 of the converged value however many rounds it is granted, because
+    base and refined fail in the same direction. ``subdivision_levels`` adds a final rung:
+    every near face still over budget after the last round is split in the parameter
+    domain (``4**levels`` pieces) and each piece is integrated with ``subdivision_fan``.
+    Set it to 0 (the default) to keep the order-only ladder.
     """
     tri = np.asarray(triangles, float)
     p = np.asarray(point, float)
@@ -156,6 +163,17 @@ def adaptive_area_terms(
     else:
         allowed = np.full(len(tri), allowed_total / max(len(tri), 1))
 
+    if type(subdivision_levels) is not int or subdivision_levels < 0:
+        raise ValueError("subdivision_levels must be an integer >= 0")
+    if subdivision_levels > 4:
+        raise ValueError("subdivision_levels must be <= 4")
+    try:
+        subdivision_order, subdivision_strips = (int(v) for v in subdivision_fan)
+    except (TypeError, ValueError):
+        raise ValueError("subdivision_fan must be a (order, strips) pair") from None
+    if subdivision_order < 4 or subdivision_strips < 1:
+        raise ValueError("subdivision_fan order must be >= 4 and strips >= 1")
+
     total = base.copy()
     escalations = 0
     escalated_faces = 0
@@ -183,6 +201,30 @@ def adaptive_area_terms(
             estimate[far_over] = np.linalg.norm(fine[far_over] - coarse[far_over], axis=1)
             total[far_over] = fine[far_over]
 
+    subdivision_faces = 0
+    subdivision_pieces = 0
+    division_seconds = 0.0
+    if int(subdivision_levels) > 0 and (estimate > allowed).any():
+        stuck = np.flatnonzero((estimate > allowed) & (estimate > 0.0) & near)
+        if len(stuck):
+            subdivision_faces = int(len(stuck))
+            begin = time.perf_counter()
+            pieces = _subdivide(tri[stuck], subdivision_levels)
+            per_face = 4 ** int(subdivision_levels)
+            subdivision_pieces = int(len(pieces))
+            local = np.repeat(np.arange(len(stuck)), per_face)
+            coarse = area_terms(pieces, p, core, order=subdivision_order,
+                               strips=subdivision_strips, chunk=1024)
+            fine = area_terms(pieces, p, core, order=min(2 * subdivision_order, 96),
+                              strips=2 * subdivision_strips, chunk=1024)
+            aggregated_coarse = np.zeros((len(stuck), 3))
+            aggregated_fine = np.zeros((len(stuck), 3))
+            np.add.at(aggregated_coarse, local, coarse)
+            np.add.at(aggregated_fine, local, fine)
+            estimate[stuck] = np.linalg.norm(aggregated_fine - aggregated_coarse, axis=1)
+            total[stuck] = aggregated_fine
+            division_seconds = time.perf_counter() - begin
+
     diagnostics = dict(
         near_faces=near_count, far_faces=far_count,
         near_fan_order=int(near_fan[0]), near_fan_strips=int(near_fan[1]),
@@ -193,10 +235,18 @@ def adaptive_area_terms(
         estimated_error=float(estimate.sum()),
         relative_estimate=float(estimate.sum() / scale),
         escalations=escalations, escalated_faces=escalated_faces,
+        subdivision_levels=int(subdivision_levels),
+        subdivision_order=int(subdivision_order),
+        subdivision_strips=int(subdivision_strips),
+        subdivision_faces=subdivision_faces,
+        subdivision_pieces=subdivision_pieces,
+        subdivision_seconds=float(division_seconds),
         faces_over_budget=int((estimate > allowed).sum()),
         seconds=time.perf_counter() - started)
     if _profile.enabled():
         _profile.add("adaptive.near_faces", near_count)
         _profile.add("adaptive.far_faces", far_count)
         _profile.add("adaptive.escalations", escalations)
+        _profile.add("adaptive.subdivision_faces", subdivision_faces)
+        _profile.add("adaptive.subdivision_pieces", subdivision_pieces)
     return total, diagnostics
