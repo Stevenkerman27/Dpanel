@@ -56,6 +56,10 @@ def main(argv=None):
                         default='legacy_duffy', help='RM-P1 area integration; projection_fan is opt-in')
     parser.add_argument('--fan-order', type=int, default=16)
     parser.add_argument('--fan-strips', type=int, default=8)
+    parser.add_argument('--fan-refinement-order', type=int, default=None,
+                        help='Projection-fan gate refinement order; default max(48, 2*fan_order)')
+    parser.add_argument('--fan-refinement-strips', type=int, default=None,
+                        help='Projection-fan gate refinement strips; default fan_strips')
     parser.add_argument('--epsilon-tol', type=float, default=.02)
     parser.add_argument('--quadrature-tol', type=float, default=.002)
     parser.add_argument('--max-nfev', type=int, default=80)
@@ -71,6 +75,8 @@ def main(argv=None):
     parser.add_argument('--replay-area-quadrature', choices=('legacy_duffy', 'projection_fan'), default=None)
     parser.add_argument('--replay-fan-order', type=int, default=None)
     parser.add_argument('--replay-fan-strips', type=int, default=None)
+    parser.add_argument('--replay-fan-refinement-order', type=int, default=None)
+    parser.add_argument('--replay-fan-refinement-strips', type=int, default=None)
     parser.add_argument('--profile-json', type=Path, default=None,
                         help='Opt-in kernel profiling counters/timers (issue #84 P0); inert when omitted')
     parser.add_argument('--out', type=Path, required=True)
@@ -103,7 +109,9 @@ def main(argv=None):
                 quadrature_order=args.replay_quadrature_order,
                 area_quadrature=args.replay_area_quadrature,
                 fan_order=args.replay_fan_order,
-                fan_strips=args.replay_fan_strips)
+                fan_strips=args.replay_fan_strips,
+                fan_refinement_order=args.replay_fan_refinement_order,
+                fan_refinement_strips=args.replay_fan_refinement_strips)
             _write_json(args.out/'replay.json', replay)
             replay_ok = (replay['bitwise_equal']
                          if replay['replay_mode'] == 'reproduce_recorded_samples'
@@ -156,6 +164,8 @@ def main(argv=None):
                    velocity_method=args.velocity_method, core_radius=args.core_radius,
                    area_quadrature=args.area_quadrature,
                    fan_order=args.fan_order, fan_strips=args.fan_strips,
+                   fan_refinement_order=args.fan_refinement_order,
+                   fan_refinement_strips=args.fan_refinement_strips,
                    save_callback=save)
         report = {k: v for k, v in result.items() if k not in ('mesh', 'state')}
         report['negative_pressure_drag_warning'] = (

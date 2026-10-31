@@ -80,7 +80,8 @@ class RegularizedP1SheetField:
     def __init__(self, parts, *, freestream=(1.0, 0.0, 0.0),
                  core_radius, quadrature_order=48,
                  area_quadrature="legacy_duffy", fan_order=16, fan_strips=8,
-                 fan_swap=False):
+                 fan_swap=False, fan_refinement_order=None,
+                 fan_refinement_strips=None):
         self.freestream = np.asarray(freestream, float).copy()
         self.core_radius = float(core_radius)
         if (self.freestream.shape != (3,) or not np.isfinite(self.freestream).all()
@@ -99,6 +100,24 @@ class RegularizedP1SheetField:
         self.fan_order = fan_order
         self.fan_strips = fan_strips
         self.fan_swap = bool(fan_swap)
+        # Projection-fan quadrature gate (issue #84 task 1). The fan ignores the legacy
+        # Gauss order, so the gate needs an explicit base/refined fan pair: comparing a
+        # configuration with itself would report quadrature_error == 0 and certify
+        # nothing. The default refinement is at least 48 at the same strip count.
+        if fan_refinement_order is None:
+            fan_refinement_order = max(48, 2*fan_order)
+        if fan_refinement_strips is None:
+            fan_refinement_strips = fan_strips
+        if type(fan_refinement_order) is not int or fan_refinement_order < 2:
+            raise ValueError("fan_refinement_order must be an integer >= 2")
+        if type(fan_refinement_strips) is not int or fan_refinement_strips < 1:
+            raise ValueError("fan_refinement_strips must be an integer >= 1")
+        if (area_quadrature == "projection_fan" and fan_refinement_order == fan_order
+                and fan_refinement_strips == fan_strips):
+            raise ValueError(
+                "projection_fan refinement must differ from the base fan configuration")
+        self.fan_refinement_order = fan_refinement_order
+        self.fan_refinement_strips = fan_refinement_strips
         self._quadrature = {}
         tri_parts, normal_parts, gamma_parts, edge_a, edge_b, edge_mu = [], [], [], [], [], []
         for xyz, faces, values in parts:
@@ -170,14 +189,28 @@ class RegularizedP1SheetField:
         _profile.end("field.edge_velocity")
         return velocity
 
-    def _area_velocity(self, point, order):
+    def _area_velocity(self, point, order, *, fan_order=None, fan_strips=None):
+        '''Area term. In fan mode the order argument is NOT used: the fan order and
+        strip count set the quadrature.
+
+        Ignoring a caller's order is exactly the defect reported in issue #84: it made
+        the refinement pass repeat the base configuration. The fan therefore takes its
+        configuration from explicit keywords, and a caller that wants a refinement must
+        ask for it through quadrature_arguments().
+        '''
         _profile.add("field.area_velocity.calls")
         if self.area_quadrature == "projection_fan":
             _profile.add("field.area_velocity.fan_calls")
+            fan_order_used = self.fan_order if fan_order is None else fan_order
+            fan_strips_used = self.fan_strips if fan_strips is None else fan_strips
+            if type(fan_order_used) is not int or fan_order_used < 2:
+                raise ValueError("invalid fan order")
+            if type(fan_strips_used) is not int or fan_strips_used < 1:
+                raise ValueError("invalid fan strips")
             from .p1_projection_duffy import area_terms
             terms = area_terms(self.triangles, np.asarray(point, float),
-                               self.core_radius, order=self.fan_order,
-                               strips=self.fan_strips, swap=self.fan_swap)
+                               self.core_radius, order=fan_order_used,
+                               strips=fan_strips_used, swap=self.fan_swap)
             return np.sum(np.cross(self.gamma, terms), axis=0)
         _profile.add("field.area_velocity.legacy_calls")
         if order not in self._quadrature:
@@ -198,7 +231,32 @@ class RegularizedP1SheetField:
 
 
 
-    def evaluate_many(self, points, *, order=None, chunk_size=2):
+    def quadrature_arguments(self, order):
+        '''Base and refined keyword arguments for one quadrature-gate comparison.
+
+        The projection fan ignores the legacy Gauss order, so the pair is expressed in
+        fan terms: base (fan_order, fan_strips) and refined (fan_refinement_order,
+        fan_refinement_strips). The legacy Duffy path keeps the historical N vs 2N.
+        '''
+        if type(order) is not int or order < 4:
+            raise ValueError('quadrature order must be an integer >= 4')
+        if self.area_quadrature == 'projection_fan':
+            base = dict(fan_order=self.fan_order, fan_strips=self.fan_strips)
+            refined = dict(fan_order=self.fan_refinement_order,
+                           fan_strips=self.fan_refinement_strips)
+            return base, refined
+        return dict(order=order), dict(order=2*order)
+
+    def quadrature_plan(self, order):
+        '''JSON-serialisable description of the gate that limits() will run.'''
+        base, refined = self.quadrature_arguments(order)
+        return dict(method=self.area_quadrature, base=dict(base),
+                    refined=dict(refined),
+                    legacy_order=(None if self.area_quadrature == 'projection_fan'
+                                  else int(order)))
+
+    def evaluate_many(self, points, *, order=None, chunk_size=2,
+                      fan_order=None, fan_strips=None):
         """Evaluate a batch of field points with bounded-memory vectorization.
 
         The expensive triangle/quadrature geometry is shared across targets.
@@ -225,7 +283,9 @@ class RegularizedP1SheetField:
             self._quadrature[n] = (bary, weights)
         if self.area_quadrature == "projection_fan":
             out = np.stack([self.freestream-(self._edge_velocity(point)
-                +self._area_velocity(point, n))/(4*np.pi) for point in pts])
+                +self._area_velocity(point, n, fan_order=fan_order,
+                                     fan_strips=fan_strips))/(4*np.pi)
+                for point in pts])
             if not np.isfinite(out).all():
                 raise FloatingPointError("nonfinite projection-fan batch velocity")
             return out
@@ -246,7 +306,7 @@ class RegularizedP1SheetField:
             raise FloatingPointError("nonfinite regularized P1 batch velocity")
         return out
 
-    def __call__(self, point, *, order=None):
+    def __call__(self, point, *, order=None, fan_order=None, fan_strips=None):
         p = np.asarray(point, float)
         if p.shape != (3,) or not np.isfinite(p).all():
             raise ValueError("field point must be a finite (3,) vector")
@@ -254,7 +314,8 @@ class RegularizedP1SheetField:
         if type(n) is not int or n < 4:
             raise ValueError("quadrature order must be an integer >= 4")
         _profile.add("field.call.count")
-        induced = self._edge_velocity(p)+self._area_velocity(p, n)
+        induced = self._edge_velocity(p)+self._area_velocity(
+            p, n, fan_order=fan_order, fan_strips=fan_strips)
         velocity = self.freestream-induced/(4.0*np.pi)
         if not np.isfinite(velocity).all():
             raise FloatingPointError("nonfinite regularized P1 sheet velocity")
