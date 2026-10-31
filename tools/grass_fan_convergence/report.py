@@ -26,6 +26,12 @@ def fan_labels(payload):
     return [c for c in payload["configs"] if not c.startswith("analytic")]
 
 
+def pretty(name):
+    """Human label: drop the gNN_ index prefix and the (inaccurate) AR suffix."""
+    parts = [p for p in name.split("_")[1:] if not p.startswith("ar")]
+    return " ".join(parts) or name
+
+
 def short(config):
     """Display label of the fan configuration (base order/strips)."""
     return config.split("/")[0].replace(":", "/")
@@ -78,7 +84,7 @@ def main():
             ys = [series[fans[i]][key] for i in xs]
             if not xs:
                 continue
-            line, = ax.plot(xs, ys, "o-", lw=1.4, ms=4, label=name)
+            line, = ax.plot(xs, ys, "o-", lw=1.4, ms=4, label=pretty(name))
             if "analytic" in series and valid(series["analytic"]):
                 ax.axhline(series["analytic"][key], color=line.get_color(), ls=":",
                            lw=1.0, alpha=0.85)
@@ -122,7 +128,7 @@ def main():
         ax.text(0.02, 1.35e-3, "1e-3", fontsize=6, color="0.3", transform=ax.get_yaxis_transform())
         ax.text(0.02, 1.35e-2, "1e-2", fontsize=6, color="0.3", transform=ax.get_yaxis_transform())
         ax.set_xticks(index)
-        ax.set_xticklabels([n.split("_")[0] for n in names], rotation=90, fontsize=6.5)
+        ax.set_xticklabels([pretty(n) for n in names], rotation=90, fontsize=6.5)
         ax.set_title("|" + label + "(%s) - %s| / |%s|" % (short(coarse), short(ref), short(ref)),
                      fontsize=8)
         ax.grid(alpha=0.3, axis="y", which="both")
@@ -140,7 +146,7 @@ def main():
         xs = [i for i, f in enumerate(fans) if f in series and valid(series[f])]
         ys = [series[fans[i]]["seconds"] for i in xs]
         if xs:
-            ax.semilogy(xs, ys, "o-", lw=1.3, ms=4, label=name)
+            ax.semilogy(xs, ys, "o-", lw=1.3, ms=4, label=pretty(name))
     ax.set_xticks(range(len(fans)))
     ax.set_xticklabels([short(f) for f in fans])
     ax.set_ylabel("wall time per solve [s]")
@@ -245,7 +251,7 @@ def main():
                 ax.vlines(i, min(p[0] for p in points), max(p[0] for p in points),
                           color="C%d" % (i % 10), lw=0.8, alpha=0.5)
         ax.set_xticks(range(len(names)))
-        ax.set_xticklabels([n.split("_")[0] for n in names], fontsize=7)
+        ax.set_xticklabels([pretty(n) for n in names], fontsize=7)
         ax.set_ylabel("CL")
         ax.set_title("CL by kernel and gate: circle analytic gated, square analytic open, "
                      "diamond fan " + short(first) + " gated, triangle fan open", fontsize=8)
