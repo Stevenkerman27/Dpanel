@@ -22,9 +22,10 @@ SURFACE = ["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"]
 ITERATIONS = int(sys.argv[2]) if len(sys.argv) > 2 else 6
 OUT = Path(sys.argv[3] if len(sys.argv) > 3 else "docs/issue84/t5_gate_ab.json")
 CONDITION = sys.argv[1] if len(sys.argv) > 1 else "new_gate_per_node"
+STEP_FRACTION = float(sys.argv[4]) if len(sys.argv) > 4 else 0.25
 
 
-def legacy_audit(mesh, candidates, materials, gates, *, declared=None):
+def legacy_audit(mesh, candidates, materials, gates, *, declared=None, step_scale=None):
     """Pre-T5 gate: boolean SAT, no declared contact, identical order of checks."""
     tol = gates.tolerance_fraction*mesh.reference_chord
     detail = dict(contacts=dict(tested=0, declared=0, undeclared=0, pairs_tested=0,
@@ -101,14 +102,14 @@ def legacy_audit(mesh, candidates, materials, gates, *, declared=None):
     return dict(reason=None, detail=detail)
 
 
-def identity_clip(old, target, caps, *, roots=None, reference=None):
+def identity_clip(old, target, caps, *, roots=None, reference=None, unit='map_arclength'):
     old = np.asarray(old, float)
     new = np.asarray(target, float).copy()
     if roots is not None:
         roots = np.asarray(roots, int)
         new[roots] = np.asarray(reference, float)[roots]
     delta = np.linalg.norm(new-old, axis=1)
-    return new, dict(mode="none", clipped=0, clipped_ids=[], clipped_fraction=0.,
+    return new, dict(mode="none", unit=unit, clipped=0, clipped_ids=[], clipped_fraction=0.,
                      raw_max=float(delta.max()) if len(delta) else 0.,
                      raw_rms=float(np.sqrt(np.mean(delta**2))) if len(delta) else 0.,
                      accepted_max=float(delta.max()) if len(delta) else 0.,
@@ -136,6 +137,7 @@ def recorder(iteration, current, state, record, arrays):
                trial_reasons=update.get('trial_reasons'),
                reason_counts=update.get('reason_counts'),
                clip=update.get('clip'), control_nodes=update.get('control_nodes'),
+               step_scale=update.get('step_scale'),
                trial_details=[dict(backtrack=t['backtrack'], reason=t['reason'],
                                    scale=t.get('scale'),
                                    kinds=(t.get('gate') or {}).get('contacts', {}).get('kinds'),
@@ -152,6 +154,7 @@ def recorder(iteration, current, state, record, arrays):
                              pre_existing_pairs=list(contacts.get('pre_existing_pairs') or [])[:5],
                              violations=list(contacts.get('violations') or [])[:10]),
                wakes={k: dict(root=v['eligibility']['root'], eligible=v['eligibility']['eligible'],
+                               truncation_nodes=v['eligibility'].get('truncation_nodes'),
                               rejected=v['eligibility']['rejected'],
                               convergence=v['eligibility']['convergence'],
                               advanced_despite_audit=v['eligibility'].get('advanced_despite_audit'))
@@ -164,20 +167,33 @@ def recorder(iteration, current, state, record, arrays):
 
 
 mesh, alpha = build_case(SURFACE, case="g2", alpha_deg=5.0)
+if CONDITION.endswith("_geometric"):
+    # Pre-change step unit: cap = max_step_fraction * shortest incident edge.
+    _base_scale = m.wake_step_scale
+
+    def geometric_scale(wake_xyz, wake_faces, material, **kw):
+        out = _base_scale(wake_xyz, wake_faces, material, **kw)
+        out['scale'] = np.asarray(out['geometric'], float).copy()
+        out['truncation'] = np.zeros(len(out['scale']), bool)
+        return out
+    m.wake_step_scale = geometric_scale
 if CONDITION.startswith("legacy_gate"):
     m.geometry_audit = legacy_audit
-if CONDITION.endswith("per_node"):
+if "per_node" in CONDITION:
     clip = m.clip_step_update
 else:
     clip = identity_clip
 m.clip_step_update = clip
 started = time.perf_counter()
+_policy = 'freeze' if 'frozen' in CONDITION else 'advance'
 result = m.solve_coupled_material_wake(mesh, alpha, kutta='signed_speed', iterations=ITERATIONS,
                                        max_backtracks=12, gate_mode='audit',
-                                       save_callback=recorder)
+                                       gates=m.GeometryGates(max_step_fraction=STEP_FRACTION),
+                                       truncation_policy=_policy, save_callback=recorder)
 payload = dict(schema='dpanel.issue84.t5_gate_ab.v1', condition=CONDITION, case='g2',
                alpha_deg=5.0, kutta='signed_speed', gate_mode='audit', max_backtracks=12,
-               iterations=ITERATIONS, status=result['status'], seconds=float(result['seconds']),
+               iterations=ITERATIONS, truncation_policy=_policy, step_fraction=STEP_FRACTION,
+               status=result['status'], seconds=float(result['seconds']),
                kinematic_candidate=result['kinematic_candidate'], rows=rows)
 OUT.parent.mkdir(parents=True, exist_ok=True)
 OUT.write_text(json.dumps(payload, indent=2, sort_keys=True)+chr(10), encoding="utf-8")

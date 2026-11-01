@@ -427,13 +427,26 @@ def material_paths(material):
     return s, roots
 
 
-def streamline_target(xyz, material, velocity, eligible):
+def streamline_target(xyz, material, velocity, eligible, *, step_scale=None,
+                     truncation_policy='advance'):
     """Rooted fixed-arclength Picard map; no division by Vx or uniform drift.
 
     Use the downstream tangent at a TE root (the root is not a free sheet
     node). Else use the average endpoint velocity. Rejected predecessors stay
     in place; every rejected node remains explicitly in the convergence gate.
+
+    The map marches one REFERENCE LINK per node, so a link that is far longer
+    than the sheet's own panels (a truncation row) asks for a displacement of
+    link*|u_hat-t_ref| chord -- measured 15-23 chord on the G2 CAD wake for a
+    single 26-chord link. That request is not a velocity artifact and no
+    per-node step cap can accept it, so such rows are boundary markers:
+    truncation_policy='freeze' holds them (and reports them), 'advance' keeps
+    the legacy behaviour.
     """
+    if truncation_policy not in ('advance', 'freeze'):
+        raise ValueError("truncation_policy must be 'advance' or 'freeze'")
+    if truncation_policy == 'freeze' and step_scale is None:
+        raise ValueError("truncation_policy='freeze' requires the per-node step_scale")
     target = np.asarray(xyz, float).copy()
     target[material.roots] = material.reference_xyz[material.roots]
     for node in material.order:
@@ -448,6 +461,9 @@ def streamline_target(xyz, material, velocity, eligible):
             raise ValueError("undefined streamline tangent")
         ds = np.linalg.norm(material.reference_xyz[node]-material.reference_xyz[p])
         target[node] = target[p]+ds*v/speed
+    if truncation_policy == 'freeze':
+        hold = np.asarray(step_scale['truncation'], bool)
+        target[hold] = np.asarray(xyz, float)[hold]
     return target
 
 
@@ -555,7 +571,43 @@ def node_step_scale(wake_xyz, wake_faces):
     return scale
 
 
-def clip_step_update(old, target, caps, *, roots=None, reference=None):
+def wake_step_scale(wake_xyz, wake_faces, material, *, truncation_ratio=4.):
+    """Per-node convection scale of the rooted arclength map.
+
+    The map advances ONE reference link per node (see streamline_target), so the
+    step unit of the map is that link length, not the shortest incident triangle
+    edge.  A CAD wake may carry a truncation row whose link is tens of chords
+    long while its panels stay short: capping such a node at a quarter of its
+    shortest edge asks for a 10^3-iteration march, while its requested move is an
+    ordinary fraction of one map step.  The returned 'scale' is therefore
+    max(reference link, shortest incident edge); nodes without a link (roots)
+    keep the geometric fallback.
+
+    'truncation' marks links longer than truncation_ratio times the MEDIAN link
+    of the sheet.  The ratio is relative, not absolute: a uniformly coarse sheet
+    is self-similar under the map and must not be flagged, while one outlier row
+    (G2 CAD: 102 nodes on 26.0-chord links, median link 0.666) is.  Those nodes
+    are reported, never silently frozen and never exempted from the gate.
+    """
+    xyz = np.asarray(wake_xyz, float)
+    faces = np.asarray(wake_faces, int)
+    geometric = node_step_scale(xyz, faces)
+    predecessor = np.asarray(material.predecessor, int)
+    reference = np.asarray(material.reference_xyz, float)
+    link = np.zeros(len(xyz))
+    known = predecessor >= 0
+    link[known] = np.linalg.norm(reference[known]-reference[predecessor[known]], axis=1)
+    finite = np.isfinite(geometric)
+    scale = np.where(finite, np.maximum(link, geometric), link)
+    positive = link[known & (link > 0)]
+    median_link = float(np.median(positive)) if len(positive) else 0.
+    truncation = (known & (link > truncation_ratio*median_link)
+                  if median_link > 0 else np.zeros(len(xyz), bool))
+    return dict(scale=scale, link=link, geometric=geometric, truncation=truncation,
+                link_median=median_link)
+
+
+def clip_step_update(old, target, caps, *, roots=None, reference=None, unit='map_arclength'):
     """Cap every node displacement; roots stay pinned. Returns (xyz, ledger)."""
     old = np.asarray(old, float)
     delta = np.asarray(target, float)-old
@@ -573,7 +625,7 @@ def clip_step_update(old, target, caps, *, roots=None, reference=None):
         new[roots] = np.asarray(reference, float)[roots]
     ids = np.nonzero(limited)[0]
     accepted = np.linalg.norm(new-old, axis=1)
-    ledger = dict(mode="per_node_step_cap", clipped=int(len(ids)),
+    ledger = dict(mode="per_node_step_cap", unit=unit, clipped=int(len(ids)),
                   clipped_ids=[int(i) for i in ids],
                   clipped_fraction=float(len(ids)/max(len(old), 1)),
                   raw_max=float(magnitude.max()) if len(magnitude) else 0.,
@@ -585,7 +637,7 @@ def clip_step_update(old, target, caps, *, roots=None, reference=None):
     return new, ledger
 
 
-def geometry_audit(mesh, candidates, materials, gates, *, declared=None):
+def geometry_audit(mesh, candidates, materials, gates, *, declared=None, step_scale=None):
     """Validate the ENTIRE candidate atomically; return reason plus audit detail.
 
     The wall test classifies every swept wake triangle against every
@@ -622,7 +674,11 @@ def geometry_audit(mesh, candidates, materials, gates, *, declared=None):
             tri1, n1, a1, _g1, _e1 = triangle_data(new, group.wake_faces)
         except ValueError:
             return dict(reason='area', detail=detail)
-        scale = node_step_scale(old, group.wake_faces)
+        # The step gate must use the SAME length unit as the stepper that
+        # produced the candidate (the map arclength for wake nodes), otherwise a
+        # legitimate fraction of one map step reads as a huge geometric step.
+        scale = (node_step_scale(old, group.wake_faces) if step_scale is None
+                 else np.asarray(step_scale[group.name], float))
         step = np.linalg.norm(new[mat.used]-old[mat.used], axis=1)/np.maximum(
             scale[mat.used], 1e-300)
         over_step = step > gates.max_step_fraction
@@ -760,7 +816,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 fan_refinement_strips=None, near_ratio=2.0,
                                 adaptive_far_order=8, adaptive_far_levels=1,
                                 adaptive_budget=2e-4, adaptive_max_escalations=2,
-                                gate_mode="audit", save_callback=None):
+                                gate_mode="audit", truncation_policy="advance",
+                                 save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -777,6 +834,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         raise ValueError("invalid iteration or convergence controls")
     if gate_mode not in ("enforce", "audit", "off", "safe"):
         raise ValueError("gate_mode must be 'enforce', 'audit', 'off' or 'safe'")
+    if truncation_policy not in ("advance", "freeze"):
+        raise ValueError("truncation_policy must be 'advance' or 'freeze'")
     audit_quadrature = gate_mode != 'off'
     if velocity_method not in ACCEPTED_METHODS:
         raise ValueError(
@@ -876,10 +935,12 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         sv = np.linalg.svd(constraint, compute_uv=False)
         record['constraint_rank'] = int(np.sum(sv > 1e-11*sv[0]))
         record['constraint_singular_min'] = float(sv[-1])
-        targets, counts = {}, {}
+        targets, counts, step_scales = {}, {}, {}
         all_eligible, map_residual = True, 0.
         for gi, group in enumerate(current.groups):
             mat = materials[group.name]
+            group_scale = wake_step_scale(group.wake_xyz, group.wake_faces, mat)
+            step_scales[group.name] = group_scale
             tri, normal, area, _shape, edges = triangle_data(group.wake_xyz, group.wake_faces)
             face_samples = limits(field, tri.mean(axis=1), normal, edges.min(axis=1),
                                   eps_fraction=eps_fraction, ladder=ladder, order=order,
@@ -921,7 +982,9 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                     eligible[node] = False
                     tangent_rejections += 1
             all_eligible &= bool(np.all(eligible[free_nodes]))
-            target = streamline_target(group.wake_xyz, mat, velocity, eligible)
+            target = streamline_target(group.wake_xyz, mat, velocity, eligible,
+                                       step_scale=group_scale,
+                                       truncation_policy=truncation_policy)
             map_residual = max(map_residual, float(np.max(np.linalg.norm(
                               target[mat.used]-group.wake_xyz[mat.used], axis=1))/mesh.reference_chord))
             targets[group.name] = target
@@ -930,6 +993,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                       speed=int((finite_limit & ~fast).sum())+tangent_rejections,
                                       rejected=int((~eligible[free_nodes]).sum()),
                                       gate_mode=gate_mode,
+                                      truncation_policy=truncation_policy,
+                                      truncation_nodes=int(group_scale['truncation'].sum()),
                                       audit_rejected=int((~finite_limit).sum()),
                                       advanced_despite_audit=int(
                                           np.count_nonzero(admitted & ~finite_limit)),
@@ -993,17 +1058,37 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                 clipped, clipped_ledgers = {}, {}
                 for g in current.groups:
                     mat = materials[g.name]
-                    caps = gates.max_step_fraction*node_step_scale(g.wake_xyz, g.wake_faces)
+                    caps = gates.max_step_fraction*step_scales[g.name]['scale']
                     clipped[g.name], clipped_ledgers[g.name] = clip_step_update(
                         g.wake_xyz, targets[g.name], caps, roots=mat.roots,
                         reference=mat.reference_xyz)
+                scale_maps = {name: s['scale'] for name, s in step_scales.items()}
+                update['step_scale'] = {}
+                for group_now in current.groups:
+                    name = group_now.name
+                    s = step_scales[name]
+                    node_caps = gates.max_step_fraction*s['scale']
+                    requested = np.linalg.norm(targets[name]-group_now.wake_xyz, axis=1)
+                    usable = node_caps > 0
+                    update['step_scale'][name] = dict(
+                        unit='map_arclength',
+                        link_median=(float(np.median(s['link'][s['link'] > 0]))
+                                     if np.any(s['link'] > 0) else None),
+                        link_max=float(s['link'].max()),
+                        geometric_median=float(np.median(s['geometric'][np.isfinite(
+                            s['geometric'])])),
+                        truncation_nodes=int(s['truncation'].sum()),
+                        requested_max=float(requested.max()) if len(requested) else None,
+                        requested_over_cap_max=(float(np.max(requested[usable]/node_caps[usable]))
+                                                if np.any(usable) else None))
                 update['clip'] = {name: dict(ledger, clipped_ids=ledger['clipped_ids'][:20])
                                   for name, ledger in clipped_ledgers.items()}
                 mode_none = all(ledger['mode'] == 'none'
                                 for ledger in clipped_ledgers.values())
                 update['control'] = 'none' if mode_none else 'per_node_step_cap'
                 accepted_xyz = None
-                audit = geometry_audit(current, clipped, materials, gates, declared=declared)
+                audit = geometry_audit(current, clipped, materials, gates, declared=declared,
+                                       step_scale=scale_maps)
                 update['gate'] = audit['detail']
                 if audit['reason'] is None:
                     accepted_xyz, update['relaxation'], update['accepted'] = clipped, 1.0, True
@@ -1016,7 +1101,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                         trial_xyz = {g.name: g.wake_xyz+factor*(clipped[g.name]-g.wake_xyz)
                                      for g in current.groups}
                         trial = geometry_audit(current, trial_xyz, materials, gates,
-                                               declared=declared)
+                                               declared=declared, step_scale=scale_maps)
                         if trial['reason'] is None:
                             accepted_xyz = trial_xyz
                             update.update(accepted=True, relaxation=factor,

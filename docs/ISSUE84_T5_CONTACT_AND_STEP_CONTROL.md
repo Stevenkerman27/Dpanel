@@ -50,6 +50,12 @@ Two implementation bugs were found while testing:
 
 ## 3. B: per-node step control
 
+Update 2026-11-01: the map unit is now the reference link, not the shortest incident
+edge (`wake_step_scale`), truncation rows are identified by a *relative* criterion and
+reported/frozen (`truncation_policy`), and the cap magnitude was A/B tested
+(0.25 / 1 / 4 links). See `docs/ISSUE84_STREAMLINE_STEP_UNIT.md` for the readings and
+for the remaining blocking mechanism (the finite-thickness TE gap).
+
 `node_step_scale(wake_xyz, wake_faces)` gives every node its shortest incident
 edge; `clip_step_update(old, target, caps, roots=..., reference=...)` caps the
 displacement node by node and returns a ledger (`mode`, `clipped`,

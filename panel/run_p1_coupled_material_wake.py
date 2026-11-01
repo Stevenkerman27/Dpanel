@@ -74,11 +74,15 @@ def main(argv=None):
                         help='Projection-fan gate refinement order; default max(48, 2*fan_order)')
     parser.add_argument('--fan-refinement-strips', type=int, default=None,
                         help='Projection-fan gate refinement strips; default fan_strips')
-    parser.add_argument('--gate-mode', choices=('enforce', 'audit', 'off'), default='audit',
+    parser.add_argument('--gate-mode', choices=('enforce', 'audit', 'off', 'safe'), default='audit',
                         help="Sampling-error thresholds: 'audit' (default) records them without "
                              "freezing, 'off' also skips the refined quadrature evaluation, "
                              "'enforce' freezes the failing nodes (legacy, distorts the sheet; "
                              "use only to reproduce pre-2026-10-31 readings)")
+    parser.add_argument('--truncation-policy', choices=('advance', 'freeze'), default='advance',
+                        help="A reference link far longer than the sheet's own panels is a "
+                             "truncation row: 'advance' (default) marcher it as one arclength "
+                             "step, 'freeze' holds it and reports truncation_nodes")
     parser.add_argument('--epsilon-tol', type=float, default=.02)
     parser.add_argument('--quadrature-tol', type=float, default=.002)
     parser.add_argument('--max-nfev', type=int, default=80)
@@ -200,6 +204,7 @@ def main(argv=None):
                    order=args.quadrature_order, epsilon_tol=args.epsilon_tol,
                    quadrature_tol=args.quadrature_tol, max_nfev=args.max_nfev,
                    gate_mode=args.gate_mode,
+                   truncation_policy=args.truncation_policy,
                    velocity_method=args.velocity_method, core_radius=args.core_radius,
                    area_quadrature=args.area_quadrature,
                 near_ratio=args.near_ratio,

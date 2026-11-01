@@ -1,0 +1,1671 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "condition": "new_gate_per_node_frozen",
+  "gate_mode": "audit",
+  "iterations": 12,
+  "kinematic_candidate": false,
+  "kutta": "signed_speed",
+  "max_backtracks": 12,
+  "rows": [
+    {
+      "CD_pressure": 0.007126885631336986,
+      "CL": 0.4413553954553846,
+      "CL_gamma": 0.44637269221791404,
+      "CM_y": -0.12213725704223075,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 3.4997150169528175,
+          "accepted_rms": 0.3389404529586614,
+          "cap_min": 0.0,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 3.4997150169528175,
+          "raw_rms": 0.3389404529586614,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.11192604097131043,
+          "accepted_rms": 0.053019531453878055,
+          "cap_min": 1.7999999999999998,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.11192604097131043,
+          "raw_rms": 0.053019531453878055,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 116,
+        "kinds": {
+          "contact": 74
+        },
+        "pairs_tested": 1093,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 124,
+        "undeclared": 8,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.04284859554584944
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 0.05468304713988768,
+      "displacement_rms": 0.006632894784358708,
+      "global_backtracks": 6,
+      "iteration": 0,
+      "kinematic_candidate": false,
+      "map_residual_chord": 3.4997150169528175,
+      "moved": 342,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.08401140664917878,
+      "reason_counts": {
+        "area": 5,
+        "attachment": 0,
+        "convergence": 83,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 2
+      },
+      "relaxation": 0.015625,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.050000000000000266,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 3.4997150169528175,
+          "requested_over_cap_max": 0.6775026973661392,
+          "truncation_nodes": 51,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.45,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.11192604097131043,
+          "requested_over_cap_max": 0.030525283901266485,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {
+            "contact": 46,
+            "transverse": 28
+          },
+          "reason": "wall",
+          "scale": 0.0625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.002073361164865827,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.020841125366959045,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019132398775173053,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 18
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.02003920360211461,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019132398775184863,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.002812440431405475,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0021650576793815976,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 18
+            }
+          ],
+          "violations_count": 28,
+          "worst_depth": 0.04345262305292424
+        },
+        {
+          "backtrack": 5,
+          "kinds": {
+            "contact": 48,
+            "transverse": 26
+          },
+          "reason": "wall",
+          "scale": 0.03125,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0010366803835170544,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01998676177388512,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019132398775173053,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 18
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01958580089146881,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019132398775184863,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0014062200167869242,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0010825286062845709,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 18
+            }
+          ],
+          "violations_count": 26,
+          "worst_depth": 0.04304993804820755
+        }
+      ],
+      "trial_reasons": [
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "wall",
+        "wall"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 83,
+          "convergence": 83,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 51
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 0,
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0012164059660768217
+    },
+    {
+      "CD_pressure": 0.007227306643198742,
+      "CL": 0.441387596636732,
+      "CL_gamma": 0.4463770258615502,
+      "CM_y": -0.12188815670254682,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 3.259545118430778,
+          "accepted_rms": 0.369056417263637,
+          "cap_min": 0.0,
+          "clipped": 6,
+          "clipped_fraction": 0.00784313725490196,
+          "clipped_ids": [
+            0,
+            1,
+            56,
+            62,
+            400,
+            452
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 3.259545118430778,
+          "raw_rms": 0.3721796208764923,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.10995874639800933,
+          "accepted_rms": 0.05280555241492814,
+          "cap_min": 1.7983603712942973,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.10995874639800933,
+          "raw_rms": 0.05280555241492814,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 77,
+        "kinds": {
+          "contact": 49
+        },
+        "pairs_tested": 584,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 82,
+        "undeclared": 5,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.03221529637316405
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 0.006366299059435186,
+      "displacement_rms": 0.0009027340006465753,
+      "global_backtracks": 9,
+      "iteration": 1,
+      "kinematic_candidate": false,
+      "map_residual_chord": 3.259545118430778,
+      "moved": 342,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.0869294399522268,
+      "reason_counts": {
+        "area": 3,
+        "attachment": 2,
+        "convergence": 85,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 5
+      },
+      "relaxation": 0.001953125,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.05004080229986089,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 3.259545118430778,
+          "requested_over_cap_max": 3.010491272126642,
+          "truncation_nodes": 51,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.4496365801128407,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.10995874639800933,
+          "requested_over_cap_max": 0.029988749017638913,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "attachment",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "attachment",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {
+            "contact": 41,
+            "transverse": 7
+          },
+          "reason": "wall",
+          "scale": 0.0625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.000518339992842671,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005183403914688869,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01935909953614603,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019359100130078903,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0003390184871089541,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00033901895531261136,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.001885493330001553,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0018854935318245297,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 56
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0005236176876622163,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005236180861875632,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            }
+          ],
+          "violations_count": 7,
+          "worst_depth": 0.03221529637316405
+        },
+        {
+          "backtrack": 5,
+          "kinds": {
+            "contact": 41,
+            "transverse": 7
+          },
+          "reason": "wall",
+          "scale": 0.03125,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.000518339992842671,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005183403914688869,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01935909953614603,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019359100130078903,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0003390184871089541,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00033901895531261136,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.001885493330001553,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0018854935318245297,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 56
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0005236176876622163,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005236180861875632,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            }
+          ],
+          "violations_count": 7,
+          "worst_depth": 0.03221529637316405
+        },
+        {
+          "backtrack": 6,
+          "kinds": {
+            "contact": 41,
+            "transverse": 7
+          },
+          "reason": "wall",
+          "scale": 0.015625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.000518339992842671,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005183403914688869,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01935909953614603,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019359100130078903,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0003390184871089541,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00033901895531261136,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.001885493330001553,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0018854935318245297,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 56
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0005236176876622163,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005236180861875632,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            }
+          ],
+          "violations_count": 7,
+          "worst_depth": 0.03221529637316405
+        },
+        {
+          "backtrack": 7,
+          "kinds": {
+            "contact": 42,
+            "transverse": 6
+          },
+          "reason": "wall",
+          "scale": 0.0078125,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.000518339992842671,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005183403914688869,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01935909953614603,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019359100130078903,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0003390184871089541,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00033901895531261136,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0005236176876622163,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005236180861875632,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.019377933966880773,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019377934560804506,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 415
+            }
+          ],
+          "violations_count": 6,
+          "worst_depth": 0.03221529637316405
+        },
+        {
+          "backtrack": 8,
+          "kinds": {
+            "contact": 42,
+            "transverse": 7
+          },
+          "reason": "wall",
+          "scale": 0.00390625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.000518339992842671,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005183403914688869,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01935909953614603,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019359100130078903,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0003390184871089541,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00033901895531261136,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0005236176876622163,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0005236180861875632,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.019377933966880773,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019377934560804506,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 415
+            }
+          ],
+          "violations_count": 7,
+          "worst_depth": 0.03221529637316405
+        }
+      ],
+      "trial_reasons": [
+        "attachment",
+        "attachment",
+        "area",
+        "area",
+        "area",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 85,
+          "convergence": 85,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 51
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 0,
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0012166010796412273
+    },
+    {
+      "CD_pressure": 0.007214455351004766,
+      "CL": 0.4413356246259779,
+      "CL_gamma": 0.4463030794876751,
+      "CM_y": -0.12182783539553947,
+      "accepted": false,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 3.2307116735150743,
+          "accepted_rms": 0.3598604969728446,
+          "cap_min": 0.0,
+          "clipped": 5,
+          "clipped_fraction": 0.006535947712418301,
+          "clipped_ids": [
+            0,
+            1,
+            56,
+            400,
+            452
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 3.2307116735150743,
+          "raw_rms": 0.3622069663088011,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.10945996311042878,
+          "accepted_rms": 0.05270801679114824,
+          "cap_min": 1.798160926139381,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.10945996311042878,
+          "raw_rms": 0.05270801679114824,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 77,
+        "kinds": {
+          "contact": 34,
+          "transverse": 1
+        },
+        "pairs_tested": 81,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 81,
+        "undeclared": 4,
+        "violations": [
+          {
+            "area": 0.0,
+            "declared": "edge",
+            "depth": 0.00033194912252921784,
+            "group": "main_wing",
+            "kind": "transverse",
+            "old_depth": 0.0003319495230988401,
+            "old_kind": "disjoint",
+            "old_violation": false,
+            "wake_face": 293,
+            "wall_face": 13
+          }
+        ],
+        "violations_count": 1,
+        "worst_depth": 0.03214683192686937
+      },
+      "control": "per_node_step_cap",
+      "control_nodes": {
+        "clip": {
+          "main_wing": {
+            "accepted_max": 3.2307116735150743,
+            "clipped": 5,
+            "clipped_ids": [
+              0,
+              1,
+              56,
+              400,
+              452
+            ],
+            "raw_max": 3.2307116735150743
+          },
+          "raised_tail": {
+            "accepted_max": 0.10945996311042878,
+            "clipped": 0,
+            "clipped_ids": [],
+            "raw_max": 0.10945996311042878
+          }
+        },
+        "contacts": {
+          "kinds": {
+            "contact": 34,
+            "transverse": 1
+          },
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            }
+          ],
+          "violations_count": 1,
+          "worst_depth": 0.03214683192686937
+        },
+        "groups": {}
+      },
+      "displacement_max": 0.0,
+      "displacement_rms": 0.0,
+      "global_backtracks": 0,
+      "iteration": 2,
+      "kinematic_candidate": false,
+      "map_residual_chord": 3.2307116735150743,
+      "moved": null,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.08767637634362968,
+      "reason_counts": {
+        "area": 3,
+        "attachment": 2,
+        "convergence": 85,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 9
+      },
+      "relaxation": null,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.050052651101971726,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 3.2307116735150743,
+          "requested_over_cap_max": 2.8355401874964428,
+          "truncation_nodes": 51,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.44959202941234055,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.10945996311042878,
+          "requested_over_cap_max": 0.029852717211935127,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "attachment",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "attachment",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {
+            "contact": 26,
+            "transverse": 9
+          },
+          "reason": "wall",
+          "scale": 0.0625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.019102714991280873,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0191027155853619,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0002081248429054588,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00020812531188519126,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.0018116699269492597,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0018116701281143276,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 56
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00032810175310688157,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00032810215366601853,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            }
+          ],
+          "violations_count": 9,
+          "worst_depth": 0.03214683192686937
+        },
+        {
+          "backtrack": 5,
+          "kinds": {
+            "contact": 26,
+            "transverse": 9
+          },
+          "reason": "wall",
+          "scale": 0.03125,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.019102714991280873,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0191027155853619,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0002081248429054588,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00020812531188519126,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.0018116699269492597,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0018116701281143276,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 56
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00032810175310688157,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00032810215366601853,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            }
+          ],
+          "violations_count": 9,
+          "worst_depth": 0.03214683192686937
+        },
+        {
+          "backtrack": 6,
+          "kinds": {
+            "contact": 25,
+            "transverse": 10
+          },
+          "reason": "wall",
+          "scale": 0.015625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.019102714991280873,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0191027155853619,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0002081248429054588,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00020812531188519126,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00024140227674299816,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00024140248473669066,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 46
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.0018116699269492597,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0018116701281143276,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 56
+            }
+          ],
+          "violations_count": 10,
+          "worst_depth": 0.03214683192686937
+        },
+        {
+          "backtrack": 7,
+          "kinds": {
+            "contact": 29,
+            "transverse": 6
+          },
+          "reason": "wall",
+          "scale": 0.0078125,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.019102714991280873,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0191027155853619,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0002081248429054588,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00020812531188519126,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00032810175310688157,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00032810215366601853,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01910519436006288,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019105194954087225,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 415
+            }
+          ],
+          "violations_count": 6,
+          "worst_depth": 0.03214683192686937
+        },
+        {
+          "backtrack": 8,
+          "kinds": {
+            "contact": 29,
+            "transverse": 6
+          },
+          "reason": "wall",
+          "scale": 0.00390625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.019102714991280873,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0191027155853619,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0002081248429054588,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00020812531188519126,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00032810175310688157,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00032810215366601853,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01910519436006288,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019105194954087225,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 415
+            }
+          ],
+          "violations_count": 6,
+          "worst_depth": 0.03214683192686937
+        },
+        {
+          "backtrack": 9,
+          "kinds": {
+            "contact": 28,
+            "transverse": 7
+          },
+          "reason": "wall",
+          "scale": 0.001953125,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.019102714991280873,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0191027155853619,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0002081248429054588,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00020812531188519126,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 299,
+              "wall_face": 19
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00032810175310688157,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00032810215366601853,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01910519436006288,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.019105194954087225,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 415
+            }
+          ],
+          "violations_count": 7,
+          "worst_depth": 0.03214683192686937
+        },
+        {
+          "backtrack": 10,
+          "kinds": {
+            "contact": 32,
+            "transverse": 3
+          },
+          "reason": "wall",
+          "scale": 0.0009765625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00032810175310688157,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00032810215366601853,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.03214683192686937,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.03214683242849872,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 684,
+              "wall_face": 19
+            }
+          ],
+          "violations_count": 3,
+          "worst_depth": 0.03214683192686937
+        },
+        {
+          "backtrack": 11,
+          "kinds": {
+            "contact": 32,
+            "transverse": 3
+          },
+          "reason": "wall",
+          "scale": 0.00048828125,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            },
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00032810175310688157,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.00032810215366601853,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 678,
+              "wall_face": 409
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.03214683192686937,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.03214683242849872,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 684,
+              "wall_face": 19
+            }
+          ],
+          "violations_count": 3,
+          "worst_depth": 0.03214683192686937
+        },
+        {
+          "backtrack": 12,
+          "kinds": {
+            "contact": 34,
+            "transverse": 1
+          },
+          "reason": "wall",
+          "scale": 0.000244140625,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.00033194912252921784,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0003319495230988401,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 13
+            }
+          ],
+          "violations_count": 1,
+          "worst_depth": 0.03214683192686937
+        }
+      ],
+      "trial_reasons": [
+        "attachment",
+        "attachment",
+        "area",
+        "area",
+        "area",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 85,
+          "convergence": 85,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 51
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 0,
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0012166866477529737
+    }
+  ],
+  "schema": "dpanel.issue84.t5_gate_ab.v1",
+  "seconds": 108.85163859999739,
+  "status": "blocked_geometry",
+  "step_fraction": 4.0,
+  "truncation_policy": "freeze"
+}
