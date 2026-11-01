@@ -1,0 +1,1906 @@
+{
+  "reference": {
+    "n": 32,
+    "order": 24,
+    "tol": 1e-06
+  },
+  "cases": [
+    {
+      "aspect": 1.0,
+      "core_over_d": 0.1,
+      "core": 0.001,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.1041853938252703e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.006797484694021178,
+          "seconds": 0.00036339997313916683
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.006797484692864988,
+          "seconds": 0.0005291000124998391
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.00679748469286475,
+          "seconds": 0.002354900003410876
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 1.5686453325623383e-05,
+          "seconds": 0.0012052000383846462
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 1.5686453325839315e-05,
+          "seconds": 0.007203299959655851
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 4.059044856884627e-08,
+          "seconds": 0.015847900009248406
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.3130520480967809,
+          "seconds": 0.0003233000170439482
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.18050947834813322,
+          "seconds": 0.0003361999988555908
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.10744531180640964,
+          "seconds": 0.0005106999888084829
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.02216972739085936,
+          "seconds": 0.0013282999861985445
+        }
+      ]
+    },
+    {
+      "aspect": 1.0,
+      "core_over_d": 0.3,
+      "core": 0.003,
+      "n_sub_reference": 1024,
+      "reference_self_change": 2.1873847437471307e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.006221984438365347,
+          "seconds": 0.00038270000368356705
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.006221984437350911,
+          "seconds": 0.0004966999986208975
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.006221984437350705,
+          "seconds": 0.0025043999776244164
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 1.4282820398383423e-05,
+          "seconds": 0.0011556000099517405
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 1.4282820398469363e-05,
+          "seconds": 0.00833550002425909
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 2.4931890153207395e-08,
+          "seconds": 0.019673599977977574
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.30032635325314416,
+          "seconds": 0.00031129998387768865
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.1692990872659268,
+          "seconds": 0.00032619998091831803
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.09896844507193223,
+          "seconds": 0.0005114999949000776
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.019457977567090678,
+          "seconds": 0.0012233000015839934
+        }
+      ]
+    },
+    {
+      "aspect": 1.0,
+      "core_over_d": 1.0,
+      "core": 0.01,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.034330817918813e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.0019317072289221104,
+          "seconds": 0.0006591999554075301
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.0019317072295362582,
+          "seconds": 0.0006262999959290028
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.0019317072295360496,
+          "seconds": 0.0026354999863542616
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 1.7612534748107825e-06,
+          "seconds": 0.0013695000088773668
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 1.7612534739886533e-06,
+          "seconds": 0.008349099953193218
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 1.7048766195983486e-09,
+          "seconds": 0.018975400016643107
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.20508459063925516,
+          "seconds": 0.00043700000969693065
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.09644845954480791,
+          "seconds": 0.0005538000259548426
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.049559830671902665,
+          "seconds": 0.000616899982560426
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.006263866362908074,
+          "seconds": 0.0014869999722577631
+        }
+      ]
+    },
+    {
+      "aspect": 1.0,
+      "core_over_d": 3.0,
+      "core": 0.03,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.7122076607576435e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 5.2104499502998684e-05,
+          "seconds": 0.000368200009688735
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 5.210449788280934e-05,
+          "seconds": 0.0004560999805107713
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 5.210449788331831e-05,
+          "seconds": 0.0023729000240564346
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 1.7099181643407313e-09,
+          "seconds": 0.0011705000069923699
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 1.7099180011624107e-09,
+          "seconds": 0.007255100004840642
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 8.389159134974742e-14,
+          "seconds": 0.016153000004123896
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.058571805602975785,
+          "seconds": 0.00030229997355490923
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.020219760750685607,
+          "seconds": 0.0003209999995306134
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.004701600536553781,
+          "seconds": 0.0004807999939657748
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 4.245854927807475e-05,
+          "seconds": 0.0013896999880671501
+        }
+      ]
+    },
+    {
+      "aspect": 10.0,
+      "core_over_d": 0.1,
+      "core": 0.001,
+      "n_sub_reference": 1024,
+      "reference_self_change": 3.2966892871704684e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.08779212735416322,
+          "seconds": 0.00037560000782832503
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.0007257509325573466,
+          "seconds": 0.000437400012742728
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.0007257509325335809,
+          "seconds": 0.002180399955250323
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 1.5653726832358809e-06,
+          "seconds": 0.0013218999956734478
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 1.5653726822237205e-06,
+          "seconds": 0.007210300012957305
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 3.0031043001703395e-09,
+          "seconds": 0.015835699974559247
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.6642434511886247,
+          "seconds": 0.00034500000765547156
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.37379643640297266,
+          "seconds": 0.00032869999995455146
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.20651281250505402,
+          "seconds": 0.0005059000104665756
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.031478463681711685,
+          "seconds": 0.0011968999751843512
+        }
+      ]
+    },
+    {
+      "aspect": 10.0,
+      "core_over_d": 0.3,
+      "core": 0.003,
+      "n_sub_reference": 1024,
+      "reference_self_change": 9.621735633084753e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.08705892205217562,
+          "seconds": 0.0003568000392988324
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.0006320928956223282,
+          "seconds": 0.00042890000622719526
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.0006320928956031154,
+          "seconds": 0.001986199989914894
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 1.1614579017567721e-06,
+          "seconds": 0.001147200004197657
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 1.1614579017427391e-06,
+          "seconds": 0.007133400009479374
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 1.8188023456048592e-09,
+          "seconds": 0.015630199981387705
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.6536959850874269,
+          "seconds": 0.00028709997422993183
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.3584000683974171,
+          "seconds": 0.0003225999535061419
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.19251613638742762,
+          "seconds": 0.0004729999927803874
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.027004021388873027,
+          "seconds": 0.0011009000008925796
+        }
+      ]
+    },
+    {
+      "aspect": 10.0,
+      "core_over_d": 1.0,
+      "core": 0.01,
+      "n_sub_reference": 1024,
+      "reference_self_change": 3.1877118828568104e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.07925289965529653,
+          "seconds": 0.00037399999564513564
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 9.41306339750568e-05,
+          "seconds": 0.0004585999995470047
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 9.413063399084316e-05,
+          "seconds": 0.00200159999076277
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 1.1157587946618902e-07,
+          "seconds": 0.0011901000398211181
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 1.1157587988536203e-07,
+          "seconds": 0.0071847999934107065
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 6.789855129093334e-11,
+          "seconds": 0.015537800034508109
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.5613154524209639,
+          "seconds": 0.0003065000055357814
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.2389538885196225,
+          "seconds": 0.00031949998810887337
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.09797950566391717,
+          "seconds": 0.0004824999487027526
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.006328195586226084,
+          "seconds": 0.0012288999860174954
+        }
+      ]
+    },
+    {
+      "aspect": 10.0,
+      "core_over_d": 3.0,
+      "core": 0.03,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.63284092320126e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.04107853362963107,
+          "seconds": 0.0003627999685704708
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 3.6838427244600212e-06,
+          "seconds": 0.0004752000095322728
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 3.6838427286253998e-06,
+          "seconds": 0.0020034000044688582
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 6.235302919967637e-11,
+          "seconds": 0.0011728000245057046
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 6.235333944110432e-11,
+          "seconds": 0.007292299997061491
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 2.8691731786897477e-15,
+          "seconds": 0.015629900037311018
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.25522042552083923,
+          "seconds": 0.0002835000050254166
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.032098142377243774,
+          "seconds": 0.0003166000242345035
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.003876060078113954,
+          "seconds": 0.0004789000377058983
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 7.729535598519139e-06,
+          "seconds": 0.001195100019685924
+        }
+      ]
+    },
+    {
+      "aspect": 50.0,
+      "core_over_d": 0.1,
+      "core": 0.001,
+      "n_sub_reference": 1024,
+      "reference_self_change": 2.1961388104708376e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.5045041826670463,
+          "seconds": 0.0003575999871827662
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.00036137349318129356,
+          "seconds": 0.00047149998135864735
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.00036136815229261335,
+          "seconds": 0.0020318999886512756
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 7.753822332069955e-07,
+          "seconds": 0.0012220999924466014
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 7.753822521345754e-07,
+          "seconds": 0.0072480000089854
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 1.4768414247373295e-09,
+          "seconds": 0.01595249999081716
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.8868572899315058,
+          "seconds": 0.00031319999834522605
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.6483860241722792,
+          "seconds": 0.0003233000170439482
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.4138799257648735,
+          "seconds": 0.0004950000438839197
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.07424190073870107,
+          "seconds": 0.0013596999924629927
+        }
+      ]
+    },
+    {
+      "aspect": 50.0,
+      "core_over_d": 0.3,
+      "core": 0.003,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.6834193614839037e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.4956626680889204,
+          "seconds": 0.00035170000046491623
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.00032446366945991403,
+          "seconds": 0.0005681000184267759
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.0003244804486579769,
+          "seconds": 0.0019128000130876899
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 5.904964263493258e-07,
+          "seconds": 0.0009473000536672771
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 5.904964354589818e-07,
+          "seconds": 0.007189000025391579
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 9.082377737717677e-10,
+          "seconds": 0.015493799990508705
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.8802269827069742,
+          "seconds": 0.00027299998328089714
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.6318321422397155,
+          "seconds": 0.0003121999907307327
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.39377462325304274,
+          "seconds": 0.0004721999866887927
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.0653780724457394,
+          "seconds": 0.001091900048777461
+        }
+      ]
+    },
+    {
+      "aspect": 50.0,
+      "core_over_d": 1.0,
+      "core": 0.01,
+      "n_sub_reference": 1024,
+      "reference_self_change": 8.160652499201892e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.4135641329473363,
+          "seconds": 0.000345699954777956
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 4.879073380188988e-05,
+          "seconds": 0.0004512000014074147
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 4.881276872240007e-05,
+          "seconds": 0.0022558000055141747
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 7.139675481581703e-08,
+          "seconds": 0.0012295999913476408
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 7.139675540408895e-08,
+          "seconds": 0.007199599989689887
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 4.3075401159547905e-11,
+          "seconds": 0.015444000018760562
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.8104365029682528,
+          "seconds": 0.00032359996112063527
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.4797000163820116,
+          "seconds": 0.0003271999885328114
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.23576684885414742,
+          "seconds": 0.0005143999587744474
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.018938276712595688,
+          "seconds": 0.001145099988207221
+        }
+      ]
+    },
+    {
+      "aspect": 50.0,
+      "core_over_d": 3.0,
+      "core": 0.03,
+      "n_sub_reference": 1024,
+      "reference_self_change": 2.485688951517506e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.14573436197192352,
+          "seconds": 0.0003581999917514622
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 2.0137714415072217e-06,
+          "seconds": 0.0004615999641828239
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 2.013790132633743e-06,
+          "seconds": 0.002055399992968887
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 7.569042820725268e-11,
+          "seconds": 0.0011710000107996166
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 7.568963897427429e-11,
+          "seconds": 0.007145999989006668
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 2.1454251449139127e-15,
+          "seconds": 0.015603799954988062
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.4316102883114065,
+          "seconds": 0.0003426999901421368
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.08243427526214779,
+          "seconds": 0.00031749997287988663
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.012796406551341151,
+          "seconds": 0.00048290000995621085
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 3.7108191728255706e-05,
+          "seconds": 0.0011986000463366508
+        }
+      ]
+    },
+    {
+      "aspect": 260.0,
+      "core_over_d": 0.1,
+      "core": 0.001,
+      "n_sub_reference": 1024,
+      "reference_self_change": 3.2023587197752895e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.5683495088293437,
+          "seconds": 0.0003578999894671142
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.0003150067419772125,
+          "seconds": 0.00047699996503069997
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.000313447339396474,
+          "seconds": 0.0018268999992869794
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 6.724202405074462e-07,
+          "seconds": 0.0009438999695703387
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 6.724175373279634e-07,
+          "seconds": 0.0071176000055857
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 1.2803481789939521e-09,
+          "seconds": 0.015431799984071404
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.9109040020319012,
+          "seconds": 0.00032759999157860875
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.707453274715595,
+          "seconds": 0.00031400000443682075
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.48579779515212196,
+          "seconds": 0.00047339999582618475
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.10606148355027524,
+          "seconds": 0.0010724999592639506
+        }
+      ]
+    },
+    {
+      "aspect": 260.0,
+      "core_over_d": 0.3,
+      "core": 0.003,
+      "n_sub_reference": 1024,
+      "reference_self_change": 5.228081805587799e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.5554555984893225,
+          "seconds": 0.00037480000173673034
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.0002867669846893421,
+          "seconds": 0.00047940004151314497
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.000285379951200529,
+          "seconds": 0.0021501000155694783
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 5.191330288684846e-07,
+          "seconds": 0.0012058000429533422
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 5.191312445264646e-07,
+          "seconds": 0.00703320000320673
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 7.978519752432065e-10,
+          "seconds": 0.01541759999236092
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.9043938348142401,
+          "seconds": 0.00033090001670643687
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.6897003240526676,
+          "seconds": 0.0003239000216126442
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.4621519034479432,
+          "seconds": 0.0004955999902449548
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.09311816545743037,
+          "seconds": 0.001181500032544136
+        }
+      ]
+    },
+    {
+      "aspect": 260.0,
+      "core_over_d": 1.0,
+      "core": 0.01,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.4618697827966378e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.44440923196345755,
+          "seconds": 0.0003355999942868948
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 4.6361099697611615e-05,
+          "seconds": 0.0004600000102072954
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 4.6368313255587676e-05,
+          "seconds": 0.001947399985510856
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 6.867594672159673e-08,
+          "seconds": 0.0010927999974228442
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 6.867593649783473e-08,
+          "seconds": 0.007019100012257695
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 4.141904919705684e-11,
+          "seconds": 0.01557009998941794
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.8345967312523277,
+          "seconds": 0.0002998000127263367
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.5239185002385554,
+          "seconds": 0.00031859998125582933
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.274662554606669,
+          "seconds": 0.0004752000095322728
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.026032865908734295,
+          "seconds": 0.0012097000144422054
+        }
+      ]
+    },
+    {
+      "aspect": 260.0,
+      "core_over_d": 3.0,
+      "core": 0.03,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.291916453136379e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.14176326324376629,
+          "seconds": 0.00036910001654177904
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 1.9391267284205525e-06,
+          "seconds": 0.0004476999747566879
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 1.9391469861599717e-06,
+          "seconds": 0.002006299968343228
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 8.171492638075108e-11,
+          "seconds": 0.001168800052255392
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 8.171444818589194e-11,
+          "seconds": 0.00710129999788478
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 2.608645558260219e-15,
+          "seconds": 0.015540399996098131
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.4467812452795975,
+          "seconds": 0.000318799982778728
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.08849652735395484,
+          "seconds": 0.0003201000508852303
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.014202171556099737,
+          "seconds": 0.0005126000032760203
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 4.514076990417073e-05,
+          "seconds": 0.0011806999682448804
+        }
+      ]
+    },
+    {
+      "aspect": 520.0,
+      "core_over_d": 0.1,
+      "core": 0.001,
+      "n_sub_reference": 1024,
+      "reference_self_change": 4.89579668735017e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.5705012581669514,
+          "seconds": 0.0003502999898046255
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.0003133011414557547,
+          "seconds": 0.00044929998693987727
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.00031171392480396217,
+          "seconds": 0.0020019999938085675
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 6.686978352476579e-07,
+          "seconds": 0.0011965000303462148
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 6.68694897457516e-07,
+          "seconds": 0.00711609999416396
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 1.2732490938776016e-09,
+          "seconds": 0.01544440002180636
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.9116937079886192,
+          "seconds": 0.00034899997990578413
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.7095594752226579,
+          "seconds": 0.0003451000084169209
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.4886241451683025,
+          "seconds": 0.0005021000397391617
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.10767068534981836,
+          "seconds": 0.0011742999777197838
+        }
+      ]
+    },
+    {
+      "aspect": 520.0,
+      "core_over_d": 0.3,
+      "core": 0.003,
+      "n_sub_reference": 1024,
+      "reference_self_change": 6.093644346776001e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.5574211069874124,
+          "seconds": 0.0003763999557122588
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.0002854392853226696,
+          "seconds": 0.0004737999988719821
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.0002839873003516548,
+          "seconds": 0.0019316999823786318
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 5.165939841482231e-07,
+          "seconds": 0.0010577000211924314
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 5.165918839037131e-07,
+          "seconds": 0.0072616999968886375
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 7.939304835948577e-10,
+          "seconds": 0.015521499968599528
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.9051795951835885,
+          "seconds": 0.00029469997389242053
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.6917406459685966,
+          "seconds": 0.00032589997863397
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.4648035531253346,
+          "seconds": 0.00047889997949823737
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.09449162809264011,
+          "seconds": 0.0012288999860174954
+        }
+      ]
+    },
+    {
+      "aspect": 520.0,
+      "core_over_d": 1.0,
+      "core": 0.01,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.9753667333011405e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.4451709808533416,
+          "seconds": 0.0003712000325322151
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 4.629894753258312e-05,
+          "seconds": 0.0004621000261977315
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 4.629872516840818e-05,
+          "seconds": 0.0020637999987229705
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 6.859811425955864e-08,
+          "seconds": 0.0010809999657794833
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 6.859810041433337e-08,
+          "seconds": 0.0071273999637924135
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 4.13727301144216e-11,
+          "seconds": 0.01587120001204312
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.8353364192929146,
+          "seconds": 0.0003215000033378601
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.5253650478696807,
+          "seconds": 0.0003217000048607588
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.2760347554923472,
+          "seconds": 0.0004923000233247876
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.026333715471159175,
+          "seconds": 0.001130899996496737
+        }
+      ]
+    },
+    {
+      "aspect": 520.0,
+      "core_over_d": 3.0,
+      "core": 0.03,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.8078796560685758e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.14145762404570447,
+          "seconds": 0.0003565000370144844
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 1.9370441841911936e-06,
+          "seconds": 0.0004751000087708235
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 1.93706434675245e-06,
+          "seconds": 0.002007999981287867
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 8.193347402847003e-11,
+          "seconds": 0.0011634999536909163
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 8.193299319431369e-11,
+          "seconds": 0.007213199976831675
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 3.6979367129393745e-16,
+          "seconds": 0.015514499973505735
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.44724122815682726,
+          "seconds": 0.0003013999667018652
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.08867901023715415,
+          "seconds": 0.000324999971780926
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.014245209482790197,
+          "seconds": 0.0005015999777242541
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 4.5404640600685326e-05,
+          "seconds": 0.001277900009881705
+        }
+      ]
+    },
+    {
+      "aspect": 1405.7,
+      "core_over_d": 0.1,
+      "core": 0.001,
+      "n_sub_reference": 1024,
+      "reference_self_change": 5.913642377132995e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.5711247948165812,
+          "seconds": 0.0003502999898046255
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.0003128011464690677,
+          "seconds": 0.0004588000010699034
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.0003112097016301053,
+          "seconds": 0.0020094000501558185
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 6.676150484307641e-07,
+          "seconds": 0.0010991999879479408
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 6.676120595074043e-07,
+          "seconds": 0.007107399986125529
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 1.271183095278139e-09,
+          "seconds": 0.01563829998485744
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.9119223073536036,
+          "seconds": 0.0003127999952994287
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.7101711911489323,
+          "seconds": 0.0003266000421717763
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.48944852890701857,
+          "seconds": 0.0004966999986208975
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.10814611256815147,
+          "seconds": 0.0011128999758511782
+        }
+      ]
+    },
+    {
+      "aspect": 1405.7,
+      "core_over_d": 0.3,
+      "core": 0.003,
+      "n_sub_reference": 1024,
+      "reference_self_change": 4.2567051797286327e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.5579898322403621,
+          "seconds": 0.00035280000884085894
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 0.00028505173309425124,
+          "seconds": 0.0004950000438839197
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 0.000283582574242707,
+          "seconds": 0.0018640999915078282
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 5.158561274638627e-07,
+          "seconds": 0.0009623999940231442
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 5.158539338756889e-07,
+          "seconds": 0.007170800003223121
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 7.927926611203636e-10,
+          "seconds": 0.015401100041344762
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.905406910922316,
+          "seconds": 0.00032599997939541936
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.6923328151251018,
+          "seconds": 0.00032460002694278955
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.46557634909006806,
+          "seconds": 0.0004813999985344708
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.09489684460212446,
+          "seconds": 0.0011181000154465437
+        }
+      ]
+    },
+    {
+      "aspect": 1405.7,
+      "core_over_d": 1.0,
+      "core": 0.01,
+      "n_sub_reference": 1024,
+      "reference_self_change": 1.3667665822111842e-15,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.44538758862663674,
+          "seconds": 0.0003601000062189996
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 4.628129212493761e-05,
+          "seconds": 0.000484699965454638
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 4.627873325738107e-05,
+          "seconds": 0.0018933999817818403
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 6.857575811151693e-08,
+          "seconds": 0.001144799985922873
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 6.857574158755546e-08,
+          "seconds": 0.0071977999759837985
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 4.135684687321655e-11,
+          "seconds": 0.015656600007787347
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.8355496895388107,
+          "seconds": 0.000317899975925684
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.5257831543737885,
+          "seconds": 0.00033599999733269215
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.2764326060281802,
+          "seconds": 0.0005019000382162631
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 0.026421670352322738,
+          "seconds": 0.0012222999939695
+        }
+      ]
+    },
+    {
+      "aspect": 1405.7,
+      "core_over_d": 3.0,
+      "core": 0.03,
+      "n_sub_reference": 1024,
+      "reference_self_change": 3.667072018906655e-16,
+      "strategies": [
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.14136681900785533,
+          "seconds": 0.0003606000100262463
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 8,
+          "rel_error": 1.936446019204748e-06,
+          "seconds": 0.00046690000453963876
+        },
+        {
+          "solve": "fan",
+          "order": 16,
+          "strips": 64,
+          "rel_error": 1.9364661519732224e-06,
+          "seconds": 0.0020131999626755714
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 8,
+          "rel_error": 8.199445522786925e-11,
+          "seconds": 0.0011252999538555741
+        },
+        {
+          "solve": "fan",
+          "order": 32,
+          "strips": 64,
+          "rel_error": 8.199601841396135e-11,
+          "seconds": 0.007095000008121133
+        },
+        {
+          "solve": "fan",
+          "order": 48,
+          "strips": 64,
+          "rel_error": 7.215289910214502e-16,
+          "seconds": 0.015581299958284944
+        },
+        {
+          "solve": "legacy",
+          "order": 16,
+          "strips": 1,
+          "rel_error": 0.4473738340085001,
+          "seconds": 0.00030049995984882116
+        },
+        {
+          "solve": "legacy",
+          "order": 32,
+          "strips": 1,
+          "rel_error": 0.08873157753878849,
+          "seconds": 0.0003195999888703227
+        },
+        {
+          "solve": "legacy",
+          "order": 48,
+          "strips": 1,
+          "rel_error": 0.014257612889725588,
+          "seconds": 0.00048509996850043535
+        },
+        {
+          "solve": "legacy",
+          "order": 96,
+          "strips": 1,
+          "rel_error": 4.548087853793779e-05,
+          "seconds": 0.0011218999861739576
+        }
+      ]
+    }
+  ],
+  "n_reference_flagged": 0
+}

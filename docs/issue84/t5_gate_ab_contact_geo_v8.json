@@ -1,0 +1,1936 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "condition": "new_gate_per_node_geometric",
+  "gate_mode": "audit",
+  "iterations": 8,
+  "kinematic_candidate": false,
+  "kutta": "signed_speed",
+  "max_backtracks": 12,
+  "rows": [
+    {
+      "CD_pressure": 0.007126885631336986,
+      "CL": 0.4413553954553846,
+      "CL_gamma": 0.44637269221791404,
+      "CM_y": -0.12213725704223075,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 0.03089570359859111,
+          "accepted_rms": 0.012743053163993425,
+          "cap_min": 0.0023120950352256697,
+          "clipped": 349,
+          "clipped_fraction": 0.4562091503267974,
+          "clipped_ids": [
+            0,
+            1,
+            2,
+            3,
+            5,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 22.98151598837876,
+          "raw_rms": 1.599420637358513,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.11192604097131043,
+          "accepted_rms": 0.053019531453878055,
+          "cap_min": 0.11249999999999999,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.11192604097131043,
+          "raw_rms": 0.053019531453878055,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 116,
+        "kinds": {
+          "contact": 45
+        },
+        "pairs_tested": 1044,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 124,
+        "undeclared": 8,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.04345262305115827
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 0.006995377560706891,
+      "displacement_rms": 0.0012018327513175096,
+      "global_backtracks": 4,
+      "iteration": 0,
+      "kinematic_candidate": false,
+      "map_residual_chord": 22.98151598837876,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.08401140664917878,
+      "reason_counts": {
+        "area": 0,
+        "attachment": 0,
+        "convergence": 83,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 5
+      },
+      "relaxation": 0.0625,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.050000000000000266,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 22.98151598837876,
+          "requested_over_cap_max": 1157.9736519291519,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.45,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.11192604097131043,
+          "requested_over_cap_max": 0.9948981419672037,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {
+            "contact": 31,
+            "transverse": 14
+          },
+          "reason": "wall",
+          "scale": 1.0,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.01343000931014801,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.04400907863122536,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.023137113024090435,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 306,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.03177634372712971,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.007164451644420043,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 307,
+              "wall_face": 62
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.013430009136273768,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 308,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.017097718728255402,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0016810306948104733,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 1
+            }
+          ],
+          "violations_count": 14,
+          "worst_depth": 0.05553317316616693
+        },
+        {
+          "backtrack": 0,
+          "kinds": {
+            "contact": 31,
+            "transverse": 14
+          },
+          "reason": "wall",
+          "scale": 1.0,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.01343000931014801,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.04400907863122536,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.023137113024090435,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 306,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.03177634372712971,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.007164451644420043,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 307,
+              "wall_face": 62
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.013430009136273768,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 308,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.017097718728255402,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0016810306948104733,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 1
+            }
+          ],
+          "violations_count": 14,
+          "worst_depth": 0.05553317316616693
+        },
+        {
+          "backtrack": 1,
+          "kinds": {
+            "contact": 31,
+            "transverse": 14
+          },
+          "reason": "wall",
+          "scale": 0.5,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.006715004456158115,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.033573095654385834,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.023137113024090435,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 306,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.01947039756206928,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.007164451644420043,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 307,
+              "wall_face": 62
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.006715004273072555,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 308,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.008601805977033524,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0016810306948104733,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 1
+            }
+          ],
+          "violations_count": 14,
+          "worst_depth": 0.04909021310482902
+        },
+        {
+          "backtrack": 2,
+          "kinds": {
+            "contact": 31,
+            "transverse": 14
+          },
+          "reason": "wall",
+          "scale": 0.25,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.003357502029163248,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.028355104165966,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.023137113024090435,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 306,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.013317424479539049,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.007164451644420043,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 307,
+              "wall_face": 62
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.0033575018414720146,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 308,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.0051414182357403864,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0016810306948104733,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 1
+            }
+          ],
+          "violations_count": 14,
+          "worst_depth": 0.04586873307415989
+        },
+        {
+          "backtrack": 3,
+          "kinds": {
+            "contact": 31,
+            "transverse": 14
+          },
+          "reason": "wall",
+          "scale": 0.125,
+          "violations": [
+            {
+              "area": 0.0,
+              "declared": "edge",
+              "depth": 0.0016787508156658284,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 293,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.025746108421756165,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.023137113024090435,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 306,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.010240937938273931,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.007164451644420043,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 307,
+              "wall_face": 62
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.001678750625671792,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0,
+              "old_kind": "contact",
+              "old_violation": false,
+              "wake_face": 308,
+              "wall_face": 23
+            },
+            {
+              "area": 0.0,
+              "declared": "vertex",
+              "depth": 0.003411224365093856,
+              "group": "main_wing",
+              "kind": "transverse",
+              "old_depth": 0.0016810306948104733,
+              "old_kind": "disjoint",
+              "old_violation": false,
+              "wake_face": 320,
+              "wall_face": 1
+            }
+          ],
+          "violations_count": 14,
+          "worst_depth": 0.044257993058825475
+        }
+      ],
+      "trial_reasons": [
+        "wall",
+        "wall",
+        "wall",
+        "wall",
+        "wall"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 83,
+          "convergence": 83,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 0,
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0012164059660768217
+    },
+    {
+      "CD_pressure": 0.0072239614823997374,
+      "CL": 0.4407620364407388,
+      "CL_gamma": 0.44586964288945474,
+      "CM_y": -0.12124599734768482,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 0.030198225214269892,
+          "accepted_rms": 0.012706829072200736,
+          "cap_min": 0.0023120950352256697,
+          "clipped": 351,
+          "clipped_fraction": 0.4588235294117647,
+          "clipped_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            17,
+            18,
+            19,
+            20,
+            21,
+            23,
+            24
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 52.04573303331675,
+          "raw_rms": 4.584951271144318,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.10471620127732204,
+          "accepted_rms": 0.051682308475583444,
+          "cap_min": 0.11129077345396421,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.10471620127732204,
+          "raw_rms": 0.051682308475583444,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 79,
+        "kinds": {
+          "contact": 6
+        },
+        "pairs_tested": 1109,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 88,
+        "undeclared": 9,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.006031787461619979
+      },
+      "control": "per_node_step_cap",
+      "control_nodes": null,
+      "displacement_max": 0.10471620127732204,
+      "displacement_rms": 0.01904162833809909,
+      "global_backtracks": 0,
+      "iteration": 1,
+      "kinematic_candidate": false,
+      "map_residual_chord": 52.04573303331675,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.09261366012085111,
+      "reason_counts": {
+        "area": 0,
+        "attachment": 0,
+        "convergence": 127,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 0
+      },
+      "relaxation": 1.0,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.04999999999999982,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 52.04573303331675,
+          "requested_over_cap_max": 11217.632988488385,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.4485697830744557,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.10471620127732204,
+          "requested_over_cap_max": 0.9333429542569202,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [],
+      "trial_reasons": [],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 127,
+          "convergence": 127,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 0,
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0012186634391479045
+    },
+    {
+      "CD_pressure": 0.007017006860054161,
+      "CL": 0.43853446448054356,
+      "CL_gamma": 0.44336904300798347,
+      "CM_y": -0.121335807990339,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 0.029648178686169542,
+          "accepted_rms": 0.012572599357986916,
+          "cap_min": 0.0023120950352256697,
+          "clipped": 349,
+          "clipped_fraction": 0.4562091503267974,
+          "clipped_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 52.77375526095429,
+          "raw_rms": 8.974196547302668,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.0263640324846039,
+          "accepted_rms": 0.009853100002581331,
+          "cap_min": 0.09382261523762117,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.0263640324846039,
+          "raw_rms": 0.009853100002581331,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 59,
+        "kinds": {},
+        "pairs_tested": 753,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 63,
+        "undeclared": 4,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.0
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 0.014824089343084702,
+      "displacement_rms": 0.007933684424822176,
+      "global_backtracks": 1,
+      "iteration": 2,
+      "kinematic_candidate": false,
+      "map_residual_chord": 52.77375526095429,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.0963622188314565,
+      "reason_counts": {
+        "area": 2,
+        "attachment": 0,
+        "convergence": 155,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 0
+      },
+      "relaxation": 0.5,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.04999999999999982,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 52.77375526095429,
+          "requested_over_cap_max": 11022.567065547588,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.42954865283961535,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.0263640324846039,
+          "requested_over_cap_max": 0.23585073366426693,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "area",
+        "area"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 153,
+          "convergence": 153,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 2,
+          "convergence": 2,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0012180767115266252
+    },
+    {
+      "CD_pressure": 0.0038367243788251047,
+      "CL": 0.40473706071235344,
+      "CL_gamma": 0.4098304881796995,
+      "CM_y": -0.1116944220806142,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 0.02961257616708999,
+          "accepted_rms": 0.012597554719316726,
+          "cap_min": 0.0023120950352256697,
+          "clipped": 346,
+          "clipped_fraction": 0.4522875816993464,
+          "clipped_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 53.07647468927632,
+          "raw_rms": 9.195564778645933,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.07313662370175383,
+          "accepted_rms": 0.038037125469074576,
+          "cap_min": 0.09460178914178599,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.07313662370175383,
+          "raw_rms": 0.038037125469074576,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 59,
+        "kinds": {},
+        "pairs_tested": 759,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 63,
+        "undeclared": 4,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.0
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 0.036568311850876944,
+      "displacement_rms": 0.008776036284970437,
+      "global_backtracks": 1,
+      "iteration": 3,
+      "kinematic_candidate": false,
+      "map_residual_chord": 53.07647468927632,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.10667452512662842,
+      "reason_counts": {
+        "area": 2,
+        "attachment": 0,
+        "convergence": 190,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 0
+      },
+      "relaxation": 0.5,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.04999999999999982,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 53.07647468927632,
+          "requested_over_cap_max": 12096.279408741175,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.43045659757675414,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.07313662370175383,
+          "requested_over_cap_max": 0.7191226098526657,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "area",
+        "area"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 188,
+          "convergence": 188,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 2,
+          "convergence": 2,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0012606166252996877
+    },
+    {
+      "CD_pressure": 0.0010782694257817577,
+      "CL": 0.368889015260482,
+      "CL_gamma": 0.3745984568546514,
+      "CM_y": -0.09945136470399223,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 0.03267917333777269,
+          "accepted_rms": 0.012395589504572016,
+          "cap_min": 0.0023120950352256697,
+          "clipped": 341,
+          "clipped_fraction": 0.44575163398692813,
+          "clipped_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            23
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 53.046878479977046,
+          "raw_rms": 9.21337695442091,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.09476917242195097,
+          "accepted_rms": 0.04380381354616278,
+          "cap_min": 0.09530044234396245,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.09476917242195097,
+          "raw_rms": 0.04380381354616278,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 55,
+        "kinds": {},
+        "pairs_tested": 417,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 59,
+        "undeclared": 4,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.0
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 0.0014807683190930026,
+      "displacement_rms": 0.0002792920346522755,
+      "global_backtracks": 6,
+      "iteration": 4,
+      "kinematic_candidate": false,
+      "map_residual_chord": 53.046878479977046,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.16862125420951105,
+      "reason_counts": {
+        "area": 7,
+        "attachment": 0,
+        "convergence": 214,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 0
+      },
+      "relaxation": 0.015625,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.04999999999999982,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 53.046878479977046,
+          "requested_over_cap_max": 13084.186347127987,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.43647032394942376,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.09476917242195097,
+          "requested_over_cap_max": 0.9186687448041863,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.0625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 5,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.03125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 212,
+          "convergence": 212,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 2,
+          "convergence": 2,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0013204565159751916
+    },
+    {
+      "CD_pressure": 0.001031511540459974,
+      "CL": 0.3682207371001244,
+      "CL_gamma": 0.37393070671667794,
+      "CM_y": -0.09921490874379577,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 0.032789378829845735,
+          "accepted_rms": 0.012395008149614818,
+          "cap_min": 0.0023120950352256697,
+          "clipped": 341,
+          "clipped_fraction": 0.44575163398692813,
+          "clipped_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            23
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 53.02906726231962,
+          "raw_rms": 9.21391552411152,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.09425703471330615,
+          "accepted_rms": 0.043558554539565066,
+          "cap_min": 0.09534893692125258,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.09425703471330615,
+          "raw_rms": 0.043558554539565066,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 55,
+        "kinds": {},
+        "pairs_tested": 405,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 59,
+        "undeclared": 4,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.0
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 0.0007363830836977364,
+      "displacement_rms": 0.0001394490383952225,
+      "global_backtracks": 7,
+      "iteration": 5,
+      "kinematic_candidate": false,
+      "map_residual_chord": 53.02906726231962,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.1704831224864416,
+      "reason_counts": {
+        "area": 8,
+        "attachment": 0,
+        "convergence": 215,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 0
+      },
+      "relaxation": 0.0078125,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.04999999999999982,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 53.02906726231962,
+          "requested_over_cap_max": 13113.7691245558,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.43664197095670376,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.09425703471330615,
+          "requested_over_cap_max": 0.913395431179984,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.0625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 5,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.03125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 6,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.015625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 213,
+          "convergence": 213,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 2,
+          "convergence": 2,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.0013216476339929712
+    },
+    {
+      "CD_pressure": 0.001008577531325281,
+      "CL": 0.3678921165416438,
+      "CL_gamma": 0.3736020364710863,
+      "CM_y": -0.09909858934792086,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 0.03284466706591915,
+          "accepted_rms": 0.012395301569381055,
+          "cap_min": 0.0023120950352256697,
+          "clipped": 342,
+          "clipped_fraction": 0.4470588235294118,
+          "clipped_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            23
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 53.01908809074041,
+          "raw_rms": 9.21418079350424,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.09399536473246005,
+          "accepted_rms": 0.043434163714610514,
+          "cap_min": 0.09537316298086813,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.09399536473246005,
+          "raw_rms": 0.043434163714610514,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 51,
+        "kinds": {},
+        "pairs_tested": 386,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 55,
+        "undeclared": 4,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.0
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 9.179234837155364e-05,
+      "displacement_rms": 1.7419305898900035e-05,
+      "global_backtracks": 10,
+      "iteration": 6,
+      "kinematic_candidate": false,
+      "map_residual_chord": 53.01908809074041,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.17140854871157293,
+      "reason_counts": {
+        "area": 11,
+        "attachment": 0,
+        "convergence": 215,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 0
+      },
+      "relaxation": 0.0009765625,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.04999999999999982,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 53.01908809074041,
+          "requested_over_cap_max": 13128.523801074274,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.4367268728892062,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.09399536473246005,
+          "requested_over_cap_max": 0.9107114556937188,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.0625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 5,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.03125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 6,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.015625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 7,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.0078125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 8,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.00390625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 9,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.001953125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 213,
+          "convergence": 213,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 2,
+          "convergence": 2,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.001322234486343673
+    },
+    {
+      "CD_pressure": 0.0010057393253300843,
+      "CL": 0.367851391423099,
+      "CL_gamma": 0.3735612847099342,
+      "CM_y": -0.0990841725841135,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 0.03285158853990597,
+          "accepted_rms": 0.012395323584833362,
+          "cap_min": 0.0023120950352256697,
+          "clipped": 342,
+          "clipped_fraction": 0.4470588235294118,
+          "clipped_ids": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            23
+          ],
+          "mode": "per_node_step_cap",
+          "raw_max": 53.017771720038965,
+          "raw_rms": 9.214214077910682,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "accepted_max": 0.0939623128212261,
+          "accepted_rms": 0.0434185028538114,
+          "cap_min": 0.09537618778788186,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "per_node_step_cap",
+          "raw_max": 0.0939623128212261,
+          "raw_rms": 0.0434185028538114,
+          "unit": "map_arclength"
+        }
+      },
+      "contacts": {
+        "declared": 51,
+        "kinds": {},
+        "pairs_tested": 383,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 55,
+        "undeclared": 4,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.0
+      },
+      "control": "per_node_step_cap+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 4.5880035557213296e-05,
+      "displacement_rms": 8.70890163839972e-06,
+      "global_backtracks": 11,
+      "iteration": 7,
+      "kinematic_candidate": false,
+      "map_residual_chord": 53.017771720038965,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.17152357579435853,
+      "reason_counts": {
+        "area": 12,
+        "attachment": 0,
+        "convergence": 215,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 0,
+        "wall": 0
+      },
+      "relaxation": 0.00048828125,
+      "step_scale": {
+        "main_wing": {
+          "geometric_median": 0.04999999999999982,
+          "link_max": 26.0,
+          "link_median": 0.6659051816910664,
+          "requested_max": 53.017771720038965,
+          "requested_over_cap_max": 13130.365262943293,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        },
+        "raised_tail": {
+          "geometric_median": 0.43673742159335976,
+          "link_max": 0.916666666666667,
+          "link_median": 0.9166666666666665,
+          "requested_max": 0.0939623128212261,
+          "requested_over_cap_max": 0.9103730894066329,
+          "truncation_nodes": 0,
+          "unit": "map_arclength"
+        }
+      },
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "area",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.0625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 5,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.03125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 6,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.015625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 7,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.0078125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 8,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.00390625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 9,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.001953125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 10,
+          "kinds": {},
+          "reason": "area",
+          "scale": 0.0009765625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area",
+        "area"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 213,
+          "convergence": 213,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 2,
+          "convergence": 2,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.001322307268297511
+    },
+    {
+      "CD_pressure": 0.0010043219293524419,
+      "CL": 0.36783105005251715,
+      "CL_gamma": 0.373540928791931,
+      "CM_y": -0.09907697154509819,
+      "accepted": null,
+      "clip": null,
+      "contacts": {
+        "declared": null,
+        "kinds": null,
+        "pairs_tested": null,
+        "pre_existing": null,
+        "pre_existing_pairs": [],
+        "tested": null,
+        "undeclared": null,
+        "violations": [],
+        "violations_count": null,
+        "worst_depth": null
+      },
+      "control": null,
+      "control_nodes": null,
+      "displacement_max": null,
+      "displacement_rms": null,
+      "global_backtracks": null,
+      "iteration": 8,
+      "kinematic_candidate": false,
+      "map_residual_chord": 53.01710825461161,
+      "moved": null,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.17158106594703046,
+      "reason_counts": null,
+      "relaxation": null,
+      "step_scale": null,
+      "trial_details": [],
+      "trial_reasons": null,
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 213,
+          "convergence": 213,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90,
+          "truncation_nodes": 0
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 2,
+          "convergence": 2,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5,
+          "truncation_nodes": 0
+        }
+      },
+      "wall_rms": 0.001322343625721277
+    }
+  ],
+  "schema": "dpanel.issue84.t5_gate_ab.v1",
+  "seconds": 121.99448460002895,
+  "status": "iteration_limit",
+  "step_fraction": 0.25,
+  "truncation_policy": "advance"
+}

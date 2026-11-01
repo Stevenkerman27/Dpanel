@@ -15,6 +15,10 @@ import os
 import numpy as np
 
 from .p1_coupled_material_wake import solve_coupled_material_wake, snapshot_hash, replay_snapshot
+from .wake_velocity_methods import (ACCEPTED_METHODS, AREA_QUADRATURES,
+                                    ARCHITECTURE_DOC, format_table)
+from .velocity_profile import enable as _profile_enable, reset as _profile_reset
+from .velocity_profile import write as _profile_write
 
 
 def _git(*args):
@@ -31,6 +35,8 @@ def _write_json(path, value):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--describe-velocity-methods', action='store_true',
+                        help=f'Print the three wake models and their status, then exit (see {ARCHITECTURE_DOC})')
     parser.add_argument('--case', choices=('g1', 'g2'), default='g1')
     parser.add_argument('--main-half-surface', type=Path)
     parser.add_argument('--alpha', type=float, default=5.)
@@ -43,21 +49,82 @@ def main(argv=None):
     parser.add_argument('--eps-fraction', type=float, default=.05)
     parser.add_argument('--ladder', type=float, nargs='+', default=[1., .5, .25, .125])
     parser.add_argument('--quadrature-order', type=int, default=48,
-                        help='Legacy Gauss order; ignored by analytic straight-edge integration')
-    parser.add_argument('--velocity-method', choices=('analytic_edges', 'legacy_gauss'),
+                        help='Legacy edge Gauss order; RM-P1 uses this as Duffy area order; ignored by analytic edges')
+    parser.add_argument('--velocity-method', choices=ACCEPTED_METHODS,
                         default='analytic_edges',
-                        help='Analytic P1 edges by default, legacy finite Gauss as A/B diagnostic')
+                        help='Wake velocity model: analytic_edges (method 1, default) or '
+                             'rm_regularized_p1 (method 2, needs --core-radius); '
+                             f'see {ARCHITECTURE_DOC}')
+    parser.add_argument('--core-radius', type=float, default=None,
+                        help='Explicit Rosenhead–Moore core length in geometry units; required only for rm_regularized_p1')
+    parser.add_argument('--area-quadrature', choices=AREA_QUADRATURES,
+                        default='legacy_duffy',
+                        help='Area-term integrator inside method 2 (a numerical setting, '
+                             'not a velocity method); the fan modes are opt-in')
+    parser.add_argument('--near-ratio', type=float, default=2.0,
+                        help='Near/far split: near when the point-to-triangle distance is at most this multiple of the circumradius')
+    parser.add_argument('--adaptive-far-order', type=int, default=8)
+    parser.add_argument('--adaptive-far-levels', type=int, default=1)
+    parser.add_argument('--adaptive-budget', type=float, default=2e-4,
+                        help='Relative a-posteriori error budget of the adaptive area quadrature')
+    parser.add_argument('--adaptive-max-escalations', type=int, default=2)
+    parser.add_argument('--fan-order', type=int, default=16)
+    parser.add_argument('--fan-strips', type=int, default=8)
+    parser.add_argument('--fan-refinement-order', type=int, default=None,
+                        help='Projection-fan gate refinement order; default max(48, 2*fan_order)')
+    parser.add_argument('--fan-refinement-strips', type=int, default=None,
+                        help='Projection-fan gate refinement strips; default fan_strips')
+    parser.add_argument('--gate-mode', choices=('enforce', 'audit', 'off', 'safe'), default='audit',
+                        help="Sampling-error thresholds: 'audit' (default) records them without "
+                             "freezing, 'off' also skips the refined quadrature evaluation, "
+                             "'enforce' freezes the failing nodes (legacy, distorts the sheet; "
+                             "use only to reproduce pre-2026-10-31 readings)")
+    parser.add_argument('--truncation-policy', choices=('advance', 'freeze'), default='advance',
+                        help="A reference link far longer than the sheet's own panels is a "
+                             "truncation row: 'advance' (default) marcher it as one arclength "
+                             "step, 'freeze' holds it and reports truncation_nodes")
     parser.add_argument('--epsilon-tol', type=float, default=.02)
     parser.add_argument('--quadrature-tol', type=float, default=.002)
     parser.add_argument('--max-nfev', type=int, default=80)
     parser.add_argument('--replay-snapshot', type=Path)
     parser.add_argument('--expected-state-sha')
-    parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--replay-velocity-method', choices=ACCEPTED_METHODS,
+                        default=None, help='Override only the sampled velocity kernel when replaying a frozen state')
+    parser.add_argument('--replay-core-radius', type=float, default=None,
+                        help='Explicit RM core radius for frozen-state replay')
+    parser.add_argument('--replay-quadrature-order', type=int, default=None,
+                        help='Override area quadrature order for frozen-state replay')
+    parser.add_argument('--replay-area-quadrature', choices=AREA_QUADRATURES,
+                        default=None)
+    parser.add_argument('--replay-near-ratio', type=float, default=None)
+    parser.add_argument('--replay-adaptive-far-order', type=int, default=None)
+    parser.add_argument('--replay-adaptive-far-levels', type=int, default=None)
+    parser.add_argument('--replay-adaptive-budget', type=float, default=None)
+    parser.add_argument('--replay-adaptive-max-escalations', type=int, default=None)
+    parser.add_argument('--replay-fan-order', type=int, default=None)
+    parser.add_argument('--replay-fan-strips', type=int, default=None)
+    parser.add_argument('--replay-fan-refinement-order', type=int, default=None)
+    parser.add_argument('--replay-fan-refinement-strips', type=int, default=None)
+    parser.add_argument('--profile-json', type=Path, default=None,
+                        help='Opt-in kernel profiling counters/timers (issue #84 P0); inert when omitted')
+    parser.add_argument('--out', type=Path,
+                        help='Evidence directory (required except with --describe-velocity-methods)')
     args = parser.parse_args(argv)
+    if args.describe_velocity_methods:
+        print(format_table())
+        print(f'\nMethods 1 and 2 are wired to the coupled B2 solve; method 3 is research '
+              f'only. Quadrature order/strips are numerical controls, not methods. '
+              f'See {ARCHITECTURE_DOC}.')
+        return 0
+    if args.out is None:
+        parser.error('--out is required')
     args.out.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
+    if args.profile_json is not None:
+        _profile_reset()
+        _profile_enable(True)
     parameters = {k: str(v) if isinstance(v, Path) else v for k, v in vars(args).items()}
-    receipt = dict(schema='dpanel.issue65.b2.v1', command=sys.argv if argv is None else argv,
+    receipt = dict(schema='dpanel.issue65.b2.v3', command=sys.argv if argv is None else argv,
                    code_sha=_git('rev-parse', 'HEAD'), git_status=_git('status', '--porcelain'),
                    python=sys.version, platform=platform.platform(), numpy=np.__version__,
                    thread_environment={k: os.environ.get(k) for k in
@@ -72,9 +139,30 @@ def main(argv=None):
                 raise ValueError('--expected-state-sha is required for frozen-state replay')
             with np.load(args.replay_snapshot, allow_pickle=False) as archive:
                 arrays = {k: archive[k] for k in archive.files}
-            replay = replay_snapshot(arrays, args.expected_state_sha)
+            replay = replay_snapshot(
+                arrays, args.expected_state_sha,
+                velocity_method=args.replay_velocity_method,
+                core_radius=args.replay_core_radius,
+                quadrature_order=args.replay_quadrature_order,
+                area_quadrature=args.replay_area_quadrature,
+                near_ratio=args.replay_near_ratio,
+                adaptive_far_order=args.replay_adaptive_far_order,
+                adaptive_far_levels=args.replay_adaptive_far_levels,
+                adaptive_budget=args.replay_adaptive_budget,
+                adaptive_max_escalations=args.replay_adaptive_max_escalations,
+                fan_order=args.replay_fan_order,
+                fan_strips=args.replay_fan_strips,
+                fan_refinement_order=args.replay_fan_refinement_order,
+                fan_refinement_strips=args.replay_fan_refinement_strips)
             _write_json(args.out/'replay.json', replay)
-            receipt.update(exit_code=0 if replay['bitwise_equal'] else 3, status='frozen_state_replay')
+            replay_ok = (replay['bitwise_equal']
+                         if replay['replay_mode'] == 'reproduce_recorded_samples'
+                         else replay['evaluation_finite'])
+            receipt.update(exit_code=0 if replay_ok else 3,
+                           status=replay['replay_mode'],
+                           replay_method=replay['evaluated_method'],
+                           replay_core_radius=replay['evaluated_core_radius'],
+                           replay_quadrature_order=replay['quadrature_order'])
             return receipt['exit_code']
         import scipy
         from .p1_lifting_g1 import make_wing, from_dpanel_half_surface
@@ -115,7 +203,19 @@ def main(argv=None):
                    eps_fraction=args.eps_fraction, ladder=args.ladder,
                    order=args.quadrature_order, epsilon_tol=args.epsilon_tol,
                    quadrature_tol=args.quadrature_tol, max_nfev=args.max_nfev,
-                   velocity_method=args.velocity_method, save_callback=save)
+                   gate_mode=args.gate_mode,
+                   truncation_policy=args.truncation_policy,
+                   velocity_method=args.velocity_method, core_radius=args.core_radius,
+                   area_quadrature=args.area_quadrature,
+                near_ratio=args.near_ratio,
+                adaptive_far_order=args.adaptive_far_order,
+                adaptive_far_levels=args.adaptive_far_levels,
+                adaptive_budget=args.adaptive_budget,
+                adaptive_max_escalations=args.adaptive_max_escalations,
+                   fan_order=args.fan_order, fan_strips=args.fan_strips,
+                   fan_refinement_order=args.fan_refinement_order,
+                   fan_refinement_strips=args.fan_refinement_strips,
+                   save_callback=save)
         report = {k: v for k, v in result.items() if k not in ('mesh', 'state')}
         report['negative_pressure_drag_warning'] = (
             'CD_pressure is a signed near-field pressure integral subject to '
@@ -135,6 +235,10 @@ def main(argv=None):
         print(str(exc), file=sys.stderr)
     finally:
         receipt['seconds'] = time.perf_counter()-started
+        if args.profile_json is not None:
+            _profile_enable(False)
+            _profile_write(args.profile_json, status=receipt.get('status'),
+                           wall_seconds=receipt['seconds'], parameters=parameters)
         _write_json(args.out/'receipt.json', receipt)
     return receipt['exit_code']
 

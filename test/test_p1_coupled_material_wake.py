@@ -77,10 +77,10 @@ def test_material_strength_gradient_recomputed_not_carried_in_global_axes():
 
 class UniformField:
     free = np.array([1., 0., 0.])
-    # TotalVelocity carries a `method` label and the coupled solver records it as
-    # `sampling_kernel`; the fake fields used by the coupling mocks must expose it.
+    # TotalVelocity records the velocity method in the sampling kernel; the mock
+    # field advertises the production default so the coupling diagnostics take
+    # the analytic-edge branch.
     method = 'analytic_edges'
-
     def __call__(self, p, *, order):
         return self.free.copy()
 
@@ -241,7 +241,7 @@ def test_integration_accepted_geometry_is_resolved_and_material_labels_frozen(mo
     monkeypatch.setattr(g2, 'solve_multi', tracked)
     # Manufactured smooth flow isolates coupling/geometry from the singular-PV research question.
     class SmoothField(UniformField):
-        def __init__(self, model, state, *, method='analytic_edges'):
+        def __init__(self, model, state, *, method='analytic_edges', core_radius=None, **kwargs):
             self.free = np.array([1., 0., .02])
             self.method = method
     monkeypatch.setattr(b2, 'TotalVelocity', SmoothField)
@@ -350,13 +350,37 @@ def test_mock_coupling_cannot_report_frozen_nodes_as_converged(monkeypatch, fail
             return np.array([1., 0., .02])
     mesh, calls = mock_coupling(monkeypatch, BadField())
     if failure == 'wall':
-        monkeypatch.setattr('panel.p1_coupled_material_wake.geometry_failure', lambda *a: 'wall')
-    result = solve_coupled_material_wake(mesh, iterations=2)
+        monkeypatch.setattr('panel.p1_coupled_material_wake.geometry_audit',
+                            lambda *a, **k: dict(reason='wall', detail=dict(
+                                groups={}, contacts=dict(kinds={'penetration': 1},
+                                                         violations_count=1,
+                                                         worst_depth=.01,
+                                                         violations=[]))))
+    # Legacy 'enforce' mode: the failing nodes are frozen, so the sheet cannot
+    # move at all and the run must stop as blocked rather than iterate.
+    result = solve_coupled_material_wake(mesh, iterations=2, gate_mode='enforce')
     assert result['status'].startswith('blocked_')
     assert not result['converged'] and not result['kinematic_candidate']
     assert len(calls) == 1  # initial canonical solve only
     update = result['history'][0]['outgoing_update']
     assert not update['accepted'] and update['reason_counts'][failure] > 0
+
+
+def test_audit_mode_never_freezes_and_withholds_the_candidate(monkeypatch):
+    """Production mode: divergent sampling is reported, not used to pick nodes."""
+    class BadField(UniformField):
+        def __call__(self, p, *, order):
+            return np.array([1., 0., np.log(abs(p[2])+1e-30)])
+
+    mesh, _calls = mock_coupling(monkeypatch, BadField())
+    result = solve_coupled_material_wake(mesh, iterations=2)  # default is audit
+    assert result['gate_mode'] == 'audit'
+    record = result['history'][0]
+    for diag in record['wakes'].values():
+        assert diag['eligibility']['rejected'] == 0
+        assert diag['eligibility']['audit_rejected'] > 0
+        assert diag['node_epsilon_error_max'] > 0.02
+    assert not result['converged'] and not result['kinematic_candidate']
 
 
 def frozen_sample():
@@ -461,3 +485,195 @@ def test_unconverged_initial_pressure_kutta_is_distinct_from_later_failure(monke
     assert result["history"][0]["nonlinear_failure_phase"] == "initial_fixed_wake"
     assert result["history"][0]["outgoing_update"] is None
     assert not result["converged"]
+
+
+
+def test_rm_regularized_total_velocity_matches_all_p1_parts_and_keeps_gradient():
+    from panel.p1_regularized_sheet_velocity import RegularizedP1SheetField
+    mesh, state = small_field()
+    core = 0.11
+    field = TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=core)
+    wall = (mesh.xyz, mesh.faces, np.asarray(state["mu"])[mesh.dof_face])
+    group = mesh.groups[0]
+    wake_nodal = group.gamma_hat @ state["gamma"]
+    wake = (group.wake_xyz, group.wake_faces, wake_nodal[group.wake_faces])
+    oracle = RegularizedP1SheetField([wall, wake], freestream=field.free,
+                                     core_radius=core, quadrature_order=16)
+    for point in (np.array([0.3, -0.4, 1.7]),
+                  group.wake_xyz[group.wake_faces[0]].mean(axis=0)):
+        np.testing.assert_allclose(field(point, order=16), oracle(point, order=16),
+                                   rtol=1e-13, atol=1e-14)
+    assert np.linalg.norm(field.grad_face) > 0
+
+
+def test_rm_regularized_total_velocity_requires_explicit_core():
+    mesh, state = small_field()
+    with pytest.raises(ValueError, match="explicit positive core_radius"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1")
+    with pytest.raises(ValueError, match="explicit positive core_radius"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.0)
+    # The existing default remains the unregularized analytic P1 evaluator.
+    default = TotalVelocity(mesh, state)
+    explicit = TotalVelocity(mesh, state, method="analytic_edges")
+    point = np.array([0.3, -0.4, 1.7])
+    np.testing.assert_array_equal(default(point), explicit(point))
+
+
+def test_projection_fan_options_fail_closed():
+    mesh, state = small_field()
+    # An unknown quadrature name must not fall through to the legacy path.
+    with pytest.raises(ValueError, match="area_quadrature must be"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.1,
+                      area_quadrature="bogus")
+    # Requesting the fan while the analytic evaluator is selected can never be honoured.
+    with pytest.raises(ValueError, match="requires method='rm_regularized_p1'"):
+        TotalVelocity(mesh, state, method="analytic_edges",
+                      area_quadrature="projection_fan")
+    # Fan controls are validated even before the regularized field is built.
+    with pytest.raises(ValueError, match="fan_order must be"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.1,
+                      area_quadrature="projection_fan", fan_order=1)
+    with pytest.raises(ValueError, match="fan_strips must be"):
+        TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.1,
+                      area_quadrature="projection_fan", fan_strips=0)
+    # The legacy default is untouched.
+    legacy = TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=0.1)
+    assert legacy.area_quadrature == "legacy_duffy"
+
+
+def test_rm_regularized_g1_iteration_zero_preserves_unregularized_strength_solve():
+    from panel.p1_lifting_g2 import solve_multi
+    mesh = generated_mesh()
+    canonical = solve_multi(mesh, 5., kutta="signed_speed")
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0,
+        velocity_method="rm_regularized_p1", core_radius=0.03, order=12)
+    for key in ("mu", "gamma", "cp"):
+        np.testing.assert_allclose(result["state"][key], canonical[key],
+                                   atol=1e-10, rtol=1e-10)
+    row = result["history"][0]
+    assert row["velocity_method"] == "rm_regularized_p1"
+    assert row["core_radius"] == pytest.approx(0.03)
+    assert row["strength_solve_kernel"] == "unregularized_P1_BEM_operators"
+    assert result["kernel"] == "RM_regularized_P1_edge_plus_interior_gradient"
+    assert not result["physical_accuracy_accepted"] and not result["converged"]
+
+
+
+def generated_g2_mesh():
+    from panel.p1_lifting_g1 import make_wing
+    from panel.p1_lifting_g2 import combine_wings
+    main = make_wing(chord_panels=4, span_panels=4, wake_panels=2)
+    tail = make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55,
+                     camber=0., wake_panels=2)
+    return combine_wings([main, tail], names=["main_wing", "raised_tail"],
+                         origins=[(0., 0., 0.), (1.6, 0., .35)],
+                         reference_chord=main.chord, reference_point=main.reference_point)
+
+
+def test_rm_regularized_g2_iteration_zero_preserves_all_group_strengths():
+    from panel.p1_lifting_g2 import solve_multi
+    mesh = generated_g2_mesh()
+    canonical = solve_multi(mesh, 5., kutta="signed_speed")
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0,
+        velocity_method="rm_regularized_p1", core_radius=0.03, order=12)
+    for key in ("mu", "gamma", "cp"):
+        np.testing.assert_allclose(result["state"][key], canonical[key],
+                                   atol=1e-10, rtol=1e-10)
+    assert len(result["state"]["group_results"]) == 2
+    assert set(result["history"][0]["wakes"]) == {"main_wing", "raised_tail"}
+    assert result["history"][0]["core_radius"] == pytest.approx(0.03)
+    assert not result["physical_accuracy_accepted"] and not result["converged"]
+
+
+
+def test_frozen_snapshot_replay_can_override_velocity_without_resolving_strengths():
+    mesh = generated_mesh()
+    saved = {}
+    def capture(iteration, current, state, record, arrays):
+        saved.update({key: np.asarray(value).copy() for key, value in arrays.items()})
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0, save_callback=capture)
+    sha = result["history"][0]["state_sha256"]
+    replay_same = __import__(
+        "panel.p1_coupled_material_wake", fromlist=["replay_snapshot"]).replay_snapshot(
+            saved, sha)
+    assert replay_same["replay_mode"] == "reproduce_recorded_samples"
+    assert replay_same["bitwise_equal"]
+    replay_rm = __import__(
+        "panel.p1_coupled_material_wake", fromlist=["replay_snapshot"]).replay_snapshot(
+            saved, sha, velocity_method="rm_regularized_p1",
+            core_radius=0.03, quadrature_order=24)
+    assert replay_rm["replay_mode"] == "alternate_velocity_on_frozen_state"
+    assert replay_rm["evaluation_finite"]
+    assert replay_rm["evaluated_method"] == "rm_regularized_p1"
+    assert replay_rm["evaluated_core_radius"] == pytest.approx(0.03)
+    assert replay_rm["quadrature_order"] == 24
+    assert replay_rm["strength_solve_kernel"] == "frozen_unregularized_P1_BEM_state"
+
+
+
+def test_total_velocity_projection_fan_matches_direct_regularized_field():
+    from panel.p1_regularized_sheet_velocity import RegularizedP1SheetField
+    mesh, state = small_field()
+    core = 0.08
+    field = TotalVelocity(mesh, state, method="rm_regularized_p1",
+                          core_radius=core, area_quadrature="projection_fan",
+                          fan_order=24, fan_strips=8)
+    wall = (mesh.xyz, mesh.faces, np.asarray(state["mu"])[mesh.dof_face])
+    group = mesh.groups[0]
+    nodal = group.gamma_hat @ state["gamma"]
+    wake = (group.wake_xyz, group.wake_faces, nodal[group.wake_faces])
+    oracle = RegularizedP1SheetField(
+        [wall, wake], freestream=field.free, core_radius=core,
+        area_quadrature="projection_fan", fan_order=24, fan_strips=8)
+    point = np.array([0.3, -0.4, 1.7])
+    np.testing.assert_allclose(field(point), oracle(point), rtol=1e-13, atol=1e-14)
+    assert field.area_quadrature == "projection_fan"
+    assert field.fan_order == 24 and field.fan_strips == 8
+
+
+def test_solve_callback_snapshot_records_projection_fan_controls():
+    mesh = generated_mesh()
+    captured = {}
+    def save(iteration, current, state, record, arrays):
+        captured["record"] = record
+        captured["arrays"] = {k: np.asarray(v).copy() for k, v in arrays.items()}
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0,
+        velocity_method="rm_regularized_p1", core_radius=0.04,
+        area_quadrature="projection_fan", fan_order=24, fan_strips=8,
+        save_callback=save)
+    assert captured["record"]["area_quadrature"] == "projection_fan"
+    assert captured["record"]["fan_order"] == 24
+    assert captured["record"]["fan_strips"] == 8
+    assert str(captured["arrays"]["sampling_area_quadrature"]) == "projection_fan"
+    assert int(captured["arrays"]["sampling_fan_order"]) == 24
+    assert int(captured["arrays"]["sampling_fan_strips"]) == 8
+    assert result["area_quadrature"] == "projection_fan"
+
+
+def test_snapshot_replay_overrides_projection_fan_and_preserves_old_snapshot_default():
+    from panel.p1_coupled_material_wake import replay_snapshot
+    mesh = generated_mesh()
+    captured = {}
+    def save(iteration, current, state, record, arrays):
+        captured.update({k: np.asarray(v).copy() for k, v in arrays.items()})
+    result = solve_coupled_material_wake(
+        mesh, 5., kutta="signed_speed", iterations=0,
+        velocity_method="rm_regularized_p1", core_radius=0.04,
+        save_callback=save)
+    sha = result["history"][0]["state_sha256"]
+    fan = replay_snapshot(captured, sha, area_quadrature="projection_fan",
+                          fan_order=24, fan_strips=8)
+    assert fan["evaluated_area_quadrature"] == "projection_fan"
+    assert fan["fan_order"] == 24 and fan["fan_strips"] == 8
+    # Legacy snapshot without the new keys remains legacy_duffy by default.
+    old = dict(captured)
+    for key in ("sampling_area_quadrature", "sampling_fan_order", "sampling_fan_strips"):
+        old.pop(key, None)
+    old_sha = __import__("panel.p1_coupled_material_wake",
+                         fromlist=["snapshot_hash"]).snapshot_hash(old)
+    replay = replay_snapshot(old, old_sha)
+    assert replay["evaluated_area_quadrature"] == "legacy_duffy"

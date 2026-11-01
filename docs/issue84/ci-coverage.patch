@@ -1,0 +1,13 @@
+﻿diff --git a/.github/workflows/issue77-gamma-support.yml b/.github/workflows/issue77-gamma-support.yml
+index df86dfd..e0eeb3d 100644
+--- a/.github/workflows/issue77-gamma-support.yml
++++ b/.github/workflows/issue77-gamma-support.yml
+@@ -67,6 +67,8 @@ jobs:
+           test/test_p1_galerkin_cad.py
+           test/test_p1_lifting_g1.py
+           test/test_p1_lifting_g2.py
++          test/test_p1_regularized_sheet_velocity.py
++          test/test_p1_coupled_material_wake.py
+           test/test_p1_cp_diagnostics.py
+           -q
+ 
