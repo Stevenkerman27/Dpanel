@@ -182,6 +182,171 @@ Consequences, in order of value:
 * No production default changed: analytic_edges, legacy_duffy and fan 16x8 are
   untouched.
 
+## 6c. The hybrid evaluator: fan near, plain Duffy far
+
+The far-field probe left one route open: only 0.4 to 1.3 percent of the wake triangles lie
+within 10 to 20 core radii of a real sampler target, so the fan is resolving a peak
+that is not there for 99 percent of the sheet. This section is that route,
+implemented and measured end to end.
+
+### What the closed form actually is
+
+The closed-form path is two different pieces, and only one of them is a boundary
+integral. For a planar triangle with linear doublet density mu
+(panel/p1_analytic_sheet_velocity.py:1-16),
+
+    u = (B + sum_faces gamma x (S - Omega n)) / (4 pi),
+    B = sum_edges integral_edge mu (t x r)/|r|**3 dl,
+    S = sum_face_edges (t x n) integral_edge 1/|r| dl,
+    gamma = grad_s(mu) x n.
+
+Both S and B are boundary integrals of a surface integral, by the surface form of
+Stokes/Green,
+
+    integral_T grad_s phi dS = oint_dT phi (n x dl),   phi = 1/|r|,
+
+and the straight-edge integrals, including the linear-strength first moment
+(I1, I3, Il3 in panel/p1_analytic_sheet_velocity.py:23-65), have elementary
+antiderivatives. The normal part is not a boundary integral at all: for a flat
+triangle with no core it is the solid angle, an arctan2 of the three edge vectors
+(panel/p1_analytic_sheet_velocity.py:68-77). So 'closed form' means 'edge integrals
+plus solid angle': exact on a flat triangle, linear in the face count, with a tiny
+constant (1.13 ms per target for all 770 triangles, section 2).
+
+Under a core radius the in-plane part survives in closed form: the regularised field
+evaluates it in _edge_velocity (panel/p1_regularized_sheet_velocity.py:207-228) with
+effective2 = |rho|**2 + core**2, which is the same antiderivative with r replaced by
+sqrt(r**2 + core**2). The normal part loses its elementary form, which is why the
+regularised area term is integrated numerically at all
+(panel/p1_regularized_sheet_velocity.py:391-404: induced = _edge_velocity +
+_area_velocity). Two constraints follow for any hybrid, and they are the reason this
+section looks the way it does:
+
+* only the area term can be split -- the edge term is already exact and cheap;
+* the far set must be integrated with the same regularised kernel. Substituting
+  analytic_edges would replace the kernel by one without a core, and the difference
+  is a model change of order (core/distance)**2, not a quadrature error.
+
+### The split
+
+panel/p1_hybrid_area.py adds three things and changes nothing else:
+
+* point_triangle_distance: exact point-triangle distance (Ericson 5.1.5, vectorised)
+  used instead of a centroid distance, because a centroid test misclassifies every
+  large face whose centroid is far while its surface is close, and the wake sheet has
+  such faces;
+* near_face_mask: distance < near_cores * core -- the core radius is the only length
+  that sets the width of the regularisation peak, so the band is measured in core
+  radii, not in edge lengths (the earlier prototype in tools/issue84/far_field_split.py
+  used a multiple of the longest edge and could not be given an error interpretation);
+* hybrid_area_terms / hybrid_area_velocity / hybrid_velocity: fan (order, strips) on
+  the near set, plain tensor Duffy map (order) on the far set, edge term untouched.
+  hybrid_velocity(field, p, near_cores=inf) reproduces field(p) bit for bit, which is
+  how the parity test pins the module to the production evaluator.
+
+### The measurement
+
+Acceptance is tools/issue92/hybrid_acceptance.py. Its thresholds are declared in the
+module docstring, before any measurement:
+
+* max |dv|/U <= 1e-3 and p90 |dv|/U <= 1e-4, with U the freestream magnitude -- the
+  same normalisation as the production sampling gate's epsilon_error, so 1e-3 is a
+  twentieth of the gate's epsilon_tol and not a number chosen after the fact;
+* cost <= 0.05x the reference evaluation, the reference being the refined fan 48x8
+  that section 4 uses as the converged pass.
+
+All 109 targets are the points the production gate currently REJECTS (they come from
+the sampling_epsilon and sampling_quadrature diagnostics of
+tools/issue84/wake_node_rejection.py), i.e. the hard tail of the G2 wake, not a
+typical sample. Costs are medians of best-of-three per point, all in one process.
+
+Two facts fix the design before any tuning:
+
+1. The near rule's strip count is not the limiter. Near 48x1 and near 48x8 give the
+   same maximum error to within a factor 1.5 at fixed far order (2.2e-2 vs 2.6e-2 at
+   10 core, far 16), so the residual is not the near fan.
+2. The far quadrature is the limiter, and it converges slowly because the far set is
+   dominated by high-aspect sliver faces whose contributions cancel strongly. On the
+   worst target (node 408, near set exactly equal to the reference), the far set alone
+   gives 6.7e-3 at order 16, 4.4e-5 at 32 and 4.4e-8 at 48 against the same far set
+   evaluated with the fan at 48x8. A plain tensor map needs order 32 for the 1e-4
+   level; order 16 is nowhere near it even at 20 core radii.
+
+Near fan 48x1 (docs/issue92/hybrid_acceptance_g2.json), 109 targets, 9 cells,
+cost ratios against the 48x8 reference and against 48x1:
+
+| near core / far order | max | p90 | median | cost | vs 48x1 | verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| 5 / 8  | 2.00e-01 | 9.66e-02 | 8.46e-05 | 0.015 | 0.113 | no |
+| 5 / 12 | 1.13e-01 | 5.75e-03 | 1.95e-06 | 0.018 | 0.136 | no |
+| 5 / 16 | 2.72e-02 | 1.39e-02 | 5.41e-08 | 0.023 | 0.170 | no |
+| 10 / 8  | 1.87e-01 | 4.34e-02 | 1.56e-05 | 0.016 | 0.117 | no |
+| 10 / 12 | 9.06e-03 | 4.56e-03 | 2.11e-07 | 0.018 | 0.139 | no |
+| 10 / 16 | 2.21e-02 | 4.03e-03 | 2.01e-09 | 0.023 | 0.173 | no |
+| 20 / 8  | 2.20e-02 | 5.38e-03 | 1.24e-06 | 0.016 | 0.124 | no |
+| 20 / 12 | 1.86e-02 | 4.30e-03 | 1.59e-08 | 0.019 | 0.145 | no |
+| 20 / 16 | 5.01e-03 | 3.36e-03 | 1.98e-10 | 0.024 | 0.179 | no |
+
+Near fan 48x8 (docs/issue92/hybrid_acceptance_g2_near8.json), same grid; the cost
+column is also against 48x1 because the baseline and the near rule are then the same
+configuration:
+
+| near core / far order | max | p90 | median | cost | verdict |
+| --- | --- | --- | --- | --- | --- |
+| 5 / 8  | 2.03e-01 | 9.23e-02 | 8.46e-05 | 0.019 | no |
+| 5 / 12 | 1.16e-01 | 9.18e-03 | 1.95e-06 | 0.022 | no |
+| 5 / 16 | 3.16e-02 | 1.25e-02 | 5.09e-08 | 0.026 | no |
+| 10 / 8  | 1.83e-01 | 4.32e-02 | 1.56e-05 | 0.023 | no |
+| 10 / 12 | 8.68e-03 | 4.56e-03 | 2.11e-07 | 0.025 | no |
+| 10 / 16 | 2.64e-02 | 5.03e-03 | 1.33e-09 | 0.030 | no |
+| 20 / 8  | 2.14e-02 | 8.01e-03 | 1.24e-06 | 0.029 | no |
+| 20 / 12 | 1.92e-02 | 5.60e-03 | 1.04e-08 | 0.032 | no |
+| 20 / 16 | 3.72e-03 | 6.76e-04 | 1.37e-10 | 0.037 | no |
+
+The far order is then raised (docs/issue92/hybrid_acceptance_g2_far32.json, near fan
+48x8):
+
+| near core / far order | max | p90 | median | cost | verdict |
+| --- | --- | --- | --- | --- | --- |
+| 10 / 24 | 1.11e-03 | 2.28e-04 | 4.13e-13 | 0.043 | no (both error bounds miss) |
+| 10 / 32 | 5.28e-04 | 1.16e-04 | 2.67e-15 | 0.070 | no (p90 misses) |
+| 20 / 24 | 3.70e-04 | 7.50e-05 | 1.24e-14 | 0.050 | no (cost 0.0504 vs 0.05) |
+| 20 / 32 | 1.90e-05 | 5.16e-06 | 1.78e-15 | 0.077 | no (cost only) |
+
+### What this unit claims
+
+* The substitution error of the hybrid is dominated by the far quadrature and is
+  controlled: at 20 core / far 32 the worst of the 109 hard targets is 1.9e-5 in
+  |dv|/U and the 90th percentile 5.2e-6, i.e. 50x and 19x inside the declared bounds,
+  with a median of 1.8e-15.
+* The declared cost bound is NOT met. The cheapest cell that meets both error bounds
+  is 20 core / far 24 at 0.0504x the 48x8 reference, which misses 0.05 by 0.8 percent;
+  the cell with real margin on accuracy costs 0.077x.
+* In absolute terms that is 60 to 110 ms per target against 1.38 to 1.97 s for the
+  48x8 reference and 328 ms for the 16x8 fan the gate uses as its base (section 1).
+  The hybrid is therefore about 3x cheaper than the base fan and 13 to 23x cheaper
+  than the refined one, with an error that neither fan achieves on this target set --
+  which is why the comparison that matters is accuracy at equal cost, not cost alone.
+* The near rule is cheap and does not need to be clever: 48x1 is within a factor 1.5
+  of 48x8 in the worst case, so the near fan can stay at the cheapest setting.
+* The 4 to 10 ms per target projected in section 8 is refuted: the flat tensor map has
+  to run at order 24 to 32 over 99 percent of the sheet to beat 1e-4, and that is where
+  the 60 to 110 ms goes. A cheaper far field would need a better quadrature (projection
+  or moment splitting on the far set), not a cheaper rule.
+
+### Non-claims
+
+* The acceptance set is the rejected set. A pass here would say the substitution error
+  is below the gate tolerance even on the difficult targets; it says nothing about
+  whether the fan configuration itself is converged (section 6).
+* No production default changed: analytic_edges and fan 16x8 are untouched, and the
+  hybrid is reachable only by calling panel/p1_hybrid_area.py explicitly.
+* Timings are one machine, best of three, same process; only same-run ratios are
+  meaningful.
+* The closed-form (core-free) far evaluation is not measured here: the suite measures
+  quadrature substitutions of the same kernel only, and a core-free far field would
+  need its own (core/distance)**2 model-error study.
+
 ## 7. Reproduction
 
     python -m tools.issue92.wake_evaluator_profile \
@@ -191,17 +356,29 @@ Consequences, in order of value:
 
 Contract tests: test/test_issue92_wake_profile.py (5 tests, 0.4 s, no fixtures).
 
-Far-field probe: python -m tools.issue92.far_field_probe --bands 3 10 30 100
---near-share (docs/issue92/far_field_bands.json).
+Far-field probe: python -m tools.issue92.far_field_probe --bands 3 10 30 100 --near-share (docs/issue92/far_field_bands.json).
+
+Hybrid acceptance (section 6c):
+
+    python -m tools.issue92.hybrid_acceptance \
+        --main-half-surface <repo>/runs/half_cad_wingbody_v1/surface.json \
+        --csv eps:runs/issue84/projection_gate_eps.csv \
+        --csv quad:runs/issue84/projection_gate_quad.csv \
+        --fan-strips 8 --near-cores 10 20 --far-orders 24 32 \
+        --out docs/issue92/hybrid_acceptance_g2_far32.json
+
+Hybrid contract tests: test/test_p1_hybrid_area.py (16 tests, 0.14 s, no fixtures).
 
 ## 8. Next
 
 * Batched target x face kernel, kept as an opt-in backend and gated on parity with
   area_terms at 1e-13; its expected ceiling is the projection share, not an order
   of magnitude (section 4b).
-* Near-field fan plus a cheap far field: only 0.7 percent of the faces are within
-  10 core radii of a real sampler target (section 6b), so this is the route to a fan
-  that costs 4 to 10 ms per target instead of 292 ms. It must be validated end to
-  end against the full fan at the gate tolerance first, and a monopole far field is
-  refuted by the same table.
+* Near-field fan plus a far field: implemented and measured in section 6c. It is
+  60 to 110 ms per target (0.077x the 48x8 reference, about a third of the 16x8 base
+  fan) with a worst-case substitution error of 1.9e-5 on the 109 rejected targets,
+  which meets both error bounds but misses the declared 0.05 cost bound. The remaining
+  lever is the far quadrature, not the near rule: the flat tensor map needs order 24
+  to 32 over 99 percent of the sheet, so a cheaper far field needs projection or a
+  moment split on the far set.
 * CUDA for the influence kernel and the near-field fan only after CPU parity.
