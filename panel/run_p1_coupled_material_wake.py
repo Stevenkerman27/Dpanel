@@ -15,6 +15,8 @@ import os
 import numpy as np
 
 from .p1_coupled_material_wake import solve_coupled_material_wake, snapshot_hash, replay_snapshot
+from .wake_velocity_methods import (ACCEPTED_METHODS, AREA_QUADRATURES,
+                                    ARCHITECTURE_DOC, format_table)
 from .velocity_profile import enable as _profile_enable, reset as _profile_reset
 from .velocity_profile import write as _profile_write
 
@@ -33,6 +35,8 @@ def _write_json(path, value):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--describe-velocity-methods', action='store_true',
+                        help=f'Print the three wake models and their status, then exit (see {ARCHITECTURE_DOC})')
     parser.add_argument('--case', choices=('g1', 'g2'), default='g1')
     parser.add_argument('--main-half-surface', type=Path)
     parser.add_argument('--alpha', type=float, default=5.)
@@ -46,16 +50,17 @@ def main(argv=None):
     parser.add_argument('--ladder', type=float, nargs='+', default=[1., .5, .25, .125])
     parser.add_argument('--quadrature-order', type=int, default=48,
                         help='Legacy edge Gauss order; RM-P1 uses this as Duffy area order; ignored by analytic edges')
-    parser.add_argument('--velocity-method',
-                        choices=('analytic_edges', 'legacy_gauss', 'rm_regularized_p1'),
+    parser.add_argument('--velocity-method', choices=ACCEPTED_METHODS,
                         default='analytic_edges',
-                        help='Default analytic P1; rm_regularized_p1 is opt-in and requires --core-radius')
+                        help='Wake velocity model: analytic_edges (method 1, default) or '
+                             'rm_regularized_p1 (method 2, needs --core-radius); '
+                             f'see {ARCHITECTURE_DOC}')
     parser.add_argument('--core-radius', type=float, default=None,
                         help='Explicit Rosenhead–Moore core length in geometry units; required only for rm_regularized_p1')
-    parser.add_argument('--area-quadrature',
-                        choices=('legacy_duffy', 'projection_fan', 'projection_fan_adaptive'),
+    parser.add_argument('--area-quadrature', choices=AREA_QUADRATURES,
                         default='legacy_duffy',
-                        help='RM-P1 area integration; the fan modes are opt-in')
+                        help='Area-term integrator inside method 2 (a numerical setting, '
+                             'not a velocity method); the fan modes are opt-in')
     parser.add_argument('--near-ratio', type=float, default=2.0,
                         help='Near/far split: near when the point-to-triangle distance is at most this multiple of the circumradius')
     parser.add_argument('--adaptive-far-order', type=int, default=8)
@@ -79,15 +84,13 @@ def main(argv=None):
     parser.add_argument('--max-nfev', type=int, default=80)
     parser.add_argument('--replay-snapshot', type=Path)
     parser.add_argument('--expected-state-sha')
-    parser.add_argument('--replay-velocity-method',
-                        choices=('analytic_edges', 'legacy_gauss', 'rm_regularized_p1'),
+    parser.add_argument('--replay-velocity-method', choices=ACCEPTED_METHODS,
                         default=None, help='Override only the sampled velocity kernel when replaying a frozen state')
     parser.add_argument('--replay-core-radius', type=float, default=None,
                         help='Explicit RM core radius for frozen-state replay')
     parser.add_argument('--replay-quadrature-order', type=int, default=None,
                         help='Override area quadrature order for frozen-state replay')
-    parser.add_argument('--replay-area-quadrature',
-                        choices=('legacy_duffy', 'projection_fan', 'projection_fan_adaptive'),
+    parser.add_argument('--replay-area-quadrature', choices=AREA_QUADRATURES,
                         default=None)
     parser.add_argument('--replay-near-ratio', type=float, default=None)
     parser.add_argument('--replay-adaptive-far-order', type=int, default=None)
@@ -100,8 +103,17 @@ def main(argv=None):
     parser.add_argument('--replay-fan-refinement-strips', type=int, default=None)
     parser.add_argument('--profile-json', type=Path, default=None,
                         help='Opt-in kernel profiling counters/timers (issue #84 P0); inert when omitted')
-    parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--out', type=Path,
+                        help='Evidence directory (required except with --describe-velocity-methods)')
     args = parser.parse_args(argv)
+    if args.describe_velocity_methods:
+        print(format_table())
+        print(f'\nMethods 1 and 2 are wired to the coupled B2 solve; method 3 is research '
+              f'only. Quadrature order/strips are numerical controls, not methods. '
+              f'See {ARCHITECTURE_DOC}.')
+        return 0
+    if args.out is None:
+        parser.error('--out is required')
     args.out.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
     if args.profile_json is not None:

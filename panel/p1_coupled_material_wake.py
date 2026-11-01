@@ -17,6 +17,9 @@ from __future__ import annotations
 from .p1_geometry_contact import (classify_new_triangle, classify_swept_wall,
                                   declared_contact_pairs,
                                  swept_hull)
+from .wake_velocity_methods import (ACCEPTED_METHODS, AREA_QUADRATURES,
+                                    ARCHITECTURE_DOC, DEFAULT_METHOD, describe,
+                                    wiring_error)
 from dataclasses import dataclass
 from itertools import combinations
 import hashlib
@@ -53,11 +56,19 @@ def triangle_data(xyz, faces):
 class TotalVelocity:
     """U + wall + ALL wakes, preserving each sheet's P1 gradient.
 
-    analytic_edges is the default unregularized P1 evaluator. rm_regularized_p1
-    applies one explicit Rosenhead–Moore core to BOTH the P1 edge traces and
-    in-panel distributed-vorticity term. It changes only velocity
-    reconstruction for wake kinematics; solve_multi's potential operators
-    remain unregularized and unchanged.
+    Two wire-ready models, both on the same P1 doublet-sheet representation
+    (see docs/ARCHITECTURE_WAKE_MODELS.md):
+
+    * analytic_edges -- method 1, unregularized, production default/reference.
+    * rm_regularized_p1 -- method 2, one explicit Rosenhead–Moore core applied
+      to BOTH the P1 edge traces and the in-panel distributed-vorticity term.
+
+    area_quadrature (legacy_duffy | projection_fan | projection_fan_adaptive) is
+    an integrator choice *inside* method 2, not a velocity method. legacy_gauss
+    is a deprecated backend kept for frozen-snapshot replay. method 3
+    (Lagrangian filaments) is documented and not wired. Both models change only
+    velocity reconstruction for wake kinematics; solve_multi's potential
+    operators remain unregularized and unchanged.
     """
     def __init__(self, mesh, state, *, method="analytic_edges", core_radius=None,
                  area_quadrature="legacy_duffy", fan_order=16, fan_strips=8,
@@ -97,10 +108,13 @@ class TotalVelocity:
         self.fan_refinement_strips = fan_refinement_strips
         # Fail closed: an area-quadrature choice that the selected evaluator cannot
         # honour would otherwise be accepted and silently ignored.
-        if area_quadrature not in ("legacy_duffy", "projection_fan",
-                                   "projection_fan_adaptive"):
-            raise ValueError("area_quadrature must be legacy_duffy, projection_fan or "
-                             "projection_fan_adaptive")
+        if method not in ACCEPTED_METHODS:
+            raise ValueError(
+                "velocity_method must be one of " + ", ".join(ACCEPTED_METHODS)
+                + f"; quadrature settings belong to area_quadrature; see {ARCHITECTURE_DOC}")
+        self.method_spec = describe(method)
+        if area_quadrature not in AREA_QUADRATURES:
+            raise ValueError("area_quadrature must be " + " or ".join(AREA_QUADRATURES))
         if type(fan_order) is not int or fan_order < 2:
             raise ValueError("fan_order must be an integer >= 2")
         if type(fan_strips) is not int or fan_strips < 1:
@@ -143,7 +157,8 @@ class TotalVelocity:
                 self._regularized.adaptive_subdivision_fan
             self.quadrature_is_internal = self._regularized.quadrature_is_internal
         elif method != "legacy_gauss":
-            raise ValueError("unknown P1 sheet-velocity integration method")
+            raise ValueError(wiring_error(method) or
+                             "unknown P1 sheet-velocity integration method")
         if not np.isfinite(self.mu_face).all() or not np.isfinite(self.grad_face).all():
             raise FloatingPointError("nonfinite solved P1 strength")
 
@@ -763,8 +778,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     if gate_mode not in ("enforce", "audit", "off", "safe"):
         raise ValueError("gate_mode must be 'enforce', 'audit', 'off' or 'safe'")
     audit_quadrature = gate_mode != 'off'
-    if velocity_method not in ("analytic_edges", "legacy_gauss", "rm_regularized_p1"):
-        raise ValueError("unsupported P1 wake velocity method")
+    if velocity_method not in ACCEPTED_METHODS:
+        raise ValueError(
+            "velocity_method must be one of " + ", ".join(ACCEPTED_METHODS)
+            + f"; quadrature settings belong to area_quadrature; see {ARCHITECTURE_DOC}")
     if velocity_method == "rm_regularized_p1":
         if core_radius is None or not np.isfinite(core_radius) or core_radius <= 0:
             raise ValueError("rm_regularized_p1 requires an explicit positive core_radius")

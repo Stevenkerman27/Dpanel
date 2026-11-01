@@ -2,6 +2,12 @@
 
 Status: opt-in research mode. No production default changes. `physical_accuracy_accepted=false`.
 
+Where this sits in the model taxonomy: this document describes **method 2** of
+`docs/ARCHITECTURE_WAKE_MODELS.md`. The area integrators (`legacy_duffy`,
+`projection_fan`, `projection_fan_adaptive`) are `area_quadrature` settings of
+that one method and are **not** separate velocity methods; `fan_order`,
+`fan_strips` and the refinement settings are numerical controls.
+
 ## Why this is not a constant-strength filament replacement
 
 The continuous P1 doublet-sheet velocity decomposition contains two distinct pieces:

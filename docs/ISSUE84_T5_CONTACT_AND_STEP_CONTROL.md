@@ -103,7 +103,7 @@ Full T5-affected set (`test_p1_gate_contact`, `test_p1_geometry_contact`,
 
 Setup: G2 assembly (`half_cad_wingbody_v1` main wing + `make_wing(4,4,span 1.8,
 chord .55, wake 3)` raised tail at (1.6, 0, .35)), alpha 5 deg,
-`velocity_method=signed_speed`, `gate_mode=audit`, 8 iterations,
+`kutta='signed_speed'`, `velocity_method='analytic_edges'`, `gate_mode=audit`, 8 iterations,
 `--max-backtracks 12`, default `GeometryGates`. 765 wake nodes, 95 roots,
 175 free nodes declared sampling-rejected by the end.
 
