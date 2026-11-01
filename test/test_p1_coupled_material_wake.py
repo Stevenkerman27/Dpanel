@@ -350,7 +350,12 @@ def test_mock_coupling_cannot_report_frozen_nodes_as_converged(monkeypatch, fail
             return np.array([1., 0., .02])
     mesh, calls = mock_coupling(monkeypatch, BadField())
     if failure == 'wall':
-        monkeypatch.setattr('panel.p1_coupled_material_wake.geometry_failure', lambda *a: 'wall')
+        monkeypatch.setattr('panel.p1_coupled_material_wake.geometry_audit',
+                            lambda *a, **k: dict(reason='wall', detail=dict(
+                                groups={}, contacts=dict(kinds={'penetration': 1},
+                                                         violations_count=1,
+                                                         worst_depth=.01,
+                                                         violations=[]))))
     # Legacy 'enforce' mode: the failing nodes are frozen, so the sheet cannot
     # move at all and the run must stop as blocked rather than iterate.
     result = solve_coupled_material_wake(mesh, iterations=2, gate_mode='enforce')

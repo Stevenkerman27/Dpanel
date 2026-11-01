@@ -1,0 +1,491 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "condition": "new_gate_global",
+  "gate_mode": "audit",
+  "iterations": 8,
+  "kinematic_candidate": false,
+  "kutta": "signed_speed",
+  "max_backtracks": 12,
+  "rows": [
+    {
+      "CD_pressure": 0.007126885631336986,
+      "CL": 0.4413553954553846,
+      "CL_gamma": 0.44637269221791404,
+      "CM_y": -0.12213725704223075,
+      "accepted": true,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 22.98151598837876,
+          "accepted_rms": 1.599420637358513,
+          "cap_min": null,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "none",
+          "raw_max": 22.98151598837876,
+          "raw_rms": 1.599420637358513
+        },
+        "raised_tail": {
+          "accepted_max": 0.11192604097131043,
+          "accepted_rms": 0.053019531453878055,
+          "cap_min": null,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "none",
+          "raw_max": 0.11192604097131043,
+          "raw_rms": 0.053019531453878055
+        }
+      },
+      "contacts": {
+        "declared": 116,
+        "kinds": {
+          "contact": 74
+        },
+        "pairs_tested": 941,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 124,
+        "undeclared": 8,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.042653544996689684
+      },
+      "control": "none+bounded_global_fallback",
+      "control_nodes": null,
+      "displacement_max": 0.011221443353700575,
+      "displacement_rms": 0.0009778219633719079,
+      "global_backtracks": 11,
+      "iteration": 0,
+      "kinematic_candidate": false,
+      "map_residual_chord": 22.98151598837876,
+      "moved": 393,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.08401140664917878,
+      "reason_counts": {
+        "area": 0,
+        "attachment": 0,
+        "convergence": 83,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 12,
+        "wall": 0
+      },
+      "relaxation": 0.00048828125,
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "step",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "step",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 5,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.03125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 6,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.015625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 7,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0078125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 8,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.00390625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 9,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.001953125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 10,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0009765625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 83,
+          "convergence": 83,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 0,
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.0012164059660768217
+    },
+    {
+      "CD_pressure": 0.007130612454373167,
+      "CL": 0.44136317433988137,
+      "CL_gamma": 0.4463792519227296,
+      "CM_y": -0.12213181019642484,
+      "accepted": false,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 52.12536307548704,
+          "accepted_rms": 6.363126520380243,
+          "cap_min": null,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "none",
+          "raw_max": 52.12536307548704,
+          "raw_rms": 6.363126520380243
+        },
+        "raised_tail": {
+          "accepted_max": 0.11185898987227295,
+          "accepted_rms": 0.05301076066879223,
+          "cap_min": null,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "none",
+          "raw_max": 0.11185898987227295,
+          "raw_rms": 0.05301076066879223
+        }
+      },
+      "contacts": {
+        "declared": 0,
+        "kinds": {},
+        "pairs_tested": 0,
+        "pre_existing": 0,
+        "pre_existing_pairs": [],
+        "tested": 0,
+        "undeclared": 0,
+        "violations": [],
+        "violations_count": 0,
+        "worst_depth": 0.0
+      },
+      "control": "none",
+      "control_nodes": {
+        "clip": {
+          "main_wing": {
+            "accepted_max": 52.12536307548704,
+            "clipped": 0,
+            "clipped_ids": [],
+            "raw_max": 52.12536307548704
+          },
+          "raised_tail": {
+            "accepted_max": 0.11185898987227295,
+            "clipped": 0,
+            "clipped_ids": [],
+            "raw_max": 0.11185898987227295
+          }
+        },
+        "contacts": {
+          "kinds": {},
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        "groups": {
+          "main_wing": {
+            "step_fraction_max": 0.6818281708748662,
+            "step_limit": 0.25,
+            "step_nodes": [
+              377,
+              387,
+              393,
+              741,
+              752,
+              757,
+              758
+            ]
+          }
+        }
+      },
+      "displacement_max": 0.0,
+      "displacement_rms": 0.0,
+      "global_backtracks": 0,
+      "iteration": 1,
+      "kinematic_candidate": false,
+      "map_residual_chord": 52.12536307548704,
+      "moved": null,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.08408624518286015,
+      "reason_counts": {
+        "area": 0,
+        "attachment": 2,
+        "convergence": 127,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 12,
+        "wall": 0
+      },
+      "relaxation": null,
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "attachment",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "attachment",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 5,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.03125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 6,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.015625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 7,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0078125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 8,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.00390625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 9,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.001953125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 10,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0009765625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 11,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.00048828125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 12,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.000244140625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "attachment",
+        "attachment",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 127,
+          "convergence": 127,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 0,
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.0012164020429335156
+    }
+  ],
+  "schema": "dpanel.issue84.t5_gate_ab.v1",
+  "seconds": 19.76388849999057,
+  "status": "blocked_geometry"
+}

@@ -1,0 +1,295 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "condition": "legacy_gate_global",
+  "gate_mode": "audit",
+  "iterations": 6,
+  "kinematic_candidate": false,
+  "kutta": "signed_speed",
+  "max_backtracks": 12,
+  "rows": [
+    {
+      "CD_pressure": 0.007126885631336986,
+      "CL": 0.4413553954553846,
+      "CL_gamma": 0.44637269221791404,
+      "CM_y": -0.12213725704223075,
+      "accepted": false,
+      "clip": {
+        "main_wing": {
+          "accepted_max": 22.98151598837876,
+          "accepted_rms": 1.599420637358513,
+          "cap_min": null,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "none",
+          "raw_max": 22.98151598837876,
+          "raw_rms": 1.599420637358513
+        },
+        "raised_tail": {
+          "accepted_max": 0.11192604097131043,
+          "accepted_rms": 0.053019531453878055,
+          "cap_min": null,
+          "clipped": 0,
+          "clipped_fraction": 0.0,
+          "clipped_ids": [],
+          "mode": "none",
+          "raw_max": 0.11192604097131043,
+          "raw_rms": 0.053019531453878055
+        }
+      },
+      "contacts": {
+        "declared": 0,
+        "kinds": {
+          "sat_overlap": 1
+        },
+        "pairs_tested": 9,
+        "undeclared": 9,
+        "violations": [
+          {
+            "kind": "sat_overlap",
+            "wake_face": 293,
+            "wall_face": 13
+          }
+        ],
+        "violations_count": 1,
+        "worst_depth": 0.0
+      },
+      "control": "none",
+      "control_nodes": {
+        "clip": {
+          "main_wing": {
+            "accepted_max": 22.98151598837876,
+            "clipped": 0,
+            "clipped_ids": [],
+            "raw_max": 22.98151598837876
+          },
+          "raised_tail": {
+            "accepted_max": 0.11192604097131043,
+            "clipped": 0,
+            "clipped_ids": [],
+            "raw_max": 0.11192604097131043
+          }
+        },
+        "contacts": {
+          "kinds": {
+            "sat_overlap": 1
+          },
+          "violations": [
+            {
+              "kind": "sat_overlap",
+              "wake_face": 293,
+              "wall_face": 13
+            }
+          ],
+          "violations_count": 1,
+          "worst_depth": 0.0
+        },
+        "groups": {}
+      },
+      "displacement_max": 0.0,
+      "displacement_rms": 0.0,
+      "global_backtracks": 0,
+      "iteration": 0,
+      "kinematic_candidate": false,
+      "map_residual_chord": 22.98151598837876,
+      "moved": null,
+      "nonlinear": null,
+      "pressure_kutta_rms": 0.08401140664917878,
+      "reason_counts": {
+        "area": 0,
+        "attachment": 0,
+        "convergence": 83,
+        "fold": 0,
+        "intersection": 0,
+        "intersection_budget": 0,
+        "nonfinite": 0,
+        "root": 95,
+        "speed": 0,
+        "step": 12,
+        "wall": 2
+      },
+      "relaxation": null,
+      "trial_details": [
+        {
+          "backtrack": -1,
+          "kinds": {},
+          "reason": "step",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 0,
+          "kinds": {},
+          "reason": "step",
+          "scale": 1.0,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 1,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.5,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 2,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.25,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 3,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 4,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 5,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.03125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 6,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.015625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 7,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0078125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 8,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.00390625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 9,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.001953125,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 10,
+          "kinds": {},
+          "reason": "step",
+          "scale": 0.0009765625,
+          "violations": [],
+          "violations_count": 0,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 11,
+          "kinds": {
+            "sat_overlap": 1
+          },
+          "reason": "wall",
+          "scale": 0.00048828125,
+          "violations": [
+            {
+              "kind": "sat_overlap",
+              "wake_face": 293,
+              "wall_face": 13
+            }
+          ],
+          "violations_count": 1,
+          "worst_depth": 0.0
+        },
+        {
+          "backtrack": 12,
+          "kinds": {
+            "sat_overlap": 1
+          },
+          "reason": "wall",
+          "scale": 0.000244140625,
+          "violations": [
+            {
+              "kind": "sat_overlap",
+              "wake_face": 293,
+              "wall_face": 13
+            }
+          ],
+          "violations_count": 1,
+          "worst_depth": 0.0
+        }
+      ],
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "wall",
+        "wall"
+      ],
+      "wakes": {
+        "main_wing": {
+          "advanced_despite_audit": 83,
+          "convergence": 83,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "advanced_despite_audit": 0,
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.0012164059660768217
+    }
+  ],
+  "schema": "dpanel.issue84.t5_gate_ab.v1",
+  "seconds": 10.77904920000583,
+  "status": "blocked_geometry"
+}
