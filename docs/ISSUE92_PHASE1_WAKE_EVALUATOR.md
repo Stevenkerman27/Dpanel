@@ -191,11 +191,17 @@ Consequences, in order of value:
 
 Contract tests: test/test_issue92_wake_profile.py (5 tests, 0.4 s, no fixtures).
 
+Far-field probe: python -m tools.issue92.far_field_probe --bands 3 10 30 100
+--near-share (docs/issue92/far_field_bands.json).
+
 ## 8. Next
 
 * Batched target x face kernel, kept as an opt-in backend and gated on parity with
   area_terms at 1e-13; its expected ceiling is the projection share, not an order
   of magnitude (section 4b).
-* Near-field fan plus far-field reduction, since that is the only route to a fan
-  that can be used in production.
+* Near-field fan plus a cheap far field: only 0.7 percent of the faces are within
+  10 core radii of a real sampler target (section 6b), so this is the route to a fan
+  that costs 4 to 10 ms per target instead of 292 ms. It must be validated end to
+  end against the full fan at the gate tolerance first, and a monopole far field is
+  refuted by the same table.
 * CUDA for the influence kernel and the near-field fan only after CPU parity.
