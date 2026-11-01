@@ -171,21 +171,114 @@ def _sub_area2(subs):
     return np.linalg.norm(np.cross(subs[:, 1] - subs[:, 0], subs[:, 2] - subs[:, 0]), axis=1)
 
 
+def torch_available():
+    """True when a torch build can be imported (no device is touched)."""
+    try:
+        import torch  # noqa: F401
+    except Exception:
+        return False
+    return True
+
+
+def _require_torch():
+    try:
+        import torch
+    except Exception as exc:  # pragma: no cover - depends on the environment
+        raise RuntimeError(
+            "backend='torch' requires an importable torch; the active interpreter has none"
+        ) from exc
+    return torch
+
+
+def resolve_device(device):
+    """Map a user device request onto a torch.device, refusing silent fallback.
+
+    The default is the CPU. 'cuda' is only accepted when torch.cuda reports an
+    available device: a request that cannot be honoured raises instead of quietly
+    running on the CPU, because a silent fallback would turn a GPU timing into a
+    CPU timing without saying so.
+    """
+    torch = _require_torch()
+    if isinstance(device, torch.device):
+        dev = device
+    elif isinstance(device, str):
+        if device not in ("cpu", "cuda"):
+            raise ValueError("device must be 'cpu' or 'cuda'")
+        dev = torch.device(device)
+    else:
+        raise ValueError("device must be 'cpu', 'cuda' or a torch.device")
+    if dev.type == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("device 'cuda' requested but torch.cuda.is_available() is False")
+    if dev.type not in ("cpu", "cuda"):
+        raise ValueError("device must resolve to cpu or cuda")
+    return dev
+
+
+def _torch_kernel(sub, own, n_faces, a2, point, core, order, *, device, node_chunk):
+    """Quadrature kernel for already-fanned sub-triangles on torch float64.
+
+    Inputs are the same rigid fan partition that the numpy path consumes: sub is
+    (M,3,3) with the projection q as its first vertex, own maps every sub-triangle to
+    its parent face (0..n_faces-1). Only the kernel runs on the device; the fan, which
+    depends on the target, stays on the CPU.
+    """
+    torch = _require_torch()
+    dev = resolve_device(device)
+    u, v, w = _duffy_nodes(order)
+    # The cached node arrays are read-only; torch refuses to wrap those, so copy.
+    tu = torch.as_tensor(np.array(u, dtype=np.float64), dtype=torch.float64, device=dev)
+    tv = torch.as_tensor(np.array(v, dtype=np.float64), dtype=torch.float64, device=dev)
+    tw = torch.as_tensor(np.array(w, dtype=np.float64), dtype=torch.float64, device=dev)
+    tsub = torch.as_tensor(np.ascontiguousarray(sub), dtype=torch.float64, device=dev)
+    q = tsub[:, 0][:, None, :]
+    a = (tsub[:, 1] - tsub[:, 0])[:, None, :]
+    ba = (tsub[:, 2] - tsub[:, 1])[:, None, :]
+    plane = torch.as_tensor(np.asarray(point, float), dtype=torch.float64, device=dev)[None, None, :]
+    core2 = float(core)*float(core)
+    quad = torch.empty((len(sub), 3), dtype=torch.float64, device=dev)
+    step = max(1, int(node_chunk))
+    uv = (tu*tv)[None, :, None]
+    for first in range(0, len(sub), step):
+        sl = slice(first, first + step)
+        source = q[sl] + tu[None, :, None]*a[sl]
+        source = source + uv*ba[sl]
+        r = plane - source
+        z = torch.einsum("sqi,sqi->sq", r, r)
+        z = z + core2
+        d = torch.sqrt(z)*z
+        r = r/d[:, :, None]
+        quad[sl] = torch.einsum("q,sqi->si", tw, r)
+    own_t = torch.as_tensor(np.asarray(own, np.int64), dtype=torch.long, device=dev)
+    a2_t = torch.as_tensor(np.asarray(a2, float), dtype=torch.float64, device=dev)
+    out = torch.zeros((int(n_faces), 3), dtype=torch.float64, device=dev)
+    out.index_add_(0, own_t, quad*a2_t[:, None])
+    return out.to("cpu").numpy()
+
+
 def area_terms(
     triangles, point, core, *, order=16, strips=1, swap=False, chunk=1024,
-    face_chunk=64, return_sub_areas=False,
+    face_chunk=64, return_sub_areas=False, backend="numpy", device="cpu", node_chunk=4096,
 ):
     """Area kernel integral per triangle: (N,3) int_T (p-x)/(|p-x|^2+core^2)^{3/2} dS.
 
     Memory is bounded by face_chunk sub-triangles times order**2 nodes, so a whole
     surface (a thousand faces) can be evaluated without a dense (faces, nodes) block.
+
+    backend='torch' moves only the quadrature kernel to torch float64 (CPU or CUDA);
+    the projection fan stays in numpy because it depends on the target. The default
+    stays 'numpy' and the two backends agree to round-off, not bitwise: torch sums
+    the quadrature nodes in a different order.
     """
+    if backend not in ("numpy", "torch"):
+        raise ValueError("backend must be 'numpy' or 'torch'")
     tri = np.asarray(triangles, float)
     p = np.asarray(point, float)
     if tri.ndim != 3 or tri.shape[1:] != (3, 3):
         raise ValueError("triangles must be (N,3,3)")
     if not np.isfinite(core) or core <= 0.0:
         raise ValueError("core must be a positive finite radius")
+    if backend == "torch":
+        resolve_device(device)
     _profile.add("area_terms.calls")
     _profile.add("area_terms.triangles", len(tri))
     hits = _duffy_nodes.cache_info().hits
@@ -217,30 +310,35 @@ def area_terms(
         own = np.concatenate(owner)
         _profile.add("area_terms.subtriangles", len(own))
         a2 = _sub_area2(sub)
-        # Duffy: x = q + u*a + u*v*(b-a); |dS| = a2 * u du dv
-        q = sub[:, 0][:, None, :]
-        a = (sub[:, 1] - sub[:, 0])[:, None, :]
-        ba = (sub[:, 2] - sub[:, 1])[:, None, :]
-        quad = np.empty((len(sub), 3))
-        plane = p[None, None, :]
-        core2 = core * core
-        for first in range(0, len(sub), step):
-            sl = slice(first, first + step)
-            source = q[sl] + uu * a[sl]
-            source += (uu * vv) * ba[sl]
-            r = plane - source
-            # |r|^3 as sqrt(|r|^2) * |r|^2: pow(x, 1.5) is a libm call per node,
-            # sqrt plus one multiply is not, and the two differ by < 2 ulp.
-            z = np.einsum("sqi,sqi->sq", r, r)
-            z += core2
-            d = np.sqrt(z)
-            d *= z
-            np.divide(r, d[:, :, None], out=r)
-            np.einsum("q,sqi->si", w, r, out=quad[sl])
-        # own ascends and every face owns one contiguous run of sub-triangles,
-        # so one reduceat replaces the scattered np.add.at accumulation.
-        starts = np.flatnonzero(np.r_[True, own[1:] != own[:-1]])
-        out[f0:f1] += np.add.reduceat(quad * a2[:, None], starts, axis=0)
+        if backend == "torch":
+            out[f0:f1] += _torch_kernel(
+                sub, own - f0, f1 - f0, a2, p, core, order, device=device, node_chunk=node_chunk
+            )
+        else:
+            # Duffy: x = q + u*a + u*v*(b-a); |dS| = a2 * u du dv
+            q = sub[:, 0][:, None, :]
+            a = (sub[:, 1] - sub[:, 0])[:, None, :]
+            ba = (sub[:, 2] - sub[:, 1])[:, None, :]
+            quad = np.empty((len(sub), 3))
+            plane = p[None, None, :]
+            core2 = core * core
+            for first in range(0, len(sub), step):
+                sl = slice(first, first + step)
+                source = q[sl] + uu * a[sl]
+                source += (uu * vv) * ba[sl]
+                r = plane - source
+                # |r|^3 as sqrt(|r|^2) * |r|^2: pow(x, 1.5) is a libm call per node,
+                # sqrt plus one multiply is not, and the two differ by < 2 ulp.
+                z = np.einsum("sqi,sqi->sq", r, r)
+                z += core2
+                d = np.sqrt(z)
+                d *= z
+                np.divide(r, d[:, :, None], out=r)
+                np.einsum("q,sqi->si", w, r, out=quad[sl])
+            # own ascends and every face owns one contiguous run of sub-triangles,
+            # so one reduceat replaces the scattered np.add.at accumulation.
+            starts = np.flatnonzero(np.r_[True, own[1:] != own[:-1]])
+            out[f0:f1] += np.add.reduceat(quad * a2[:, None], starts, axis=0)
         _profile.end("area_terms.kernel")
         if return_sub_areas:
             kept.append((sub, own, a2))

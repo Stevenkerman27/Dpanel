@@ -347,6 +347,88 @@ The far order is then raised (docs/issue92/hybrid_acceptance_g2_far32.json, near
   quadrature substitutions of the same kernel only, and a core-free far field would
   need its own (core/distance)**2 model-error study.
 
+## 6d. Three backends, one answer: parity first, then the GPU
+
+The gate order for this phase is explicit: no CUDA before CPU parity, and no silent
+fallback. This section reports both halves on the same frozen geometry, then measures
+what a GPU is actually worth on each of the two evaluators this project has.
+
+### Parity
+
+Geometry: the G2 CAD half model, 1666 triangles (872 wall + 794 wake), core radius 0.01,
+109 gate targets, frozen in runs/issue92/parity_g2.npz. Reference is the NumPy
+evaluator; error is max |dv|/U with U = 1, the same normalisation the production gate
+uses for epsilon_error.
+
+| configuration | targets | NumPy ms/target | torch CPU ms/target | CUDA ms/target | CPU error | CUDA error |
+| --- | --- | --- | --- | --- | --- | --- |
+| fan 16x4 | 109 | 107.2 | 71.1 (1.5x) | 55.8 (1.9x) | 3.55e-15 | 4.44e-15 |
+| fan 48x8 | 8 | 1376.0 | 378.6 (3.6x) | 208.9 (6.6x) | 7.99e-15 | 7.11e-15 |
+| fan 8x1 | 40 | 20.2 | 26.5 (0.76x) | 29.6 (0.68x) | 1.78e-15 | 2.66e-15 |
+
+Declared bounds were 1e-12 (CPU) and 1e-10 (CUDA); every cell is three orders inside
+them. The two paths are not bitwise equal and cannot be: the NumPy kernel accumulates
+per-face totals with a reduceat over contiguous runs, the torch kernel with index_add_
+over the same runs, and float64 addition is not associative. 1e-15 relative is the
+floor for that difference, which is why the contract is a bound and not equality.
+
+The fan 8x1 row is the important negative result. At that size the kernel does no work
+worth scheduling: per-target Python dispatch and launch cost dominate, and both
+accelerated backends are *slower* than NumPy. A per-target loop over torch is therefore
+not a strategy at the order the gate uses in its cheap configuration; the only form
+that pays is a batch of targets per call, which is what section 4b argued from the
+kernel side.
+
+### The analytic evaluator is where the GPU pays
+
+The regularised P1 fan is not the production evaluator. panel/p1_analytic_sheet_velocity.py
+is: closed-form edge integrals plus solid angles, 0.69 ms per target on the G2 sheet,
+and the coupled loop spends its sampling time there. The torch port
+(panel/p1_torch_analytic_sheet.py) keeps the same edge merge, the same moment branches
+and the same fail-closed behaviour, hoists the target-independent geometry (unit
+tangents, edge lengths) out of the point loop, and batches targets.
+
+18,992 targets is one real G2 coupled update (section 1):
+
+| backend | wall (s) | ms/target | speed-up |
+| --- | --- | --- | --- |
+| NumPy | 13.07 | 0.688 | 1.0x |
+| torch CPU float64 | 3.83 | 0.202 | 3.41x |
+| torch CUDA float64 | 0.570 | 0.030 | 22.9x |
+
+Parity on the gate probes: 3.78e-15 (CPU) and 3.96e-15 (CUDA) against the NumPy
+reference, inside the same declared bounds. Peak CUDA allocation 232 MB at chunk 256,
+which is the target batch, not the sheet: the sheet's 4998 face edges and 262 boundary
+edges are a few hundred kilobytes.
+
+One behavioural detail that a port must not lose: the raw gate nodes lie on the sheet
+boundary, where the analytic kernel is genuinely singular, and the NumPy evaluator
+raises FloatingPointError ("field point lies on a singular source edge") rather than
+returning inf. The port raises the same error, and the parity probes are the gate nodes
+offset by +-0.05 along z (218 of 218 evaluable). A backend that returned inf or NaN here
+would silently poison an iteration instead of stopping it.
+
+### What this unit claims
+
+* float64 CPU and CUDA ports of both evaluators reproduce NumPy to 4e-15 relative on a
+  frozen G2 snapshot, which buys the permission Phase 4 needs.
+* The analytic evaluator is the GPU lever in this codebase: 23x end to end on a full
+  update's target set, against 1.5x to 6.6x for the fan kernel.
+* Small fan configurations get slower on both torch backends, so any accelerated
+  backend must be batched over targets and must not be enabled for the cheap rule.
+
+### Non-claims
+
+* No production default changed: analytic_edges and the NumPy fan are untouched, and
+  both ports are opt-in (`device=`, `backend=`) with an explicit device; an unavailable
+  CUDA device raises instead of falling back.
+* Timings are one machine (RTX 5060, torch 2.13.0+cu132), same process, warm after one
+  untimed call. Only the ratios matter.
+* Parities are on one geometry. Step 5 repeats them across G1 and G2 before any of this
+  is considered portable.
+* The 232 MB is torch's allocator high-water mark at chunk 256, not a tuned figure;
+  chunking is exposed and larger chunks trade memory for fewer launches.
+
 ## 7. Reproduction
 
     python -m tools.issue92.wake_evaluator_profile \
@@ -369,6 +451,27 @@ Hybrid acceptance (section 6c):
 
 Hybrid contract tests: test/test_p1_hybrid_area.py (16 tests, 0.14 s, no fixtures).
 
+Three-backend parity (section 6d). The snapshot is dumped once with .conda_env (JAX,
+no torch) and then replayed by the torch interpreter, because scipy plus an active CUDA
+context dies with a Windows access violation in one process:
+
+    python -m tools.issue92.backend_parity --dump runs/issue92/parity_g2.npz \
+        --main-half-surface <repo>/runs/half_cad_wingbody_v1/surface.json \
+        --csv eps:runs/issue84/projection_gate_eps.csv \
+        --csv quad:runs/issue84/projection_gate_quad.csv
+    python -m tools.issue92.backend_parity \
+        --geometry runs/issue92/parity_g2.npz --out docs/issue92/backend_parity.json
+    python -m tools.issue92.analytic_bench \
+        --geometry runs/issue92/parity_g2.npz --out docs/issue92/analytic_torch_bench.json
+
+Backend tests need torch, which lives in the other interpreter; test/conftest.py imports
+jax, so a stub is used to run them there:
+
+    python -m pytest test/test_p1_torch_area.py test/test_p1_torch_analytic_sheet.py
+
+with PYTHONPATH containing the repo plus a one-function jax stub (jax.config.update).
+16 and 9 tests respectively; 1 CUDA-absence test skips when a device is present.
+
 ## 8. Next
 
 * Batched target x face kernel, kept as an opt-in backend and gated on parity with
@@ -381,4 +484,9 @@ Hybrid contract tests: test/test_p1_hybrid_area.py (16 tests, 0.14 s, no fixture
   lever is the far quadrature, not the near rule: the flat tensor map needs order 24
   to 32 over 99 percent of the sheet, so a cheaper far field needs projection or a
   moment split on the far set.
-* CUDA for the influence kernel and the near-field fan only after CPU parity.
+* CUDA is now unblocked and its target is chosen by measurement, not by guess: the
+  analytic evaluator is 22.9x on a full update's targets (0.030 ms/target, 232 MB),
+  while the fan kernel is 1.5x to 6.6x and is slower than NumPy in its cheap 8x1
+  configuration (section 6d). The next unit therefore ports the analytic evaluator into
+  the coupled loop as an explicit backend option and keeps the fan kernel batched over
+  targets, never per target.

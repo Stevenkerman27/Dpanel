@@ -150,6 +150,32 @@ class AnalyticSheetField:
         tangents /= np.linalg.norm(tangents, axis=1)[:, None]
         self.t_cross_n = np.cross(tangents, self.face_edge_n)
 
+    @classmethod
+    def from_arrays(cls, arrays, *, freestream=(1.0, 0.0, 0.0)):
+        """Rebuild the field from geometry arrays of an existing field.
+
+        This replays a frozen sheet without redoing the topological edge combination:
+        it is what a dumped snapshot and a device port consume, so that every backend
+        evaluates exactly the same edges, signs and tangents.
+        """
+        self = cls.__new__(cls)
+        for key in ("triangles", "normals", "gamma", "face_edge_a", "face_edge_b",
+                    "edge_a", "edge_b", "edge_mu"):
+            setattr(self, key, np.ascontiguousarray(np.asarray(arrays[key], float)))
+        self.freestream = np.asarray(freestream, float).copy()
+        if self.freestream.shape != (3,) or not np.isfinite(self.freestream).all():
+            raise ValueError("invalid freestream")
+        self.n_face_edges = int(len(self.face_edge_a))
+        self.n_boundary_edges = int(len(self.edge_a))
+        self.face_edge_n = np.repeat(self.normals, 3, axis=0)
+        tangents = self.face_edge_b - self.face_edge_a
+        norm = np.linalg.norm(tangents, axis=1)
+        if np.any(norm <= 0):
+            raise ValueError("zero-length source edge")
+        tangents = tangents/norm[:, None]
+        self.t_cross_n = np.cross(tangents, self.face_edge_n)
+        return self
+
     def __call__(self, point):
         p = np.asarray(point, float)
         if p.shape != (3,) or not np.isfinite(p).all():
