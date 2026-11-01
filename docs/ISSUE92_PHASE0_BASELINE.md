@@ -178,6 +178,74 @@ The crossover is therefore backend- and size-dependent, and the production sizes
 reason issue 92 sequences CPU parity before partial CUDA: the CUDA win only exists for
 the assembly and the induced velocity, which are the actual hot spots.
 
+## 7b. Why the solve stays on the CPU, and what the GPU is for
+
+The crossover table answers "which dense solver is fastest on this machine", not "why".
+`tools/issue92/gpu_fp64_probe.py` (artifact: `docs/issue92/gpu_fp64_probe.json`) measures the
+mechanism directly, in the CUDA interpreter (Python 3.13.14, torch 2.13.0+cu132, CUDA 13.2,
+RTX 5060 with 8.52 GB and 30 SMs). Every number below is float64, synchronised, and the
+host-to-device traffic is timed on its own, so a one-shot solve cannot be confused with a
+reused factorisation.
+
+FP64 matrix product (n = 1024 / 2048 / 4096), TFLOPS:
+
+| device | n=1024 | n=2048 | n=4096 |
+| --- | --- | --- | --- |
+| CPU, 16 threads | 0.5718 | 0.5972 | 0.6079 |
+| CUDA | 0.2667 | 0.2670 | 0.2797 |
+
+Warm FP64 LU factorisation (median of 5, cuSOLVER path warmed first; the first call costs
+about 1 s of context setup and is excluded on purpose):
+
+| n | CPU | CUDA | CUDA / CPU |
+| --- | --- | --- | --- |
+| 1728 | 0.0076 s | 0.0200 s | 2.63x slower |
+| 3220 | 0.0387 s | 0.0989 s | 2.55x slower |
+| 6145 | 0.2600 s | 0.6168 s | 2.37x slower |
+
+Solve with a reused factorisation (the design-loop pattern: factor once, many right-hand
+sides):
+
+| n | rhs | CPU | CUDA |
+| --- | --- | --- | --- |
+| 1728 | 1 | 0.0006 s | 0.0004 s |
+| 1728 | 16 | 0.0007 s | 0.0012 s |
+| 1728 | 64 | 0.0024 s | 0.0058 s |
+| 3220 | 1 | 0.0018 s | 0.0008 s |
+| 3220 | 16 | 0.0037 s | 0.0035 s |
+| 3220 | 64 | 0.0068 s | 0.0088 s |
+
+Pairwise target x triangle kernel (the shape of the B2 induced velocity: 18992 targets,
+794 wake triangles, 15 079 648 interactions, one interaction per pair):
+
+| device | time | per target | per interaction |
+| --- | --- | --- | --- |
+| CPU | 0.0857 s | 0.0045 ms | 5.68 ns |
+| CUDA | 0.0157 s | 0.0008 ms | 1.04 ns |
+
+A second run of the same probe gave 11x instead of 5.4x, so the honest range is 5-11x. Host
+to device: 22.8 MB in 1.7 ms (n = 1728) and 79.1 MB in 4.6 ms (n = 3220), i.e. 13-17 GB/s.
+
+Three readings:
+
+* the dense solve is limited by FP64 peak, which this consumer part does not have: its 0.46x
+  FP64 rate predicts a 2.2x LU deficit and the measurement is 2.4-2.6x, so the ordering is a
+  hardware property rather than a cuSOLVER defect, and no amount of batching fixes a peak
+  that is half the CPU's;
+* the transfer is not the reason either (79 MB in 4.6 ms against a 98.9 ms factorisation), and
+  with a reused factorisation the GPU wins only at rhs = 1 and loses by 1.2-2.4x at rhs =
+  16-64, because a triangular solve is bandwidth-bound and the 32-core CPU already sits close
+  to the memory roof;
+* the GPU does win, clearly, on the target x triangle pattern, which is exactly the B2
+  induced velocity. But the production cost of those same 18992 points is 57.73 s, i.e.
+  3.0 ms per target, about 600x this probe's CPU arithmetic floor of 0.0045 ms per target.
+  Per-point bookkeeping and the 48-point quadrature bands therefore dominate that stage, and
+  a 5x kernel win on the remaining fraction is not a plan until the evaluator's own cost is
+  attributed at that granularity.
+
+Non-claims: the proxy performs one interaction per pair (no panel kernel, no quadrature), so
+it bounds the memory and arithmetic pattern, not the production evaluator; the numbers are
+from one machine, one GPU and one library version.
 ## 8. What Phase 1 has to reproduce, and how it is checked
 
 The fingerprint below is the parity target for each fixture (recorded in
