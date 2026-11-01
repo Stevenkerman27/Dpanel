@@ -1,0 +1,205 @@
+{
+  "schema": "dpanel.issue92.solver_crossover.v1",
+  "environment": {
+    "python": "3.11.17",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "torch": "2.15.0+cpu",
+    "device": "cpu",
+    "cuda_available": false,
+    "cpu_count": 32
+  },
+  "rows": [
+    {
+      "n": 96,
+      "bytes_dense_mb": 0.07,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0882,
+          "warm_median": 0.0,
+          "warm_min": 0.0,
+          "residual": 5.245027268541733e-16
+        },
+        "gmres_dense": {
+          "seconds": 0.026,
+          "iterations": 27,
+          "converged": true,
+          "residual": 3.973757958093567e-11,
+          "matvec_ms": 0.9617
+        }
+      }
+    },
+    {
+      "n": 192,
+      "bytes_dense_mb": 0.28,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0009,
+          "warm_median": 0.0004,
+          "warm_min": 0.0004,
+          "residual": 5.474233496726959e-16
+        },
+        "gmres_dense": {
+          "seconds": 0.0019,
+          "iterations": 28,
+          "converged": true,
+          "residual": 7.176279955688395e-11,
+          "matvec_ms": 0.0676
+        }
+      }
+    },
+    {
+      "n": 385,
+      "bytes_dense_mb": 1.13,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0123,
+          "warm_median": 0.0122,
+          "warm_min": 0.0121,
+          "residual": 7.581034210107691e-16
+        },
+        "gmres_dense": {
+          "seconds": 0.0024,
+          "iterations": 29,
+          "converged": true,
+          "residual": 4.0005957208400806e-11,
+          "matvec_ms": 0.0833
+        }
+      }
+    },
+    {
+      "n": 769,
+      "bytes_dense_mb": 4.51,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0443,
+          "warm_median": 0.0449,
+          "warm_min": 0.0439,
+          "residual": 9.611086023550397e-16
+        },
+        "gmres_dense": {
+          "seconds": 0.0063,
+          "iterations": 29,
+          "converged": true,
+          "residual": 5.0280474082817583e-11,
+          "matvec_ms": 0.2215
+        }
+      }
+    },
+    {
+      "n": 1537,
+      "bytes_dense_mb": 18.02,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0625,
+          "warm_median": 0.0636,
+          "warm_min": 0.0627,
+          "residual": 1.2865331171483698e-15
+        },
+        "gmres_dense": {
+          "seconds": 0.0074,
+          "iterations": 29,
+          "converged": true,
+          "residual": 4.7023946658907615e-11,
+          "matvec_ms": 0.2597
+        }
+      }
+    },
+    {
+      "n": 3073,
+      "bytes_dense_mb": 72.05,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.1156,
+          "warm_median": 0.1217,
+          "warm_min": 0.1199,
+          "residual": 1.6923177243736467e-15
+        },
+        "gmres_dense": {
+          "seconds": 0.0259,
+          "iterations": 29,
+          "converged": true,
+          "residual": 6.155299209297542e-11,
+          "matvec_ms": 0.9194
+        }
+      }
+    },
+    {
+      "n": 6145,
+      "bytes_dense_mb": 288.09,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.4143,
+          "warm_median": 0.4114,
+          "warm_min": 0.4095,
+          "residual": 2.1819330047597005e-15
+        },
+        "gmres_dense": {
+          "seconds": 0.1443,
+          "iterations": 29,
+          "converged": true,
+          "residual": 6.597509179855647e-11,
+          "matvec_ms": 5.1447
+        }
+      }
+    }
+  ],
+  "peak_rss_mb": 1173.2,
+  "verdict": {
+    "torch_cpu_first_win_over_cpu_lu": null,
+    "torch_cuda_first_win_over_cpu_lu": null,
+    "cuda_lu_first_win_over_cpu_lu": null,
+    "gmres_vs_cpu_lu_at_largest": 0.351
+  },
+  "fixture_sizes": {
+    "g1_wing_rect": {
+      "n_wall_faces": 112,
+      "unknowns": 68,
+      "rows": 112,
+      "A_bytes_mb": 0.054
+    },
+    "g1_wing_camber": {
+      "n_wall_faces": 112,
+      "unknowns": 68,
+      "rows": 112,
+      "A_bytes_mb": 0.054
+    },
+    "g2_conventional": {
+      "n_wall_faces": 192,
+      "unknowns": 116,
+      "rows": 192,
+      "A_bytes_mb": 0.158
+    },
+    "g2_tail_low": {
+      "n_wall_faces": 192,
+      "unknowns": 116,
+      "rows": 192,
+      "A_bytes_mb": 0.158
+    },
+    "g1_swept30": {
+      "n_wall_faces": 2764,
+      "unknowns": 1462,
+      "rows": 2764,
+      "A_bytes_mb": 30.514
+    },
+    "g1_elliptic": {
+      "n_wall_faces": 3220,
+      "unknowns": 1728,
+      "rows": 3220,
+      "A_bytes_mb": 41.64
+    },
+    "g1_wingbody_cad": {
+      "n_wall_faces": 792,
+      "unknowns": 541,
+      "rows": 792,
+      "A_bytes_mb": 3.003
+    },
+    "g1_wingbody_cad_3x": {
+      "n_wall_faces": 2410,
+      "unknowns": 1352,
+      "rows": 2410,
+      "A_bytes_mb": 24.05
+    }
+  }
+}

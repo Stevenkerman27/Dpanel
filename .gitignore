@@ -93,3 +93,5 @@ dist/
 
 # Scratch fixtures written by test/test_vspapi_core.py
 test/_vspapi_tmp/
+# Phase 0 frozen fixture battery: geometry inputs only, no solver settings
+!docs/issue92/fixtures/*.npz

@@ -1,0 +1,316 @@
+{
+  "schema": "dpanel.issue92.solver_crossover.v1",
+  "merged_from": [
+    "solver_crossover_cpu.json",
+    "solver_crossover_torchcpu.json",
+    "solver_crossover_cuda.json"
+  ],
+  "environment": {
+    "python": "3.13.14",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "numpy": "2.5.2",
+    "scipy": "1.18.0",
+    "torch": "2.13.0+cu132",
+    "device": "cuda",
+    "cuda_available": true,
+    "cpu_count": 32,
+    "gpu": "NVIDIA GeForce RTX 5060",
+    "gpu_memory_gb": 8.52
+  },
+  "rows": [
+    {
+      "n": 96,
+      "bytes_dense_mb": 0.07,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0882,
+          "warm_median": 0.0,
+          "warm_min": 0.0,
+          "residual": 5.245027268541733e-16
+        },
+        "gmres_dense": {
+          "seconds": 0.026,
+          "iterations": 27,
+          "converged": true,
+          "residual": 3.973757958093567e-11,
+          "matvec_ms": 0.9617
+        },
+        "torch_cpu": {
+          "cold_seconds": 0.0007,
+          "warm_median": 0.0,
+          "warm_min": 0.0,
+          "residual": 6.871938883785464e-16
+        },
+        "cuda_lu": {
+          "cold_seconds": 1.6802,
+          "warm_median": 0.0002,
+          "warm_min": 0.0002,
+          "residual": 5.845436643062196e-16,
+          "host_to_device_seconds": 0.0547,
+          "peak_vram_mb": 0.1
+        }
+      }
+    },
+    {
+      "n": 192,
+      "bytes_dense_mb": 0.28,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0009,
+          "warm_median": 0.0004,
+          "warm_min": 0.0004,
+          "residual": 5.474233496726959e-16
+        },
+        "gmres_dense": {
+          "seconds": 0.0019,
+          "iterations": 28,
+          "converged": true,
+          "residual": 7.176279955688395e-11,
+          "matvec_ms": 0.0676
+        },
+        "torch_cpu": {
+          "cold_seconds": 0.0021,
+          "warm_median": 0.0002,
+          "warm_min": 0.0002,
+          "residual": 7.079776251918184e-16
+        },
+        "cuda_lu": {
+          "cold_seconds": 2.5904,
+          "warm_median": 0.0005,
+          "warm_min": 0.0005,
+          "residual": 5.747967270490346e-16,
+          "host_to_device_seconds": 0.0005,
+          "peak_vram_mb": 32.6
+        }
+      }
+    },
+    {
+      "n": 385,
+      "bytes_dense_mb": 1.13,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0123,
+          "warm_median": 0.0122,
+          "warm_min": 0.0121,
+          "residual": 7.581034210107691e-16
+        },
+        "gmres_dense": {
+          "seconds": 0.0024,
+          "iterations": 29,
+          "converged": true,
+          "residual": 4.0005957208400806e-11,
+          "matvec_ms": 0.0833
+        },
+        "torch_cpu": {
+          "cold_seconds": 0.001,
+          "warm_median": 0.0005,
+          "warm_min": 0.0005,
+          "residual": 1.2602233229236424e-15
+        },
+        "cuda_lu": {
+          "cold_seconds": 0.0015,
+          "warm_median": 0.0014,
+          "warm_min": 0.0014,
+          "residual": 1.0495833173487842e-15,
+          "host_to_device_seconds": 0.0011,
+          "peak_vram_mb": 34.3
+        }
+      }
+    },
+    {
+      "n": 769,
+      "bytes_dense_mb": 4.51,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0443,
+          "warm_median": 0.0449,
+          "warm_min": 0.0439,
+          "residual": 9.611086023550397e-16
+        },
+        "gmres_dense": {
+          "seconds": 0.0063,
+          "iterations": 29,
+          "converged": true,
+          "residual": 5.0280474082817583e-11,
+          "matvec_ms": 0.2215
+        },
+        "torch_cpu": {
+          "cold_seconds": 0.0022,
+          "warm_median": 0.0017,
+          "warm_min": 0.0016,
+          "residual": 1.8586263122002785e-15
+        },
+        "cuda_lu": {
+          "cold_seconds": 3.2236,
+          "warm_median": 0.0048,
+          "warm_min": 0.0044,
+          "residual": 1.113326243752102e-15,
+          "host_to_device_seconds": 0.0013,
+          "peak_vram_mb": 41.1
+        }
+      }
+    },
+    {
+      "n": 1537,
+      "bytes_dense_mb": 18.02,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.0625,
+          "warm_median": 0.0636,
+          "warm_min": 0.0627,
+          "residual": 1.2865331171483698e-15
+        },
+        "gmres_dense": {
+          "seconds": 0.0074,
+          "iterations": 29,
+          "converged": true,
+          "residual": 4.7023946658907615e-11,
+          "matvec_ms": 0.2597
+        },
+        "torch_cpu": {
+          "cold_seconds": 0.0085,
+          "warm_median": 0.0065,
+          "warm_min": 0.0064,
+          "residual": 2.577016053393636e-15
+        },
+        "cuda_lu": {
+          "cold_seconds": 0.0863,
+          "warm_median": 0.0175,
+          "warm_min": 0.0174,
+          "residual": 1.3592065605166351e-15,
+          "host_to_device_seconds": 0.0025,
+          "peak_vram_mb": 68.2
+        }
+      }
+    },
+    {
+      "n": 3073,
+      "bytes_dense_mb": 72.05,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.1156,
+          "warm_median": 0.1217,
+          "warm_min": 0.1199,
+          "residual": 1.6923177243736467e-15
+        },
+        "gmres_dense": {
+          "seconds": 0.0259,
+          "iterations": 29,
+          "converged": true,
+          "residual": 6.155299209297542e-11,
+          "matvec_ms": 0.9194
+        },
+        "torch_cpu": {
+          "cold_seconds": 0.0471,
+          "warm_median": 0.0392,
+          "warm_min": 0.0377,
+          "residual": 3.684062208430827e-15
+        },
+        "cuda_lu": {
+          "cold_seconds": 0.094,
+          "warm_median": 0.0907,
+          "warm_min": 0.0906,
+          "residual": 1.6924763879755308e-15,
+          "host_to_device_seconds": 0.0075,
+          "peak_vram_mb": 176.3
+        }
+      }
+    },
+    {
+      "n": 6145,
+      "bytes_dense_mb": 288.09,
+      "backends": {
+        "cpu_lu": {
+          "cold_seconds": 0.4143,
+          "warm_median": 0.4114,
+          "warm_min": 0.4095,
+          "residual": 2.1819330047597005e-15
+        },
+        "gmres_dense": {
+          "seconds": 0.1443,
+          "iterations": 29,
+          "converged": true,
+          "residual": 6.597509179855647e-11,
+          "matvec_ms": 5.1447
+        },
+        "torch_cpu": {
+          "cold_seconds": 0.2749,
+          "warm_median": 0.2487,
+          "warm_min": 0.2409,
+          "residual": 5.024857338832939e-15
+        },
+        "cuda_lu": {
+          "cold_seconds": 0.6202,
+          "warm_median": 0.6146,
+          "warm_min": 0.6145,
+          "residual": 2.2373685928543983e-15,
+          "host_to_device_seconds": 0.0213,
+          "peak_vram_mb": 608.6
+        }
+      }
+    }
+  ],
+  "verdict": {
+    "torch_cpu_first_win_over_cpu_lu": {
+      "n": 192,
+      "speedup": 2.0
+    },
+    "torch_cuda_first_win_over_cpu_lu": null,
+    "cuda_lu_first_win_over_cpu_lu": {
+      "n": 385,
+      "speedup": 8.714
+    },
+    "largest_measured_speedup_cuda_lu": 0.669,
+    "gmres_vs_cpu_lu_at_largest": 0.351
+  },
+  "fixture_sizes": {
+    "g1_wing_rect": {
+      "n_wall_faces": 112,
+      "unknowns": 68,
+      "rows": 112,
+      "A_bytes_mb": 0.054
+    },
+    "g1_wing_camber": {
+      "n_wall_faces": 112,
+      "unknowns": 68,
+      "rows": 112,
+      "A_bytes_mb": 0.054
+    },
+    "g2_conventional": {
+      "n_wall_faces": 192,
+      "unknowns": 116,
+      "rows": 192,
+      "A_bytes_mb": 0.158
+    },
+    "g2_tail_low": {
+      "n_wall_faces": 192,
+      "unknowns": 116,
+      "rows": 192,
+      "A_bytes_mb": 0.158
+    },
+    "g1_swept30": {
+      "n_wall_faces": 2764,
+      "unknowns": 1462,
+      "rows": 2764,
+      "A_bytes_mb": 30.514
+    },
+    "g1_elliptic": {
+      "n_wall_faces": 3220,
+      "unknowns": 1728,
+      "rows": 3220,
+      "A_bytes_mb": 41.64
+    },
+    "g1_wingbody_cad": {
+      "n_wall_faces": 792,
+      "unknowns": 541,
+      "rows": 792,
+      "A_bytes_mb": 3.003
+    },
+    "g1_wingbody_cad_3x": {
+      "n_wall_faces": 2410,
+      "unknowns": 1352,
+      "rows": 2410,
+      "A_bytes_mb": 24.05
+    }
+  }
+}

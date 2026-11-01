@@ -1,0 +1,1325 @@
+{
+  "schema": "dpanel.issue92.phase0_profile.v1",
+  "physical_accuracy_accepted": false,
+  "command": "python -m tools.issue92.profile_production",
+  "environment": {
+    "python": "3.11.17",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "cpu_count": 32,
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "jax": "0.10.2",
+    "torch": "unavailable: ModuleNotFoundError",
+    "cuda_available": false
+  },
+  "threads": {
+    "OMP_NUM_THREADS": null,
+    "OPENBLAS_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null,
+    "XLA_FLAGS": null
+  },
+  "profile_overhead_note": "cProfile rows are for attribution only; stages_seconds are wall clock without the profiler",
+  "fixtures": {
+    "g1_wing_rect": {
+      "kind": "wing",
+      "meta": {
+        "kind": "wing",
+        "alpha_deg": 5.0,
+        "kutta": "pressure",
+        "chord_panels": 4,
+        "span_panels": 6,
+        "thickness": 0.12,
+        "camber": 0.0,
+        "span": 4.0,
+        "chord": 1.0,
+        "wake_panels": 2
+      },
+      "counters": {
+        "n_wall_faces": 112,
+        "n_wall_nodes": 58,
+        "n_mu_dofs": 63,
+        "n_gamma_dofs": 5,
+        "n_kutta_rows": 5,
+        "n_wake_triangles": 24,
+        "matrix_shape": [
+          112,
+          68
+        ],
+        "A_nnz_fraction": 1.0,
+        "A_bytes_mb": 0.054,
+        "scaled_B_bytes_mb": 0.058
+      },
+      "stages_seconds": {
+        "assemble": 0.0291,
+        "solve_total": 0.0358
+      },
+      "profile_top": [
+        {
+          "function": "_doublet_matrix",
+          "file": "p1_lifting_g1.py:369",
+          "calls": 25,
+          "tottime": 0.011,
+          "cumtime": 0.0527
+        },
+        {
+          "function": "cross",
+          "file": "numeric.py:1567",
+          "calls": 1365,
+          "tottime": 0.0103,
+          "cumtime": 0.0332
+        },
+        {
+          "function": "normalize_axis_tuple",
+          "file": "numeric.py:1431",
+          "calls": 8190,
+          "tottime": 0.008,
+          "cumtime": 0.0122
+        },
+        {
+          "function": "moveaxis",
+          "file": "numeric.py:1493",
+          "calls": 4095,
+          "tottime": 0.0063,
+          "cumtime": 0.0208
+        },
+        {
+          "function": "svd",
+          "file": "_decomp_svd.py:16",
+          "calls": 5,
+          "tottime": 0.0047,
+          "cumtime": 0.0048
+        },
+        {
+          "function": "<genexpr>",
+          "file": "numeric.py:1480",
+          "calls": 16380,
+          "tottime": 0.0017,
+          "cumtime": 0.0023
+        },
+        {
+          "function": "norm",
+          "file": "_linalg.py:2599",
+          "calls": 699,
+          "tottime": 0.0011,
+          "cumtime": 0.002
+        },
+        {
+          "function": "<lambda>",
+          "file": "p1_lifting_g1.py:387",
+          "calls": 952,
+          "tottime": 0.0008,
+          "cumtime": 0.0024
+        },
+        {
+          "function": "_einsum_dispatcher",
+          "file": "einsumfunc.py:1236",
+          "calls": 7106,
+          "tottime": 0.0005,
+          "cumtime": 0.0005
+        },
+        {
+          "function": "<listcomp>",
+          "file": "numeric.py:1554",
+          "calls": 4095,
+          "tottime": 0.0005,
+          "cumtime": 0.0005
+        },
+        {
+          "function": "_mean",
+          "file": "_methods.py:115",
+          "calls": 242,
+          "tottime": 0.0005,
+          "cumtime": 0.0011
+        },
+        {
+          "function": "stack",
+          "file": "shape_base.py:378",
+          "calls": 137,
+          "tottime": 0.0004,
+          "cumtime": 0.0006
+        },
+        {
+          "function": "_wrapreduction_any_all",
+          "file": "fromnumeric.py:86",
+          "calls": 566,
+          "tottime": 0.0004,
+          "cumtime": 0.001
+        },
+        {
+          "function": "einsum",
+          "file": "einsumfunc.py:1244",
+          "calls": 1421,
+          "tottime": 0.0003,
+          "cumtime": 0.0019
+        },
+        {
+          "function": "_moveaxis_dispatcher",
+          "file": "numeric.py:1489",
+          "calls": 4095,
+          "tottime": 0.0003,
+          "cumtime": 0.0003
+        }
+      ],
+      "profile_rerun_mu_max_abs_drift": 0.0,
+      "fingerprint": {
+        "CL": 0.31947298897042903,
+        "CL_gamma": 0.2819235972196489,
+        "CD_pressure": -0.013407339445502762,
+        "CM_y": -0.0486012741190873,
+        "wall_rms": 0.00212459011517394,
+        "pressure_kutta_rms": 1.498242139372573e-07,
+        "signed_kutta_rms": 0.005679977072573431,
+        "jump_rms": 1.3136335981433191e-16,
+        "constrained_rank": 58.0
+      },
+      "peak_rss_mb": 126.1,
+      "fixture_digest": "54f6b68830814cfdc1b5dc420f3e32a608d2f67d48b2f1859e21cab2ceb920c8",
+      "fixture_verified": true,
+      "rebuild_digest": "54f6b68830814cfdc1b5dc420f3e32a608d2f67d48b2f1859e21cab2ceb920c8",
+      "fixture_npz_sha256": "70a638d66cc1db6e16dca966d7cb7621bf0524c4a182ac6bb3cb221b2047437c",
+      "elapsed_seconds": 0.13
+    },
+    "g1_wing_camber": {
+      "kind": "wing",
+      "meta": {
+        "kind": "wing",
+        "alpha_deg": 5.0,
+        "kutta": "pressure",
+        "chord_panels": 4,
+        "span_panels": 6,
+        "thickness": 0.12,
+        "camber": 0.02,
+        "span": 4.0,
+        "chord": 1.0,
+        "wake_panels": 2
+      },
+      "counters": {
+        "n_wall_faces": 112,
+        "n_wall_nodes": 58,
+        "n_mu_dofs": 63,
+        "n_gamma_dofs": 5,
+        "n_kutta_rows": 5,
+        "n_wake_triangles": 24,
+        "matrix_shape": [
+          112,
+          68
+        ],
+        "A_nnz_fraction": 1.0,
+        "A_bytes_mb": 0.054,
+        "scaled_B_bytes_mb": 0.058
+      },
+      "stages_seconds": {
+        "assemble": 0.0297,
+        "solve_total": 0.0385
+      },
+      "profile_top": [
+        {
+          "function": "_doublet_matrix",
+          "file": "p1_lifting_g1.py:369",
+          "calls": 25,
+          "tottime": 0.0116,
+          "cumtime": 0.0548
+        },
+        {
+          "function": "cross",
+          "file": "numeric.py:1567",
+          "calls": 1365,
+          "tottime": 0.0106,
+          "cumtime": 0.0341
+        },
+        {
+          "function": "normalize_axis_tuple",
+          "file": "numeric.py:1431",
+          "calls": 8190,
+          "tottime": 0.0082,
+          "cumtime": 0.0124
+        },
+        {
+          "function": "moveaxis",
+          "file": "numeric.py:1493",
+          "calls": 4095,
+          "tottime": 0.0064,
+          "cumtime": 0.0212
+        },
+        {
+          "function": "svd",
+          "file": "_decomp_svd.py:16",
+          "calls": 6,
+          "tottime": 0.0057,
+          "cumtime": 0.0059
+        },
+        {
+          "function": "<genexpr>",
+          "file": "numeric.py:1480",
+          "calls": 16380,
+          "tottime": 0.0017,
+          "cumtime": 0.0023
+        },
+        {
+          "function": "norm",
+          "file": "_linalg.py:2599",
+          "calls": 751,
+          "tottime": 0.0012,
+          "cumtime": 0.0023
+        },
+        {
+          "function": "<lambda>",
+          "file": "p1_lifting_g1.py:387",
+          "calls": 952,
+          "tottime": 0.0008,
+          "cumtime": 0.0024
+        },
+        {
+          "function": "_mean",
+          "file": "_methods.py:115",
+          "calls": 302,
+          "tottime": 0.0006,
+          "cumtime": 0.0013
+        },
+        {
+          "function": "_wrapreduction_any_all",
+          "file": "fromnumeric.py:86",
+          "calls": 572,
+          "tottime": 0.0005,
+          "cumtime": 0.0011
+        },
+        {
+          "function": "_einsum_dispatcher",
+          "file": "einsumfunc.py:1236",
+          "calls": 7136,
+          "tottime": 0.0005,
+          "cumtime": 0.0005
+        },
+        {
+          "function": "<listcomp>",
+          "file": "numeric.py:1554",
+          "calls": 4095,
+          "tottime": 0.0005,
+          "cumtime": 0.0005
+        },
+        {
+          "function": "stack",
+          "file": "shape_base.py:378",
+          "calls": 137,
+          "tottime": 0.0004,
+          "cumtime": 0.0006
+        },
+        {
+          "function": "einsum",
+          "file": "einsumfunc.py:1244",
+          "calls": 1427,
+          "tottime": 0.0003,
+          "cumtime": 0.0021
+        },
+        {
+          "function": "_moveaxis_dispatcher",
+          "file": "numeric.py:1489",
+          "calls": 4095,
+          "tottime": 0.0003,
+          "cumtime": 0.0003
+        }
+      ],
+      "profile_rerun_mu_max_abs_drift": 0.0,
+      "fingerprint": {
+        "CL": 0.45029134820016536,
+        "CL_gamma": 0.42222006422924224,
+        "CD_pressure": -0.013572436550737716,
+        "CM_y": -0.1295120782621358,
+        "wall_rms": 0.0021683210362745116,
+        "pressure_kutta_rms": 1.5674789403526948e-07,
+        "signed_kutta_rms": 0.02113464895608814,
+        "jump_rms": 1.3136335981433191e-16,
+        "constrained_rank": 58.0
+      },
+      "peak_rss_mb": 126.2,
+      "fixture_digest": "9a06f4a69db57e9a1bb09f13b2ac22374a6afb924cb57b7a8355073cbc36d150",
+      "fixture_verified": true,
+      "rebuild_digest": "9a06f4a69db57e9a1bb09f13b2ac22374a6afb924cb57b7a8355073cbc36d150",
+      "fixture_npz_sha256": "dcaa769ce17c781a6e9798ef959f4fb9365e84ddccb7de517992e48953efe352",
+      "elapsed_seconds": 0.136
+    },
+    "g2_conventional": {
+      "kind": "multi",
+      "meta": {
+        "kind": "multi",
+        "alpha_deg": 5.0,
+        "kutta": "pressure",
+        "tail_origin": [
+          1.6,
+          0.0,
+          0.35
+        ]
+      },
+      "counters": {
+        "n_wall_faces": 192,
+        "n_wall_nodes": 108,
+        "n_mu_dofs": 108,
+        "n_gamma_dofs": 8,
+        "n_groups": 2,
+        "matrix_shape": [
+          192,
+          116
+        ],
+        "A_nnz_fraction": 1.0,
+        "A_bytes_mb": 0.158,
+        "n_wake_triangles": 40
+      },
+      "stages_seconds": {
+        "assemble_multi": 0.0565,
+        "solve_multi_total": 0.0771
+      },
+      "profile_top": [
+        {
+          "function": "svd",
+          "file": "_decomp_svd.py:16",
+          "calls": 6,
+          "tottime": 0.0556,
+          "cumtime": 0.0558
+        },
+        {
+          "function": "lstsq",
+          "file": "_basic.py:1606",
+          "calls": 2,
+          "tottime": 0.0132,
+          "cumtime": 0.0133
+        },
+        {
+          "function": "d_fun",
+          "file": "p1_lifting_g2.py:297",
+          "calls": 6,
+          "tottime": 0.0006,
+          "cumtime": 0.0018
+        },
+        {
+          "function": "_mean",
+          "file": "_methods.py:115",
+          "calls": 225,
+          "tottime": 0.0004,
+          "cumtime": 0.0009
+        },
+        {
+          "function": "<listcomp>",
+          "file": "p1_lifting_g2.py:289",
+          "calls": 6,
+          "tottime": 0.0004,
+          "cumtime": 0.001
+        },
+        {
+          "function": "<listcomp>",
+          "file": "p1_lifting_g2.py:285",
+          "calls": 8,
+          "tottime": 0.0003,
+          "cumtime": 0.0012
+        },
+        {
+          "function": "trf_no_bounds",
+          "file": "trf.py:415",
+          "calls": 1,
+          "tottime": 0.0002,
+          "cumtime": 0.0569
+        },
+        {
+          "function": "solve_multi",
+          "file": "p1_lifting_g2.py:265",
+          "calls": 1,
+          "tottime": 0.0002,
+          "cumtime": 0.075
+        },
+        {
+          "function": "_count_reduce_items",
+          "file": "_methods.py:73",
+          "calls": 225,
+          "tottime": 0.0002,
+          "cumtime": 0.0002
+        },
+        {
+          "function": "least_squares",
+          "file": "least_squares.py:266",
+          "calls": 1,
+          "tottime": 0.0001,
+          "cumtime": 0.0578
+        },
+        {
+          "function": "pressure_kutta_acceptance",
+          "file": "p1_lifting_g2.py:219",
+          "calls": 1,
+          "tottime": 0.0001,
+          "cumtime": 0.0083
+        },
+        {
+          "function": "constrained",
+          "file": "p1_lifting_g2.py:276",
+          "calls": 1,
+          "tottime": 0.0001,
+          "cumtime": 0.0074
+        },
+        {
+          "function": "<lambda>",
+          "file": "profile_production.py:169",
+          "calls": 1,
+          "tottime": 0.0001,
+          "cumtime": 0.0751
+        },
+        {
+          "function": "_wrapreduction",
+          "file": "fromnumeric.py:66",
+          "calls": 135,
+          "tottime": 0.0001,
+          "cumtime": 0.0003
+        },
+        {
+          "function": "mean",
+          "file": "fromnumeric.py:3699",
+          "calls": 224,
+          "tottime": 0.0001,
+          "cumtime": 0.001
+        }
+      ],
+      "profile_rerun_mu_max_abs_drift": 0.0,
+      "fingerprint": {
+        "CL": 0.3654723302039162,
+        "CL_gamma": 0.34233313568958107,
+        "CD_pressure": -0.017593346735200358,
+        "CM_y": -0.11257278167355603,
+        "wall_rms": 0.0019177823458160234,
+        "pressure_kutta_rms": 1.6760907509220812e-07,
+        "signed_kutta_rms": 0.016867759453107343,
+        "jump_rms": 7.850462293418875e-17,
+        "constrained_rank": null
+      },
+      "peak_rss_mb": 131.3,
+      "fixture_digest": "0e5e04149be4a02793cd845fe8800e3dab4d67810ee7f59f5fcc8a9b168eb03b",
+      "fixture_verified": true,
+      "rebuild_digest": "0e5e04149be4a02793cd845fe8800e3dab4d67810ee7f59f5fcc8a9b168eb03b",
+      "fixture_npz_sha256": "409a762e59d6191f41d5695eb84396ed479bf3f52898b72ac813cd3e3bf5a419",
+      "elapsed_seconds": 0.212
+    },
+    "g2_tail_low": {
+      "kind": "multi",
+      "meta": {
+        "kind": "multi",
+        "alpha_deg": 5.0,
+        "kutta": "pressure",
+        "tail_origin": [
+          1.6,
+          0.0,
+          0.24
+        ]
+      },
+      "counters": {
+        "n_wall_faces": 192,
+        "n_wall_nodes": 108,
+        "n_mu_dofs": 108,
+        "n_gamma_dofs": 8,
+        "n_groups": 2,
+        "matrix_shape": [
+          192,
+          116
+        ],
+        "A_nnz_fraction": 1.0,
+        "A_bytes_mb": 0.158,
+        "n_wake_triangles": 40
+      },
+      "stages_seconds": {
+        "assemble_multi": 0.0547,
+        "solve_multi_total": 0.0746
+      },
+      "profile_top": [
+        {
+          "function": "svd",
+          "file": "_decomp_svd.py:16",
+          "calls": 6,
+          "tottime": 0.0559,
+          "cumtime": 0.0561
+        },
+        {
+          "function": "lstsq",
+          "file": "_basic.py:1606",
+          "calls": 2,
+          "tottime": 0.013,
+          "cumtime": 0.0131
+        },
+        {
+          "function": "d_fun",
+          "file": "p1_lifting_g2.py:297",
+          "calls": 6,
+          "tottime": 0.0005,
+          "cumtime": 0.0017
+        },
+        {
+          "function": "_mean",
+          "file": "_methods.py:115",
+          "calls": 225,
+          "tottime": 0.0004,
+          "cumtime": 0.0009
+        },
+        {
+          "function": "<listcomp>",
+          "file": "p1_lifting_g2.py:289",
+          "calls": 6,
+          "tottime": 0.0004,
+          "cumtime": 0.001
+        },
+        {
+          "function": "<listcomp>",
+          "file": "p1_lifting_g2.py:285",
+          "calls": 8,
+          "tottime": 0.0003,
+          "cumtime": 0.0012
+        },
+        {
+          "function": "trf_no_bounds",
+          "file": "trf.py:415",
+          "calls": 1,
+          "tottime": 0.0002,
+          "cumtime": 0.057
+        },
+        {
+          "function": "solve_multi",
+          "file": "p1_lifting_g2.py:265",
+          "calls": 1,
+          "tottime": 0.0002,
+          "cumtime": 0.0748
+        },
+        {
+          "function": "_count_reduce_items",
+          "file": "_methods.py:73",
+          "calls": 225,
+          "tottime": 0.0002,
+          "cumtime": 0.0002
+        },
+        {
+          "function": "pressure_kutta_acceptance",
+          "file": "p1_lifting_g2.py:219",
+          "calls": 1,
+          "tottime": 0.0001,
+          "cumtime": 0.0084
+        },
+        {
+          "function": "constrained",
+          "file": "p1_lifting_g2.py:276",
+          "calls": 1,
+          "tottime": 0.0001,
+          "cumtime": 0.0071
+        },
+        {
+          "function": "_wrapreduction",
+          "file": "fromnumeric.py:66",
+          "calls": 135,
+          "tottime": 0.0001,
+          "cumtime": 0.0003
+        },
+        {
+          "function": "mean",
+          "file": "fromnumeric.py:3699",
+          "calls": 224,
+          "tottime": 0.0001,
+          "cumtime": 0.001
+        },
+        {
+          "function": "sum",
+          "file": "fromnumeric.py:2304",
+          "calls": 133,
+          "tottime": 0.0001,
+          "cumtime": 0.0004
+        },
+        {
+          "function": "__getitem__",
+          "file": "_index_tricks_impl.py:343",
+          "calls": 8,
+          "tottime": 0.0001,
+          "cumtime": 0.0001
+        }
+      ],
+      "profile_rerun_mu_max_abs_drift": 0.0,
+      "fingerprint": {
+        "CL": 0.3628331801624354,
+        "CL_gamma": 0.34093083993870726,
+        "CD_pressure": -0.017749943753945112,
+        "CM_y": -0.10785366039367245,
+        "wall_rms": 0.0019218623450907228,
+        "pressure_kutta_rms": 1.7155103468140226e-07,
+        "signed_kutta_rms": 0.01679697507490231,
+        "jump_rms": 1.7554167342883504e-16,
+        "constrained_rank": null
+      },
+      "peak_rss_mb": 131.3,
+      "fixture_digest": "91c8ab31e44c0d5e61955e081546f899a39199fd51d1b6418c7fbeb868f54b1b",
+      "fixture_verified": true,
+      "rebuild_digest": "91c8ab31e44c0d5e61955e081546f899a39199fd51d1b6418c7fbeb868f54b1b",
+      "fixture_npz_sha256": "fee5b43416fa485db04c209965829e8d60cdefa60e8c97649648951ed036af07",
+      "elapsed_seconds": 0.207
+    },
+    "g1_swept30": {
+      "kind": "wing",
+      "meta": {
+        "source": "D:/3D/Projects/panel/runs/fix_master/cases/geom_robust/surfaces/swept30_s075/surface.json",
+        "source_sha256": "5155468398265f82fbd0e91299b1f313af2f14c54fba4e5b8702e353dded8a72",
+        "kind": "wing",
+        "alpha_deg": 5.0,
+        "kutta": "pressure"
+      },
+      "counters": {
+        "n_wall_faces": 2764,
+        "n_wall_nodes": 1928,
+        "n_mu_dofs": 1447,
+        "n_gamma_dofs": 15,
+        "n_kutta_rows": 63,
+        "n_wake_triangles": 1110,
+        "matrix_shape": [
+          2764,
+          1462
+        ],
+        "A_nnz_fraction": 0.999968,
+        "A_bytes_mb": 30.514,
+        "scaled_B_bytes_mb": 30.83
+      },
+      "stages_seconds": {
+        "assemble": 5.5698,
+        "solve_total": 10.309
+      },
+      "profile_top": [
+        {
+          "function": "svd",
+          "file": "_decomp_svd.py:16",
+          "calls": 8,
+          "tottime": 4.1869,
+          "cumtime": 4.1956
+        },
+        {
+          "function": "_doublet_matrix",
+          "file": "p1_lifting_g1.py:369",
+          "calls": 1111,
+          "tottime": 2.4832,
+          "cumtime": 8.7446
+        },
+        {
+          "function": "cross",
+          "file": "numeric.py:1567",
+          "calls": 174335,
+          "tottime": 1.4782,
+          "cumtime": 4.5913
+        },
+        {
+          "function": "normalize_axis_tuple",
+          "file": "numeric.py:1431",
+          "calls": 1046010,
+          "tottime": 1.0346,
+          "cumtime": 1.5685
+        },
+        {
+          "function": "moveaxis",
+          "file": "numeric.py:1493",
+          "calls": 523005,
+          "tottime": 0.8056,
+          "cumtime": 2.676
+        },
+        {
+          "function": "lstsq",
+          "file": "_basic.py:1606",
+          "calls": 1,
+          "tottime": 0.4237,
+          "cumtime": 0.4251
+        },
+        {
+          "function": "<genexpr>",
+          "file": "numeric.py:1480",
+          "calls": 2092020,
+          "tottime": 0.2115,
+          "cumtime": 0.2916
+        },
+        {
+          "function": "norm",
+          "file": "_linalg.py:2599",
+          "calls": 96884,
+          "tottime": 0.1847,
+          "cumtime": 0.4503
+        },
+        {
+          "function": "<lambda>",
+          "file": "p1_lifting_g1.py:387",
+          "calls": 162708,
+          "tottime": 0.1445,
+          "cumtime": 0.5576
+        },
+        {
+          "function": "jac",
+          "file": "p1_lifting_g1.py:495",
+          "calls": 7,
+          "tottime": 0.102,
+          "cumtime": 0.1763
+        },
+        {
+          "function": "_einsum_dispatcher",
+          "file": "einsumfunc.py:1236",
+          "calls": 1167326,
+          "tottime": 0.0781,
+          "cumtime": 0.0781
+        },
+        {
+          "function": "<listcomp>",
+          "file": "numeric.py:1554",
+          "calls": 523005,
+          "tottime": 0.0706,
+          "cumtime": 0.0706
+        },
+        {
+          "function": "_wrapreduction_any_all",
+          "file": "fromnumeric.py:86",
+          "calls": 93117,
+          "tottime": 0.0702,
+          "cumtime": 0.1743
+        },
+        {
+          "function": "einsum",
+          "file": "einsumfunc.py:1244",
+          "calls": 233465,
+          "tottime": 0.0525,
+          "cumtime": 0.6401
+        },
+        {
+          "function": "any",
+          "file": "fromnumeric.py:2436",
+          "calls": 93105,
+          "tottime": 0.0423,
+          "cumtime": 0.2164
+        }
+      ],
+      "profile_rerun_mu_max_abs_drift": 0.0,
+      "fingerprint": {
+        "CL": 0.4674214526153768,
+        "CL_gamma": 0.4591177927908034,
+        "CD_pressure": 0.007219985624543298,
+        "CM_y": -0.3761363619455591,
+        "wall_rms": 0.00035486769060383673,
+        "pressure_kutta_rms": 2.6372262787424175e-07,
+        "signed_kutta_rms": 0.017770707504551658,
+        "jump_rms": 5.550585043421512e-16,
+        "constrained_rank": 1336.0
+      },
+      "peak_rss_mb": 857.3,
+      "fixture_digest": "aec57928f1b8532b7437bf8bb424f6f5c9ef4d7ab8b6d80ef73e25241278ade6",
+      "fixture_verified": true,
+      "rebuild_digest": "aec57928f1b8532b7437bf8bb424f6f5c9ef4d7ab8b6d80ef73e25241278ade6",
+      "fixture_npz_sha256": "2bc461a327ea6ca5f0896f2acd1ffc67ad23d2e3b504bb48fb98e54d72725a64",
+      "elapsed_seconds": 29.7
+    },
+    "g1_elliptic": {
+      "kind": "wing",
+      "meta": {
+        "source": "D:/3D/Projects/panel/runs/fix_master/cases/geom_robust/surfaces/elliptic_s075/surface.json",
+        "source_sha256": "310ddab41dbde522a28b1f1884b3547be5e05d4d4b6b22b533882a20534d7018",
+        "kind": "wing",
+        "alpha_deg": 5.0,
+        "kutta": "pressure"
+      },
+      "counters": {
+        "n_wall_faces": 3220,
+        "n_wall_nodes": 2368,
+        "n_mu_dofs": 1695,
+        "n_gamma_dofs": 33,
+        "n_kutta_rows": 83,
+        "n_wake_triangles": 1528,
+        "matrix_shape": [
+          3220,
+          1728
+        ],
+        "A_nnz_fraction": 1.0,
+        "A_bytes_mb": 41.64,
+        "scaled_B_bytes_mb": 42.451
+      },
+      "stages_seconds": {
+        "assemble": 7.6999,
+        "solve_total": 19.2868
+      },
+      "profile_top": [
+        {
+          "function": "svd",
+          "file": "_decomp_svd.py:16",
+          "calls": 13,
+          "tottime": 9.7818,
+          "cumtime": 9.8016
+        },
+        {
+          "function": "_doublet_matrix",
+          "file": "p1_lifting_g1.py:369",
+          "calls": 1529,
+          "tottime": 3.4958,
+          "cumtime": 12.3254
+        },
+        {
+          "function": "cross",
+          "file": "numeric.py:1567",
+          "calls": 246901,
+          "tottime": 2.088,
+          "cumtime": 6.4845
+        },
+        {
+          "function": "normalize_axis_tuple",
+          "file": "numeric.py:1431",
+          "calls": 1481406,
+          "tottime": 1.4646,
+          "cumtime": 2.2168
+        },
+        {
+          "function": "moveaxis",
+          "file": "numeric.py:1493",
+          "calls": 740703,
+          "tottime": 1.1376,
+          "cumtime": 3.7793
+        },
+        {
+          "function": "lstsq",
+          "file": "_basic.py:1606",
+          "calls": 1,
+          "tottime": 0.5365,
+          "cumtime": 0.5389
+        },
+        {
+          "function": "<genexpr>",
+          "file": "numeric.py:1480",
+          "calls": 2962812,
+          "tottime": 0.2969,
+          "cumtime": 0.4097
+        },
+        {
+          "function": "norm",
+          "file": "_linalg.py:2599",
+          "calls": 137751,
+          "tottime": 0.2605,
+          "cumtime": 0.6361
+        },
+        {
+          "function": "jac",
+          "file": "p1_lifting_g1.py:495",
+          "calls": 12,
+          "tottime": 0.2579,
+          "cumtime": 0.4223
+        },
+        {
+          "function": "<lambda>",
+          "file": "p1_lifting_g1.py:387",
+          "calls": 232652,
+          "tottime": 0.2031,
+          "cumtime": 0.7841
+        },
+        {
+          "function": "_einsum_dispatcher",
+          "file": "einsumfunc.py:1236",
+          "calls": 1672726,
+          "tottime": 0.1117,
+          "cumtime": 0.1117
+        },
+        {
+          "function": "<listcomp>",
+          "file": "numeric.py:1554",
+          "calls": 740703,
+          "tottime": 0.0995,
+          "cumtime": 0.0995
+        },
+        {
+          "function": "_wrapreduction_any_all",
+          "file": "fromnumeric.py:86",
+          "calls": 133130,
+          "tottime": 0.0981,
+          "cumtime": 0.2461
+        },
+        {
+          "function": "trf_no_bounds",
+          "file": "trf.py:415",
+          "calls": 1,
+          "tottime": 0.088,
+          "cumtime": 10.2877
+        },
+        {
+          "function": "einsum",
+          "file": "einsumfunc.py:1244",
+          "calls": 334545,
+          "tottime": 0.0745,
+          "cumtime": 0.9564
+        }
+      ],
+      "profile_rerun_mu_max_abs_drift": 0.0,
+      "fingerprint": {
+        "CL": 0.3472736155437683,
+        "CL_gamma": 0.3400753819393768,
+        "CD_pressure": 0.0049227372732021,
+        "CM_y": -0.07531996207332511,
+        "wall_rms": 0.0002970747257516866,
+        "pressure_kutta_rms": 7.640932439940158e-07,
+        "signed_kutta_rms": 0.008780662154406798,
+        "jump_rms": 3.714185619381564e-16,
+        "constrained_rank": 1562.0
+      },
+      "peak_rss_mb": 1116.5,
+      "fixture_digest": "27bbb8774a13999263d0b619c483f0d9a7ebb591a66104ca74fc403a3cb80311",
+      "fixture_verified": true,
+      "rebuild_digest": "27bbb8774a13999263d0b619c483f0d9a7ebb591a66104ca74fc403a3cb80311",
+      "fixture_npz_sha256": "4caa5c819d03b59d515529e3ce2f218368110af300773b6ffde7f2b11c49a2fe",
+      "elapsed_seconds": 50.597
+    },
+    "g1_wingbody_cad": {
+      "kind": "wing",
+      "meta": {
+        "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json",
+        "source_sha256": "d04e439cddb2a80ff9d376257ed9a57d5613f538e111a0ba97f3fbb5f6405d5a",
+        "kind": "wing",
+        "alpha_deg": 5.0,
+        "kutta": "pressure"
+      },
+      "counters": {
+        "n_wall_faces": 792,
+        "n_wall_nodes": 765,
+        "n_mu_dofs": 497,
+        "n_gamma_dofs": 44,
+        "n_kutta_rows": 88,
+        "n_wake_triangles": 770,
+        "matrix_shape": [
+          792,
+          541
+        ],
+        "A_nnz_fraction": 0.99998,
+        "A_bytes_mb": 3.003,
+        "scaled_B_bytes_mb": 3.269
+      },
+      "stages_seconds": {
+        "assemble": 0.7748,
+        "solve_total": 1.9289
+      },
+      "profile_top": [
+        {
+          "function": "svd",
+          "file": "_decomp_svd.py:16",
+          "calls": 16,
+          "tottime": 1.0809,
+          "cumtime": 1.0829
+        },
+        {
+          "function": "_doublet_matrix",
+          "file": "p1_lifting_g1.py:369",
+          "calls": 771,
+          "tottime": 0.3252,
+          "cumtime": 1.2456
+        },
+        {
+          "function": "cross",
+          "file": "numeric.py:1567",
+          "calls": 26559,
+          "tottime": 0.2212,
+          "cumtime": 0.6918
+        },
+        {
+          "function": "normalize_axis_tuple",
+          "file": "numeric.py:1431",
+          "calls": 159354,
+          "tottime": 0.1592,
+          "cumtime": 0.2413
+        },
+        {
+          "function": "moveaxis",
+          "file": "numeric.py:1493",
+          "calls": 79677,
+          "tottime": 0.1235,
+          "cumtime": 0.411
+        },
+        {
+          "function": "<genexpr>",
+          "file": "numeric.py:1480",
+          "calls": 318708,
+          "tottime": 0.0325,
+          "cumtime": 0.0447
+        },
+        {
+          "function": "norm",
+          "file": "_linalg.py:2599",
+          "calls": 14132,
+          "tottime": 0.0263,
+          "cumtime": 0.0611
+        },
+        {
+          "function": "lstsq",
+          "file": "_basic.py:1606",
+          "calls": 1,
+          "tottime": 0.0232,
+          "cumtime": 0.0234
+        },
+        {
+          "function": "<lambda>",
+          "file": "p1_lifting_g1.py:387",
+          "calls": 21868,
+          "tottime": 0.0195,
+          "cumtime": 0.0711
+        },
+        {
+          "function": "jac",
+          "file": "p1_lifting_g1.py:495",
+          "calls": 15,
+          "tottime": 0.0168,
+          "cumtime": 0.0558
+        },
+        {
+          "function": "_mean",
+          "file": "_methods.py:115",
+          "calls": 7200,
+          "tottime": 0.013,
+          "cumtime": 0.0281
+        },
+        {
+          "function": "assemble",
+          "file": "p1_lifting_g1.py:416",
+          "calls": 1,
+          "tottime": 0.0117,
+          "cumtime": 1.2621
+        },
+        {
+          "function": "_einsum_dispatcher",
+          "file": "einsumfunc.py:1236",
+          "calls": 170446,
+          "tottime": 0.0114,
+          "cumtime": 0.0114
+        },
+        {
+          "function": "pressure_jac",
+          "file": "p1_lifting_g1.py:483",
+          "calls": 15,
+          "tottime": 0.0109,
+          "cumtime": 0.0329
+        },
+        {
+          "function": "<listcomp>",
+          "file": "numeric.py:1554",
+          "calls": 79677,
+          "tottime": 0.0107,
+          "cumtime": 0.0107
+        }
+      ],
+      "profile_rerun_mu_max_abs_drift": 0.0,
+      "fingerprint": {
+        "CL": 0.5361115367532608,
+        "CL_gamma": 0.5411492998787445,
+        "CD_pressure": 0.01596183706159363,
+        "CM_y": -0.1360040833956841,
+        "wall_rms": 0.001175875878163269,
+        "pressure_kutta_rms": 1.628041101575382e-06,
+        "signed_kutta_rms": 0.047822639599320114,
+        "jump_rms": 7.292144878782058e-16,
+        "constrained_rank": 354.0
+      },
+      "peak_rss_mb": 1116.5,
+      "fixture_digest": "38d971e058a1bb4b0daa9f9009c06989cfbf457dbc7bb11c0d4a37f9328d2683",
+      "fixture_verified": true,
+      "rebuild_digest": "38d971e058a1bb4b0daa9f9009c06989cfbf457dbc7bb11c0d4a37f9328d2683",
+      "fixture_npz_sha256": "3e8371b28c791056de5cb1a852a4407139dfc6b8faeb09ee8918701e26d82037",
+      "elapsed_seconds": 5.234
+    },
+    "g1_wingbody_cad_3x": {
+      "kind": "wing",
+      "meta": {
+        "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_3x/surface.json",
+        "source_sha256": "034c216906e6f13b7a38f878ffa065f62dd6638e8f9198dc49d300bacec0a846",
+        "kind": "wing",
+        "alpha_deg": 5.0,
+        "kutta": "pressure"
+      },
+      "counters": {
+        "n_wall_faces": 2410,
+        "n_wall_nodes": 1925,
+        "n_mu_dofs": 1308,
+        "n_gamma_dofs": 44,
+        "n_kutta_rows": 88,
+        "n_wake_triangles": 1466,
+        "matrix_shape": [
+          2410,
+          1352
+        ],
+        "A_nnz_fraction": 0.999937,
+        "A_bytes_mb": 24.05,
+        "scaled_B_bytes_mb": 24.859
+      },
+      "stages_seconds": {
+        "assemble": 4.745,
+        "solve_total": 12.6937
+      },
+      "profile_top": [
+        {
+          "function": "svd",
+          "file": "_decomp_svd.py:16",
+          "calls": 16,
+          "tottime": 7.5364,
+          "cumtime": 7.5519
+        },
+        {
+          "function": "_doublet_matrix",
+          "file": "p1_lifting_g1.py:369",
+          "calls": 1467,
+          "tottime": 2.1355,
+          "cumtime": 7.4604
+        },
+        {
+          "function": "cross",
+          "file": "numeric.py:1567",
+          "calls": 147293,
+          "tottime": 1.2531,
+          "cumtime": 3.9028
+        },
+        {
+          "function": "normalize_axis_tuple",
+          "file": "numeric.py:1431",
+          "calls": 883758,
+          "tottime": 0.8805,
+          "cumtime": 1.3338
+        },
+        {
+          "function": "moveaxis",
+          "file": "numeric.py:1493",
+          "calls": 441879,
+          "tottime": 0.6851,
+          "cumtime": 2.2742
+        },
+        {
+          "function": "lstsq",
+          "file": "_basic.py:1606",
+          "calls": 1,
+          "tottime": 0.2784,
+          "cumtime": 0.2794
+        },
+        {
+          "function": "<genexpr>",
+          "file": "numeric.py:1480",
+          "calls": 1767516,
+          "tottime": 0.179,
+          "cumtime": 0.2469
+        },
+        {
+          "function": "jac",
+          "file": "p1_lifting_g1.py:495",
+          "calls": 15,
+          "tottime": 0.1658,
+          "cumtime": 0.2715
+        },
+        {
+          "function": "norm",
+          "file": "_linalg.py:2599",
+          "calls": 81527,
+          "tottime": 0.1592,
+          "cumtime": 0.3906
+        },
+        {
+          "function": "<lambda>",
+          "file": "p1_lifting_g1.py:387",
+          "calls": 135660,
+          "tottime": 0.1204,
+          "cumtime": 0.4692
+        },
+        {
+          "function": "trf_no_bounds",
+          "file": "trf.py:415",
+          "calls": 1,
+          "tottime": 0.069,
+          "cumtime": 7.9214
+        },
+        {
+          "function": "_einsum_dispatcher",
+          "file": "einsumfunc.py:1236",
+          "calls": 983256,
+          "tottime": 0.0665,
+          "cumtime": 0.0665
+        },
+        {
+          "function": "assemble",
+          "file": "p1_lifting_g1.py:416",
+          "calls": 1,
+          "tottime": 0.0617,
+          "cumtime": 7.5375
+        },
+        {
+          "function": "<listcomp>",
+          "file": "numeric.py:1554",
+          "calls": 441879,
+          "tottime": 0.0593,
+          "cumtime": 0.0593
+        },
+        {
+          "function": "_wrapreduction_any_all",
+          "file": "fromnumeric.py:86",
+          "calls": 77545,
+          "tottime": 0.059,
+          "cumtime": 0.1459
+        }
+      ],
+      "profile_rerun_mu_max_abs_drift": 0.0,
+      "fingerprint": {
+        "CL": 0.5535718574685162,
+        "CL_gamma": 0.564202904082225,
+        "CD_pressure": 0.013536902441149601,
+        "CM_y": -0.1492822162576438,
+        "wall_rms": 0.0005093399582370193,
+        "pressure_kutta_rms": 1.5034714023535466e-07,
+        "signed_kutta_rms": 0.04204913217048438,
+        "jump_rms": 6.185561624302953e-16,
+        "constrained_rank": 1163.0
+      },
+      "peak_rss_mb": 1116.5,
+      "fixture_digest": "3b5ef8a893d7128341709bff15263b8fb006166e6967327e113d5e6d437c3e9d",
+      "fixture_verified": true,
+      "rebuild_digest": "3b5ef8a893d7128341709bff15263b8fb006166e6967327e113d5e6d437c3e9d",
+      "fixture_npz_sha256": "1d264504e0394a0bffe37c7142d820d5db5acb960378837a19e2c84a6b30499f",
+      "elapsed_seconds": 33.508
+    }
+  },
+  "wake": {
+    "kind": "wake",
+    "meta": {
+      "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json",
+      "alpha_deg": 5.0,
+      "iterations": 1,
+      "gate_mode": "off",
+      "velocity_method": "analytic_edges"
+    },
+    "counters": {
+      "n_wall_faces": 872,
+      "n_wake_nodes": 785,
+      "n_wake_triangles": 794,
+      "n_unknowns": 589,
+      "evaluate_many_calls": 32,
+      "evaluate_many_targets": 18992,
+      "limits_targets": 18992,
+      "refined_calls": 0
+    },
+    "stages_seconds": {
+      "assemble_multi": 0.8291,
+      "initial_solve_multi": 6.55,
+      "coupled_wake_iteration": 57.7324
+    },
+    "wake_records": [
+      {
+        "iteration": 0,
+        "map_residual_chord": 22.05455976913777,
+        "relaxation": null,
+        "status": null
+      },
+      {
+        "iteration": 1,
+        "map_residual_chord": 52.01331032387214,
+        "relaxation": 0.015625,
+        "status": null
+      }
+    ],
+    "status": "blocked_updated_nonlinear_solve",
+    "solver_seconds": 57.731,
+    "fingerprint": {
+      "CL": 0.43406115014632407,
+      "CL_gamma": 0.43843173700189036,
+      "CD_pressure": 0.006357145692946399,
+      "CM_y": -0.11965433057432534,
+      "wall_rms": 0.001216961726581878,
+      "pressure_kutta_rms": 9.026496367145126e-07,
+      "signed_kutta_rms": 0.04479958281246911,
+      "jump_rms": 5.937779694784441e-16,
+      "constrained_rank": null
+    },
+    "peak_rss_mb": 1116.5,
+    "elapsed_seconds": 65.143
+  }
+}
