@@ -148,15 +148,22 @@ def _mesh(mesh):
                 normal,norm/2,grad,dict(diameter=float(np.linalg.norm(np.ptp(mesh.xyz,axis=0)))))
 
 
-def assemble_multi(mesh: MultiLiftingMesh):
+def assemble_multi(mesh: MultiLiftingMesh, *, backend='numpy'):
     """Assemble all wall/wake interactions in ONE coupled potential system.
 
     No superposition of separate wing solutions; cross-component influence
     appears in A and all wake groups act on every wall collocation target.
     """
     ms=_mesh(mesh);nf=len(mesh.faces);nm=mesh.ndof_mu
-    A=_doublet_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
-                      face_dofs=mesh.dof_face,ndof=nm)
+    if backend not in ('numpy','torch'):
+        raise ValueError("backend must be 'numpy' or 'torch'")
+    if backend=='numpy':
+        A=_doublet_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
+                          face_dofs=mesh.dof_face,ndof=nm)
+    else:
+        from .p1_batched_influence import influence_matrix
+        A=influence_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
+                           face_dofs=mesh.dof_face,ndof=nm)
     grad=_gradient_map(mesh,ms)
     W_parts=[];J_parts=[];K_parts=[];TEface=[];slices={};offset=0;groups_receipt=[]
     for gi,group in enumerate(mesh.groups):
@@ -165,9 +172,14 @@ def assemble_multi(mesh: MultiLiftingMesh):
         # Assemble all wake source triangles in one analytic-kernel traversal.
         # face_dofs maps each source triangle back to the shared wake-node basis,
         # so this is algebraically the sum of the former per-triangle calls.
-        coefficients=_doublet_matrix(wake_tris,ms.centers,
-            face_dofs=np.asarray(group.wake_faces,int),
-            ndof=len(group.wake_xyz))
+        if backend=='numpy':
+            coefficients=_doublet_matrix(wake_tris,ms.centers,
+                face_dofs=np.asarray(group.wake_faces,int),
+                ndof=len(group.wake_xyz))
+        else:
+            from .p1_batched_influence import wake_matrix
+            coefficients=wake_matrix(np.asarray(group.wake_xyz,float),
+                np.asarray(group.wake_faces,int),ms.centers)
         Wg=coefficients@np.asarray(group.gamma_hat,float)
         W_parts.append(Wg)
         slices[group.name]=slice(offset,offset+ng)
@@ -265,9 +277,9 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 
 
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
-                max_nfev=80,operators=None,pressure_solver='reference'):
+                max_nfev=80,operators=None,pressure_solver='reference', backend='numpy'):
     """Solve wall P1 mu and ALL independent wake Gamma simultaneously."""
-    ops=assemble_multi(mesh) if operators is None else operators
+    ops=assemble_multi(mesh,backend=backend) if operators is None else operators
     A,W,J,K,grad=ops['A'],ops['W'],ops['J'],ops['K'],ops['grad'];ms=ops['mesh']
     nm=A.shape[1];ng=W.shape[1];alpha=np.deg2rad(alpha_deg)
     U=np.array([np.cos(alpha),0.,np.sin(alpha)])

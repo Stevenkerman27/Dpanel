@@ -1,0 +1,156 @@
+{
+  "cuda": "13.2",
+  "device": "NVIDIA GeForce RTX 5060",
+  "fixtures": {
+    "g1_elliptic": {
+      "A": {
+        "max_abs": 3.823354257975406e-16,
+        "max_rel_to_reference_scale": 1.2952871765885411e-15,
+        "shape": [
+          3220,
+          1695
+        ]
+      },
+      "W": {
+        "max_abs": 2.1883943225262104e-16,
+        "max_rel_to_reference_scale": 7.655729874871733e-15,
+        "shape": [
+          3220,
+          33
+        ]
+      },
+      "n_faces": 3220,
+      "n_wake_triangles": 1528,
+      "peak_vram_mb": 131.1630859375,
+      "seconds": {
+        "cold_assembly": 15.460339199984446,
+        "transfer_sources": 0.0006766999722458422,
+        "warm_A": 0.27795389998937026,
+        "warm_W": 0.11645309999585152
+      },
+      "status": "ok",
+      "transfer_mb": 0.8843994140625
+    },
+    "g1_swept30": {
+      "A": {
+        "max_abs": 3.092805281627517e-16,
+        "max_rel_to_reference_scale": 9.595709862585473e-16,
+        "shape": [
+          2764,
+          1447
+        ]
+      },
+      "W": {
+        "max_abs": 3.8272336688738307e-17,
+        "max_rel_to_reference_scale": 1.4510622529777209e-15,
+        "shape": [
+          2764,
+          15
+        ]
+      },
+      "n_faces": 2764,
+      "n_wake_triangles": 1110,
+      "peak_vram_mb": 112.52880859375,
+      "seconds": {
+        "cold_assembly": 0.21315690001938492,
+        "transfer_sources": 0.00033629999961704016,
+        "warm_A": 0.2024532999494113,
+        "warm_W": 0.0831758999847807
+      },
+      "status": "ok",
+      "transfer_mb": 0.7591552734375
+    },
+    "g1_wing_rect": {
+      "A": {
+        "max_abs": 1.4671694848616967e-15,
+        "max_rel_to_reference_scale": 4.189538053145753e-15,
+        "shape": [
+          112,
+          63
+        ]
+      },
+      "W": {
+        "max_abs": 5.204170427930421e-18,
+        "max_rel_to_reference_scale": 4.165875962374188e-16,
+        "shape": [
+          112,
+          5
+        ]
+      },
+      "n_faces": 112,
+      "n_wake_triangles": 24,
+      "peak_vram_mb": 35.484375,
+      "seconds": {
+        "cold_assembly": 0.0031973000150173903,
+        "transfer_sources": 0.0001357999863103032,
+        "warm_A": 0.002893199969548732,
+        "warm_W": 0.002543099981267005
+      },
+      "status": "ok",
+      "transfer_mb": 0.03076171875
+    },
+    "g1_wingbody_cad": {
+      "A": {
+        "max_abs": 1.0901652844341747e-15,
+        "max_rel_to_reference_scale": 2.9527956979452277e-15,
+        "shape": [
+          792,
+          497
+        ]
+      },
+      "W": {
+        "max_abs": 5.958775139980332e-16,
+        "max_rel_to_reference_scale": 6.427953238168906e-15,
+        "shape": [
+          792,
+          44
+        ]
+      },
+      "n_faces": 792,
+      "n_wake_triangles": 770,
+      "peak_vram_mb": 79.56982421875,
+      "seconds": {
+        "cold_assembly": 0.025414599978830665,
+        "transfer_sources": 0.00018179998733103275,
+        "warm_A": 0.024339299998246133,
+        "warm_W": 0.021296999999321997
+      },
+      "status": "ok",
+      "transfer_mb": 0.217529296875
+    },
+    "g1_wingbody_cad_3x": {
+      "A": {
+        "max_abs": 1.36576947667999e-15,
+        "max_rel_to_reference_scale": 3.699582254190187e-15,
+        "shape": [
+          2410,
+          1308
+        ]
+      },
+      "W": {
+        "max_abs": 7.472321372770097e-16,
+        "max_rel_to_reference_scale": 4.21144475074744e-15,
+        "shape": [
+          2410,
+          44
+        ]
+      },
+      "n_faces": 2410,
+      "n_wake_triangles": 1466,
+      "peak_vram_mb": 108.7802734375,
+      "seconds": {
+        "cold_assembly": 0.16241140000056475,
+        "transfer_sources": 0.0004064999520778656,
+        "warm_A": 0.15571339998859912,
+        "warm_W": 0.08254040003521368
+      },
+      "status": "ok",
+      "transfer_mb": 0.66192626953125
+    }
+  },
+  "python": "3.13.14",
+  "repeat": 3,
+  "status": "ok",
+  "torch": "2.13.0+cu132",
+  "total_vram_mb": 8123.75
+}
