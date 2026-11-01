@@ -14,13 +14,22 @@ geometry derivative through the free-wake iteration.
 """
 from __future__ import annotations
 
+from .p1_geometry_contact import (classify_new_triangle, classify_swept_wall,
+                                  declared_contact_pairs,
+                                 swept_hull)
+from .wake_velocity_methods import (ACCEPTED_METHODS, AREA_QUADRATURES,
+                                    ARCHITECTURE_DOC, DEFAULT_METHOD, describe,
+                                    wiring_error)
 from dataclasses import dataclass
 from itertools import combinations
 import hashlib
+import inspect
 import time
 from types import SimpleNamespace
 
 import numpy as np
+
+from . import velocity_profile as _profile
 
 
 def triangle_data(xyz, faces):
@@ -45,14 +54,28 @@ def triangle_data(xyz, faces):
 
 
 class TotalVelocity:
-    """U + wall + ALL wakes, with actual per-face P1 nodal values.
+    """U + wall + ALL wakes, preserving each sheet's P1 gradient.
 
-    Arrays are copied so a solved state cannot be mutated underneath an audit.
-    Analytic straight-edge P1 integration is the opt-in B2 default; the prior
-    48-point whole-edge Gauss evaluator is preserved for A/B and old snapshots.
-    No self faces, source terms, or cross-group interactions are omitted.
+    Two wire-ready models, both on the same P1 doublet-sheet representation
+    (see docs/ARCHITECTURE_WAKE_MODELS.md):
+
+    * analytic_edges -- method 1, unregularized, production default/reference.
+    * rm_regularized_p1 -- method 2, one explicit Rosenhead–Moore core applied
+      to BOTH the P1 edge traces and the in-panel distributed-vorticity term.
+
+    area_quadrature (legacy_duffy | projection_fan | projection_fan_adaptive) is
+    an integrator choice *inside* method 2, not a velocity method. legacy_gauss
+    is a deprecated backend kept for frozen-snapshot replay. method 3
+    (Lagrangian filaments) is documented and not wired. Both models change only
+    velocity reconstruction for wake kinematics; solve_multi's potential
+    operators remain unregularized and unchanged.
     """
-    def __init__(self, mesh, state, *, method="analytic_edges"):
+    def __init__(self, mesh, state, *, method="analytic_edges", core_radius=None,
+                 area_quadrature="legacy_duffy", fan_order=16, fan_strips=8,
+                 fan_refinement_order=None, fan_refinement_strips=None,
+                 near_ratio=2.0, adaptive_far_order=8, adaptive_far_levels=1,
+                 adaptive_budget=2e-4, adaptive_max_escalations=2,
+                 adaptive_subdivision_levels=0, adaptive_subdivision_fan=(48, 8)):
         parts = [(mesh.xyz, mesh.faces, np.asarray(state['mu'])[mesh.dof_face])]
         offset = 0
         for group in mesh.groups:
@@ -77,29 +100,108 @@ class TotalVelocity:
         self.free = np.array([np.cos(theta), 0., np.sin(theta)])
         self._quadrature = {}
         self.method = method
+        self.core_radius = None
+        self.area_quadrature = area_quadrature
+        self.fan_order = fan_order
+        self.fan_strips = fan_strips
+        self.fan_refinement_order = fan_refinement_order
+        self.fan_refinement_strips = fan_refinement_strips
+        # Fail closed: an area-quadrature choice that the selected evaluator cannot
+        # honour would otherwise be accepted and silently ignored.
+        if method not in ACCEPTED_METHODS:
+            raise ValueError(
+                "velocity_method must be one of " + ", ".join(ACCEPTED_METHODS)
+                + f"; quadrature settings belong to area_quadrature; see {ARCHITECTURE_DOC}")
+        self.method_spec = describe(method)
+        if area_quadrature not in AREA_QUADRATURES:
+            raise ValueError("area_quadrature must be " + " or ".join(AREA_QUADRATURES))
+        if type(fan_order) is not int or fan_order < 2:
+            raise ValueError("fan_order must be an integer >= 2")
+        if type(fan_strips) is not int or fan_strips < 1:
+            raise ValueError("fan_strips must be an integer >= 1")
+        if area_quadrature != "legacy_duffy" and method != "rm_regularized_p1":
+            raise ValueError(
+                "area_quadrature=projection_fan requires method='rm_regularized_p1'")
         if method == "analytic_edges":
             from .p1_analytic_sheet_velocity import AnalyticSheetField
             self._analytic = AnalyticSheetField(parts, freestream=self.free)
+        elif method == "rm_regularized_p1":
+            if core_radius is None or not np.isfinite(core_radius) or core_radius <= 0:
+                raise ValueError("rm_regularized_p1 requires an explicit positive core_radius")
+            from .p1_regularized_sheet_velocity import RegularizedP1SheetField
+            self.core_radius = float(core_radius)
+            self._regularized = RegularizedP1SheetField(
+                parts, freestream=self.free, core_radius=self.core_radius,
+                area_quadrature=area_quadrature, fan_order=fan_order,
+                fan_strips=fan_strips, fan_refinement_order=fan_refinement_order,
+                fan_refinement_strips=fan_refinement_strips, near_ratio=near_ratio,
+                adaptive_far_order=adaptive_far_order,
+                adaptive_far_levels=adaptive_far_levels,
+                adaptive_budget=adaptive_budget,
+                adaptive_max_escalations=adaptive_max_escalations,
+                adaptive_subdivision_levels=adaptive_subdivision_levels,
+                adaptive_subdivision_fan=adaptive_subdivision_fan)
+            # The gate plan is a property of the field, not of the caller: limits()
+            # must compare the base fan against the refined fan, never the same
+            # configuration twice (issue #84 task 1).
+            self.fan_refinement_order = self._regularized.fan_refinement_order
+            self.fan_refinement_strips = self._regularized.fan_refinement_strips
+            self.near_ratio = self._regularized.near_ratio
+            self.adaptive_far_order = self._regularized.adaptive_far_order
+            self.adaptive_far_levels = self._regularized.adaptive_far_levels
+            self.adaptive_budget = self._regularized.adaptive_budget
+            self.adaptive_max_escalations = self._regularized.adaptive_max_escalations
+            self.adaptive_subdivision_levels = \
+                self._regularized.adaptive_subdivision_levels
+            self.adaptive_subdivision_fan = \
+                self._regularized.adaptive_subdivision_fan
+            self.quadrature_is_internal = self._regularized.quadrature_is_internal
         elif method != "legacy_gauss":
-            raise ValueError("unknown sheet-velocity integration method")
+            raise ValueError(wiring_error(method) or
+                             "unknown P1 sheet-velocity integration method")
         if not np.isfinite(self.mu_face).all() or not np.isfinite(self.grad_face).all():
             raise FloatingPointError("nonfinite solved P1 strength")
 
-    def __call__(self, point, *, order=48):
+    def pop_adaptive_estimates(self):
+        '''Per-target a-posteriori estimates from the internal adaptive gate.'''
+        if self.method == "rm_regularized_p1":
+            return self._regularized.pop_adaptive_estimates()
+        return []
+
+    def quadrature_arguments(self, order):
+        '''Base and refined quadrature keywords for the sampling gate.'''
+        if self.method == "rm_regularized_p1":
+            return self._regularized.quadrature_arguments(order)
+        return dict(order=order), dict(order=2*order)
+
+    def quadrature_plan(self, order):
+        '''JSON description of the gate actually run by limits().'''
+        if self.method == "rm_regularized_p1":
+            return self._regularized.quadrature_plan(order)
+        return dict(method=self.method, base=dict(order=int(order)),
+                    refined=dict(order=2*int(order)), legacy_order=int(order))
+
+    def __call__(self, point, *, order=48, fan_order=None, fan_strips=None):
         p = np.asarray(point, float)
         if p.shape != (3,) or not np.isfinite(p).all():
             raise ValueError("field point must be a finite (3,) array")
+        _profile.add("total.call.count")
+        if fan_order is not None or fan_strips is not None:
+            if (self.method != "rm_regularized_p1" or self.area_quadrature
+                    not in ("projection_fan", "projection_fan_adaptive")):
+                raise ValueError("fan overrides require rm_regularized_p1 with a fan "
+                                 "area quadrature")
         if self.method == "analytic_edges":
-            # Analytically integrated edge moments: order is accepted for the
-            # old CLI/snapshot contract, but cannot change the physical value.
             return self._analytic(p)
+        if self.method == "rm_regularized_p1":
+            return self._regularized(p, order=order, fan_order=fan_order,
+                                     fan_strips=fan_strips)
         if order not in self._quadrature:
             z, w = np.polynomial.legendre.leggauss(order)
             self._quadrature[order] = ((z+1)/2, w/2)
         z, w = self._quadrature[order]
         tri, n = self.triangles, self.normals
         center = tri.mean(axis=1)
-        # Match Phase A's tangential projection, including roundoff handling.
         grad = self.grad_face - n*np.einsum('fi,fi->f', self.grad_face, n)[:, None]
         boundary = np.zeros_like(n)
         surface = np.zeros_like(n)
@@ -128,15 +230,54 @@ class TotalVelocity:
         omega = 2*np.arctan2(num, den)
         induced = (boundary + np.cross(np.cross(grad, n),
                                         surface-omega[:, None]*n)).sum(axis=0)/(4*np.pi)
-        # Production D = -Omega/(4*pi); apply this sign ONCE, to wall and wakes.
         return self.free-induced
 
 
-def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
+    def evaluate_many(self, points, *, order=48, fan_order=None, fan_strips=None):
+        pts = np.asarray(points, float)
+        if pts.ndim != 2 or pts.shape[1] != 3 or not np.isfinite(pts).all():
+            raise ValueError("points must be a finite (N,3) array")
+        _profile.add("total.evaluate_many.calls")
+        _profile.add("total.evaluate_many.targets", len(pts))
+        _profile.add("total.evaluate_many.method."+self.method)
+        if fan_order is not None or fan_strips is not None:
+            if (self.method != "rm_regularized_p1" or self.area_quadrature
+                    not in ("projection_fan", "projection_fan_adaptive")):
+                raise ValueError("fan overrides require rm_regularized_p1 with a fan "
+                                 "area quadrature")
+        if self.method == "rm_regularized_p1":
+            return self._regularized.evaluate_many(pts, order=order,
+                                                   fan_order=fan_order,
+                                                   fan_strips=fan_strips)
+        return np.stack([self(point, order=order) for point in pts])
+
+
+def _accepts_quadrature_order(field):
+    '''True when the field's velocity call takes an order keyword.'''
+    target = field.evaluate_many if hasattr(field, "evaluate_many") else field
+    try:
+        parameters = inspect.signature(target).parameters
+    except (TypeError, ValueError):
+        return True
+    if "order" in parameters:
+        return True
+    return any(p.kind is inspect.Parameter.VAR_KEYWORD for p in parameters.values())
+
+
+def _plan_label(kwargs):
+    '''Deterministic compact label for one quadrature configuration.'''
+    return ",".join("%s=%s" % (key, kwargs[key]) for key in sorted(kwargs))
+
+
+def limits(field, points, normals, scales, *, eps_fraction, ladder, order, tag="",
+           audit_quadrature=True):
     """Finite one-sided samples: epsilon sensitivity plus legacy Gauss-order audit.
 
     In analytic-edge mode, edge quadrature does not exist: its reported
     quadrature_error is 0 (NOT APPLICABLE), not a PV-convergence certificate.
+
+    tag only labels the profiling counters (wake_face, free_node, replay_*): it never
+    changes a value, so a labelled and an unlabelled call are bitwise identical.
     """
     factors = np.asarray(ladder, float)
     if (factors.ndim != 1 or len(factors) < 2 or not np.isfinite(factors).all()
@@ -150,26 +291,118 @@ def limits(field, points, normals, scales, *, eps_fraction, ladder, order):
             or not np.isfinite(scales).all()
             or not np.allclose(np.linalg.norm(normals, axis=1), 1., atol=1e-10)):
         raise ValueError("invalid sampling points/normals/scales")
+    base_kwargs, refined_kwargs = dict(order=order), dict(order=2*order)
+    accepts_order = _accepts_quadrature_order(field)
+    analytic = (getattr(field, "method", None) == "analytic_edges"
+                or not accepts_order)
+    internal = bool(getattr(field, "quadrature_is_internal", False))
+    if not accepts_order:
+        base_kwargs, refined_kwargs = {}, {}
+    if internal:
+        base_kwargs, refined_kwargs = {}, {}
+    if analytic:
+        plan = dict(method=getattr(field, "method", None) or "analytic_edges",
+                    base=dict(base_kwargs), refined=dict(base_kwargs), legacy_order=None,
+                    note="edge quadrature does not exist; quadrature_error is not applicable")
+    elif internal:
+        if hasattr(field, "quadrature_plan"):
+            plan = field.quadrature_plan(order)
+        else:
+            plan = dict(method="projection_fan_adaptive", base={}, refined={},
+                        legacy_order=None, internal=True)
+    else:
+        if hasattr(field, "quadrature_plan"):
+            plan = field.quadrature_plan(order)
+        else:
+            plan = dict(method="legacy_gauss", base=dict(base_kwargs),
+                        refined=dict(refined_kwargs), legacy_order=int(order))
+        if hasattr(field, "quadrature_arguments"):
+            base_kwargs, refined_kwargs = field.quadrature_arguments(order)
+        if dict(base_kwargs) == dict(refined_kwargs):
+            raise ValueError("quadrature gate would compare a configuration with itself")
+    _profile.add("limits.calls")
+    _profile.add("limits.points", len(points))
+    _profile.add("limits.tag."+str(tag)+".calls")
+    _profile.add("limits.tag."+str(tag)+".points", len(points))
     plus, minus = np.empty_like(points, dtype=float), np.empty_like(points, dtype=float)
     errors, qerrors = np.zeros(len(points)), np.zeros(len(points))
-    uref = float(np.linalg.norm(field.free))
-    for i, (p, n, scale) in enumerate(zip(points, normals, scales)):
+    reference = getattr(field, "free", None)
+    if reference is None:
+        reference = getattr(field, "freestream", None)
+    if reference is None:
+        raise ValueError("field must expose a reference speed as free or freestream")
+    uref = float(np.linalg.norm(reference))
+    if hasattr(field, "evaluate_many"):
         previous = None
         for factor in factors:
-            h = eps_fraction*scale*factor
-            up, um = field(p+h*n, order=order), field(p-h*n, order=order)
+            h = eps_fraction*scales*factor
+            targets = np.concatenate((points+h[:, None]*normals,
+                                      points-h[:, None]*normals), axis=0)
+            _profile.add("limits.ladder_steps")
+            _profile.add("limits.targets", len(targets))
+            _profile.add("limits.tag."+str(tag)+".targets", len(targets))
+            values = field.evaluate_many(targets, **base_kwargs)
+            up, um = values[:len(points)], values[len(points):]
             mean = (up+um)/2
             if previous is not None:
-                errors[i] = np.linalg.norm(mean-previous)/uref
+                errors = np.linalg.norm(mean-previous, axis=1)/uref
             previous = mean
-        plus[i], minus[i] = up, um
-        if getattr(field, "method", None) == "analytic_edges":
-            # No edge quadrature exists to refine. Zero is a not-applicable
-            # quadrature estimate, NOT a claim of PV/roundoff convergence.
-            qerrors[i] = 0.
+        plus[:], minus[:] = up, um
+        if analytic:
+            qerrors[:] = 0.
+        elif internal:
+            _profile.add("limits.internal_gate")
+            estimates = (field.pop_adaptive_estimates()
+                         if hasattr(field, "pop_adaptive_estimates") else [])
+            if len(estimates) < 2*len(points):
+                raise ValueError("internal quadrature field reported no per-target "
+                                 "a-posteriori estimates")
+            recent = np.asarray(estimates[-2*len(points):], float)
+            qerrors = .5*(recent[:len(points)]+recent[len(points):])
+        elif not audit_quadrature:
+            # gate_mode='off': the refined evaluation exists only to audit the
+            # quadrature; skip it and report qerrors=0 (not applicable).
+            qerrors[:] = 0.
         else:
-            refined = (field(p+h*n, order=2*order)+field(p-h*n, order=2*order))/2
-            qerrors[i] = np.linalg.norm(refined-mean)/uref
+            h = eps_fraction*scales*factors[-1]
+            targets = np.concatenate((points+h[:, None]*normals,
+                                      points-h[:, None]*normals), axis=0)
+            _profile.add("limits.refined_calls")
+            _profile.add("limits.refined_targets", len(targets))
+            _profile.add("limits.tag."+str(tag)+".refined_targets", len(targets))
+            refined = field.evaluate_many(targets, **refined_kwargs)
+            refined_mean = (refined[:len(points)]+refined[len(points):])/2
+            qerrors = np.linalg.norm(refined_mean-mean, axis=1)/uref
+    else:
+        _profile.add("limits.scalar_points", len(points))
+        for i, (p, n, scale) in enumerate(zip(points, normals, scales)):
+            previous = None
+            for factor in factors:
+                _profile.add("limits.ladder_steps")
+                _profile.add("limits.targets", 2)
+                h = eps_fraction*scale*factor
+                up, um = (field(p+h*n, **base_kwargs),
+                          field(p-h*n, **base_kwargs))
+                mean_i = (up+um)/2
+                if previous is not None:
+                    errors[i] = np.linalg.norm(mean_i-previous)/uref
+                previous = mean_i
+            plus[i], minus[i] = up, um
+            if analytic:
+                qerrors[i] = 0.
+            elif internal:
+                _profile.add("limits.internal_gate")
+                estimates = (field.pop_adaptive_estimates()
+                             if hasattr(field, "pop_adaptive_estimates") else [])
+
+                if len(estimates) < 2:
+                    raise ValueError("internal quadrature field reported no "
+                                     "a-posteriori estimate")
+                qerrors[i] = .5*(estimates[-2]+estimates[-1])
+            else:
+                refined = (field(p+h*n, **refined_kwargs)
+                           +field(p-h*n, **refined_kwargs))/2
+                qerrors[i] = np.linalg.norm(refined-mean_i)/uref
     if not all(np.isfinite(a).all() for a in (plus, minus, errors, qerrors)):
         raise FloatingPointError("nonfinite velocity/epsilon/quadrature diagnostic")
     return dict(plus=plus, minus=minus, mean=(plus+minus)/2,
@@ -194,13 +427,26 @@ def material_paths(material):
     return s, roots
 
 
-def streamline_target(xyz, material, velocity, eligible):
+def streamline_target(xyz, material, velocity, eligible, *, step_scale=None,
+                     truncation_policy='advance'):
     """Rooted fixed-arclength Picard map; no division by Vx or uniform drift.
 
     Use the downstream tangent at a TE root (the root is not a free sheet
     node). Else use the average endpoint velocity. Rejected predecessors stay
     in place; every rejected node remains explicitly in the convergence gate.
+
+    The map marches one REFERENCE LINK per node, so a link that is far longer
+    than the sheet's own panels (a truncation row) asks for a displacement of
+    link*|u_hat-t_ref| chord -- measured 15-23 chord on the G2 CAD wake for a
+    single 26-chord link. That request is not a velocity artifact and no
+    per-node step cap can accept it, so such rows are boundary markers:
+    truncation_policy='freeze' holds them (and reports them), 'advance' keeps
+    the legacy behaviour.
     """
+    if truncation_policy not in ('advance', 'freeze'):
+        raise ValueError("truncation_policy must be 'advance' or 'freeze'")
+    if truncation_policy == 'freeze' and step_scale is None:
+        raise ValueError("truncation_policy='freeze' requires the per-node step_scale")
     target = np.asarray(xyz, float).copy()
     target[material.roots] = material.reference_xyz[material.roots]
     for node in material.order:
@@ -215,6 +461,9 @@ def streamline_target(xyz, material, velocity, eligible):
             raise ValueError("undefined streamline tangent")
         ds = np.linalg.norm(material.reference_xyz[node]-material.reference_xyz[p])
         target[node] = target[p]+ds*v/speed
+    if truncation_policy == 'freeze':
+        hold = np.asarray(step_scale['truncation'], bool)
+        target[hold] = np.asarray(xyz, float)[hold]
     return target
 
 
@@ -294,57 +543,234 @@ def convex_overlap(p, q, tol):
                      | (qq.max(axis=0) < pp.min(axis=0)-tol))
 
 
-def geometry_failure(mesh, candidates, materials, gates):
-    """Validate the ENTIRE candidate atomically. Return a refusal reason or None."""
+def _controlling_nodes(detail, ledgers=None):
+    """Name the specific nodes and pairs that refused the last candidate."""
+    detail = detail or {}
+    contacts = detail.get('contacts', {})
+    out = dict(groups=detail.get('groups', {}),
+               contacts=dict(kinds=contacts.get('kinds', {}),
+                             violations_count=contacts.get('violations_count', 0),
+                             worst_depth=contacts.get('worst_depth', 0.),
+                             violations=list(contacts.get('violations', []))[:10]),
+               clip={})
+    if ledgers:
+        out['clip'] = {name: dict(clipped=ledger['clipped'], raw_max=ledger['raw_max'],
+                                  accepted_max=ledger['accepted_max'],
+                                  clipped_ids=ledger['clipped_ids'][:10])
+                       for name, ledger in ledgers.items()}
+    return out
+
+
+def node_step_scale(wake_xyz, wake_faces):
+    """Shortest incident wake edge per node (inf when the node has no face)."""
+    _tri, _n, _a, _s, edges = triangle_data(np.asarray(wake_xyz, float),
+                                            np.asarray(wake_faces, int))
+    scale = np.full(len(wake_xyz), np.inf)
+    for k in range(3):
+        np.minimum.at(scale, np.asarray(wake_faces, int)[:, k], edges.min(axis=1))
+    return scale
+
+
+def wake_step_scale(wake_xyz, wake_faces, material, *, truncation_ratio=4.):
+    """Per-node convection scale of the rooted arclength map.
+
+    'scale' is the SHORTEST incident triangle edge: a step cap only bounds strain
+    when it is expressed in the mesh's own resolution.  Using the reference link
+    as the cap (0.25 * a 26-chord truncation link = 6.5 chord, see
+    docs/ISSUE84_STREAMLINE_STEP_UNIT.md) accepts a displacement that deforms the
+    sheet far beyond the area/fold gate, so the link is reported for diagnostics
+    ('link', 'truncation') and never used as the cap.
+
+    'truncation' marks links longer than truncation_ratio times the MEDIAN link
+    of the sheet.  The ratio is relative, not absolute: a uniformly coarse sheet
+    is self-similar under the map and must not be flagged, while one outlier row
+    (G2 CAD: 102 nodes on 26.0-chord links, median link 0.666) is.  Those nodes
+    are reported, never silently frozen and never exempted from the gate.
+    """
+    xyz = np.asarray(wake_xyz, float)
+    faces = np.asarray(wake_faces, int)
+    geometric = node_step_scale(xyz, faces)
+    predecessor = np.asarray(material.predecessor, int)
+    reference = np.asarray(material.reference_xyz, float)
+    link = np.zeros(len(xyz))
+    known = predecessor >= 0
+    link[known] = np.linalg.norm(reference[known]-reference[predecessor[known]], axis=1)
+    finite = np.isfinite(geometric)
+    scale = np.where(finite, geometric, np.maximum(link, 1e-12))
+    positive = link[known & (link > 0)]
+    median_link = float(np.median(positive)) if len(positive) else 0.
+    truncation = (known & (link > truncation_ratio*median_link)
+                  if median_link > 0 else np.zeros(len(xyz), bool))
+    return dict(scale=scale, link=link, geometric=geometric, truncation=truncation,
+                link_median=median_link)
+
+
+def clip_step_update(old, target, caps, *, roots=None, reference=None,
+                     unit='geometric_edge'):
+    """Cap every node displacement; roots stay pinned. Returns (xyz, ledger)."""
+    old = np.asarray(old, float)
+    delta = np.asarray(target, float)-old
+    magnitude = np.linalg.norm(delta, axis=1)
+    caps = np.asarray(caps, float)
+    limited = np.isfinite(caps) & (magnitude > caps)
+    factor = np.ones(len(old))
+    # A cap applied exactly at the gate threshold (cap/magnitude rounding) can
+    # still read back as 0.25+8e-15 and fail the step gate; keep a relative
+    # margin so the accepted step is strictly inside the limit.
+    factor[limited] = (1.-1e-9)*caps[limited]/np.maximum(magnitude[limited], 1e-300)
+    new = old+delta*factor[:, None]
+    if roots is not None:
+        roots = np.asarray(roots, int)
+        new[roots] = np.asarray(reference, float)[roots]
+    ids = np.nonzero(limited)[0]
+    accepted = np.linalg.norm(new-old, axis=1)
+    ledger = dict(mode="per_node_step_cap", unit=unit, clipped=int(len(ids)),
+                  clipped_ids=[int(i) for i in ids],
+                  clipped_fraction=float(len(ids)/max(len(old), 1)),
+                  raw_max=float(magnitude.max()) if len(magnitude) else 0.,
+                  raw_rms=float(np.sqrt(np.mean(magnitude**2))) if len(magnitude) else 0.,
+                  accepted_max=float(accepted.max()) if len(old) else 0.,
+                  accepted_rms=float(np.sqrt(np.mean(accepted**2))) if len(old) else 0.,
+                  cap_min=(float(caps[np.isfinite(caps)].min())
+                           if np.isfinite(caps).any() else None))
+    return new, ledger
+
+
+def geometry_audit(mesh, candidates, materials, gates, *, declared=None, step_scale=None):
+    """Validate the ENTIRE candidate atomically; return reason plus audit detail.
+
+    The wall test classifies every swept wake triangle against every
+    overlapping wall triangle with a SIGNED plane distance
+    (panel.p1_geometry_contact) instead of a boolean SAT overlap.  Pairs whose
+    contact is declared by reference topology may touch; any protrusion through
+    the wall plane inside the wall footprint is refused for declared and
+    undeclared pairs alike.
+    """
     tol = gates.tolerance_fraction*mesh.reference_chord
-    swept, vertex_sets = [], []
+    detail = dict(tolerance=float(tol), groups={}, declared_pairs=len(declared or {}),
+                  contacts=dict(tested=0, declared=0, undeclared=0, pairs_tested=0,
+                                kinds={}, violations=[], violations_count=0, worst_depth=0.,
+                                pre_existing=0, pre_existing_pairs=[]))
+    swept, vertex_sets, owners = [], [], []
     for gi, group in enumerate(mesh.groups):
-        old, new = group.wake_xyz, candidates[group.name]
+        old, new = group.wake_xyz, np.asarray(candidates[group.name], float)
         mat = materials[group.name]
         if not np.isfinite(new).all():
-            return 'nonfinite'
+            return dict(reason='nonfinite', detail=detail)
         if not np.array_equal(new[mat.roots], mat.reference_xyz[mat.roots]):
-            return 'root'
+            return dict(reason='root', detail=detail)
         _s, root_ids = material_paths(mat)
         free = np.setdiff1d(mat.used, mat.roots)
         ref = mat.reference_xyz[free]-mat.reference_xyz[root_ids[free]]
-        if np.any(np.einsum('ij,ij->i', new[free]-mat.reference_xyz[root_ids[free]], ref) <= 0):
-            return 'attachment'
+        attachment = np.einsum('ij,ij->i', new[free]-mat.reference_xyz[root_ids[free]], ref) <= 0
+        if np.any(attachment):
+            detail['groups'][group.name] = dict(
+                attachment_failures=int(attachment.sum()),
+                attachment_nodes=[int(v) for v in free[attachment]][:20])
+            return dict(reason='attachment', detail=detail)
         tri0, n0, a0, _g0, e0 = triangle_data(old, group.wake_faces)
         try:
             tri1, n1, a1, _g1, _e1 = triangle_data(new, group.wake_faces)
         except ValueError:
-            return 'area'
-        scale = np.full(len(old), np.inf)
-        for k in range(3):
-            np.minimum.at(scale, group.wake_faces[:, k], e0.min(axis=1))
-        if np.any(np.linalg.norm(new[mat.used]-old[mat.used], axis=1)
-                  > gates.max_step_fraction*scale[mat.used]):
-            return 'step'
-        # Check both incremental quality and accumulated collapse/stretch.
+            return dict(reason='area', detail=detail)
+        # The step gate must use the SAME length unit as the stepper that
+        # produced the candidate (the map arclength for wake nodes), otherwise a
+        # legitimate fraction of one map step reads as a huge geometric step.
+        scale = (node_step_scale(old, group.wake_faces) if step_scale is None
+                 else np.asarray(step_scale[group.name], float))
+        step = np.linalg.norm(new[mat.used]-old[mat.used], axis=1)/np.maximum(
+            scale[mat.used], 1e-300)
+        over_step = step > gates.max_step_fraction
+        if np.any(over_step):
+            detail['groups'][group.name] = dict(
+                step_fraction_max=float(step.max()), step_limit=float(gates.max_step_fraction),
+                step_nodes=[int(v) for v in mat.used[over_step]][:20])
+            return dict(reason='step', detail=detail)
         ratio = np.r_[a1/a0, a1/mat.panel_area]
         if np.any((ratio < 1/gates.max_area_ratio) | (ratio > gates.max_area_ratio)):
-            return 'area'
-        if np.any(np.einsum('fi,fi->f', n0, n1) < np.cos(np.deg2rad(gates.max_fold_deg))):
-            return 'fold'
+            detail['groups'][group.name] = dict(area_ratio_min=float(ratio.min()),
+                                                area_ratio_max=float(ratio.max()))
+            return dict(reason='area', detail=detail)
+        fold = np.einsum('fi,fi->f', n0, n1)
+        if np.any(fold < np.cos(np.deg2rad(gates.max_fold_deg))):
+            detail['groups'][group.name] = dict(fold_cos_min=float(fold.min()))
+            return dict(reason='fold', detail=detail)
         # Remove only a tiny boundary strip to permit declared TE contact.
         # The resulting clearance tolerance is explicit, not a vortex core.
         shrink = 1e-8
         t0 = (1-shrink)*tri0 + shrink*tri0.mean(axis=1)[:, None]
         t1 = (1-shrink)*tri1 + shrink*tri1.mean(axis=1)[:, None]
         swept.extend(np.concatenate((t0, t1), axis=1))
+        owners.extend([(group.name, i) for i in range(len(group.wake_faces))])
         vertex_sets.extend([{(gi, int(n)) for n in f} for f in group.wake_faces])
     wall = mesh.xyz[mesh.faces]
+    old_coords = {g.name: np.asarray(g.wake_xyz, float) for g in mesh.groups}
+    group_faces = {g.name: g.wake_faces for g in mesh.groups}
+    static_cache = {}
+    wall_edge_min = np.minimum(np.minimum(
+        np.linalg.norm(wall[:, 1]-wall[:, 0], axis=1),
+        np.linalg.norm(wall[:, 2]-wall[:, 1], axis=1)),
+        np.linalg.norm(wall[:, 0]-wall[:, 2], axis=1))
     pairs = 0
     for i, hull in enumerate(swept):
-        for tri in wall:
+        label, face_id = owners[i]
+        for j, tri in enumerate(wall):
             if not _bounds_overlap(hull, tri, tol):
                 continue
             pairs += 1
             if pairs > gates.max_collision_pairs:
-                return 'intersection_budget'
-            if convex_overlap(hull, tri, tol):
-                return 'wall'
+                detail['contacts']['pairs_tested'] = pairs
+                return dict(reason='intersection_budget', detail=detail)
+            entry = None if declared is None else declared.get((label, face_id, j))
+            declared_kind = None if entry is None else entry[0]
+            detail['contacts']['declared' if declared_kind is not None else 'undeclared'] += 1
+            region = None
+            if declared_kind is not None:
+                # The WALL half of the shared simplex: the attachment is fixed,
+                # so a wake node may leave it only by the graze corridor.
+                region = np.asarray(mesh.xyz, float)[list(entry[1])]
+            graze = max(20.*tol, 0.02*float(wall_edge_min[j]))
+            cls = classify_swept_wall(hull, tri, tol=tol, declared=declared_kind,
+                                      declared_region=region, graze_tol=graze if region is not None else 0.)
+            detail['contacts']['tested'] += 1
+            if cls.kind != 'disjoint':
+                kinds = detail['contacts']['kinds']
+                kinds[cls.kind] = kinds.get(cls.kind, 0)+1
+                detail['contacts']['worst_depth'] = max(detail['contacts']['worst_depth'],
+                                                        float(cls.depth))
+            if cls.violation:
+                # An inherited crossing is attributed, not silently excused:
+                # it must already violate in the geometry the step starts from,
+                # keep the same class, and not get deeper. It is reported every
+                # iteration until the geometry is repaired, and a new class or a
+                # deeper protrusion still blocks.
+                key = (label, int(face_id), int(j))
+                old_cls = static_cache.get(key)
+                if old_cls is None:
+                    old_cls = classify_new_triangle(
+                        old_coords[label][group_faces[label][face_id]], tri, tol=tol,
+                        declared=declared_kind, declared_region=region,
+                        graze_tol=graze if region is not None else 0.)
+                    static_cache[key] = old_cls
+                if (old_cls.violation and old_cls.kind == cls.kind
+                        and cls.depth <= old_cls.depth + 10.*tol):
+                    detail['contacts']['pre_existing'] += 1
+                    if len(detail['contacts']['pre_existing_pairs']) < 200:
+                        detail['contacts']['pre_existing_pairs'].append(dict(
+                            group=label, wake_face=int(face_id), wall_face=int(j),
+                            kind=cls.kind, depth=float(cls.depth)))
+                    continue
+                detail['contacts']['violations_count'] += 1
+                if len(detail['contacts']['violations']) < 200:
+                    detail['contacts']['violations'].append(dict(
+                        group=label, wake_face=int(face_id), wall_face=int(j),
+                        kind=cls.kind, depth=float(cls.depth), area=float(cls.area),
+                        declared=cls.declared, old_kind=old_cls.kind,
+                        old_depth=float(old_cls.depth), old_violation=bool(old_cls.violation)))
+    detail['contacts']['pairs_tested'] = pairs
+    if detail['contacts']['violations_count']:
+        return dict(reason='wall', detail=detail)
+    for i, hull in enumerate(swept):
         for j in range(i):
             if vertex_sets[i] & vertex_sets[j]:  # local fold gate covers neighbours
                 continue
@@ -352,10 +778,17 @@ def geometry_failure(mesh, candidates, materials, gates):
                 continue
             pairs += 1
             if pairs > gates.max_collision_pairs:
-                return 'intersection_budget'
+                detail['contacts']['pairs_tested'] = pairs
+                return dict(reason='intersection_budget', detail=detail)
             if convex_overlap(hull, swept[j], tol):
-                return 'intersection'
-    return None
+                return dict(reason='intersection', detail=detail)
+    detail['contacts']['pairs_tested'] = pairs
+    return dict(reason=None, detail=detail)
+
+
+def geometry_failure(mesh, candidates, materials, gates):
+    """Validate the ENTIRE candidate atomically. Return a refusal reason or None."""
+    return geometry_audit(mesh, candidates, materials, gates)['reason']
 
 
 def snapshot_hash(arrays):
@@ -376,7 +809,14 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 epsilon_tol=.02, quadrature_tol=.002,
                                 geometry_tol=.002, slip_tol=.01,
                                 max_nfev=80, max_backtracks=8, gates=None,
-                                velocity_method="analytic_edges", save_callback=None):
+                                velocity_method="analytic_edges", core_radius=None,
+                                area_quadrature="legacy_duffy", fan_order=16,
+                                fan_strips=8, fan_refinement_order=None,
+                                fan_refinement_strips=None, near_ratio=2.0,
+                                adaptive_far_order=8, adaptive_far_levels=1,
+                                adaptive_budget=2e-4, adaptive_max_escalations=2,
+                                gate_mode="audit", truncation_policy="advance",
+                                 save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -391,8 +831,20 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             or not all(np.isfinite(v) and v > 0 for v in
                        (epsilon_tol, quadrature_tol, geometry_tol, slip_tol))):
         raise ValueError("invalid iteration or convergence controls")
-    if velocity_method not in ("analytic_edges", "legacy_gauss"):
-        raise ValueError("unsupported P1 wake velocity method")
+    if gate_mode not in ("enforce", "audit", "off", "safe"):
+        raise ValueError("gate_mode must be 'enforce', 'audit', 'off' or 'safe'")
+    if truncation_policy not in ("advance", "freeze"):
+        raise ValueError("truncation_policy must be 'advance' or 'freeze'")
+    audit_quadrature = gate_mode != 'off'
+    if velocity_method not in ACCEPTED_METHODS:
+        raise ValueError(
+            "velocity_method must be one of " + ", ".join(ACCEPTED_METHODS)
+            + f"; quadrature settings belong to area_quadrature; see {ARCHITECTURE_DOC}")
+    if velocity_method == "rm_regularized_p1":
+        if core_radius is None or not np.isfinite(core_radius) or core_radius <= 0:
+            raise ValueError("rm_regularized_p1 requires an explicit positive core_radius")
+    elif core_radius is not None:
+        raise ValueError("core_radius is only valid with velocity_method='rm_regularized_p1'")
     gates = GeometryGates() if gates is None else gates
     if (not np.isfinite(gates.max_area_ratio) or gates.max_area_ratio <= 1
             or not 0 < gates.max_fold_deg < 90 or not gates.max_step_fraction > 0
@@ -400,6 +852,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         raise ValueError("invalid geometry gates")
     started = time.perf_counter()
     materials = {g.name: prepare_wake_material(g) for g in mesh.groups}
+    # Reference topology declares which wake/wall pairs are allowed to touch.
+    # Identity comes from shared vertex ids, never from coordinate proximity.
+    declared = declared_contact_pairs([g.wake_faces for g in mesh.groups], mesh.faces,
+                                      group_labels=[g.name for g in mesh.groups])
     static = assemble_multi(mesh)
     fixed = solve_multi(mesh, alpha_deg, kutta=kutta, max_nfev=max_nfev, operators=static)
     current, history, incoming = mesh, [], None
@@ -427,17 +883,48 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         else:
             state = solve_multi(current, alpha_deg, kutta=kutta,
                                 max_nfev=max_nfev, operators=ops)
-        field = TotalVelocity(current, state, method=velocity_method)
+        field = TotalVelocity(current, state, method=velocity_method, core_radius=core_radius,
+                              area_quadrature=area_quadrature,
+                              fan_order=fan_order, fan_strips=fan_strips,
+                              fan_refinement_order=fan_refinement_order,
+                              fan_refinement_strips=fan_refinement_strips,
+                              near_ratio=near_ratio,
+                              adaptive_far_order=adaptive_far_order,
+                              adaptive_far_levels=adaptive_far_levels,
+                              adaptive_budget=adaptive_budget,
+                              adaptive_max_escalations=adaptive_max_escalations)
+        plan = (field.quadrature_plan(order) if hasattr(field, "quadrature_plan")
+                else dict(method=getattr(field, "method", "injected_field"),
+                          base={}, refined={}, legacy_order=int(order)))
         arrays = dict(mu=state['mu'], gamma=state['gamma'], cp=state['cp'],
                       alpha_deg=np.asarray(alpha_deg), wall_xyz=current.xyz,
                       wall_faces=current.faces, wall_dof_face=current.dof_face,
                       sampling_eps_fraction=np.asarray(eps_fraction),
                       sampling_ladder=np.asarray(ladder, float), sampling_order=np.asarray(order),
-                      sampling_kernel=np.asarray(field.method))
+                      sampling_kernel=np.asarray(field.method),
+                      sampling_core_radius=np.asarray(np.nan if core_radius is None else core_radius),
+                      sampling_area_quadrature=np.asarray(area_quadrature),
+                      sampling_fan_order=np.asarray(fan_order),
+                      sampling_fan_strips=np.asarray(fan_strips),
+                      sampling_quadrature_base=np.asarray(_plan_label(plan['base'])),
+                      sampling_quadrature_refined=np.asarray(_plan_label(plan['refined'])),
+                      sampling_fan_refinement_order=np.asarray(
+                          -1 if fan_refinement_order is None else int(fan_refinement_order)),
+                      sampling_fan_refinement_strips=np.asarray(
+                          -1 if fan_refinement_strips is None else int(fan_refinement_strips)),
+                      sampling_near_ratio=np.asarray(float(near_ratio)),
+                      sampling_adaptive_far_order=np.asarray(int(adaptive_far_order)),
+                      sampling_adaptive_far_levels=np.asarray(int(adaptive_far_levels)),
+                      sampling_adaptive_budget=np.asarray(float(adaptive_budget)),
+                      sampling_adaptive_max_escalations=np.asarray(
+                          int(adaptive_max_escalations)))
         record = {k: state[k] for k in (*load_names, 'wall_rms', 'jump_rms',
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
         record.update(iteration=iteration, velocity_method=velocity_method,
+                      area_quadrature=area_quadrature, fan_order=fan_order,
+                      fan_strips=fan_strips, quadrature_plan=plan,
+                      core_radius=core_radius, strength_solve_kernel="unregularized_P1_BEM_operators",
                       groups=state['group_results'],
                       CLp_minus_CLgamma=float(state['CL']-state['CL_gamma']),
                       CL_relative_gap=float((state['CL']-state['CL_gamma'])/
@@ -447,13 +934,16 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         sv = np.linalg.svd(constraint, compute_uv=False)
         record['constraint_rank'] = int(np.sum(sv > 1e-11*sv[0]))
         record['constraint_singular_min'] = float(sv[-1])
-        targets, counts = {}, {}
+        targets, counts, step_scales = {}, {}, {}
         all_eligible, map_residual = True, 0.
         for gi, group in enumerate(current.groups):
             mat = materials[group.name]
+            group_scale = wake_step_scale(group.wake_xyz, group.wake_faces, mat)
+            step_scales[group.name] = group_scale
             tri, normal, area, _shape, edges = triangle_data(group.wake_xyz, group.wake_faces)
             face_samples = limits(field, tri.mean(axis=1), normal, edges.min(axis=1),
-                                  eps_fraction=eps_fraction, ladder=ladder, order=order)
+                                  eps_fraction=eps_fraction, ladder=ladder, order=order,
+                                  tag="wake_face", audit_quadrature=audit_quadrature)
             distance, _roots = material_paths(mat)
             relative_s = distance[group.wake_faces].mean(axis=1)/max(distance.max(), 1e-30)
             diag = area_diagnostics(face_samples, normal, area, relative_s)
@@ -467,14 +957,21 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             if np.any(lengths <= 1e-14):
                 raise ValueError(group.name+': undefined area-weighted node normal')
             samples = limits(field, group.wake_xyz[free_nodes], normals[free_nodes]/lengths[:, None],
-                             scales[free_nodes], eps_fraction=eps_fraction, ladder=ladder, order=order)
+                             scales[free_nodes], eps_fraction=eps_fraction, ladder=ladder, order=order,
+                             tag="free_node", audit_quadrature=audit_quadrature)
             velocity = np.zeros_like(group.wake_xyz)
             velocity[free_nodes] = samples['mean']
             finite_limit = ((samples['epsilon_error'] <= epsilon_tol)
                             & (samples['quadrature_error'] <= quadrature_tol))
             fast = np.linalg.norm(samples['mean'], axis=1) > 1e-6
+            # Sampling-error thresholds are an audit of the integral, not a
+            # selection rule for which nodes may move: freezing a subset of one
+            # sheet distorts the wake and changes the loads (measured 1.7-3.9x
+            # on ten wings). Production defaults to 'audit'; 'enforce' keeps the
+            # legacy freeze for reproducing pre-2026-10-31 readings.
+            admitted = finite_limit if gate_mode in ('enforce', 'safe') else fast
             eligible = np.zeros(len(velocity), bool)
-            eligible[free_nodes] = finite_limit & fast
+            eligible[free_nodes] = admitted & fast
             # Opposed endpoint velocities have an undefined average tangent.
             tangent_rejections = 0
             for node in mat.order:
@@ -484,18 +981,31 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                     eligible[node] = False
                     tangent_rejections += 1
             all_eligible &= bool(np.all(eligible[free_nodes]))
-            target = streamline_target(group.wake_xyz, mat, velocity, eligible)
+            target = streamline_target(group.wake_xyz, mat, velocity, eligible,
+                                       step_scale=group_scale,
+                                       truncation_policy=truncation_policy)
             map_residual = max(map_residual, float(np.max(np.linalg.norm(
                               target[mat.used]-group.wake_xyz[mat.used], axis=1))/mesh.reference_chord))
             targets[group.name] = target
             counts[group.name] = dict(root=len(mat.roots), eligible=int(eligible.sum()),
                                       convergence=int((~finite_limit).sum()),
                                       speed=int((finite_limit & ~fast).sum())+tangent_rejections,
-                                      rejected=int((~eligible[free_nodes]).sum()))
+                                      rejected=int((~eligible[free_nodes]).sum()),
+                                      gate_mode=gate_mode,
+                                      truncation_policy=truncation_policy,
+                                      truncation_nodes=int(group_scale['truncation'].sum()),
+                                      audit_rejected=int((~finite_limit).sum()),
+                                      advanced_despite_audit=int(
+                                          np.count_nonzero(admitted & ~finite_limit)),
+                                      production_safety=(
+                                          'sampling_converged' if gate_mode in ('enforce', 'safe')
+                                          else 'sampling_not_gated'))
             diag.update(edge_integration=field.method,
                         edge_quadrature_error_interpretation=(
                             "not_applicable_exact_straight_edge_integrals"
-                            if field.method == "analytic_edges" else "48_vs_96_gauss"),
+                            if field.method == "analytic_edges" else
+                            "projection_fan_base_vs_refined_fan"
+                            if field.method == "rm_regularized_p1" else "48_vs_96_gauss"),
                         area_min=float(area.min()), aspect_p90=float(np.percentile(
                         edges.max(axis=1)/edges.min(axis=1), 90)),
                         fixed_roots=len(mat.roots), node_epsilon_error_max=float(samples['epsilon_error'].max()),
@@ -517,7 +1027,11 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                           and d['quadrature_error_max'] <= quadrature_tol
                           and d['overall']['slip_rms'] <= slip_tol for d in record['wakes'].values())
         nonlinear_ok = state['nonlinear'] is None or state['nonlinear']['success']
-        candidate = bool(all_eligible and face_checks and map_residual <= geometry_tol and nonlinear_ok)
+        # Under 'audit' every finite node moves, so all_eligible is trivially
+        # true and this reduces to the whole-sheet test; under 'enforce' it also
+        # requires that no node was frozen.
+        candidate = bool(all_eligible and face_checks
+                         and map_residual <= geometry_tol and nonlinear_ok)
         record['kinematic_candidate'] = candidate
         record['state_sha256'] = snapshot_hash(arrays)
         record['outgoing_update'] = None
@@ -531,30 +1045,89 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                                  else "after_accepted_geometry_update")
         if not stop:
             update = dict(accepted=False, relaxation=None, trial_reasons=[],
-                          eligible=counts, displacement_max=0., displacement_rms=0.)
+                          eligible=counts, displacement_max=0., displacement_rms=0.,
+                          control='per_node_step_cap', global_backtracks=0,
+                          clip={}, gate=None, control_nodes=None)
+            proposed = None
             maximum = max(float(np.max(np.linalg.norm(targets[g.name]-g.wake_xyz, axis=1)))
                           for g in current.groups)
             if maximum <= 1e-15*mesh.reference_chord:
                 status, stop = 'blocked_velocity_or_zero_update', True
             else:
-                for backtrack in range(max_backtracks+1):
-                    factor = relaxation*2.**(-backtrack)
-                    proposed = {g.name: g.wake_xyz+factor*(targets[g.name]-g.wake_xyz)
-                                for g in current.groups}
-                    for g in current.groups:
-                        proposed[g.name][materials[g.name].roots] = materials[g.name].reference_xyz[materials[g.name].roots]
-                    reason = geometry_failure(current, proposed, materials, gates)
-                    if reason is not None:
-                        update['trial_reasons'].append(reason)
-                        continue
-                    ds = np.concatenate([np.linalg.norm(proposed[g.name][materials[g.name].used]
-                                            -g.wake_xyz[materials[g.name].used], axis=1) for g in current.groups])
-                    update.update(accepted=True, relaxation=factor,
-                                  displacement_max=float(ds.max()), displacement_rms=float(np.sqrt(np.mean(ds**2))),
-                                  moved_nodes=int(np.count_nonzero(ds > 0)))
-                    break
-                if not update['accepted']:
+                clipped, clipped_ledgers = {}, {}
+                for g in current.groups:
+                    mat = materials[g.name]
+                    caps = gates.max_step_fraction*step_scales[g.name]['scale']
+                    clipped[g.name], clipped_ledgers[g.name] = clip_step_update(
+                        g.wake_xyz, targets[g.name], caps, roots=mat.roots,
+                        reference=mat.reference_xyz)
+                scale_maps = {name: s['scale'] for name, s in step_scales.items()}
+                update['step_scale'] = {}
+                for group_now in current.groups:
+                    name = group_now.name
+                    s = step_scales[name]
+                    node_caps = gates.max_step_fraction*s['scale']
+                    requested = np.linalg.norm(targets[name]-group_now.wake_xyz, axis=1)
+                    usable = node_caps > 0
+                    update['step_scale'][name] = dict(
+                        unit='geometric_edge',
+                        link_median=(float(np.median(s['link'][s['link'] > 0]))
+                                     if np.any(s['link'] > 0) else None),
+                        link_max=float(s['link'].max()),
+                        geometric_median=float(np.median(s['geometric'][np.isfinite(
+                            s['geometric'])])),
+                        truncation_nodes=int(s['truncation'].sum()),
+                        requested_max=float(requested.max()) if len(requested) else None,
+                        requested_over_cap_max=(float(np.max(requested[usable]/node_caps[usable]))
+                                                if np.any(usable) else None))
+                update['clip'] = {name: dict(ledger, clipped_ids=ledger['clipped_ids'][:20])
+                                  for name, ledger in clipped_ledgers.items()}
+                mode_none = all(ledger['mode'] == 'none'
+                                for ledger in clipped_ledgers.values())
+                update['control'] = 'none' if mode_none else 'per_node_step_cap'
+                accepted_xyz = None
+                audit = geometry_audit(current, clipped, materials, gates, declared=declared,
+                                       step_scale=scale_maps)
+                update['gate'] = audit['detail']
+                if audit['reason'] is None:
+                    accepted_xyz, update['relaxation'], update['accepted'] = clipped, 1.0, True
+                else:
+                    update['trial_reasons'].append(audit['reason'])
+                    update['trial_details'] = [dict(backtrack=-1, reason=audit['reason'],
+                                                    scale=1.0, gate=audit['detail'])]
+                    for backtrack in range(max_backtracks+1):
+                        factor = 2.**(-backtrack)
+                        trial_xyz = {g.name: g.wake_xyz+factor*(clipped[g.name]-g.wake_xyz)
+                                     for g in current.groups}
+                        trial = geometry_audit(current, trial_xyz, materials, gates,
+                                               declared=declared, step_scale=scale_maps)
+                        if trial['reason'] is None:
+                            accepted_xyz = trial_xyz
+                            update.update(accepted=True, relaxation=factor,
+                                          global_backtracks=backtrack,
+                                          control=('none+bounded_global_fallback' if mode_none else
+                                                   'per_node_step_cap+bounded_global_fallback'),
+                                          gate=trial['detail'])
+                            break
+                        update['trial_reasons'].append(trial['reason'])
+                        update['trial_details'].append(dict(
+                            backtrack=backtrack, reason=trial['reason'], scale=factor,
+                            gate=trial['detail']))
+                    else:
+                        # Report the LAST refusal, not the first audit, so the
+                        # controlling nodes come from the trial that blocked.
+                        update['gate'] = update['trial_details'][-1]['gate']
+                if accepted_xyz is None:
+                    update['control_nodes'] = _controlling_nodes(update['gate'], clipped_ledgers)
                     status, stop = 'blocked_geometry', True
+                else:
+                    ds = np.concatenate([np.linalg.norm(
+                        accepted_xyz[g.name][materials[g.name].used]
+                        -g.wake_xyz[materials[g.name].used], axis=1) for g in current.groups])
+                    update.update(displacement_max=float(ds.max()),
+                                  displacement_rms=float(np.sqrt(np.mean(ds**2))),
+                                  moved_nodes=int(np.count_nonzero(ds > 0)))
+                    proposed = accepted_xyz
             record['outgoing_update'] = update
         update = record['outgoing_update']
         if update is not None:
@@ -564,6 +1137,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             update['reason_counts']['root'] = sum(c['root'] for c in counts.values())
             for name in ('speed', 'convergence'):
                 update['reason_counts'][name] = sum(c[name] for c in counts.values())
+
         history.append(record)
         if save_callback is not None:
             save_callback(iteration, current, state, record, arrays)
@@ -582,13 +1156,24 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                 kinematic_candidate=history[-1]['kinematic_candidate'],
                 physical_accuracy_accepted=False,
                 method='P1-coupled-rooted-material-arclength-Picard',
+                gate_mode=gate_mode,
                 kernel=("analytic_P1_straight_edges_with_shared_trace_cancellation"
                         if velocity_method == "analytic_edges" else
+                        "RM_regularized_P1_edge_plus_interior_gradient"
+                        if velocity_method == "rm_regularized_p1" else
                         "legacy_fixed_order_edge_gauss"),
-                velocity_method=velocity_method)
+                velocity_method=velocity_method, core_radius=core_radius,
+                area_quadrature=area_quadrature, fan_order=fan_order,
+                fan_strips=fan_strips,
+                strength_solve_kernel="unregularized_P1_BEM_operators")
 
 
-def replay_snapshot(arrays, expected_sha):
+def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=None,
+                    quadrature_order=None, area_quadrature=None, fan_order=None,
+                    fan_strips=None, fan_refinement_order=None,
+                    fan_refinement_strips=None, near_ratio=None,
+                    adaptive_far_order=None, adaptive_far_levels=None,
+                    adaptive_budget=None, adaptive_max_escalations=None):
     """Re-evaluate frozen total-flow samples without re-solving/changing mu/Gamma.
 
     A mismatch in the recorded content SHA is an error. Bitwise equality is
@@ -609,11 +1194,60 @@ def replay_snapshot(arrays, expected_sha):
                            dof_face=arrays['wall_dof_face'], groups=tuple(groups))
     # Legacy snapshots (without sampling_kernel) are intentionally still
     # replayable using their original 48-point Gauss integration.
-    method = str(arrays['sampling_kernel']) if 'sampling_kernel' in arrays else "legacy_gauss"
+    recorded_method = str(arrays['sampling_kernel']) if 'sampling_kernel' in arrays else "legacy_gauss"
+    recorded_core = (float(arrays['sampling_core_radius'])
+                     if 'sampling_core_radius' in arrays
+                     and np.isfinite(arrays['sampling_core_radius']) else None)
+    method = recorded_method if velocity_method is None else velocity_method
+    selected_core = recorded_core if core_radius is None else float(core_radius)
+    selected_order = int(arrays['sampling_order']) if quadrature_order is None else int(quadrature_order)
+    recorded_area = str(arrays['sampling_area_quadrature']) if 'sampling_area_quadrature' in arrays else "legacy_duffy"
+    recorded_fan_order = int(arrays['sampling_fan_order']) if 'sampling_fan_order' in arrays else 16
+    recorded_fan_strips = int(arrays['sampling_fan_strips']) if 'sampling_fan_strips' in arrays else 8
+    selected_area = recorded_area if area_quadrature is None else area_quadrature
+    selected_fan_order = recorded_fan_order if fan_order is None else int(fan_order)
+    selected_fan_strips = recorded_fan_strips if fan_strips is None else int(fan_strips)
+    recorded_refine_order = (int(arrays['sampling_fan_refinement_order'])
+                             if 'sampling_fan_refinement_order' in arrays
+                             and int(arrays['sampling_fan_refinement_order']) > 0 else None)
+    recorded_refine_strips = (int(arrays['sampling_fan_refinement_strips'])
+                              if 'sampling_fan_refinement_strips' in arrays
+                              and int(arrays['sampling_fan_refinement_strips']) > 0 else None)
+    selected_refine_order = (recorded_refine_order if fan_refinement_order is None
+                             else int(fan_refinement_order))
+    selected_refine_strips = (recorded_refine_strips if fan_refinement_strips is None
+                              else int(fan_refinement_strips))
+    def _recorded(key, fallback):
+        if key not in arrays:
+            return fallback
+        value = float(np.asarray(arrays[key]).reshape(-1)[0])
+        return value
+
+    selected_near = (float(near_ratio) if near_ratio is not None
+                     else _recorded('sampling_near_ratio', 2.0))
+    selected_far_order = (int(adaptive_far_order) if adaptive_far_order is not None
+                          else int(_recorded('sampling_adaptive_far_order', 8)))
+    selected_far_levels = (int(adaptive_far_levels) if adaptive_far_levels is not None
+                           else int(_recorded('sampling_adaptive_far_levels', 1)))
+    selected_budget = (float(adaptive_budget) if adaptive_budget is not None
+                       else _recorded('sampling_adaptive_budget', 2e-4))
+    selected_escalations = (int(adaptive_max_escalations)
+                            if adaptive_max_escalations is not None
+                            else int(_recorded('sampling_adaptive_max_escalations', 2)))
     field = TotalVelocity(mesh, dict(mu=arrays['mu'], gamma=arrays['gamma'],
-                                   alpha_deg=float(arrays['alpha_deg'])), method=method)
+                                   alpha_deg=float(arrays['alpha_deg'])),
+                          method=method, core_radius=selected_core,
+                          area_quadrature=selected_area, fan_order=selected_fan_order,
+                          fan_strips=selected_fan_strips,
+                          fan_refinement_order=selected_refine_order,
+                          fan_refinement_strips=selected_refine_strips,
+                          near_ratio=selected_near, adaptive_far_order=selected_far_order,
+                          adaptive_far_levels=selected_far_levels,
+                          adaptive_budget=selected_budget,
+                          adaptive_max_escalations=selected_escalations)
+    plan = field.quadrature_plan(selected_order)
     kwargs = dict(eps_fraction=float(arrays['sampling_eps_fraction']),
-                  ladder=arrays['sampling_ladder'], order=int(arrays['sampling_order']))
+                  ladder=arrays['sampling_ladder'], order=selected_order)
     differences = {}
     equal = True
     for gi, group in enumerate(groups):
@@ -626,12 +1260,34 @@ def replay_snapshot(arrays, expected_sha):
             np.minimum.at(scale, group.wake_faces[:, k], edges.min(axis=1))
         free = arrays[p+'free_nodes']
         normals[free] /= np.linalg.norm(normals[free], axis=1)[:, None]
-        samples = dict(face=limits(field, tri.mean(axis=1), normal, edges.min(axis=1), **kwargs),
-                       node=limits(field, group.wake_xyz[free], normals[free], scale[free], **kwargs))
+        samples = dict(face=limits(field, tri.mean(axis=1), normal, edges.min(axis=1),
+                                   tag="replay_face", **kwargs),
+                       node=limits(field, group.wake_xyz[free], normals[free], scale[free],
+                                   tag="replay_node", **kwargs))
         for location, values in samples.items():
             for key, value in values.items():
                 name = p+location+'_'+key
                 equal &= bool(np.array_equal(value, arrays[name]))
                 differences[name] = float(np.max(np.abs(value-arrays[name])))
     return dict(state_sha256=expected_sha, bitwise_equal=equal, max_differences=differences,
+                recorded_method=recorded_method, evaluated_method=method,
+                recorded_core_radius=recorded_core, evaluated_core_radius=selected_core,
+                quadrature_order=selected_order,
+                recorded_area_quadrature=recorded_area,
+                evaluated_area_quadrature=selected_area,
+                fan_order=selected_fan_order, fan_strips=selected_fan_strips,
+                fan_refinement_order=selected_refine_order,
+                fan_refinement_strips=selected_refine_strips,
+                quadrature_plan=plan,
+                replay_mode=("reproduce_recorded_samples" if method == recorded_method
+                             and selected_core == recorded_core
+                             and selected_order == int(arrays['sampling_order'])
+                             and selected_area == recorded_area
+                             and selected_fan_order == recorded_fan_order
+                             and selected_fan_strips == recorded_fan_strips
+                             and selected_refine_order == recorded_refine_order
+                             and selected_refine_strips == recorded_refine_strips
+                             else "alternate_velocity_on_frozen_state"),
+                evaluation_finite=all(np.isfinite(v) for v in differences.values()),
+                strength_solve_kernel="frozen_unregularized_P1_BEM_state",
                 physical_accuracy_accepted=False)

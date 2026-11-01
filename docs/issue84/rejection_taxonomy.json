@@ -1,0 +1,140 @@
+{
+ "checks": {
+  "min_dist_wake_other": 0.36537689955023733,
+  "min_dist_wake_same_over_scale": 0.7420226999128119,
+  "min_incident_faces": 2,
+  "min_local_area_min": 0.002211998550933852,
+  "rejected_h_over_scale_min": 0.00625,
+  "rejected_is_root_count": 0,
+  "rejected_near_tip": 14,
+  "rejected_on_sheet_boundary": 29
+ },
+ "classes": {
+  "collision_or_selfintersection": {
+   "count": 0,
+   "examples": [],
+   "label": "collision/self-intersection",
+   "max_eps": null,
+   "median_eps": null,
+   "min_eps": null
+  },
+  "degenerate_geometry": {
+   "count": 0,
+   "examples": [],
+   "label": "geometric degeneracy",
+   "max_eps": null,
+   "median_eps": null,
+   "min_eps": null
+  },
+  "other": {
+   "count": 0,
+   "examples": [],
+   "label": "other",
+   "max_eps": null,
+   "median_eps": null,
+   "min_eps": null
+  },
+  "root_or_attachment": {
+   "count": 0,
+   "examples": [],
+   "label": "root/attachment constraint",
+   "max_eps": null,
+   "median_eps": null,
+   "min_eps": null
+  },
+  "sampling_epsilon": {
+   "count": 102,
+   "examples": [
+    {
+     "dist_sheet_edge": 0.0,
+     "dist_wall": 0.0,
+     "epsilon_error": 0.19337655543015753,
+     "group": "main_wing",
+     "h_over_scale": 0.00625,
+     "local_aspect_max": 4.232715412807771,
+     "near_tip": false,
+     "node": 56,
+     "on_sheet_boundary": true,
+     "speed": 1.0033303232762338,
+     "xyz": [
+      1.4709157008456744,
+      0.059472024653011685,
+      0.0
+     ]
+    },
+    {
+     "dist_sheet_edge": 0.0,
+     "dist_wall": 0.0,
+     "epsilon_error": 0.19311190164543388,
+     "group": "main_wing",
+     "h_over_scale": 0.00625,
+     "local_aspect_max": 4.232715412807771,
+     "near_tip": false,
+     "node": 452,
+     "on_sheet_boundary": true,
+     "speed": 1.0038210796623415,
+     "xyz": [
+      1.4709157008456744,
+      -0.059472024653011685,
+      0.0
+     ]
+    },
+    {
+     "dist_sheet_edge": 0.0,
+     "dist_wall": 0.29179738540047717,
+     "epsilon_error": 0.13494593017409096,
+     "group": "main_wing",
+     "h_over_scale": 0.00625,
+     "local_aspect_max": 5.921003770529292,
+     "near_tip": true,
+     "node": 626,
+     "on_sheet_boundary": true,
+     "speed": 1.6251121453908437,
+     "xyz": [
+      1.2917973854004772,
+      -2.0,
+      0.0
+     ]
+    }
+   ],
+   "label": "sampling/epsilon unreliable",
+   "max_eps": 0.19337655543015753,
+   "median_eps": 0.03929936097062252,
+   "min_eps": 0.020566367818633226
+  },
+  "sampling_quadrature": {
+   "count": 0,
+   "examples": [],
+   "label": "sampling/quadrature unreliable",
+   "max_eps": null,
+   "median_eps": null,
+   "min_eps": null
+  },
+  "step_or_linesearch": {
+   "count": 0,
+   "examples": [],
+   "label": "step/line-search failure",
+   "max_eps": null,
+   "median_eps": null,
+   "min_eps": null
+  }
+ },
+ "provenance": {
+  "csv": "runs\\issue84\\wake_rejection_g2_analytic.csv",
+  "json": "runs\\issue84\\wake_rejection_g2_analytic.json"
+ },
+ "registration": {
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "core_radius": null,
+  "eps_fraction": 0.05,
+  "epsilon_tol": 0.02,
+  "quadrature_order": 48,
+  "quadrature_tol": 0.002,
+  "seconds": 12.943935499992222,
+  "velocity_method": "analytic_edges",
+  "wall_faces": 872
+ },
+ "rejected": 102,
+ "rows": 393
+}

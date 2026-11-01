@@ -1,0 +1,1799 @@
+{
+  "runs": {
+    "pressure": {
+      "alpha_deg": 5.0,
+      "case": "g2",
+      "converged": false,
+      "convergence_ids_first_iteration": {
+        "main_wing": [
+          0,
+          1,
+          4,
+          10,
+          11,
+          19,
+          25,
+          26,
+          56,
+          67,
+          74,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          184,
+          185,
+          211,
+          212,
+          213,
+          214,
+          215,
+          251,
+          252,
+          253,
+          254,
+          255,
+          256,
+          257,
+          258,
+          259,
+          260,
+          378,
+          379,
+          394,
+          400,
+          402,
+          406,
+          407,
+          408,
+          411,
+          415,
+          420,
+          421,
+          422,
+          425,
+          452,
+          458,
+          465,
+          526,
+          527,
+          528,
+          529,
+          530,
+          531,
+          542,
+          543,
+          544,
+          545,
+          546,
+          547,
+          548,
+          549,
+          550,
+          551,
+          552,
+          553,
+          554,
+          555,
+          556,
+          577,
+          578,
+          579,
+          580,
+          581,
+          597,
+          598,
+          599,
+          600,
+          601,
+          612,
+          613,
+          614,
+          615,
+          616,
+          617,
+          618,
+          619,
+          620,
+          621,
+          622,
+          623,
+          624,
+          625,
+          626,
+          743,
+          744,
+          759
+        ],
+        "raised_tail": []
+      },
+      "counter_definitions": {
+        "convergence": "free nodes failing epsilon_tol or quadrature_tol (sampling rejection)",
+        "eligible": "free nodes passing epsilon, quadrature, speed and tangent gates",
+        "rejected": "free nodes not eligible = convergence + speed + tangent",
+        "root": "len(material.roots) fixed to reference geometry",
+        "speed": "free nodes with |v| <= 1e-6 plus opposed-tangent rejections"
+      },
+      "increments_at": {
+        "counters": "panel/p1_coupled_material_wake.py:561-564 (per iteration inside the group loop)",
+        "eligible_flag": "panel/p1_coupled_material_wake.py:543-556",
+        "solve_status": "panel/p1_coupled_material_wake.py:596-603",
+        "tangent": "panel/p1_coupled_material_wake.py:549-555",
+        "update_acceptance": "panel/p1_coupled_material_wake.py:604-630"
+      },
+      "iterations": [
+        {
+          "counters": {
+            "main_wing": {
+              "convergence": 102,
+              "eligible": 276,
+              "rejected": 102,
+              "root": 90,
+              "speed": 0
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "eligible": 15,
+              "rejected": 0,
+              "root": 5,
+              "speed": 0
+            }
+          },
+          "groups": {
+            "main_wing": {
+              "convergence": 102,
+              "convergence_boundary": 42,
+              "convergence_interior": 60,
+              "displacement": {
+                "count": 378,
+                "max": 4.7600858007144735,
+                "median": 0.06420743446204452,
+                "min": 0.0,
+                "p90": 0.7826543436748525
+              },
+              "eligible": 276,
+              "epsilon_error": {
+                "count": 378,
+                "max": 0.19337655543015753,
+                "median": 0.010360695541581231,
+                "min": 5.161688974160019e-08,
+                "p90": 0.05509131643312182
+              },
+              "free": 378,
+              "rejected": 102,
+              "root": 90,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "tangent": 0,
+              "total_nodes": 765,
+              "wall_contact_nodes": 398,
+              "wall_distance": {
+                "count": 765,
+                "max": 28.873084352039704,
+                "median": 0.0,
+                "min": 0.0,
+                "p90": 2.872455269055935
+              },
+              "worst_epsilon": [
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.19337655543015753,
+                  "incident_aspect_max": 4.232715412807771,
+                  "incident_faces": 2,
+                  "node": 56,
+                  "wall_distance": 0.0,
+                  "xyz": [
+                    1.4709157008456744,
+                    0.059472024653011685,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.19311190164543388,
+                  "incident_aspect_max": 4.232715412807771,
+                  "incident_faces": 2,
+                  "node": 452,
+                  "wall_distance": 0.0,
+                  "xyz": [
+                    1.4709157008456744,
+                    -0.059472024653011685,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.13494593017409096,
+                  "incident_aspect_max": 5.921003770529292,
+                  "incident_faces": 4,
+                  "node": 626,
+                  "wall_distance": 0.29179738540047717,
+                  "xyz": [
+                    1.2917973854004772,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.13494053735527856,
+                  "incident_aspect_max": 260.0019230698121,
+                  "incident_faces": 3,
+                  "node": 407,
+                  "wall_distance": 3.0748983723043595,
+                  "xyz": [
+                    5.0,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.1349405370871195,
+                  "incident_aspect_max": 12.947928188742726,
+                  "incident_faces": 3,
+                  "node": 622,
+                  "wall_distance": 1.9395169017710485,
+                  "xyz": [
+                    3.7085973861955397,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.13494053641053497,
+                  "incident_aspect_max": 9.341426422864554,
+                  "incident_faces": 3,
+                  "node": 623,
+                  "wall_distance": 1.3147503368368645,
+                  "xyz": [
+                    2.7793396922272176,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.13494053393073777,
+                  "incident_aspect_max": 6.736879750027115,
+                  "incident_faces": 3,
+                  "node": 624,
+                  "wall_distance": 1.112821212440572,
+                  "xyz": [
+                    2.112821212440572,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.13494052904648685,
+                  "incident_aspect_max": 4.883966535217939,
+                  "incident_faces": 2,
+                  "node": 625,
+                  "wall_distance": 0.6347457978661124,
+                  "xyz": [
+                    1.6347457978661124,
+                    -2.0,
+                    0.0
+                  ]
+                }
+              ]
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "convergence_boundary": 0,
+              "convergence_interior": 0,
+              "displacement": {
+                "count": 15,
+                "max": 0.12147897823257897,
+                "median": 0.05166449838907176,
+                "min": 0.01643636431642264,
+                "p90": 0.09530956340392623
+              },
+              "eligible": 15,
+              "epsilon_error": {
+                "count": 15,
+                "max": 0.005763318262575544,
+                "median": 0.0010767577691340262,
+                "min": 0.00024286387883147608,
+                "p90": 0.004924120640893336
+              },
+              "free": 15,
+              "rejected": 0,
+              "root": 5,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "tangent": 0,
+              "total_nodes": 20,
+              "wall_contact_nodes": 5,
+              "wall_distance": {
+                "count": 20,
+                "max": 2.75,
+                "median": 0.2412303052426331,
+                "min": 0.0,
+                "p90": 2.75
+              },
+              "worst_epsilon": [
+                {
+                  "displacement": 0.0216308104973879,
+                  "eligible": true,
+                  "epsilon_error": 0.005763318262575544,
+                  "incident_aspect_max": 2.2692553603022803,
+                  "incident_faces": 6,
+                  "node": 6,
+                  "wall_distance": 0.0832089128889265,
+                  "xyz": [
+                    3.0666666666666673,
+                    -0.45,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.04187470468944553,
+                  "eligible": true,
+                  "epsilon_error": 0.005763290984597294,
+                  "incident_aspect_max": 2.2692553603022794,
+                  "incident_faces": 6,
+                  "node": 11,
+                  "wall_distance": 0.2412303052426331,
+                  "xyz": [
+                    3.983333333333334,
+                    -0.45,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.08343930655438928,
+                  "eligible": true,
+                  "epsilon_error": 0.0036653651253374018,
+                  "incident_aspect_max": 2.2692553603022794,
+                  "incident_faces": 3,
+                  "node": 10,
+                  "wall_distance": 0.2412303052426331,
+                  "xyz": [
+                    3.983333333333334,
+                    -0.9,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.041497537878433785,
+                  "eligible": true,
+                  "epsilon_error": 0.003665339775393011,
+                  "incident_aspect_max": 2.2692553603022803,
+                  "incident_faces": 3,
+                  "node": 5,
+                  "wall_distance": 0.0832089128889265,
+                  "xyz": [
+                    3.0666666666666673,
+                    -0.9,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.05286237006616326,
+                  "eligible": true,
+                  "epsilon_error": 0.0028808559574420873,
+                  "incident_aspect_max": 2.2692553603022794,
+                  "incident_faces": 3,
+                  "node": 16,
+                  "wall_distance": 2.75,
+                  "xyz": [
+                    4.9,
+                    -0.45,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.12147897823257897,
+                  "eligible": true,
+                  "epsilon_error": 0.0018336639464752217,
+                  "incident_aspect_max": 2.2692553603022794,
+                  "incident_faces": 1,
+                  "node": 15,
+                  "wall_distance": 2.75,
+                  "xyz": [
+                    4.9,
+                    -0.9,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.055564215120132134,
+                  "eligible": true,
+                  "epsilon_error": 0.0010767912804613138,
+                  "incident_aspect_max": 2.26925536030228,
+                  "incident_faces": 6,
+                  "node": 12,
+                  "wall_distance": 0.2412303052426331,
+                  "xyz": [
+                    3.983333333333334,
+                    0.0,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.027201756204296556,
+                  "eligible": true,
+                  "epsilon_error": 0.0010767577691340262,
+                  "incident_aspect_max": 2.2692553603022807,
+                  "incident_faces": 6,
+                  "node": 7,
+                  "wall_distance": 0.0832089128889265,
+                  "xyz": [
+                    3.0666666666666673,
+                    0.0,
+                    0.35
+                  ]
+                }
+              ]
+            }
+          },
+          "intersections": {
+            "main_wing": {
+              "convergence": 102,
+              "convergence_and_rejected": 102,
+              "convergence_and_speed": 0,
+              "convergence_minus_rejected": 0,
+              "eligible": 276,
+              "free": 378,
+              "rejected": 102,
+              "rejected_minus_convergence": [],
+              "rejected_minus_convergence_count": 0,
+              "roots": 90,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "speed_and_rejected": 0,
+              "tangent": 0,
+              "tangent_and_rejected": 0,
+              "total_nodes": 765
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "convergence_and_rejected": 0,
+              "convergence_and_speed": 0,
+              "convergence_minus_rejected": 0,
+              "eligible": 15,
+              "free": 15,
+              "rejected": 0,
+              "rejected_minus_convergence": [],
+              "rejected_minus_convergence_count": 0,
+              "roots": 5,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "speed_and_rejected": 0,
+              "tangent": 0,
+              "tangent_and_rejected": 0,
+              "total_nodes": 20
+            }
+          },
+          "iteration": 0,
+          "kinematic_candidate": false,
+          "map_residual_chord": 4.7600858007144735,
+          "outgoing_update": null,
+          "sets_sha256": "bab1c364af0a817dd89ed5370944b3651b278e084c888443e82639fd1dae18b4",
+          "trial_reasons": []
+        }
+      ],
+      "kutta": "pressure",
+      "numpy": "2.4.6",
+      "physical_accuracy_accepted": false,
+      "python": "3.11.17",
+      "schema": "dpanel.issue84.wake_ledger.v1",
+      "seconds": 14.793491900025401,
+      "status": "blocked_initial_nonlinear_solve",
+      "tolerances": {
+        "epsilon": 0.02,
+        "quadrature": 0.002
+      },
+      "wall_faces": 872
+    },
+    "signed_speed": {
+      "alpha_deg": 5.0,
+      "case": "g2",
+      "converged": false,
+      "convergence_ids_first_iteration": {
+        "main_wing": [
+          0,
+          1,
+          4,
+          10,
+          11,
+          19,
+          21,
+          26,
+          56,
+          67,
+          74,
+          176,
+          177,
+          178,
+          179,
+          180,
+          201,
+          202,
+          203,
+          204,
+          205,
+          211,
+          212,
+          213,
+          214,
+          215,
+          251,
+          252,
+          253,
+          254,
+          255,
+          256,
+          257,
+          258,
+          259,
+          260,
+          378,
+          379,
+          400,
+          402,
+          406,
+          407,
+          411,
+          420,
+          422,
+          425,
+          452,
+          458,
+          465,
+          526,
+          527,
+          528,
+          529,
+          530,
+          531,
+          542,
+          543,
+          544,
+          545,
+          546,
+          552,
+          553,
+          554,
+          555,
+          556,
+          597,
+          598,
+          599,
+          600,
+          601,
+          617,
+          618,
+          619,
+          620,
+          621,
+          622,
+          623,
+          624,
+          625,
+          626,
+          743,
+          744,
+          759
+        ],
+        "raised_tail": []
+      },
+      "counter_definitions": {
+        "convergence": "free nodes failing epsilon_tol or quadrature_tol (sampling rejection)",
+        "eligible": "free nodes passing epsilon, quadrature, speed and tangent gates",
+        "rejected": "free nodes not eligible = convergence + speed + tangent",
+        "root": "len(material.roots) fixed to reference geometry",
+        "speed": "free nodes with |v| <= 1e-6 plus opposed-tangent rejections"
+      },
+      "increments_at": {
+        "counters": "panel/p1_coupled_material_wake.py:561-564 (per iteration inside the group loop)",
+        "eligible_flag": "panel/p1_coupled_material_wake.py:543-556",
+        "solve_status": "panel/p1_coupled_material_wake.py:596-603",
+        "tangent": "panel/p1_coupled_material_wake.py:549-555",
+        "update_acceptance": "panel/p1_coupled_material_wake.py:604-630"
+      },
+      "iterations": [
+        {
+          "counters": {
+            "main_wing": {
+              "convergence": 83,
+              "eligible": 295,
+              "rejected": 83,
+              "root": 90,
+              "speed": 0
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "eligible": 15,
+              "rejected": 0,
+              "root": 5,
+              "speed": 0
+            }
+          },
+          "groups": {
+            "main_wing": {
+              "convergence": 83,
+              "convergence_boundary": 37,
+              "convergence_interior": 46,
+              "displacement": {
+                "count": 378,
+                "max": 4.864844730058429,
+                "median": 0.06068770752424458,
+                "min": 0.0,
+                "p90": 0.6095561593155836
+              },
+              "eligible": 295,
+              "epsilon_error": {
+                "count": 378,
+                "max": 0.19410760178646458,
+                "median": 0.007568852785022251,
+                "min": 1.1500460875359026e-08,
+                "p90": 0.05464344354628303
+              },
+              "free": 378,
+              "rejected": 83,
+              "root": 90,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "tangent": 0,
+              "total_nodes": 765,
+              "wall_contact_nodes": 398,
+              "wall_distance": {
+                "count": 765,
+                "max": 28.873084352039704,
+                "median": 0.0,
+                "min": 0.0,
+                "p90": 2.872455269055935
+              },
+              "worst_epsilon": [
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.19410760178646458,
+                  "incident_aspect_max": 4.232715412807771,
+                  "incident_faces": 2,
+                  "node": 56,
+                  "wall_distance": 0.0,
+                  "xyz": [
+                    1.4709157008456744,
+                    0.059472024653011685,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.19378638082782967,
+                  "incident_aspect_max": 4.232715412807771,
+                  "incident_faces": 2,
+                  "node": 452,
+                  "wall_distance": 0.0,
+                  "xyz": [
+                    1.4709157008456744,
+                    -0.059472024653011685,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.1478228214711021,
+                  "incident_aspect_max": 5.921003770529292,
+                  "incident_faces": 4,
+                  "node": 626,
+                  "wall_distance": 0.29179738540047717,
+                  "xyz": [
+                    1.2917973854004772,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.14781600373473003,
+                  "incident_aspect_max": 260.0019230698121,
+                  "incident_faces": 3,
+                  "node": 407,
+                  "wall_distance": 3.0748983723043595,
+                  "xyz": [
+                    5.0,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.1478160033731204,
+                  "incident_aspect_max": 12.947928188742726,
+                  "incident_faces": 3,
+                  "node": 622,
+                  "wall_distance": 1.9395169017710485,
+                  "xyz": [
+                    3.7085973861955397,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.14781600268458583,
+                  "incident_aspect_max": 9.341426422864554,
+                  "incident_faces": 3,
+                  "node": 623,
+                  "wall_distance": 1.3147503368368645,
+                  "xyz": [
+                    2.7793396922272176,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.14781600010972473,
+                  "incident_aspect_max": 6.736879750027115,
+                  "incident_faces": 3,
+                  "node": 624,
+                  "wall_distance": 1.112821212440572,
+                  "xyz": [
+                    2.112821212440572,
+                    -2.0,
+                    0.0
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 0.14781599462536213,
+                  "incident_aspect_max": 4.883966535217939,
+                  "incident_faces": 2,
+                  "node": 625,
+                  "wall_distance": 0.6347457978661124,
+                  "xyz": [
+                    1.6347457978661124,
+                    -2.0,
+                    0.0
+                  ]
+                }
+              ]
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "convergence_boundary": 0,
+              "convergence_interior": 0,
+              "displacement": {
+                "count": 15,
+                "max": 0.11192604097131043,
+                "median": 0.04981975708565887,
+                "min": 0.01635331882448402,
+                "p90": 0.09625514522287282
+              },
+              "eligible": 15,
+              "epsilon_error": {
+                "count": 15,
+                "max": 0.005032043032225983,
+                "median": 0.001229768716619243,
+                "min": 4.783087962201542e-05,
+                "p90": 0.004210407260197265
+              },
+              "free": 15,
+              "rejected": 0,
+              "root": 5,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "tangent": 0,
+              "total_nodes": 20,
+              "wall_contact_nodes": 5,
+              "wall_distance": {
+                "count": 20,
+                "max": 2.75,
+                "median": 0.2412303052426331,
+                "min": 0.0,
+                "p90": 2.75
+              },
+              "worst_epsilon": [
+                {
+                  "displacement": 0.019895971045224812,
+                  "eligible": true,
+                  "epsilon_error": 0.005032043032225983,
+                  "incident_aspect_max": 2.2692553603022803,
+                  "incident_faces": 6,
+                  "node": 6,
+                  "wall_distance": 0.0832089128889265,
+                  "xyz": [
+                    3.0666666666666673,
+                    -0.45,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.038428179685793734,
+                  "eligible": true,
+                  "epsilon_error": 0.005032009874172279,
+                  "incident_aspect_max": 2.2692553603022794,
+                  "incident_faces": 6,
+                  "node": 11,
+                  "wall_distance": 0.2412303052426331,
+                  "xyz": [
+                    3.983333333333334,
+                    -0.45,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.07644473038372161,
+                  "eligible": true,
+                  "epsilon_error": 0.0029780033392347452,
+                  "incident_aspect_max": 2.2692553603022794,
+                  "incident_faces": 3,
+                  "node": 10,
+                  "wall_distance": 0.2412303052426331,
+                  "xyz": [
+                    3.983333333333334,
+                    -0.9,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.038052397825896624,
+                  "eligible": true,
+                  "epsilon_error": 0.0029779743933829243,
+                  "incident_aspect_max": 2.2692553603022803,
+                  "incident_faces": 3,
+                  "node": 5,
+                  "wall_distance": 0.0832089128889265,
+                  "xyz": [
+                    3.0666666666666673,
+                    -0.9,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.04981975708565887,
+                  "eligible": true,
+                  "epsilon_error": 0.002515164365864939,
+                  "incident_aspect_max": 2.2692553603022794,
+                  "incident_faces": 3,
+                  "node": 16,
+                  "wall_distance": 2.75,
+                  "xyz": [
+                    4.9,
+                    -0.45,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.11192604097131043,
+                  "eligible": true,
+                  "epsilon_error": 0.0014898800437083853,
+                  "incident_aspect_max": 2.2692553603022794,
+                  "incident_faces": 1,
+                  "node": 15,
+                  "wall_distance": 2.75,
+                  "xyz": [
+                    4.9,
+                    -0.9,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.05657615144109471,
+                  "eligible": true,
+                  "epsilon_error": 0.001229808872882133,
+                  "incident_aspect_max": 2.26925536030228,
+                  "incident_faces": 6,
+                  "node": 12,
+                  "wall_distance": 0.2412303052426331,
+                  "xyz": [
+                    3.983333333333334,
+                    0.0,
+                    0.35
+                  ]
+                },
+                {
+                  "displacement": 0.02767818537305391,
+                  "eligible": true,
+                  "epsilon_error": 0.001229768716619243,
+                  "incident_aspect_max": 2.2692553603022807,
+                  "incident_faces": 6,
+                  "node": 7,
+                  "wall_distance": 0.0832089128889265,
+                  "xyz": [
+                    3.0666666666666673,
+                    0.0,
+                    0.35
+                  ]
+                }
+              ]
+            }
+          },
+          "intersections": {
+            "main_wing": {
+              "convergence": 83,
+              "convergence_and_rejected": 83,
+              "convergence_and_speed": 0,
+              "convergence_minus_rejected": 0,
+              "eligible": 295,
+              "free": 378,
+              "rejected": 83,
+              "rejected_minus_convergence": [],
+              "rejected_minus_convergence_count": 0,
+              "roots": 90,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "speed_and_rejected": 0,
+              "tangent": 0,
+              "tangent_and_rejected": 0,
+              "total_nodes": 765
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "convergence_and_rejected": 0,
+              "convergence_and_speed": 0,
+              "convergence_minus_rejected": 0,
+              "eligible": 15,
+              "free": 15,
+              "rejected": 0,
+              "rejected_minus_convergence": [],
+              "rejected_minus_convergence_count": 0,
+              "roots": 5,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "speed_and_rejected": 0,
+              "tangent": 0,
+              "tangent_and_rejected": 0,
+              "total_nodes": 20
+            }
+          },
+          "iteration": 0,
+          "kinematic_candidate": false,
+          "map_residual_chord": 4.864844730058429,
+          "outgoing_update": {
+            "accepted": true,
+            "displacement_max": 0.0028504949590185545,
+            "displacement_rms": 0.0003713095777348007,
+            "eligible": {
+              "main_wing": {
+                "convergence": 83,
+                "eligible": 295,
+                "rejected": 83,
+                "root": 90,
+                "speed": 0
+              },
+              "raised_tail": {
+                "convergence": 0,
+                "eligible": 15,
+                "rejected": 0,
+                "root": 5,
+                "speed": 0
+              }
+            },
+            "moved_nodes": 310,
+            "reason_counts": {
+              "area": 0,
+              "attachment": 0,
+              "convergence": 83,
+              "fold": 0,
+              "intersection": 0,
+              "intersection_budget": 0,
+              "nonfinite": 0,
+              "root": 95,
+              "speed": 0,
+              "step": 8,
+              "wall": 0
+            },
+            "relaxation": 0.0005859375
+          },
+          "sets_sha256": "a26bd53a46d95c342d78c44bf1e109035af6a4825380663c9462cf7087f97914",
+          "trial_reasons": [
+            "step",
+            "step",
+            "step",
+            "step",
+            "step",
+            "step",
+            "step",
+            "step"
+          ]
+        },
+        {
+          "counters": {
+            "main_wing": {
+              "convergence": 127,
+              "eligible": 251,
+              "rejected": 127,
+              "root": 90,
+              "speed": 0
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "eligible": 15,
+              "rejected": 0,
+              "root": 5,
+              "speed": 0
+            }
+          },
+          "groups": {
+            "main_wing": {
+              "convergence": 127,
+              "convergence_boundary": 81,
+              "convergence_interior": 46,
+              "displacement": {
+                "count": 378,
+                "max": 1.2894086442050912,
+                "median": 0.03397507243619885,
+                "min": 0.0,
+                "p90": 0.2600346126492603
+              },
+              "eligible": 251,
+              "epsilon_error": {
+                "count": 378,
+                "max": 20.26963797666232,
+                "median": 0.011092409764963682,
+                "min": 1.6199096241545622e-07,
+                "p90": 0.19388273494364103
+              },
+              "free": 378,
+              "rejected": 127,
+              "root": 90,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "tangent": 0,
+              "total_nodes": 765,
+              "wall_contact_nodes": 398,
+              "wall_distance": {
+                "count": 765,
+                "max": 28.873084352039704,
+                "median": 0.0,
+                "min": 0.0,
+                "p90": 2.8724623801198055
+              },
+              "worst_epsilon": [
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 20.26963797666232,
+                  "incident_aspect_max": 1404.7008681086766,
+                  "incident_faces": 3,
+                  "node": 399,
+                  "wall_distance": 28.85194213778745,
+                  "xyz": [
+                    30.999846771586906,
+                    0.24994913009460681,
+                    0.002284055309798873
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 18.47611099639292,
+                  "incident_aspect_max": 1391.8553382245104,
+                  "incident_faces": 3,
+                  "node": 377,
+                  "wall_distance": 28.85211677216316,
+                  "xyz": [
+                    30.99999047140014,
+                    0.23144559700533113,
+                    -0.00027422779858639606
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 6.926885239249619,
+                  "incident_aspect_max": 1404.9119122230743,
+                  "incident_faces": 3,
+                  "node": 742,
+                  "wall_distance": 28.85185209406735,
+                  "xyz": [
+                    30.999763412668106,
+                    -0.23142846079608528,
+                    0.00283967534387041
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 4.350018002626413,
+                  "incident_aspect_max": 518.5762152113236,
+                  "incident_faces": 3,
+                  "node": 394,
+                  "wall_distance": 28.85190432744366,
+                  "xyz": [
+                    30.99981031427091,
+                    0.6999999963742055,
+                    0.0023965613662797424
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 3.9338082666779037,
+                  "incident_aspect_max": 520.1812309317045,
+                  "incident_faces": 3,
+                  "node": 393,
+                  "wall_distance": 28.85206767422784,
+                  "xyz": [
+                    30.99992576007048,
+                    0.7499809249940548,
+                    -0.0015575580825811543
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 2.8414805956779046,
+                  "incident_aspect_max": 824.9395080779395,
+                  "incident_faces": 3,
+                  "node": 741,
+                  "wall_distance": 28.852058280511038,
+                  "xyz": [
+                    30.999950801358068,
+                    -0.19995023257394964,
+                    0.001279795216295819
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 2.598475485461334,
+                  "incident_aspect_max": 519.9925463621017,
+                  "incident_faces": 3,
+                  "node": 752,
+                  "wall_distance": 28.854125782698674,
+                  "xyz": [
+                    30.99985313656764,
+                    -1.2499871295458695,
+                    -0.002218244029093471
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 2.501357559353538,
+                  "incident_aspect_max": 1405.1170299449977,
+                  "incident_faces": 3,
+                  "node": 764,
+                  "wall_distance": 28.851902925443834,
+                  "xyz": [
+                    30.99981068220352,
+                    -0.24993242865480603,
+                    0.0025434987651389036
+                  ]
+                }
+              ]
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "convergence_boundary": 0,
+              "convergence_interior": 0,
+              "displacement": {
+                "count": 15,
+                "max": 0.11187843414215,
+                "median": 0.04979107609033456,
+                "min": 0.016346092318322868,
+                "p90": 0.09619607401559359
+              },
+              "eligible": 15,
+              "epsilon_error": {
+                "count": 15,
+                "max": 0.0050320547532126435,
+                "median": 0.0012296988399878304,
+                "min": 4.7787942080606344e-05,
+                "p90": 0.004210436091531369
+              },
+              "free": 15,
+              "rejected": 0,
+              "root": 5,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "tangent": 0,
+              "total_nodes": 20,
+              "wall_contact_nodes": 5,
+              "wall_distance": {
+                "count": 20,
+                "max": 2.749999721961574,
+                "median": 0.24120695939031117,
+                "min": 0.0,
+                "p90": 2.749999260535366
+              },
+              "worst_epsilon": [
+                {
+                  "displacement": 0.03840580618275367,
+                  "eligible": true,
+                  "epsilon_error": 0.0050320547532126435,
+                  "incident_aspect_max": 2.2693103014018003,
+                  "incident_faces": 6,
+                  "node": 11,
+                  "wall_distance": 0.24121545469451605,
+                  "xyz": [
+                    3.983333097009462,
+                    -0.4499831639675647,
+                    0.3499850505700926
+                  ]
+                },
+                {
+                  "displacement": 0.019884430732606737,
+                  "eligible": true,
+                  "epsilon_error": 0.005032043667809517,
+                  "incident_aspect_max": 2.269296736309065,
+                  "incident_faces": 6,
+                  "node": 6,
+                  "wall_distance": 0.08320107922989763,
+                  "xyz": [
+                    3.066666540152215,
+                    -0.44999138828510044,
+                    0.349992143374942
+                  ]
+                },
+                {
+                  "displacement": 0.07641010979044369,
+                  "eligible": true,
+                  "epsilon_error": 0.00297802472711415,
+                  "incident_aspect_max": 2.269316765622604,
+                  "incident_faces": 3,
+                  "node": 10,
+                  "wall_distance": 0.24119342421561826,
+                  "xyz": [
+                    3.9833323991235563,
+                    -0.8999748907929349,
+                    0.3500370804987086
+                  ]
+                },
+                {
+                  "displacement": 0.03803452237894103,
+                  "eligible": true,
+                  "epsilon_error": 0.002977969194065704,
+                  "incident_aspect_max": 2.269301419692017,
+                  "incident_faces": 3,
+                  "node": 5,
+                  "wall_distance": 0.0831907369086474,
+                  "xyz": [
+                    3.066666203887377,
+                    -0.8999871474173996,
+                    0.35001821326842936
+                  ]
+                },
+                {
+                  "displacement": 0.04979107609033456,
+                  "eligible": true,
+                  "epsilon_error": 0.0025157200561793307,
+                  "incident_aspect_max": 2.269316765622604,
+                  "incident_faces": 3,
+                  "node": 16,
+                  "wall_distance": 2.7499997073357725,
+                  "xyz": [
+                    4.899999707290683,
+                    -0.4499754225358158,
+                    0.3499842522235022
+                  ]
+                },
+                {
+                  "displacement": 0.11187843414215,
+                  "eligible": true,
+                  "epsilon_error": 0.0014899222989704663,
+                  "incident_aspect_max": 2.269316765622604,
+                  "incident_faces": 1,
+                  "node": 15,
+                  "wall_distance": 2.7499986639504472,
+                  "xyz": [
+                    4.899998663412448,
+                    -0.8999633916427651,
+                    0.35005439665844634
+                  ]
+                },
+                {
+                  "displacement": 0.05654318902082227,
+                  "eligible": true,
+                  "epsilon_error": 0.0012297427448187967,
+                  "incident_aspect_max": 2.2693613427419277,
+                  "incident_faces": 6,
+                  "node": 12,
+                  "wall_distance": 0.24119846408610626,
+                  "xyz": [
+                    3.9833328215753103,
+                    8.444158521296883e-06,
+                    0.3500320524987127
+                  ]
+                },
+                {
+                  "displacement": 0.027661973856568402,
+                  "eligible": true,
+                  "epsilon_error": 0.0012296988399878304,
+                  "incident_aspect_max": 2.2693290634042564,
+                  "incident_faces": 6,
+                  "node": 7,
+                  "wall_distance": 0.08319330427667979,
+                  "xyz": [
+                    3.0666664218251363,
+                    4.227602164609178e-06,
+                    0.3500156550565577
+                  ]
+                }
+              ]
+            }
+          },
+          "intersections": {
+            "main_wing": {
+              "convergence": 127,
+              "convergence_and_rejected": 127,
+              "convergence_and_speed": 0,
+              "convergence_minus_rejected": 0,
+              "eligible": 251,
+              "free": 378,
+              "rejected": 127,
+              "rejected_minus_convergence": [],
+              "rejected_minus_convergence_count": 0,
+              "roots": 90,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "speed_and_rejected": 0,
+              "tangent": 0,
+              "tangent_and_rejected": 0,
+              "total_nodes": 765
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "convergence_and_rejected": 0,
+              "convergence_and_speed": 0,
+              "convergence_minus_rejected": 0,
+              "eligible": 15,
+              "free": 15,
+              "rejected": 0,
+              "rejected_minus_convergence": [],
+              "rejected_minus_convergence_count": 0,
+              "roots": 5,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "speed_and_rejected": 0,
+              "tangent": 0,
+              "tangent_and_rejected": 0,
+              "total_nodes": 20
+            }
+          },
+          "iteration": 1,
+          "kinematic_candidate": false,
+          "map_residual_chord": 1.2894086442050912,
+          "outgoing_update": {
+            "accepted": true,
+            "displacement_max": 0.00604410301971138,
+            "displacement_rms": 0.0007430667781267913,
+            "eligible": {
+              "main_wing": {
+                "convergence": 127,
+                "eligible": 251,
+                "rejected": 127,
+                "root": 90,
+                "speed": 0
+              },
+              "raised_tail": {
+                "convergence": 0,
+                "eligible": 15,
+                "rejected": 0,
+                "root": 5,
+                "speed": 0
+              }
+            },
+            "moved_nodes": 266,
+            "reason_counts": {
+              "area": 0,
+              "attachment": 0,
+              "convergence": 127,
+              "fold": 0,
+              "intersection": 0,
+              "intersection_budget": 0,
+              "nonfinite": 0,
+              "root": 95,
+              "speed": 0,
+              "step": 5,
+              "wall": 0
+            },
+            "relaxation": 0.0046875
+          },
+          "sets_sha256": "3012ba2f7696ddd5536767e6d00935c2a3ccedcde2ffe0a7ea1787c5f42d1219",
+          "trial_reasons": [
+            "step",
+            "step",
+            "step",
+            "step",
+            "step"
+          ]
+        },
+        {
+          "counters": {
+            "main_wing": {
+              "convergence": 130,
+              "eligible": 248,
+              "rejected": 130,
+              "root": 90,
+              "speed": 0
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "eligible": 15,
+              "rejected": 0,
+              "root": 5,
+              "speed": 0
+            }
+          },
+          "groups": {
+            "main_wing": {
+              "convergence": 130,
+              "convergence_boundary": 84,
+              "convergence_interior": 46,
+              "displacement": {
+                "count": 378,
+                "max": 0.7667857170020541,
+                "median": 0.03303091823458003,
+                "min": 0.0,
+                "p90": 0.24830193734511483
+              },
+              "eligible": 248,
+              "epsilon_error": {
+                "count": 378,
+                "max": 20.0568240456316,
+                "median": 0.011086994798599247,
+                "min": 4.421065678012638e-07,
+                "p90": 0.257192243298139
+              },
+              "free": 378,
+              "rejected": 130,
+              "root": 90,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "tangent": 0,
+              "total_nodes": 765,
+              "wall_contact_nodes": 398,
+              "wall_distance": {
+                "count": 765,
+                "max": 28.873084352039704,
+                "median": 0.0,
+                "min": 0.0,
+                "p90": 2.872519483691644
+              },
+              "worst_epsilon": [
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 20.0568240456316,
+                  "incident_aspect_max": 1391.8590971548158,
+                  "incident_faces": 3,
+                  "node": 399,
+                  "wall_distance": 28.85194213778745,
+                  "xyz": [
+                    30.999846771586906,
+                    0.24994913009460681,
+                    0.002284055309798873
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 18.499557957087326,
+                  "incident_aspect_max": 1391.8590971548158,
+                  "incident_faces": 3,
+                  "node": 377,
+                  "wall_distance": 28.85211677216316,
+                  "xyz": [
+                    30.99999047140014,
+                    0.23144559700533113,
+                    -0.00027422779858639606
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 6.932803949158503,
+                  "incident_aspect_max": 1404.9301645960716,
+                  "incident_faces": 3,
+                  "node": 742,
+                  "wall_distance": 28.85185209406735,
+                  "xyz": [
+                    30.999763412668106,
+                    -0.23142846079608528,
+                    0.00283967534387041
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 4.351063293344555,
+                  "incident_aspect_max": 518.5762152113236,
+                  "incident_faces": 3,
+                  "node": 394,
+                  "wall_distance": 28.85190432744366,
+                  "xyz": [
+                    30.99981031427091,
+                    0.6999999963742055,
+                    0.0023965613662797424
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 3.9390292939675344,
+                  "incident_aspect_max": 520.8283568733651,
+                  "incident_faces": 3,
+                  "node": 393,
+                  "wall_distance": 28.85206767422784,
+                  "xyz": [
+                    30.99992576007048,
+                    0.7499809249940548,
+                    -0.0015575580825811543
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 2.8413190083797204,
+                  "incident_aspect_max": 824.9411947778331,
+                  "incident_faces": 3,
+                  "node": 741,
+                  "wall_distance": 28.852058280511038,
+                  "xyz": [
+                    30.999950801358068,
+                    -0.19995023257394964,
+                    0.001279795216295819
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 2.5982188097249455,
+                  "incident_aspect_max": 519.8583560334788,
+                  "incident_faces": 3,
+                  "node": 752,
+                  "wall_distance": 28.854125782698674,
+                  "xyz": [
+                    30.99985313656764,
+                    -1.2499871295458695,
+                    -0.002218244029093471
+                  ]
+                },
+                {
+                  "displacement": 0.0,
+                  "eligible": false,
+                  "epsilon_error": 2.5010596622184473,
+                  "incident_aspect_max": 1404.9301645960716,
+                  "incident_faces": 3,
+                  "node": 764,
+                  "wall_distance": 28.851902925443834,
+                  "xyz": [
+                    30.99981068220352,
+                    -0.24993242865480603,
+                    0.0025434987651389036
+                  ]
+                }
+              ]
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "convergence_boundary": 0,
+              "convergence_interior": 0,
+              "displacement": {
+                "count": 15,
+                "max": 0.11149695024715635,
+                "median": 0.04956081398209552,
+                "min": 0.016288289202584932,
+                "p90": 0.09572316561701544
+              },
+              "eligible": 15,
+              "epsilon_error": {
+                "count": 15,
+                "max": 0.005032420260512661,
+                "median": 0.0012291421814454103,
+                "min": 4.7447159407092705e-05,
+                "p90": 0.004210516241845728
+              },
+              "free": 15,
+              "rejected": 0,
+              "root": 5,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "tangent": 0,
+              "total_nodes": 20,
+              "wall_contact_nodes": 5,
+              "wall_distance": {
+                "count": 20,
+                "max": 2.749997507930584,
+                "median": 0.24102030077912867,
+                "min": 0.0,
+                "p90": 2.7499933765792965
+              },
+              "worst_epsilon": [
+                {
+                  "displacement": 0.03822686633750428,
+                  "eligible": true,
+                  "epsilon_error": 0.005032420260512661,
+                  "incident_aspect_max": 2.269748361667381,
+                  "incident_faces": 6,
+                  "node": 11,
+                  "wall_distance": 0.24109671967272897,
+                  "xyz": [
+                    3.98333120751246,
+                    -0.4498485539518768,
+                    0.3498655249571399
+                  ]
+                },
+                {
+                  "displacement": 0.01979217593429547,
+                  "eligible": true,
+                  "epsilon_error": 0.0050320585719154575,
+                  "incident_aspect_max": 2.269626862231342,
+                  "incident_faces": 6,
+                  "node": 6,
+                  "wall_distance": 0.08313844716480645,
+                  "xyz": [
+                    3.066665528617681,
+                    -0.4499225337408261,
+                    0.3499293276925717
+                  ]
+                },
+                {
+                  "displacement": 0.07613308548678432,
+                  "eligible": true,
+                  "epsilon_error": 0.002978202746741136,
+                  "incident_aspect_max": 2.2698062716760203,
+                  "incident_faces": 3,
+                  "node": 10,
+                  "wall_distance": 0.24089851037321175,
+                  "xyz": [
+                    3.983324927834775,
+                    -0.8997741068318864,
+                    0.35033358925327074
+                  ]
+                },
+                {
+                  "displacement": 0.03789153406377251,
+                  "eligible": true,
+                  "epsilon_error": 0.0029779356471905673,
+                  "incident_aspect_max": 2.269668863005661,
+                  "incident_faces": 3,
+                  "node": 5,
+                  "wall_distance": 0.08304539766562007,
+                  "xyz": [
+                    3.0666625029620382,
+                    -0.8998843745988786,
+                    0.35016385063455685
+                  ]
+                },
+                {
+                  "displacement": 0.04956081398209552,
+                  "eligible": true,
+                  "epsilon_error": 0.002557628042861115,
+                  "incident_aspect_max": 2.2698062716760203,
+                  "incident_faces": 3,
+                  "node": 16,
+                  "wall_distance": 2.749997370610232,
+                  "xyz": [
+                    4.899997366961659,
+                    -0.44977891668312897,
+                    0.34985834149675976
+                  ]
+                },
+                {
+                  "displacement": 0.11149695024715635,
+                  "eligible": true,
+                  "epsilon_error": 0.0014902629800615463,
+                  "incident_aspect_max": 2.2698062716760203,
+                  "incident_faces": 1,
+                  "node": 15,
+                  "wall_distance": 2.7499880171159043,
+                  "xyz": [
+                    4.899987973570521,
+                    -0.8996706510127074,
+                    0.3504893859037777
+                  ]
+                },
+                {
+                  "displacement": 0.056279850222070264,
+                  "eligible": true,
+                  "epsilon_error": 0.0012292161421290676,
+                  "incident_aspect_max": 2.2702089666947627,
+                  "incident_faces": 6,
+                  "node": 12,
+                  "wall_distance": 0.2409438818855284,
+                  "xyz": [
+                    3.983328729881931,
+                    7.595287189652458e-05,
+                    0.35028832446171615
+                  ]
+                },
+                {
+                  "displacement": 0.027532428949679093,
+                  "eligible": true,
+                  "epsilon_error": 0.0012291421814454103,
+                  "incident_aspect_max": 2.2699184734637896,
+                  "incident_faces": 6,
+                  "node": 7,
+                  "wall_distance": 0.08306850808051523,
+                  "xyz": [
+                    3.0666644642397105,
+                    3.8026989516624826e-05,
+                    0.3501408225914868
+                  ]
+                }
+              ]
+            }
+          },
+          "intersections": {
+            "main_wing": {
+              "convergence": 130,
+              "convergence_and_rejected": 130,
+              "convergence_and_speed": 0,
+              "convergence_minus_rejected": 0,
+              "eligible": 248,
+              "free": 378,
+              "rejected": 130,
+              "rejected_minus_convergence": [],
+              "rejected_minus_convergence_count": 0,
+              "roots": 90,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "speed_and_rejected": 0,
+              "tangent": 0,
+              "tangent_and_rejected": 0,
+              "total_nodes": 765
+            },
+            "raised_tail": {
+              "convergence": 0,
+              "convergence_and_rejected": 0,
+              "convergence_and_speed": 0,
+              "convergence_minus_rejected": 0,
+              "eligible": 15,
+              "free": 15,
+              "rejected": 0,
+              "rejected_minus_convergence": [],
+              "rejected_minus_convergence_count": 0,
+              "roots": 5,
+              "roots_and_convergence": 0,
+              "speed": 0,
+              "speed_and_rejected": 0,
+              "tangent": 0,
+              "tangent_and_rejected": 0,
+              "total_nodes": 20
+            }
+          },
+          "iteration": 2,
+          "kinematic_candidate": false,
+          "map_residual_chord": 0.7667857170020541,
+          "outgoing_update": null,
+          "sets_sha256": "fe2f19fefd0789c686e65481cf60aa61bae6b6a8497aeece68acf660e83f91ad",
+          "trial_reasons": []
+        }
+      ],
+      "kutta": "signed_speed",
+      "numpy": "2.4.6",
+      "physical_accuracy_accepted": false,
+      "python": "3.11.17",
+      "schema": "dpanel.issue84.wake_ledger.v1",
+      "seconds": 33.26924809999764,
+      "status": "iteration_limit",
+      "tolerances": {
+        "epsilon": 0.02,
+        "quadrature": 0.002
+      },
+      "wall_faces": 872
+    }
+  },
+  "schema": "dpanel.issue84.wake_ledger_summary.v1"
+}

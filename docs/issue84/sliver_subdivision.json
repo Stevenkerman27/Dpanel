@@ -1,0 +1,275 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "core_radius": 0.01,
+  "fan_truth_vs_independent": 0.002021810123062342,
+  "gate_threshold": 0.0002,
+  "numpy": "2.4.6",
+  "point": [
+    22.333,
+    0.238,
+    0.0
+  ],
+  "python": "3.11.17",
+  "rows": [
+    {
+      "depth": 4,
+      "error_vs_uniform_family": 0.002021810123062342,
+      "label": "fan_reference",
+      "order": 24,
+      "pieces": 25600,
+      "relative_error": 0.0,
+      "relative_to_production": 0.03611618046622831,
+      "seconds": 11.217615500034299,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9306912313014621
+      ]
+    },
+    {
+      "depth": 4,
+      "error_vs_uniform_family": 0.0020023457998258405,
+      "label": "fan_reference_check",
+      "order": 32,
+      "pieces": 25600,
+      "relative_error": 1.9464323236501593e-05,
+      "relative_to_production": 0.036096716142991814,
+      "seconds": 18.93456929997774,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9306731160265027
+      ]
+    },
+    {
+      "depth": 6,
+      "error_vs_uniform_family": 0.0,
+      "label": "uniform_family",
+      "order": 0,
+      "pieces": 409600,
+      "relative_error": 0.002021810123062342,
+      "relative_to_production": 0.03409437034316597,
+      "seconds": 0.33675790001871064,
+      "strips": 0,
+      "value": [
+        0.0,
+        0.0,
+        0.9288095503485715
+      ]
+    },
+    {
+      "depth": 0,
+      "error_vs_uniform_family": 0.03409437034316597,
+      "label": "depth0_28_8",
+      "order": 28,
+      "pieces": 100,
+      "relative_error": 0.03611618046622831,
+      "relative_to_production": 0.0,
+      "seconds": 0.10752219997812063,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.8970782188334423
+      ]
+    },
+    {
+      "depth": 0,
+      "error_vs_uniform_family": 0.008830410613845808,
+      "label": "depth0_48_8",
+      "order": 48,
+      "pieces": 100,
+      "relative_error": 0.01085222073690815,
+      "relative_to_production": 0.025263959729320162,
+      "seconds": 0.30124960001558065,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9205911646214738
+      ]
+    },
+    {
+      "depth": 0,
+      "error_vs_uniform_family": 0.013854084836579747,
+      "label": "depth0_96_8",
+      "order": 96,
+      "pieces": 100,
+      "relative_error": 0.011832274713517405,
+      "relative_to_production": 0.04794845517974572,
+      "seconds": 1.1831583000021055,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9417034256236828
+      ]
+    },
+    {
+      "depth": 0,
+      "error_vs_uniform_family": 0.0014896210300369382,
+      "label": "depth0_192_8",
+      "order": 192,
+      "pieces": 100,
+      "relative_error": 0.0005321890930254041,
+      "relative_to_production": 0.03558399137320291,
+      "seconds": 4.6313968999893405,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9301959275791891
+      ]
+    },
+    {
+      "depth": 1,
+      "error_vs_uniform_family": 0.0005743719052116853,
+      "label": "depth1_48_8",
+      "order": 48,
+      "pieces": 400,
+      "relative_error": 0.001447438217850657,
+      "relative_to_production": 0.034668742248377654,
+      "seconds": 0.8948056999943219,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9293441132442579
+      ]
+    },
+    {
+      "depth": 1,
+      "error_vs_uniform_family": 0.0027411514640951623,
+      "label": "depth1_96_8",
+      "order": 96,
+      "pieces": 400,
+      "relative_error": 0.00071934134103282,
+      "relative_to_production": 0.03683552180726113,
+      "seconds": 3.4997884999611415,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.931360715979874
+      ]
+    },
+    {
+      "depth": 2,
+      "error_vs_uniform_family": 0.006946483516604237,
+      "label": "depth2_16_8",
+      "order": 16,
+      "pieces": 1600,
+      "relative_error": 0.008968293639666579,
+      "relative_to_production": 0.027147886826561732,
+      "seconds": 0.41937709995545447,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9223445190512878
+      ]
+    },
+    {
+      "depth": 2,
+      "error_vs_uniform_family": 0.007562149457737149,
+      "label": "depth2_24_8",
+      "order": 24,
+      "pieces": 1600,
+      "relative_error": 0.005540339334674807,
+      "relative_to_production": 0.04165651980090312,
+      "seconds": 0.8266294000204653,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9358475765386786
+      ]
+    },
+    {
+      "depth": 2,
+      "error_vs_uniform_family": 0.008114637986369338,
+      "label": "depth2_32_8",
+      "order": 32,
+      "pieces": 1600,
+      "relative_error": 0.006092827863306996,
+      "relative_to_production": 0.04220900832953531,
+      "seconds": 1.3910410000244156,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9363617727676712
+      ]
+    },
+    {
+      "depth": 2,
+      "error_vs_uniform_family": 0.002015650602914539,
+      "label": "depth2_48_8",
+      "order": 48,
+      "pieces": 1600,
+      "relative_error": 6.159520147803432e-06,
+      "relative_to_production": 0.036110020946080505,
+      "seconds": 3.0049467000062577,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9306854986900716
+      ]
+    },
+    {
+      "depth": 2,
+      "error_vs_uniform_family": 0.001586745525344866,
+      "label": "depth2_64_8",
+      "order": 64,
+      "pieces": 1600,
+      "relative_error": 0.00043506459771747624,
+      "relative_to_production": 0.03568111586851084,
+      "seconds": 5.243720399972517,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9302863204953168
+      ]
+    },
+    {
+      "depth": 2,
+      "error_vs_uniform_family": 0.0020294363479081493,
+      "label": "depth2_96_8",
+      "order": 96,
+      "pieces": 1600,
+      "relative_error": 7.626224845807041e-06,
+      "relative_to_production": 0.036123806691074116,
+      "seconds": 11.655932599969674,
+      "strips": 8,
+      "value": [
+        0.0,
+        0.0,
+        0.9306983289620541
+      ]
+    }
+  ],
+  "schema": "dpanel.issue84.sliver_subdivision.v1",
+  "service": {
+    "near_aspect_max": 1405.6519186767894,
+    "near_aspect_median": 260.0019230698121,
+    "near_faces": 100,
+    "near_ratio": 2.0,
+    "piece_aspect_max_depth2": 1405.6519186767894,
+    "wake_triangles": 1666,
+    "wall_faces": 872
+  },
+  "solve_seconds": 7.937021400022786,
+  "stage": "T2-sliver",
+  "truth": {
+    "check_order": 32,
+    "depth": 4,
+    "order": 24
+  },
+  "truth_self_convergence": 1.9464323236501593e-05,
+  "wall_seconds": 71.6365347999963
+}

@@ -1,0 +1,60 @@
+{
+ "alpha_deg": 5.0,
+ "cad": "D:\\3D\\Projects\\panel\\runs\\half_cad_wingbody_v1\\surface.json",
+ "case": "g2",
+ "chunk": 1024,
+ "configs": {
+  "28/8": {
+   "order": 28,
+   "strips": 8,
+   "variants": {
+    "v1": {
+     "max_relative_difference_vs_v1": 0.0,
+     "milliseconds_per_point": 689.5306082629309,
+     "wall_seconds": 75.15883630065946
+    },
+    "v2": {
+     "max_relative_difference_vs_v1": 3.563401911991425e-16,
+     "milliseconds_per_point": 626.4910568817468,
+     "speedup_vs_v1": 1.100623226283473,
+     "wall_seconds": 68.2875252001104
+    },
+    "v3": {
+     "max_relative_difference_vs_v1": 3.563401911991425e-16,
+     "milliseconds_per_point": 625.7457862412685,
+     "speedup_vs_v1": 1.1019340815777685,
+     "wall_seconds": 68.20629070029827
+    }
+   }
+  },
+  "48/8": {
+   "order": 48,
+   "strips": 8,
+   "variants": {
+    "v1": {
+     "max_relative_difference_vs_v1": 0.0,
+     "milliseconds_per_point": 1759.0773110123087,
+     "wall_seconds": 191.73942690034164
+    },
+    "v2": {
+     "max_relative_difference_vs_v1": 3.7388666917222385e-16,
+     "milliseconds_per_point": 1584.3697146773168,
+     "speedup_vs_v1": 1.1102694621820475,
+     "wall_seconds": 172.69629889982753
+    },
+    "v3": {
+     "max_relative_difference_vs_v1": 3.7388666917222385e-16,
+     "milliseconds_per_point": 1583.5937917410874,
+     "speedup_vs_v1": 1.1108134675612016,
+     "wall_seconds": 172.61172329977853
+    }
+   }
+  }
+ },
+ "core_radius": 0.01,
+ "face_chunk": 64,
+ "points": 109,
+ "schema": "dpanel.issue84.fan_kernel_bench.v1",
+ "status": "ok",
+ "triangles": 1666
+}

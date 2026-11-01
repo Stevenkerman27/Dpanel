@@ -1,0 +1,105 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "geometry": {
+    "boundary_nodes": 499,
+    "free": 378,
+    "link_chord": {
+      "max": 26.0,
+      "median": 0.6659051816910664
+    },
+    "node_scale_chord": {
+      "median": 0.10000000000002525,
+      "min": 0.009248380140902679
+    },
+    "nodes": 765,
+    "roots": 90,
+    "truncation_nodes": 332,
+    "wake_faces": 770
+  },
+  "reference_chord": 1.0,
+  "schema": "dpanel.issue84.streamline_target_variants.v1",
+  "status": "iteration_limit",
+  "variants": {
+    "V0_production": {
+      "above_cap": 349,
+      "max": 22.98151598837876,
+      "max_over_cap": 1157.9736519291519,
+      "median": 0.12081227256736699,
+      "moved": 378,
+      "p90": 1.5180280021533836,
+      "p99": 12.70995529519182,
+      "ratio": 349
+    },
+    "V1_no_long_links_in_moving_set": {
+      "above_cap": 31,
+      "max": 0.30648580343889226,
+      "max_over_cap": 12.259431725332389,
+      "median": 0.037995751607892946,
+      "moved": 46,
+      "p90": 0.13913578787925154,
+      "p99": 0.30591671006869475,
+      "ratio": 31
+    },
+    "V2_local_step_cap": {
+      "above_cap": 374,
+      "max": 29.451381884980833,
+      "max_over_cap": 6368.981688961058,
+      "median": 0.6882528415583504,
+      "moved": 378,
+      "p90": 27.4582204366752,
+      "p99": 29.027995727163873,
+      "ratio": 374
+    },
+    "V3_reanchor_long_links": {
+      "above_cap": 295,
+      "max": 19.48883215942829,
+      "max_over_cap": 974.2070927287264,
+      "median": 0.057160952055874965,
+      "moved": 378,
+      "p90": 0.8751809499993012,
+      "p99": 10.51451825264993,
+      "ratio": 295
+    },
+    "V4_local_step_and_freeze": {
+      "above_cap": 31,
+      "max": 0.30648580343889226,
+      "max_over_cap": 12.259431725332389,
+      "median": 0.037995751607892946,
+      "moved": 46,
+      "p90": 0.13913578787925154,
+      "p99": 0.30591671006869475,
+      "ratio": 31
+    },
+    "V5_resolved_reanchor_4": {
+      "above_cap": 373,
+      "max": 25.92695967058542,
+      "max_over_cap": 5606.810982156324,
+      "median": 0.36099997191667954,
+      "moved": 378,
+      "p90": 25.600448774460705,
+      "p99": 25.886226145952914,
+      "ratio": 373
+    },
+    "V6_resolved_reanchor_2": {
+      "above_cap": 376,
+      "max": 25.963479165156542,
+      "max_over_cap": 5614.708472098288,
+      "median": 0.4667144234419224,
+      "moved": 378,
+      "p90": 25.800222648793934,
+      "p99": 25.943112742105065,
+      "ratio": 376
+    },
+    "V7_resolved_reanchor_1": {
+      "above_cap": 376,
+      "max": 25.98173941539746,
+      "max_over_cap": 5618.657325835422,
+      "median": 0.566899943627201,
+      "moved": 378,
+      "p90": 25.900110894816237,
+      "p99": 25.97155628863466,
+      "ratio": 376
+    }
+  }
+}

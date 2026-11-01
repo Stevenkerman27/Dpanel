@@ -1,0 +1,217 @@
+{
+  "alpha_deg": 5.0,
+  "cap_chord": {
+    "median": 0.025000000000006312,
+    "min": 0.0023120950352256697
+  },
+  "case": "g2",
+  "chain": {
+    "corr_depth_disp": 0.2713948163505102,
+    "depth_max": 13,
+    "disp_by_depth_quartile": [
+      0.0821790571912275,
+      0.4374602079236717,
+      null,
+      null
+    ]
+  },
+  "gate_mode": "audit",
+  "kutta": "signed_speed",
+  "map_residual_chord": 22.98151598837876,
+  "nodes": {
+    "free": 378,
+    "total": 765
+  },
+  "reference_chord": 1.0,
+  "reference_direction_map_chord": {
+    "max": 0.0,
+    "rms": 0.0
+  },
+  "requested_chord": {
+    "max": 22.98151598837876,
+    "median": 0.12081227256736699,
+    "p90": 0.5714880429841572,
+    "p99": 4.865627170005546,
+    "rms": 2.275346346700957
+  },
+  "schema": "dpanel.issue84.streamline_target_audit.v1",
+  "status": "iteration_limit",
+  "tangent": {
+    "cos_tangent_below_0": 0,
+    "cos_tangent_below_0p5": 3,
+    "cos_tangent_below_0p9": 37,
+    "cos_tangent_median": 0.9973345423841504,
+    "normal_fraction_max": 0.8150936933281425,
+    "normal_fraction_median": 0.05763818185022112,
+    "speed_median": 0.9950284936227832,
+    "speed_p01": 0.9157174455214149
+  },
+  "velocity_method": "analytic_edges",
+  "worst": [
+    {
+      "accepted": true,
+      "cap_chord": 0.02499999999999991,
+      "cos_tangent": 0.8293808932322111,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 744,
+      "normal_fraction": 0.5586835722849026,
+      "requested_chord": 22.98151598837876,
+      "speed": 1.2011220344764009
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.02499999999999991,
+      "cos_tangent": 0.831374437080682,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 379,
+      "normal_fraction": 0.5557126463996094,
+      "requested_chord": 22.86896634371431,
+      "speed": 1.1982418768822085
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.012499999999999956,
+      "cos_tangent": 0.9375878410131854,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 759,
+      "normal_fraction": 0.34774853038392955,
+      "requested_chord": 14.474670649114348,
+      "speed": 1.062500541821724
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.02499999999999991,
+      "cos_tangent": 0.9677685911591656,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 743,
+      "normal_fraction": 0.25184112842307976,
+      "requested_chord": 12.804220435566835,
+      "speed": 1.0293655595543911
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.02499999999999991,
+      "cos_tangent": 0.9685390315652912,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 378,
+      "normal_fraction": 0.24886169720182524,
+      "requested_chord": 12.68179817533954,
+      "speed": 1.0285467337233025
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.012499999999999956,
+      "cos_tangent": 0.9875488341931381,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 394,
+      "normal_fraction": 0.15731274609426002,
+      "requested_chord": 5.885247039651847,
+      "speed": 1.008747673639343
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.02499999999999991,
+      "cos_tangent": 0.99618033890129,
+      "depth": 8,
+      "ds_ref": 26.0,
+      "node": 762,
+      "normal_fraction": 0.08731971361893187,
+      "requested_chord": 5.638065960581351,
+      "speed": 1.00000727068428
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.012500000000000067,
+      "cos_tangent": 0.9974752175074181,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 757,
+      "normal_fraction": 0.07101542408838936,
+      "requested_chord": 4.867018174355973,
+      "speed": 0.9987091156733153
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.0046241900704514505,
+      "cos_tangent": 0.9906675780778367,
+      "depth": 8,
+      "ds_ref": 26.0,
+      "node": 742,
+      "normal_fraction": 0.13630021916852167,
+      "requested_chord": 4.864844730058429,
+      "speed": 1.005572001661988
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.025000000000000022,
+      "cos_tangent": 0.9920067074638954,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 389,
+      "normal_fraction": 0.1261851510539202,
+      "requested_chord": 4.419003843404659,
+      "speed": 1.0042145858883633
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.0046241900704514505,
+      "cos_tangent": 0.9921055931508763,
+      "depth": 8,
+      "ds_ref": 26.0,
+      "node": 764,
+      "normal_fraction": 0.12540531104678407,
+      "requested_chord": 4.354439877175919,
+      "speed": 1.004114467797472
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.012499999999999956,
+      "cos_tangent": 0.9985022433608229,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 387,
+      "normal_fraction": 0.05471078507223683,
+      "requested_chord": 4.101852936772976,
+      "speed": 0.9976818973567172
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.0046241900704514505,
+      "cos_tangent": 0.9933228370734488,
+      "depth": 8,
+      "ds_ref": 26.0,
+      "node": 399,
+      "normal_fraction": 0.11536785231747843,
+      "requested_chord": 3.907847561416631,
+      "speed": 1.0028839995324963
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.012499999999999956,
+      "cos_tangent": 0.9988382906739209,
+      "depth": 7,
+      "ds_ref": 26.0,
+      "node": 752,
+      "normal_fraction": 0.04818785203157013,
+      "requested_chord": 3.794154952650715,
+      "speed": 0.9973462390705835
+    },
+    {
+      "accepted": true,
+      "cap_chord": 0.02499999999999991,
+      "cos_tangent": 0.6217910014814635,
+      "depth": 6,
+      "ds_ref": 1.2914026138044603,
+      "node": 407,
+      "normal_fraction": 0.7831831169030812,
+      "requested_chord": 3.4997150169528175,
+      "speed": 1.6004437480567544
+    }
+  ]
+}

@@ -1,0 +1,926 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "configs": {
+    "16/8": {
+      "config": "16/8",
+      "eps": {
+        "calls_per_target": 1.0,
+        "counters": {
+          "area_terms.calls": 102,
+          "area_terms.node_sets": 102,
+          "area_terms.subtriangles": 1467000,
+          "area_terms.triangles": 169932,
+          "fan.calls": 169932,
+          "fan.region.edge": 13413,
+          "fan.region.interior": 15,
+          "fan.region.vertex": 156504,
+          "fan.strips": 1359456,
+          "fan.subtriangles": 1467000,
+          "field.area_velocity.calls": 102,
+          "field.area_velocity.fan_calls": 102,
+          "field.call.count": 102,
+          "field.edge_velocity.calls": 102,
+          "total.call.count": 102
+        },
+        "fan_calls_per_target": 1666.0,
+        "finite": true,
+        "milliseconds_per_point": 239.364,
+        "milliseconds_per_target": 238.6,
+        "node_sets_per_target": 1.0,
+        "points": 102,
+        "seconds": {
+          "area_terms.kernel": 18.975861,
+          "area_terms.nodes": 0.023458,
+          "area_terms.projection": 5.332622,
+          "field.edge_velocity": 0.005208
+        },
+        "strips_per_target": 13328.0,
+        "subtriangles_per_target": 14382.352941,
+        "triangles": 1666,
+        "triangles_per_target": 1666.0,
+        "wall_seconds": 24.415
+      },
+      "quad": {
+        "calls_per_target": 1.0,
+        "counters": {
+          "area_terms.calls": 7,
+          "area_terms.node_sets": 7,
+          "area_terms.subtriangles": 96576,
+          "area_terms.triangles": 11662,
+          "fan.calls": 11662,
+          "fan.region.edge": 410,
+          "fan.region.vertex": 11252,
+          "fan.strips": 93296,
+          "fan.subtriangles": 96576,
+          "field.area_velocity.calls": 7,
+          "field.area_velocity.fan_calls": 7,
+          "field.call.count": 7,
+          "field.edge_velocity.calls": 7,
+          "total.call.count": 7
+        },
+        "fan_calls_per_target": 1666.0,
+        "finite": true,
+        "milliseconds_per_point": 226.952,
+        "milliseconds_per_target": 226.402,
+        "node_sets_per_target": 1.0,
+        "points": 7,
+        "seconds": {
+          "area_terms.kernel": 1.232338,
+          "area_terms.nodes": 0.001674,
+          "area_terms.projection": 0.350449,
+          "field.edge_velocity": 0.000354
+        },
+        "strips_per_target": 13328.0,
+        "subtriangles_per_target": 13796.571429,
+        "triangles": 1666,
+        "triangles_per_target": 1666.0,
+        "wall_seconds": 1.589
+      }
+    },
+    "24/8": {
+      "config": "24/8",
+      "eps": {
+        "calls_per_target": 1.0,
+        "counters": {
+          "area_terms.calls": 102,
+          "area_terms.node_sets": 102,
+          "area_terms.subtriangles": 1467000,
+          "area_terms.triangles": 169932,
+          "fan.calls": 169932,
+          "fan.region.edge": 13413,
+          "fan.region.interior": 15,
+          "fan.region.vertex": 156504,
+          "fan.strips": 1359456,
+          "fan.subtriangles": 1467000,
+          "field.area_velocity.calls": 102,
+          "field.area_velocity.fan_calls": 102,
+          "field.call.count": 102,
+          "field.edge_velocity.calls": 102,
+          "total.call.count": 102
+        },
+        "fan_calls_per_target": 1666.0,
+        "finite": true,
+        "milliseconds_per_point": 468.786,
+        "milliseconds_per_target": 467.527,
+        "node_sets_per_target": 1.0,
+        "points": 102,
+        "seconds": {
+          "area_terms.kernel": 42.231092,
+          "area_terms.nodes": 0.028962,
+          "area_terms.projection": 5.422476,
+          "field.edge_velocity": 0.005184
+        },
+        "strips_per_target": 13328.0,
+        "subtriangles_per_target": 14382.352941,
+        "triangles": 1666,
+        "triangles_per_target": 1666.0,
+        "wall_seconds": 47.816
+      },
+      "quad": {
+        "calls_per_target": 1.0,
+        "counters": {
+          "area_terms.calls": 7,
+          "area_terms.node_sets": 7,
+          "area_terms.subtriangles": 96576,
+          "area_terms.triangles": 11662,
+          "fan.calls": 11662,
+          "fan.region.edge": 410,
+          "fan.region.vertex": 11252,
+          "fan.strips": 93296,
+          "fan.subtriangles": 96576,
+          "field.area_velocity.calls": 7,
+          "field.area_velocity.fan_calls": 7,
+          "field.call.count": 7,
+          "field.edge_velocity.calls": 7,
+          "total.call.count": 7
+        },
+        "fan_calls_per_target": 1666.0,
+        "finite": true,
+        "milliseconds_per_point": 458.856,
+        "milliseconds_per_target": 457.605,
+        "node_sets_per_target": 1.0,
+        "points": 7,
+        "seconds": {
+          "area_terms.kernel": 2.838786,
+          "area_terms.nodes": 0.002002,
+          "area_terms.projection": 0.362082,
+          "field.edge_velocity": 0.000362
+        },
+        "strips_per_target": 13328.0,
+        "subtriangles_per_target": 13796.571429,
+        "triangles": 1666,
+        "triangles_per_target": 1666.0,
+        "wall_seconds": 3.212
+      }
+    },
+    "28/8": {
+      "config": "28/8",
+      "eps": {
+        "calls_per_target": 1.0,
+        "counters": {
+          "area_terms.calls": 102,
+          "area_terms.node_sets": 102,
+          "area_terms.subtriangles": 1467000,
+          "area_terms.triangles": 169932,
+          "fan.calls": 169932,
+          "fan.region.edge": 13413,
+          "fan.region.interior": 15,
+          "fan.region.vertex": 156504,
+          "fan.strips": 1359456,
+          "fan.subtriangles": 1467000,
+          "field.area_velocity.calls": 102,
+          "field.area_velocity.fan_calls": 102,
+          "field.call.count": 102,
+          "field.edge_velocity.calls": 102,
+          "total.call.count": 102
+        },
+        "fan_calls_per_target": 1666.0,
+        "finite": true,
+        "milliseconds_per_point": 618.287,
+        "milliseconds_per_target": 617.017,
+        "node_sets_per_target": 1.0,
+        "points": 102,
+        "seconds": {
+          "area_terms.kernel": 57.469489,
+          "area_terms.nodes": 0.031589,
+          "area_terms.projection": 5.42951,
+          "field.edge_velocity": 0.00516
+        },
+        "strips_per_target": 13328.0,
+        "subtriangles_per_target": 14382.352941,
+        "triangles": 1666,
+        "triangles_per_target": 1666.0,
+        "wall_seconds": 63.065
+      },
+      "quad": {
+        "calls_per_target": 1.0,
+        "counters": {
+          "area_terms.calls": 7,
+          "area_terms.node_sets": 7,
+          "area_terms.subtriangles": 96576,
+          "area_terms.triangles": 11662,
+          "fan.calls": 11662,
+          "fan.region.edge": 410,
+          "fan.region.vertex": 11252,
+          "fan.strips": 93296,
+          "fan.subtriangles": 96576,
+          "field.area_velocity.calls": 7,
+          "field.area_velocity.fan_calls": 7,
+          "field.call.count": 7,
+          "field.edge_velocity.calls": 7,
+          "total.call.count": 7
+        },
+        "fan_calls_per_target": 1666.0,
+        "finite": true,
+        "milliseconds_per_point": 593.349,
+        "milliseconds_per_target": 592.095,
+        "node_sets_per_target": 1.0,
+        "points": 7,
+        "seconds": {
+          "area_terms.kernel": 3.78159,
+          "area_terms.nodes": 0.002151,
+          "area_terms.projection": 0.360574,
+          "field.edge_velocity": 0.000351
+        },
+        "strips_per_target": 13328.0,
+        "subtriangles_per_target": 13796.571429,
+        "triangles": 1666,
+        "triangles_per_target": 1666.0,
+        "wall_seconds": 4.153
+      }
+    },
+    "48/8": {
+      "config": "48/8",
+      "eps": {
+        "calls_per_target": 1.0,
+        "counters": {
+          "area_terms.calls": 102,
+          "area_terms.node_sets": 102,
+          "area_terms.subtriangles": 1467000,
+          "area_terms.triangles": 169932,
+          "fan.calls": 169932,
+          "fan.region.edge": 13413,
+          "fan.region.interior": 15,
+          "fan.region.vertex": 156504,
+          "fan.strips": 1359456,
+          "fan.subtriangles": 1467000,
+          "field.area_velocity.calls": 102,
+          "field.area_velocity.fan_calls": 102,
+          "field.call.count": 102,
+          "field.edge_velocity.calls": 102,
+          "total.call.count": 102
+        },
+        "fan_calls_per_target": 1666.0,
+        "finite": true,
+        "milliseconds_per_point": 1740.812,
+        "milliseconds_per_target": 1739.424,
+        "node_sets_per_target": 1.0,
+        "points": 102,
+        "seconds": {
+          "area_terms.kernel": 171.876442,
+          "area_terms.nodes": 0.049581,
+          "area_terms.projection": 5.489466,
+          "field.edge_velocity": 0.00574
+        },
+        "strips_per_target": 13328.0,
+        "subtriangles_per_target": 14382.352941,
+        "triangles": 1666,
+        "triangles_per_target": 1666.0,
+        "wall_seconds": 177.563
+      },
+      "quad": {
+        "calls_per_target": 1.0,
+        "counters": {
+          "area_terms.calls": 7,
+          "area_terms.node_sets": 7,
+          "area_terms.subtriangles": 96576,
+          "area_terms.triangles": 11662,
+          "fan.calls": 11662,
+          "fan.region.edge": 410,
+          "fan.region.vertex": 11252,
+          "fan.strips": 93296,
+          "fan.subtriangles": 96576,
+          "field.area_velocity.calls": 7,
+          "field.area_velocity.fan_calls": 7,
+          "field.call.count": 7,
+          "field.edge_velocity.calls": 7,
+          "total.call.count": 7
+        },
+        "fan_calls_per_target": 1666.0,
+        "finite": true,
+        "milliseconds_per_point": 1674.367,
+        "milliseconds_per_target": 1672.984,
+        "node_sets_per_target": 1.0,
+        "points": 7,
+        "seconds": {
+          "area_terms.kernel": 11.343385,
+          "area_terms.nodes": 0.003821,
+          "area_terms.projection": 0.363195,
+          "field.edge_velocity": 0.000488
+        },
+        "strips_per_target": 13328.0,
+        "subtriangles_per_target": 13796.571429,
+        "triangles": 1666,
+        "triangles_per_target": 1666.0,
+        "wall_seconds": 11.721
+      }
+    },
+    "legacy_duffy/48": {
+      "config": "legacy_duffy/48",
+      "eps": {
+        "calls_per_target": 0.0,
+        "counters": {
+          "field.area_velocity.calls": 102,
+          "field.area_velocity.legacy_calls": 102,
+          "field.call.count": 102,
+          "field.edge_velocity.calls": 102,
+          "total.call.count": 102
+        },
+        "fan_calls_per_target": 0.0,
+        "finite": true,
+        "milliseconds_per_point": 217.407,
+        "milliseconds_per_target": 0.13,
+        "node_sets_per_target": 0.0,
+        "points": 102,
+        "seconds": {
+          "field.edge_velocity": 0.013257
+        },
+        "strips_per_target": 0.0,
+        "subtriangles_per_target": 0.0,
+        "triangles": 1666,
+        "triangles_per_target": 0.0,
+        "wall_seconds": 22.176
+      },
+      "quad": {
+        "calls_per_target": 0.0,
+        "counters": {
+          "field.area_velocity.calls": 7,
+          "field.area_velocity.legacy_calls": 7,
+          "field.call.count": 7,
+          "field.edge_velocity.calls": 7,
+          "total.call.count": 7
+        },
+        "fan_calls_per_target": 0.0,
+        "finite": true,
+        "milliseconds_per_point": 217.483,
+        "milliseconds_per_target": 0.126,
+        "node_sets_per_target": 0.0,
+        "points": 7,
+        "seconds": {
+          "field.edge_velocity": 0.00088
+        },
+        "strips_per_target": 0.0,
+        "subtriangles_per_target": 0.0,
+        "triangles": 1666,
+        "triangles_per_target": 0.0,
+        "wall_seconds": 1.522
+      }
+    }
+  },
+  "core_radius": 0.01,
+  "numpy": "2.4.6",
+  "python": "3.11.17",
+  "quadrature_order": 48,
+  "schema": "dpanel.issue84.velocity_profile.v1",
+  "sets": {
+    "eps": [
+      [
+        1.4166296949998132,
+        0.10000000000000009,
+        0.0
+      ],
+      [
+        1.5000000000000004,
+        0.0,
+        8.639750074143138e-15
+      ],
+      [
+        1.1413036132966763,
+        0.20000000000000018,
+        0.0
+      ],
+      [
+        5.0,
+        1.9000000000000004,
+        0.0
+      ],
+      [
+        5.0,
+        2.0,
+        0.0
+      ],
+      [
+        5.0,
+        1.25,
+        0.0
+      ],
+      [
+        5.0,
+        0.75,
+        0.0
+      ],
+      [
+        5.0,
+        0.7000000000000002,
+        0.0
+      ],
+      [
+        1.4709157008456744,
+        0.059472024653011685,
+        0.0
+      ],
+      [
+        1.2822672465479141,
+        0.15880933833428823,
+        0.0
+      ],
+      [
+        1.0708491744252568,
+        0.21663507706251736,
+        0.0
+      ],
+      [
+        3.708599131733723,
+        0.7000000000000002,
+        0.0
+      ],
+      [
+        2.7793345699096963,
+        0.7000000000000002,
+        0.0
+      ],
+      [
+        2.1128184385077775,
+        0.7000000000000002,
+        0.0
+      ],
+      [
+        1.6347445076495526,
+        0.7000000000000002,
+        0.0
+      ],
+      [
+        1.2917969182548656,
+        0.7000000000000002,
+        0.0
+      ],
+      [
+        3.7087153893609757,
+        0.75,
+        0.0
+      ],
+      [
+        2.779453785843422,
+        0.75,
+        0.0
+      ],
+      [
+        2.1128916465778276,
+        0.75,
+        0.0
+      ],
+      [
+        1.634750895576245,
+        0.75,
+        0.0
+      ],
+      [
+        1.2917347912718657,
+        0.75,
+        0.0
+      ],
+      [
+        3.7085979487442495,
+        1.25,
+        0.0
+      ],
+      [
+        2.77933808086424,
+        1.25,
+        0.0
+      ],
+      [
+        2.1128203427322765,
+        1.25,
+        0.0
+      ],
+      [
+        1.6347453820575852,
+        1.25,
+        0.0
+      ],
+      [
+        1.2917972348496827,
+        1.25,
+        0.0
+      ],
+      [
+        3.709060643383592,
+        1.9000000000000004,
+        0.0
+      ],
+      [
+        2.779812181173118,
+        1.9000000000000004,
+        0.0
+      ],
+      [
+        2.1131120092305475,
+        1.9000000000000004,
+        0.0
+      ],
+      [
+        1.6347717304698106,
+        1.9000000000000004,
+        0.0
+      ],
+      [
+        1.2915502207756502,
+        1.9000000000000004,
+        0.0
+      ],
+      [
+        3.7085973861955397,
+        2.0,
+        0.0
+      ],
+      [
+        2.7793396922272176,
+        2.0,
+        0.0
+      ],
+      [
+        2.112821212440572,
+        2.0,
+        0.0
+      ],
+      [
+        1.6347457978661124,
+        2.0,
+        0.0
+      ],
+      [
+        1.2917973854004772,
+        2.0,
+        0.0
+      ],
+      [
+        31.0,
+        1.9000000000000004,
+        0.0
+      ],
+      [
+        31.0,
+        2.0,
+        0.0
+      ],
+      [
+        31.0,
+        0.7000000000000002,
+        0.0
+      ],
+      [
+        1.4166296949998132,
+        -0.10000000000000009,
+        0.0
+      ],
+      [
+        1.1413036132966763,
+        -0.20000000000000018,
+        0.0
+      ],
+      [
+        5.0,
+        -1.9000000000000004,
+        0.0
+      ],
+      [
+        5.0,
+        -2.0,
+        0.0
+      ],
+      [
+        5.0,
+        -1.8000000000000003,
+        0.0
+      ],
+      [
+        5.0,
+        -1.6,
+        0.0
+      ],
+      [
+        5.0,
+        -1.25,
+        0.0
+      ],
+      [
+        5.0,
+        -0.8000000000000003,
+        0.0
+      ],
+      [
+        5.0,
+        -0.75,
+        0.0
+      ],
+      [
+        5.0,
+        -0.7000000000000002,
+        0.0
+      ],
+      [
+        5.0,
+        -0.40000000000000036,
+        0.0
+      ],
+      [
+        1.4709157008456744,
+        -0.059472024653011685,
+        0.0
+      ],
+      [
+        1.2822672465479141,
+        -0.15880933833428823,
+        0.0
+      ],
+      [
+        1.0708491744252568,
+        -0.21663507706251736,
+        0.0
+      ],
+      [
+        3.8316787653843454,
+        -0.40000000000000036,
+        0.0
+      ],
+      [
+        2.974469710507886,
+        -0.40000000000000036,
+        0.0
+      ],
+      [
+        2.345599539873797,
+        -0.40000000000000036,
+        0.0
+      ],
+      [
+        1.8842285186305059,
+        -0.40000000000000036,
+        0.0
+      ],
+      [
+        1.5457384675734085,
+        -0.40000000000000036,
+        0.0
+      ],
+      [
+        1.271971938084739,
+        -0.40000000000000036,
+        0.0
+      ],
+      [
+        3.708599131733723,
+        -0.7000000000000002,
+        0.0
+      ],
+      [
+        2.7793345699096963,
+        -0.7000000000000002,
+        0.0
+      ],
+      [
+        2.1128184385077775,
+        -0.7000000000000002,
+        0.0
+      ],
+      [
+        1.6347445076495526,
+        -0.7000000000000002,
+        0.0
+      ],
+      [
+        1.2917969182548656,
+        -0.7000000000000002,
+        0.0
+      ],
+      [
+        3.7087153893609757,
+        -0.75,
+        0.0
+      ],
+      [
+        2.779453785843422,
+        -0.75,
+        0.0
+      ],
+      [
+        2.1128916465778276,
+        -0.75,
+        0.0
+      ],
+      [
+        1.634750895576245,
+        -0.75,
+        0.0
+      ],
+      [
+        1.2917347912718657,
+        -0.75,
+        0.0
+      ],
+      [
+        3.708598911182831,
+        -0.8000000000000003,
+        0.0
+      ],
+      [
+        2.7793351503512724,
+        -0.8000000000000003,
+        0.0
+      ],
+      [
+        2.112818874654548,
+        -0.8000000000000003,
+        0.0
+      ],
+      [
+        1.6347446706700017,
+        -0.8000000000000003,
+        0.0
+      ],
+      [
+        1.2917969772792879,
+        -0.8000000000000003,
+        0.0
+      ],
+      [
+        3.7085979487442495,
+        -1.25,
+        0.0
+      ],
+      [
+        2.77933808086424,
+        -1.25,
+        0.0
+      ],
+      [
+        2.1128203427322765,
+        -1.25,
+        0.0
+      ],
+      [
+        1.6347453820575852,
+        -1.25,
+        0.0
+      ],
+      [
+        1.2917972348496827,
+        -1.25,
+        0.0
+      ],
+      [
+        3.7137842421613243,
+        -1.6,
+        0.0
+      ],
+      [
+        2.7846808045240747,
+        -1.6,
+        0.0
+      ],
+      [
+        2.1161834479485084,
+        -1.6,
+        0.0
+      ],
+      [
+        1.6351920229968382,
+        -1.6,
+        0.0
+      ],
+      [
+        1.2891132098015485,
+        -1.6,
+        0.0
+      ],
+      [
+        3.7085973861955397,
+        -1.8000000000000003,
+        0.0
+      ],
+      [
+        2.7793396922272176,
+        -1.8000000000000003,
+        0.0
+      ],
+      [
+        2.112821212440572,
+        -1.8000000000000003,
+        0.0
+      ],
+      [
+        1.6347457978661124,
+        -1.8000000000000003,
+        0.0
+      ],
+      [
+        1.2917973854004772,
+        -1.8000000000000003,
+        0.0
+      ],
+      [
+        3.709060643383592,
+        -1.9000000000000004,
+        0.0
+      ],
+      [
+        2.779812181173118,
+        -1.9000000000000004,
+        0.0
+      ],
+      [
+        2.1131120092305475,
+        -1.9000000000000004,
+        0.0
+      ],
+      [
+        1.6347717304698106,
+        -1.9000000000000004,
+        0.0
+      ],
+      [
+        1.2915502207756502,
+        -1.9000000000000004,
+        0.0
+      ],
+      [
+        3.7085973861955397,
+        -2.0,
+        0.0
+      ],
+      [
+        2.7793396922272176,
+        -2.0,
+        0.0
+      ],
+      [
+        2.112821212440572,
+        -2.0,
+        0.0
+      ],
+      [
+        1.6347457978661124,
+        -2.0,
+        0.0
+      ],
+      [
+        1.2917973854004772,
+        -2.0,
+        0.0
+      ],
+      [
+        31.0,
+        -1.9000000000000004,
+        0.0
+      ],
+      [
+        31.0,
+        -2.0,
+        0.0
+      ],
+      [
+        31.0,
+        -0.7000000000000002,
+        0.0
+      ]
+    ],
+    "quad": [
+      [
+        5.0,
+        1.9000000000000004,
+        0.0
+      ],
+      [
+        5.0,
+        2.0,
+        0.0
+      ],
+      [
+        31.0,
+        2.0,
+        0.0
+      ],
+      [
+        5.0,
+        -1.9000000000000004,
+        0.0
+      ],
+      [
+        5.0,
+        -2.0,
+        0.0
+      ],
+      [
+        5.0,
+        -0.7000000000000002,
+        0.0
+      ],
+      [
+        31.0,
+        -2.0,
+        0.0
+      ]
+    ]
+  },
+  "solve_seconds": 7.293327799998224,
+  "stage": "P0",
+  "status": "completed",
+  "total_seconds": 364.6104472000152,
+  "wake_faces": [
+    770,
+    24
+  ],
+  "wall_faces": 872
+}

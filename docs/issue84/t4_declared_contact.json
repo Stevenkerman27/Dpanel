@@ -1,0 +1,126 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "declared_pairs": 1046,
+  "gate_mode": "audit",
+  "kutta": "signed_speed",
+  "max_backtracks": 12,
+  "partial": false,
+  "rows": [
+    {
+      "CD_pressure": 0.007126885631336986,
+      "CL": 0.4413553954553846,
+      "CL_gamma": 0.44637269221791404,
+      "CM_y": -0.12213725704223075,
+      "accepted": true,
+      "counters": {
+        "main_wing": {
+          "convergence": 83,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "displacement_rms": 0.0011733863560462754,
+      "iteration": 0,
+      "map_residual_chord": 22.98151598837876,
+      "moved": 393,
+      "relaxation": 0.0005859375,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ]
+    },
+    {
+      "CD_pressure": 0.0071313536440231005,
+      "CL": 0.4413646788995202,
+      "CL_gamma": 0.4463805145835214,
+      "CM_y": -0.12213070282822566,
+      "accepted": true,
+      "counters": {
+        "main_wing": {
+          "convergence": 127,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "displacement_rms": 0.0006112658594046856,
+      "iteration": 1,
+      "map_residual_chord": 52.24411095785904,
+      "moved": 393,
+      "relaxation": 7.32421875e-05,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ]
+    },
+    {
+      "CD_pressure": 0.007133812662940042,
+      "CL": 0.44136734051214216,
+      "CL_gamma": 0.44638163437620904,
+      "CM_y": -0.12212928949150359,
+      "accepted": null,
+      "counters": {
+        "main_wing": {
+          "convergence": 127,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "displacement_rms": null,
+      "iteration": 2,
+      "map_residual_chord": 52.40779854477112,
+      "moved": null,
+      "relaxation": null,
+      "trial_reasons": null
+    }
+  ],
+  "schema": "dpanel.issue84.t4_declared_contact.v1",
+  "seconds": 28.083311799971852,
+  "status": "iteration_limit",
+  "trials": [
+    {
+      "reason": null,
+      "skipped_declared": 116
+    },
+    {
+      "reason": null,
+      "skipped_declared": 77
+    }
+  ]
+}

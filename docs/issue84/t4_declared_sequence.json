@@ -1,0 +1,317 @@
+{
+  "alpha_deg": 5.0,
+  "case": "g2",
+  "declared_pairs": {
+    "edge": 208,
+    "total": 1046,
+    "vertex": 838
+  },
+  "gate_mode": "audit",
+  "iterations": 6,
+  "kutta": "signed_speed",
+  "max_backtracks": 12,
+  "partial": false,
+  "rows": [
+    {
+      "CD_pressure": 0.007126885631336986,
+      "CL": 0.4413553954553846,
+      "CL_gamma": 0.44637269221791404,
+      "CM_y": -0.12213725704223075,
+      "accepted": true,
+      "displacement_rms": 0.0011733863560462754,
+      "iteration": 0,
+      "map_residual_chord": 22.98151598837876,
+      "moved": 393,
+      "pressure_kutta_rms": 0.08401140664917878,
+      "relaxation": 0.0005859375,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ],
+      "wakes": {
+        "main_wing": {
+          "convergence": 83,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.0012164059660768217
+    },
+    {
+      "CD_pressure": 0.0071313536440231005,
+      "CL": 0.4413646788995202,
+      "CL_gamma": 0.4463805145835214,
+      "CM_y": -0.12213070282822566,
+      "accepted": true,
+      "displacement_rms": 0.0006112658594046856,
+      "iteration": 1,
+      "map_residual_chord": 52.24411095785904,
+      "moved": 393,
+      "pressure_kutta_rms": 0.08410134091391769,
+      "relaxation": 7.32421875e-05,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ],
+      "wakes": {
+        "main_wing": {
+          "convergence": 127,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.0012164013347861831
+    },
+    {
+      "CD_pressure": 0.007133812662940042,
+      "CL": 0.44136734051214216,
+      "CL_gamma": 0.44638163437620904,
+      "CM_y": -0.12212928949150359,
+      "accepted": true,
+      "displacement_rms": 0.0006267416701513144,
+      "iteration": 2,
+      "map_residual_chord": 52.40779854477112,
+      "moved": 393,
+      "pressure_kutta_rms": 0.08413477543050117,
+      "relaxation": 7.32421875e-05,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ],
+      "wakes": {
+        "main_wing": {
+          "convergence": 127,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.001216397601962557
+    },
+    {
+      "CD_pressure": 0.007138453667677511,
+      "CL": 0.4413731128045889,
+      "CL_gamma": 0.44638476509362157,
+      "CM_y": -0.12212425649053758,
+      "accepted": true,
+      "displacement_rms": 0.0006573338035049739,
+      "iteration": 3,
+      "map_residual_chord": 52.49272126735414,
+      "moved": 393,
+      "pressure_kutta_rms": 0.0842124251017494,
+      "relaxation": 7.32421875e-05,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ],
+      "wakes": {
+        "main_wing": {
+          "convergence": 128,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.0012163960787354797
+    },
+    {
+      "CD_pressure": 0.007143326581484054,
+      "CL": 0.4413787292534329,
+      "CL_gamma": 0.4463877531039705,
+      "CM_y": -0.12211830317660494,
+      "accepted": true,
+      "displacement_rms": 0.0006990889924591117,
+      "iteration": 4,
+      "map_residual_chord": 52.54103845495062,
+      "moved": 393,
+      "pressure_kutta_rms": 0.08429772065777044,
+      "relaxation": 7.32421875e-05,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ],
+      "wakes": {
+        "main_wing": {
+          "convergence": 127,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.001216396468623845
+    },
+    {
+      "CD_pressure": 0.007148174834351932,
+      "CL": 0.441383738528204,
+      "CL_gamma": 0.4463902037960647,
+      "CM_y": -0.12211196042766737,
+      "accepted": true,
+      "displacement_rms": 0.0006984923424725069,
+      "iteration": 5,
+      "map_residual_chord": 52.569666799273676,
+      "moved": 393,
+      "pressure_kutta_rms": 0.08438513061875753,
+      "relaxation": 7.32421875e-05,
+      "trial_reasons": [
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step",
+        "step"
+      ],
+      "wakes": {
+        "main_wing": {
+          "convergence": 127,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.001216398158333922
+    },
+    {
+      "CD_pressure": 0.007152946954771212,
+      "CL": 0.44138806283137694,
+      "CL_gamma": 0.4463920477336551,
+      "CM_y": -0.12210535858907698,
+      "accepted": null,
+      "displacement_rms": null,
+      "iteration": 6,
+      "map_residual_chord": 52.586513472917424,
+      "moved": null,
+      "pressure_kutta_rms": 0.08447330757932664,
+      "relaxation": null,
+      "trial_reasons": null,
+      "wakes": {
+        "main_wing": {
+          "convergence": 128,
+          "eligible": 378,
+          "rejected": 0,
+          "root": 90
+        },
+        "raised_tail": {
+          "convergence": 0,
+          "eligible": 15,
+          "rejected": 0,
+          "root": 5
+        }
+      },
+      "wall_rms": 0.0012164009863511395
+    }
+  ],
+  "schema": "dpanel.issue84.t4_declared_sequence.v1",
+  "seconds": 68.76700379996328,
+  "status": "iteration_limit",
+  "trials": [
+    {
+      "reason": null,
+      "skipped_declared": 116
+    },
+    {
+      "reason": null,
+      "skipped_declared": 77
+    },
+    {
+      "reason": null,
+      "skipped_declared": 77
+    },
+    {
+      "reason": null,
+      "skipped_declared": 77
+    },
+    {
+      "reason": null,
+      "skipped_declared": 77
+    },
+    {
+      "reason": null,
+      "skipped_declared": 77
+    }
+  ]
+}
