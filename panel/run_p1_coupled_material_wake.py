@@ -105,6 +105,17 @@ def main(argv=None):
     parser.add_argument('--replay-fan-strips', type=int, default=None)
     parser.add_argument('--replay-fan-refinement-order', type=int, default=None)
     parser.add_argument('--replay-fan-refinement-strips', type=int, default=None)
+    parser.add_argument('--analytic-backend', choices=('loop', 'numpy', 'torch'), default='loop',
+                    help="analytic evaluator execution backend: 'loop' is the per-target "
+                         "reference, 'numpy' batches targets, 'torch' batches on --analytic-device")
+    parser.add_argument('--analytic-device', choices=('cpu', 'cuda'), default='cpu',
+                    help='device for --analytic-backend torch (no silent fallback)')
+    parser.add_argument('--analytic-chunk', type=int, default=64,
+                    help='targets per batched evaluation call (64 was fastest in the G2 bench)')
+    parser.add_argument('--replay-analytic-backend', choices=('loop', 'numpy', 'torch'),
+                    default=None)
+    parser.add_argument('--replay-analytic-device', choices=('cpu', 'cuda'), default=None)
+    parser.add_argument('--replay-analytic-chunk', type=int, default=None)
     parser.add_argument('--profile-json', type=Path, default=None,
                         help='Opt-in kernel profiling counters/timers (issue #84 P0); inert when omitted')
     parser.add_argument('--out', type=Path,
@@ -153,7 +164,10 @@ def main(argv=None):
                 fan_order=args.replay_fan_order,
                 fan_strips=args.replay_fan_strips,
                 fan_refinement_order=args.replay_fan_refinement_order,
-                fan_refinement_strips=args.replay_fan_refinement_strips)
+                fan_refinement_strips=args.replay_fan_refinement_strips,
+                analytic_backend=args.replay_analytic_backend,
+                analytic_device=args.replay_analytic_device,
+                analytic_chunk=args.replay_analytic_chunk)
             _write_json(args.out/'replay.json', replay)
             replay_ok = (replay['bitwise_equal']
                          if replay['replay_mode'] == 'reproduce_recorded_samples'
@@ -215,6 +229,9 @@ def main(argv=None):
                    fan_order=args.fan_order, fan_strips=args.fan_strips,
                    fan_refinement_order=args.fan_refinement_order,
                    fan_refinement_strips=args.fan_refinement_strips,
+                   analytic_backend=args.analytic_backend,
+                   analytic_device=args.analytic_device,
+                   analytic_chunk=args.analytic_chunk,
                    save_callback=save)
         report = {k: v for k, v in result.items() if k not in ('mesh', 'state')}
         report['negative_pressure_drag_warning'] = (

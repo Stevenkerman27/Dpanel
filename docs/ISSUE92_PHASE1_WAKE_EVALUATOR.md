@@ -485,6 +485,114 @@ build, which is exactly what a fused target-chunk x face-chunk kernel would seri
 (the item still open in step 3), and its ceiling on this configuration is 3.0x of the
 fan's own budget, not the 1.4x that the projection share alone suggested.
 
+## 6f. Batching the analytic kernel inside the coupled loop: measured, and blocked
+
+6e showed the closed form is 22.9x faster when evaluated in batches of targets on the GPU.
+This unit makes that reachable from the coupled solver - and finds that the GPU path cannot
+actually be used inside it on this host, for a reason that has nothing to do with the kernel.
+
+### What was added
+
+* `TotalVelocity(analytic_backend='loop'|'numpy'|'torch', analytic_device='cpu'|'cuda',
+  analytic_chunk=N)`, plus the same three keywords on `solve_coupled_material_wake` and on
+  `replay_snapshot`, and `--analytic-backend/--analytic-device/--analytic-chunk` on the CLI.
+  Every option fails closed: an unknown backend, a non-positive chunk, a `cuda` request
+  without torch, or a non-`loop` backend with `velocity_method='rm_regularized_p1'` raises
+  instead of falling back. `loop` remains the default; `analytic_chunk` defaults to 64, which
+  was the fastest block in the sweep below.
+* The snapshot records `sampling_analytic_backend/_device/_chunk`, so a replayed run reports
+  the backend it reproduced (old snapshots without those keys fall back to `loop/cpu/256` and
+  stay bitwise reproducible).
+* `test/test_analytic_batch.py`: the batched numpy path must be **bitwise** identical to the
+  loop, both at the field level and through a complete `solve_coupled_material_wake` run, and
+  the gate counters must be unchanged.
+
+### Throughput and parity on the real geometry (1024 targets, G2 CAD: 872 wall faces, 794 wake triangles)
+
+| configuration | seconds | ms/target | speed-up | max relative error | floored relative error | projected 18,992 targets |
+| --- | --- | --- | --- | --- | --- | --- |
+| loop (reference) | 0.709 | 0.693 | 1.00x | 0 | 0 | 13.2 s |
+| numpy, chunk 64 | 0.620 | 0.606 | 1.14x | 0 (bitwise) | 0 | 11.5 s |
+| numpy, chunk 256 | 0.653 | 0.638 | 1.09x | 0 (bitwise) | 0 | 12.1 s |
+| torch CPU, chunk 64 | 0.203 | 0.198 | 3.49x | 1.47e-11 | 1.66e-14 | 3.8 s |
+| torch CPU, chunk 256 | 0.231 | 0.225 | 3.08x | 1.47e-11 | 1.66e-14 | 4.3 s |
+| torch CUDA, chunk 64 | 0.031 | 0.030 | 23.1x | 1.26e-11 | 2.54e-14 | 0.6 s |
+| torch CUDA, chunk 256 | 0.029 | 0.029 | 24.1x | 1.26e-11 | 2.54e-14 | 0.5 s |
+
+"Floored" divides by `max(|V|, 1% of the mean speed)`, because the per-target maximum
+relative error is dominated by the few targets where the induced velocity nearly cancels;
+the floor is reported, not thresholded.
+
+The question that matters for the solver is not the per-point error but whether the sampling
+gate decides the same thing. On 16 gate targets (ladder 1, 1/2, 1/4; order 48; tolerances
+0.02 and 0.002) torch CUDA vs loop gives `max|d epsilon_error| = 2.49e-16`,
+`max|d plus| = 2.08e-16`, identical accept/reject decisions, and `within_tolerance = true`.
+At the decision level the backends are interchangeable.
+
+### Declared thresholds, and the four that were missed
+
+The bench declared `numpy >= 1.3x`, `torch CPU <= 1e-12`, `torch CUDA <= 1e-11`,
+`CUDA >= 5x` before it ran (`docs/issue92/analytic_batch_bench.json`). The CUDA speed-up and
+the gate equivalence pass; four checks fail and are left failing in the JSON rather than
+relaxed after the fact:
+
+* `numpy:min_speedup` - 1.14x measured against 1.3x declared. Batching the closed form in
+  NumPy saves only the Python call overhead; the kernel is already a few large array
+  operations, so the block loop buys ~10%.
+* `torch/*:parity` - 1.47e-11 (CPU) and 1.26e-11 (CUDA) against 1e-12 and 1e-11 declared. The
+  closed form accumulates ~6,900 transcendental terms per target; torch's `arcsinh`/`log`/
+  `atan2` differ from NumPy's in the last few ulps, and the sum amplifies that to ~1e-11
+  relative where |V| cancels. It is 6-9 orders below the gate tolerances and the decisions
+  are identical, but it is not the bitwise port the threshold assumed.
+
+### The blocker: torch and LAPACK cannot share this process
+
+Running the real loop (`--case g2 --iterations 1`, `gate_mode='audit'`):
+
+| backend | wall clock | exit | status |
+| --- | --- | --- | --- |
+| loop | 60.4 s | 2 | blocked_updated_nonlinear_solve |
+| numpy, chunk 64 | 56.3 s | 2 | blocked_updated_nonlinear_solve |
+| torch CPU | 4.6 s | -1073741819 | access violation, no traceback |
+| torch CUDA | 4.9 s | -1073741819 | access violation, no traceback |
+
+Attribution (`runs/issue92/probe_torch_scipy.py`): `np.linalg.svd` of an 872x872 matrix
+succeeds, `import torch` succeeds, a torch op succeeds, and then the **next NumPy LAPACK call
+dies** - the process prints `torch op done` and never returns from `np.linalg.lstsq`.
+`torch.set_num_threads(1)`, `MKL_THREADING_LAYER=GNU` and `OMP_NUM_THREADS=MKL_NUM_THREADS=1`
+all still die (the last one earlier, inside the SVD). So the constraint is not CUDA, not
+thread count, and not the kernel: **once torch has executed an op in this interpreter, scipy's
+LAPACK is unsafe**. The coupled loop runs `scipy.optimize.least_squares` every iteration, so
+the sampling pass of iteration 0 poisons iteration 1 with certainty, whatever the backend.
+
+Consequences, stated plainly:
+
+* The **numpy** batch is the only backend that can run inside the coupled loop here, and it is
+  worth 1.14x on a path that is 18,992 targets, i.e. 13.2 s of a 60.4 s iteration (22%):
+  about 1.7 s per iteration. It is documented as a bitwise parity oracle, not as a lever.
+* **torch (CPU and CUDA) is fast and decision-identical but unusable in-process.** Making it
+  usable requires an out-of-process evaluator (the state is static per iteration and the
+  traffic is 19k x 3 doubles = 456 KB, so an IPC round trip is not the obstacle) or moving the
+  nonlinear solve off scipy - neither is in this unit.
+
+### What this unit claims
+
+1. The analytic kernel is now batched per target and selectable, with fail-closed options, a
+   recorded backend in the snapshot, and bitwise numpy parity through a full coupled solve.
+2. Evaluator level: numpy 1.14x (bitwise), torch CPU 3.5x, torch CUDA 23-24x; the gate's
+   decisions are identical (2.5e-16 on `epsilon_error`).
+3. In-loop it is numpy or nothing on this host: torch is blocked by a reproducible scipy
+   LAPACK / torch access violation, and the crash is in the environment, not in the kernel.
+
+### Non-claims
+
+* No default changed: `analytic_backend='loop'` and `physical_accuracy_accepted=false` still
+  hold, and no gate threshold was touched.
+* The 23-24x CUDA figure is evaluator level only. It does not translate into a coupled-loop
+  speed-up until the process boundary is solved.
+* The declared 1.3x numpy and 1e-12/1e-11 torch parity bars were missed; they stay missed in
+  the evidence file.
+
 ## 7. Reproduction
 
     python -m tools.issue92.wake_evaluator_profile \
@@ -528,6 +636,19 @@ jax, so a stub is used to run them there:
 with PYTHONPATH containing the repo plus a one-function jax stub (jax.config.update).
 16 and 9 tests respectively; 1 CUDA-absence test skips when a device is present.
 
+Batched backends inside the coupled solver (section 6f), run with the torch interpreter so
+that the CPU and CUDA rows are populated:
+
+    python -m tools.issue92.analytic_backend_bench \
+        --surface <repo>/runs/half_cad_wingbody_v1/surface.json \
+        --out docs/issue92/analytic_batch_bench.json
+
+Contract tests: test/test_analytic_batch.py (11 tests; the torch rows skip without torch).
+The in-loop comparison is the CLI itself, one G2 iteration per backend:
+
+    python -m panel.run_p1_coupled_material_wake --case g2 --iterations 1 \
+        --analytic-backend loop|numpy|torch --analytic-device cpu|cuda --out <fresh dir>
+
 ## 8. Next
 
 * Batched target x face kernel, kept as an opt-in backend and gated on parity with
@@ -540,6 +661,12 @@ with PYTHONPATH containing the repo plus a one-function jax stub (jax.config.upd
   lever is the far quadrature, not the near rule: the flat tensor map needs order 24
   to 32 over 99 percent of the sheet, so a cheaper far field needs projection or a
   moment split on the far set.
+* The batched backend is in place (section 6f): numpy is bitwise and 1.14x, torch is 3.5x
+  on CPU and 23-24x on CUDA at the evaluator level with identical gate decisions, but torch
+  cannot run in the coupled process on this host - any NumPy LAPACK call after a torch op
+  dies with an access violation, and the loop needs scipy's LAPACK every iteration. The next
+  unit that wants the CUDA number has to move the evaluator out of process (or the nonlinear
+  solve off scipy); until then the loop-usable speed-up is the 1.14x numpy batch.
 * CUDA is now unblocked and its target is chosen by measurement, not by guess: the
   analytic evaluator is 22.9x on a full update's targets (0.030 ms/target, 232 MB),
   while the fan kernel is 1.5x to 6.6x and is slower than NumPy in its cheap 8x1

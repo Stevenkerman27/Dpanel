@@ -176,6 +176,59 @@ class AnalyticSheetField:
         self.t_cross_n = np.cross(tangents, self.face_edge_n)
         return self
 
+
+
+    def _batch_geometry(self):
+        """Cached target-independent edge geometry for the batched path."""
+        if not hasattr(self, "_face_len"):
+            self._face_len, self._face_tan = _unit_and_length(self.face_edge_a,
+                                                             self.face_edge_b)
+            self._edge_len, self._edge_tan = _unit_and_length(self.edge_a, self.edge_b)
+        return (self._face_len, self._face_tan, self._edge_len, self._edge_tan)
+
+    def _evaluate_rows(self, rows):
+        """The closed form evaluated for a (P,3) block of points at once."""
+        face_len, face_tan, edge_len, edge_tan = self._batch_geometry()
+        I1, _i3, _il3, _rho = _batch_moments(rows, self.face_edge_a, face_tan, face_len)
+        surface = (I1[:, :, None]*self.t_cross_n[None, :, :]).reshape(
+            len(rows), -1, 3, 3).sum(axis=2)
+        omega = _batch_solid_angles(rows, self.triangles)
+        area_term = np.sum(np.cross(
+            self.gamma[None, :, :], surface - omega[:, :, None]*self.normals[None, :, :]),
+            axis=1)
+        if self.n_boundary_edges:
+            _i1, i3, il3, rho = _batch_moments(rows, self.edge_a, edge_tan, edge_len,
+                                               moments=True)
+            slope = (self.edge_mu[:, 1]-self.edge_mu[:, 0])/edge_len
+            weighted = self.edge_mu[None, :, 0]*i3 + slope[None, :]*il3
+            crossed = np.cross(edge_tan[None, :, :], rho)
+            boundary_term = np.einsum("pej,pe->pj", crossed, weighted)
+        else:
+            boundary_term = np.zeros((len(rows), 3))
+        result = self.freestream[None, :] - (boundary_term + area_term)/(4*np.pi)
+        if not np.isfinite(result).all():
+            raise FloatingPointError("nonfinite analytic doublet-sheet velocity")
+        return result
+
+    def evaluate_many(self, points, *, chunk=256):
+        """Freestream plus induced velocity at (N,3) points, in target blocks.
+
+        Same closed form as __call__, evaluated for a block of targets instead of one:
+        the per-target Python and allocation overhead of the scalar path is amortised
+        across chunk targets, and the target-independent edge geometry is hoisted out
+        of the loop. Memory is bounded by chunk times the number of source edges, never
+        by targets times faces, so a whole sampling ladder can be evaluated at once.
+        """
+        pts = np.asarray(points, float)
+        if pts.ndim != 2 or pts.shape[1] != 3 or not np.isfinite(pts).all():
+            raise ValueError("points must be a (N,3) finite array")
+        if type(chunk) is not int or chunk < 1:
+            raise ValueError("chunk must be a positive integer")
+        out = np.empty((len(pts), 3))
+        for first in range(0, len(pts), chunk):
+            out[first:first+chunk] = self._evaluate_rows(pts[first:first+chunk])
+        return out
+
     def __call__(self, point):
         p = np.asarray(point, float)
         if p.shape != (3,) or not np.isfinite(p).all():
@@ -199,3 +252,66 @@ class AnalyticSheetField:
         if not np.isfinite(result).all():
             raise FloatingPointError("nonfinite analytic doublet-sheet velocity")
         return result
+
+
+def _unit_and_length(starts, ends):
+    """Unit tangent and length of every source segment (target-independent)."""
+    d = np.asarray(ends, float) - np.asarray(starts, float)
+    length = np.linalg.norm(d, axis=1)
+    if np.any(length <= 0):
+        raise ValueError("zero-length source segment")
+    return length, np.ascontiguousarray(d/length[:, None])
+
+
+def _batch_moments(point_rows, starts, tangents, lengths, *, moments=False):
+    """segment_moments for a batch of points: (P,E) arrays instead of one (E,) call.
+
+    The expressions are term-for-term those of segment_moments; only the shape is
+    different, so the batch reproduces the loop. I1 is always returned; I3/Il3 and the
+    perpendicular residual are only built when the caller needs them (the boundary
+    trace), because the face-edge pass discards them.
+    """
+    p = np.asarray(point_rows, float)
+    a = np.asarray(starts, float)
+    r = p[:, None, :] - a[None, :, :]
+    s = np.einsum("pej,ej->pe", r, tangents)
+    rho = r - s[..., None]*tangents[None, :, :]
+    rho2 = np.einsum("pej,pej->pe", rho, rho)
+    q = s - lengths[None, :]
+    if np.any((rho2 == 0) & (s >= 0) & (s <= lengths[None, :])):
+        raise FloatingPointError("field point lies on a singular source edge")
+    root = np.sqrt(rho2)
+    nonzero = rho2 > 0
+    I1 = np.empty_like(s)
+    I1[nonzero] = (np.arcsinh(s[nonzero]/root[nonzero])
+                   - np.arcsinh(q[nonzero]/root[nonzero]))
+    zero = ~nonzero
+    I1[zero] = np.abs(np.log(np.abs(s[zero]/q[zero])))
+    if not moments:
+        return I1, None, None, rho
+    R0 = np.hypot(s, root)
+    R1 = np.hypot(q, root)
+    I3 = np.empty_like(s)
+    same = s*q >= 0
+    length_rows = np.broadcast_to(lengths[None, :], s.shape)
+    I3[same] = (length_rows[same]*(R0[same]+R1[same])
+                / (R0[same]*R1[same]
+                   * (R0[same]*R1[same] + s[same]*q[same] + rho2[same])))
+    mixed = ~same
+    I3[mixed] = (s[mixed]/R0[mixed] - q[mixed]/R1[mixed])/rho2[mixed]
+    Il3 = s*I3 + 1/R0 - 1/R1
+    return I1, I3, Il3, rho
+
+
+def _batch_solid_angles(point_rows, triangles):
+    """_solid_angles for a batch of points: (P,F) signed solid angles."""
+    p = np.asarray(point_rows, float)
+    r = np.asarray(triangles, float)[None, :, :, :] - p[:, None, None, :]
+    lengths = np.linalg.norm(r, axis=3)
+    if np.any(lengths == 0):
+        raise FloatingPointError("field point on a source vertex")
+    num = np.einsum("pfi,pfi->pf", r[:, :, 0], np.cross(r[:, :, 1], r[:, :, 2]))
+    den = np.prod(lengths, axis=2)
+    for i, j, k in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
+        den += np.einsum("pfk,pfk->pf", r[:, :, i], r[:, :, j])*lengths[:, :, k]
+    return 2*np.arctan2(num, den)
