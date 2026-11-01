@@ -1,0 +1,155 @@
+{
+  "schema": "dpanel.issue92.solver_crossover.v1",
+  "environment": {
+    "python": "3.11.17",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "numpy": "2.4.6",
+    "scipy": "1.17.1",
+    "torch": "2.15.0+cpu",
+    "device": "cpu",
+    "cuda_available": false,
+    "cpu_count": 32
+  },
+  "rows": [
+    {
+      "n": 96,
+      "bytes_dense_mb": 0.07,
+      "backends": {
+        "torch_cpu": {
+          "cold_seconds": 0.0007,
+          "warm_median": 0.0,
+          "warm_min": 0.0,
+          "residual": 6.871938883785464e-16
+        }
+      }
+    },
+    {
+      "n": 192,
+      "bytes_dense_mb": 0.28,
+      "backends": {
+        "torch_cpu": {
+          "cold_seconds": 0.0021,
+          "warm_median": 0.0002,
+          "warm_min": 0.0002,
+          "residual": 7.079776251918184e-16
+        }
+      }
+    },
+    {
+      "n": 385,
+      "bytes_dense_mb": 1.13,
+      "backends": {
+        "torch_cpu": {
+          "cold_seconds": 0.001,
+          "warm_median": 0.0005,
+          "warm_min": 0.0005,
+          "residual": 1.2602233229236424e-15
+        }
+      }
+    },
+    {
+      "n": 769,
+      "bytes_dense_mb": 4.51,
+      "backends": {
+        "torch_cpu": {
+          "cold_seconds": 0.0022,
+          "warm_median": 0.0017,
+          "warm_min": 0.0016,
+          "residual": 1.8586263122002785e-15
+        }
+      }
+    },
+    {
+      "n": 1537,
+      "bytes_dense_mb": 18.02,
+      "backends": {
+        "torch_cpu": {
+          "cold_seconds": 0.0085,
+          "warm_median": 0.0065,
+          "warm_min": 0.0064,
+          "residual": 2.577016053393636e-15
+        }
+      }
+    },
+    {
+      "n": 3073,
+      "bytes_dense_mb": 72.05,
+      "backends": {
+        "torch_cpu": {
+          "cold_seconds": 0.0471,
+          "warm_median": 0.0392,
+          "warm_min": 0.0377,
+          "residual": 3.684062208430827e-15
+        }
+      }
+    },
+    {
+      "n": 6145,
+      "bytes_dense_mb": 288.09,
+      "backends": {
+        "torch_cpu": {
+          "cold_seconds": 0.2749,
+          "warm_median": 0.2487,
+          "warm_min": 0.2409,
+          "residual": 5.024857338832939e-15
+        }
+      }
+    }
+  ],
+  "peak_rss_mb": 1241.0,
+  "verdict": {
+    "torch_cpu_first_win_over_cpu_lu": null,
+    "torch_cuda_first_win_over_cpu_lu": null,
+    "cuda_lu_first_win_over_cpu_lu": null
+  },
+  "fixture_sizes": {
+    "g1_wing_rect": {
+      "n_wall_faces": 112,
+      "unknowns": 68,
+      "rows": 112,
+      "A_bytes_mb": 0.054
+    },
+    "g1_wing_camber": {
+      "n_wall_faces": 112,
+      "unknowns": 68,
+      "rows": 112,
+      "A_bytes_mb": 0.054
+    },
+    "g2_conventional": {
+      "n_wall_faces": 192,
+      "unknowns": 116,
+      "rows": 192,
+      "A_bytes_mb": 0.158
+    },
+    "g2_tail_low": {
+      "n_wall_faces": 192,
+      "unknowns": 116,
+      "rows": 192,
+      "A_bytes_mb": 0.158
+    },
+    "g1_swept30": {
+      "n_wall_faces": 2764,
+      "unknowns": 1462,
+      "rows": 2764,
+      "A_bytes_mb": 30.514
+    },
+    "g1_elliptic": {
+      "n_wall_faces": 3220,
+      "unknowns": 1728,
+      "rows": 3220,
+      "A_bytes_mb": 41.64
+    },
+    "g1_wingbody_cad": {
+      "n_wall_faces": 792,
+      "unknowns": 541,
+      "rows": 792,
+      "A_bytes_mb": 3.003
+    },
+    "g1_wingbody_cad_3x": {
+      "n_wall_faces": 2410,
+      "unknowns": 1352,
+      "rows": 2410,
+      "A_bytes_mb": 24.05
+    }
+  }
+}
