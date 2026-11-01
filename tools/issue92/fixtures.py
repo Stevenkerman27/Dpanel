@@ -172,11 +172,28 @@ def build(out_dir):
     return manifest
 
 
+def manifest_path(arrays_dir=None):
+    arrays_dir = Path(arrays_dir or (ROOT / "docs/issue92/fixtures"))
+    return arrays_dir.parent / "fixtures_manifest.json"
+
+
+def load_manifest(arrays_dir=None):
+    return json.loads(manifest_path(arrays_dir).read_text(encoding="utf-8"))
+
+
+def available(name, arrays_dir=None):
+    """True when the fixture file exists and the manifest records it as built."""
+    arrays_dir = Path(arrays_dir or (ROOT / "docs/issue92/fixtures"))
+    if not (arrays_dir / (name + ".npz")).exists():
+        return False
+    entry = load_manifest(arrays_dir)["fixtures"].get(name, {})
+    return entry.get("status") == "ok"
+
+
 def load(name, arrays_dir=None):
     """Load one fixture into a dict of arrays; raises if the manifest digest drifts."""
     arrays_dir = Path(arrays_dir or (ROOT / "docs/issue92/fixtures"))
-    manifest = json.loads((arrays_dir.parent / "fixtures_manifest.json").read_text(encoding="utf-8"))
-    entry = manifest["fixtures"][name]
+    entry = load_manifest(arrays_dir)["fixtures"][name]
     if entry["status"] != "ok":
         raise ValueError("fixture unavailable: " + name + ": " + entry["reason"])
     with np.load(arrays_dir / (name + ".npz")) as data:

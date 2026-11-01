@@ -413,14 +413,28 @@ def _gradient_map(wing,mesh):
     return grad
 
 
-def assemble(wing):
+def assemble(wing, *, backend='numpy'):
+    """Assemble the wall/wake system.
+
+    backend='numpy' is the reference kernel; backend='torch' routes the two influence
+    matrices through panel/p1_batched_influence.py, which evaluates the same closed form
+    over target x source blocks and is bitwise-equivalent to it up to float64 summation
+    order. The default does not move.
+    """
     mesh=_mesh_as_kernel(wing)
     nface=len(wing.faces);nt=wing.ndof_mu;ng=wing.gamma_hat.shape[1]
-    A=_doublet_matrix(mesh.triangles,mesh.centers,self_faces=np.arange(nface),face_dofs=wing.dof_face,ndof=nt)
-    W=np.zeros((nface,ng))
-    for j,f in enumerate(wing.wake_faces):
-        D=_doublet_matrix(wing.wake_xyz[f][None],mesh.centers,face_dofs=np.arange(3)[None],ndof=3)
-        W+=D@wing.gamma_hat[f]
+    if backend=='numpy':
+        A=_doublet_matrix(mesh.triangles,mesh.centers,self_faces=np.arange(nface),face_dofs=wing.dof_face,ndof=nt)
+        W=np.zeros((nface,ng))
+        for j,f in enumerate(wing.wake_faces):
+            D=_doublet_matrix(wing.wake_xyz[f][None],mesh.centers,face_dofs=np.arange(3)[None],ndof=3)
+            W+=D@wing.gamma_hat[f]
+    elif backend=='torch':
+        from .p1_batched_influence import influence_matrix,wake_matrix
+        A=influence_matrix(mesh.triangles,mesh.centers,self_faces=np.arange(nface),face_dofs=wing.dof_face,ndof=nt)
+        W=wake_matrix(wing.wake_xyz,wing.wake_faces,mesh.centers)@np.asarray(wing.gamma_hat,float)
+    else:
+        raise ValueError("backend must be 'numpy' or 'torch'")
     # mu_upper - mu_lower = Gamma at every inboard TE station.
     C=np.zeros((len(wing.te_pairs),nt));
     for i,(u,l) in enumerate(wing.te_pairs):
@@ -457,8 +471,8 @@ def assemble(wing):
 
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
-          jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100):
-    ops=assemble(wing);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(K)
+          jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100, backend='numpy'):
+    ops=assemble(wing,backend=backend);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(K)
     alpha=np.deg2rad(alpha_deg);U=np.array([np.cos(alpha),0,np.sin(alpha)])
     rhs=-ops['mesh'].centers@U
     scale=np.sqrt(ops['mesh'].areas/np.mean(ops['mesh'].areas))
