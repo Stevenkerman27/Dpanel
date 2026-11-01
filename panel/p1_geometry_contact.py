@@ -355,7 +355,7 @@ def _classify_set(points, wall_tri, *, tol, declared, area_tol,
     area = coplanar_overlap_area(points, wall_tri, tol)
     if area > area_tol:
         return ContactClass("coplanar_overlap", 0., area, declared, True)
-    distance, _normal = _plane_distance(points, wall_tri)
+    distance, normal = _plane_distance(points, wall_tri)
     behind = distance < -tol
     if not np.any(behind):
         if np.all(distance > tol):
@@ -367,9 +367,13 @@ def _classify_set(points, wall_tri, *, tol, declared, area_tol,
     offending.extend(pt for pt in _crossing_points(points, distance, tol)
                      if _point_inside_triangle_plane(pt, wall_tri, tol))
     grazing = 0
-    if offending and declared is not None and declared_region is not None and graze_tol > 0.:
+    if offending and declared is not None and graze_tol > 0.:
         offending = np.asarray(offending, float).reshape(-1, 3)
-        beyond = _distance_to_region(offending, declared_region) > graze_tol
+        # Depth is judged per point: one deep vertex elsewhere on the hull must
+        # not convict a point that only grazes the declared simplex.
+        own_depth = -(offending-wall_tri[0])@normal
+        beyond = ((_distance_to_region(offending, declared_region) > graze_tol)
+                  | (own_depth > graze_tol))
         grazing = int(len(offending)-int(np.count_nonzero(beyond)))
         offending = offending[beyond]
     if len(offending) == 0:

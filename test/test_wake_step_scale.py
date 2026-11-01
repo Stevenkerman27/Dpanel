@@ -1,9 +1,13 @@
-"""Step control must be expressed in the unit the rooted map actually advances.
+"""Per-node step control uses the mesh resolution, not the map's link length.
 
-The map marches one REFERENCE LINK per wake node (streamline_target), so the
-per-node step cap belongs to that link length.  Capping at a quarter of the
-shortest incident triangle edge made a truncation row (one 26-chord link between
-short panels) request a 10^3-iteration march on the G2 CAD case.
+A step cap only bounds strain when it is expressed in the mesh's own resolution.
+The rooted arclength map marches one REFERENCE LINK per node, and a CAD wake may
+carry a truncation row whose link is tens of chords long while its panels stay
+short; capping such a node at a quarter of that link (6.5 chord on the G2 CAD
+wake) accepts a displacement that deforms the sheet far beyond the area/fold
+gate, which is what the map-unit experiment measured
+(docs/ISSUE84_STREAMLINE_STEP_UNIT.md).  The link is therefore reported for
+diagnostics and truncation marking, never used as the cap.
 """
 import numpy as np
 import pytest
@@ -35,15 +39,18 @@ def _long_row_sheet(link=15.):
     return reference, np.array(faces, int), np.array(predecessor, int)
 
 
-def test_map_step_scale_is_the_reference_link_not_the_shortest_edge():
+def test_the_step_scale_is_the_shortest_incident_edge_while_the_link_is_reported():
     from panel.p1_coupled_material_wake import node_step_scale, wake_step_scale
     reference, faces, predecessor = _long_row_sheet()
     material = _material(reference, predecessor, [0, 1], faces)
     out = wake_step_scale(reference, faces, material)
+    assert np.allclose(out['scale'], node_step_scale(reference, faces))
+    assert np.allclose(out['scale'], out['geometric'])
     assert np.allclose(out['geometric'], node_step_scale(reference, faces))
+    # The link stays available for diagnostics and never leaks into the cap.
     assert np.isclose(out['link'][8], 15.) and np.isclose(out['link'][2], 1.)
-    assert np.allclose(out['scale'], np.maximum(out['link'], out['geometric']))
     assert np.isclose(out['link_median'], 1.)
+    assert np.all(out['scale'][2:] <= out['link'][2:]+1e-12)
     # Only the far row is a truncation row; it is reported, not hidden.
     assert list(np.nonzero(out['truncation'])[0]) == [8, 9]
 
@@ -56,10 +63,10 @@ def test_truncation_is_relative_so_a_uniformly_coarse_sheet_is_not_flagged():
     material = _material(reference, predecessor, [0, 1], faces)
     out = wake_step_scale(reference, faces, material)
     assert not out['truncation'].any()
-    assert np.allclose(out['scale'], np.maximum(out['link'], out['geometric']))
+    assert np.allclose(out['scale'], out['geometric'])
 
 
-def test_a_root_keeps_the_geometric_fallback():
+def test_a_root_keeps_a_finite_scale():
     from panel.p1_coupled_material_wake import wake_step_scale
     reference, faces, predecessor = _long_row_sheet()
     material = _material(reference, predecessor, [0, 1], faces)
@@ -68,35 +75,38 @@ def test_a_root_keeps_the_geometric_fallback():
     assert np.isfinite(out['scale'][0]) and np.isfinite(out['scale'][1])
 
 
-def test_clip_in_map_units_does_not_clip_a_legitimate_fraction_of_one_link():
+def test_the_cap_is_in_geometric_units():
     from panel.p1_coupled_material_wake import clip_step_update, wake_step_scale
     reference, faces, predecessor = _long_row_sheet()
     material = _material(reference, predecessor, [0, 1], faces)
     out = wake_step_scale(reference, faces, material)
-    target = reference.copy()
-    target[8] += np.array([0., 0.2*out['link'][8], 0.])   # 3.0 = 0.2 * 15
-    _new, ledger = clip_step_update(reference, target, .25*out['scale'],
+    # Node 8 sits on a 1-chord panel even though its link is 15 chords long.
+    assert np.isclose(out['scale'][8], 1.)
+    inside = reference.copy()
+    inside[8] += np.array([0., 0.2, 0.])
+    _new, ledger = clip_step_update(reference, inside, .25*out['scale'],
                                     roots=material.roots, reference=reference)
-    assert ledger['unit'] == 'map_arclength'
+    assert ledger['unit'] == 'geometric_edge'
     assert ledger['clipped'] == 0, ledger['clipped_ids']
-    # The same move under the old geometric unit is clipped away.
-    _new, geometric = clip_step_update(reference, target, .25*out['geometric'],
-                                       roots=material.roots, reference=reference)
-    assert geometric['clipped'] == 1 and 8 in geometric['clipped_ids']
-    assert geometric['accepted_max'] <= .25*out['geometric'][8]*(1.+1e-9)
-
-
-def test_the_cap_is_still_enforced_beyond_one_map_step():
-    from panel.p1_coupled_material_wake import clip_step_update, wake_step_scale
-    reference, faces, predecessor = _long_row_sheet()
-    material = _material(reference, predecessor, [0, 1], faces)
-    out = wake_step_scale(reference, faces, material)
-    target = reference.copy()
-    target[8] += np.array([0., 0.9*out['link'][8], 0.])   # 13.5 > 0.25 * 15
-    _new, ledger = clip_step_update(reference, target, .25*out['scale'],
+    # 0.2 * 15 = 3 chord of requested motion is clipped to a quarter panel.
+    outside = reference.copy()
+    outside[8] += np.array([0., 0.2*out['link'][8], 0.])
+    _new, ledger = clip_step_update(reference, outside, .25*out['scale'],
                                     roots=material.roots, reference=reference)
     assert ledger['clipped'] == 1 and 8 in ledger['clipped_ids']
-    assert np.isclose(ledger['accepted_max'], .25*out['link'][8])
+    assert ledger['accepted_max'] <= .25*out['scale'][8]*(1.+1e-9)
+
+
+def test_roots_stay_pinned_under_clipping():
+    from panel.p1_coupled_material_wake import clip_step_update, wake_step_scale
+    reference, faces, predecessor = _long_row_sheet()
+    material = _material(reference, predecessor, [0, 1], faces)
+    out = wake_step_scale(reference, faces, material)
+    target = reference.copy()
+    target[0] += np.array([1., 1., 0.])
+    new, _ledger = clip_step_update(reference, target, .25*out['scale'],
+                                    roots=material.roots, reference=reference)
+    assert np.array_equal(new[material.roots], reference[material.roots])
 
 
 def _target(policy, scale):

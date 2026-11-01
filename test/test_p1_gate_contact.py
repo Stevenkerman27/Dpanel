@@ -196,3 +196,27 @@ def test_a_deeper_or_new_crossing_still_blocks(monkeypatch):
                         lambda *a, **kw: C('transverse', 1e-2, 0., kw.get('declared'), True))
     audit = m.geometry_audit(mesh, coordinates, mats, gates)
     assert audit['reason'] == 'wall'
+
+def test_depth_is_judged_per_point_not_over_the_whole_hull():
+    # TE-style geometry: the sheet pivots about the shared edge, so one corner
+    # swings 0.6 chord below the wall plane while its projection falls outside
+    # the wall footprint.  The only offending point is the crossing point next
+    # to the shared edge, whose own depth is zero, so the hull-wide maximum
+    # depth (0.6) must not convict it.
+    old = np.array([[0., 0., 0.], [1., 0., 0.], [.3, .02, .02]])
+    new = np.array([[0., 0., 0.], [1., 0., 0.], [.3, -.03, -.6]])
+    cls = classify_swept_wall(swept(old, new), WALL, tol=TOL, declared='edge',
+                              declared_region=SHARED, graze_tol=0.05)
+    assert cls.kind == 'contact' and not cls.violation, cls
+    assert cls.depth > 0.5, cls
+    tight = classify_swept_wall(swept(old, new), WALL, tol=TOL, declared='edge',
+                                declared_region=SHARED, graze_tol=0.)
+    assert tight.violation, tight
+
+
+def test_a_deep_vertex_inside_the_footprint_is_still_a_violation():
+    old = np.array([[0., 0., 0.], [1., 0., 0.], [.3, .02, .02]])
+    deep = np.array([[0., 0., 0.], [1., 0., 0.], [.3, .02, -.6]])
+    cls = classify_swept_wall(swept(old, deep), WALL, tol=TOL, declared='edge',
+                              declared_region=SHARED, graze_tol=0.05)
+    assert cls.violation and cls.depth > 0.5, cls

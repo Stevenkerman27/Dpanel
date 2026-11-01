@@ -574,14 +574,12 @@ def node_step_scale(wake_xyz, wake_faces):
 def wake_step_scale(wake_xyz, wake_faces, material, *, truncation_ratio=4.):
     """Per-node convection scale of the rooted arclength map.
 
-    The map advances ONE reference link per node (see streamline_target), so the
-    step unit of the map is that link length, not the shortest incident triangle
-    edge.  A CAD wake may carry a truncation row whose link is tens of chords
-    long while its panels stay short: capping such a node at a quarter of its
-    shortest edge asks for a 10^3-iteration march, while its requested move is an
-    ordinary fraction of one map step.  The returned 'scale' is therefore
-    max(reference link, shortest incident edge); nodes without a link (roots)
-    keep the geometric fallback.
+    'scale' is the SHORTEST incident triangle edge: a step cap only bounds strain
+    when it is expressed in the mesh's own resolution.  Using the reference link
+    as the cap (0.25 * a 26-chord truncation link = 6.5 chord, see
+    docs/ISSUE84_STREAMLINE_STEP_UNIT.md) accepts a displacement that deforms the
+    sheet far beyond the area/fold gate, so the link is reported for diagnostics
+    ('link', 'truncation') and never used as the cap.
 
     'truncation' marks links longer than truncation_ratio times the MEDIAN link
     of the sheet.  The ratio is relative, not absolute: a uniformly coarse sheet
@@ -598,7 +596,7 @@ def wake_step_scale(wake_xyz, wake_faces, material, *, truncation_ratio=4.):
     known = predecessor >= 0
     link[known] = np.linalg.norm(reference[known]-reference[predecessor[known]], axis=1)
     finite = np.isfinite(geometric)
-    scale = np.where(finite, np.maximum(link, geometric), link)
+    scale = np.where(finite, geometric, np.maximum(link, 1e-12))
     positive = link[known & (link > 0)]
     median_link = float(np.median(positive)) if len(positive) else 0.
     truncation = (known & (link > truncation_ratio*median_link)
@@ -607,7 +605,8 @@ def wake_step_scale(wake_xyz, wake_faces, material, *, truncation_ratio=4.):
                 link_median=median_link)
 
 
-def clip_step_update(old, target, caps, *, roots=None, reference=None, unit='map_arclength'):
+def clip_step_update(old, target, caps, *, roots=None, reference=None,
+                     unit='geometric_edge'):
     """Cap every node displacement; roots stay pinned. Returns (xyz, ledger)."""
     old = np.asarray(old, float)
     delta = np.asarray(target, float)-old
@@ -1071,7 +1070,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                     requested = np.linalg.norm(targets[name]-group_now.wake_xyz, axis=1)
                     usable = node_caps > 0
                     update['step_scale'][name] = dict(
-                        unit='map_arclength',
+                        unit='geometric_edge',
                         link_median=(float(np.median(s['link'][s['link'] > 0]))
                                      if np.any(s['link'] > 0) else None),
                         link_max=float(s['link'].max()),

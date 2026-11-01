@@ -50,11 +50,15 @@ Two implementation bugs were found while testing:
 
 ## 3. B: per-node step control
 
-Update 2026-11-01: the map unit is now the reference link, not the shortest incident
-edge (`wake_step_scale`), truncation rows are identified by a *relative* criterion and
-reported/frozen (`truncation_policy`), and the cap magnitude was A/B tested
-(0.25 / 1 / 4 links). See `docs/ISSUE84_STREAMLINE_STEP_UNIT.md` for the readings and
-for the remaining blocking mechanism (the finite-thickness TE gap).
+Update 2026-11-01: the cap unit is the **shortest incident edge** (mesh resolution).
+A link-length cap was tried and refuted: 0.25 * a 26-chord truncation link = 6.5 chord does
+not bound strain and the next update is refused by the area/fold gate
+(`docs/issue84/t5_gate_ab_contact_v8.json`). Truncation rows are still identified by a
+*relative* criterion and reported/frozen (`truncation_policy`). The TE-gap false positive of
+section A is fixed (per-point depth plus a sliver enclosure certificate), and the A/B now
+admits eight consecutive updates instead of zero. See
+`docs/ISSUE84_STREAMLINE_STEP_UNIT.md` sections 3.1, 4 and 5 for the readings; the remaining
+blocker is the wake mesh, not the gate.
 
 `node_step_scale(wake_xyz, wake_faces)` gives every node its shortest incident
 edge; `clip_step_update(old, target, caps, roots=..., reference=...)` caps the
