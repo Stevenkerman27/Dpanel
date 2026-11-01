@@ -123,3 +123,69 @@ def test_crossover_verdict_reports_the_first_win():
     assert verdict["torch_cpu_first_win_over_cpu_lu"] == {"n": 192, "speedup": 2.0}
     assert verdict["cuda_lu_first_win_over_cpu_lu"] == {"n": 385, "speedup": 4.0}
     assert verdict["largest_measured_speedup_cuda_lu"] == 0.5
+
+# --- FP64 device probe (docs/issue92/gpu_fp64_probe.json) ------------------------
+#
+# The probe is produced by tools/issue92/gpu_fp64_probe.py in the CUDA interpreter, which
+# the CPU-only suite cannot import. The tests therefore read the committed artifact and
+# check the contract it has to satisfy: both devices measured, transfer separated from
+# arithmetic, and the document carrying the honest range rather than a single speedup.
+
+PROBE = ROOT / "docs/issue92/gpu_fp64_probe.json"
+BASELINE_DOC = ROOT / "docs/ISSUE92_PHASE0_BASELINE.md"
+
+
+@pytest.fixture(scope="module")
+def probe():
+    if not PROBE.exists():
+        pytest.skip("FP64 device probe not measured on this machine")
+    return json.loads(PROBE.read_text(encoding="utf-8"))
+
+
+def test_fp64_probe_records_both_devices_with_verified_residuals(probe):
+    env = probe["environment"]
+    assert env["cuda_available"] is True
+    assert env["gpu"]
+    for device in ("cpu", "cuda"):
+        rows = probe["kernels"]["matmul"][device]
+        assert [row["n"] for row in rows] == [1024, 2048, 4096]
+        assert all(row["tflops"] > 0.0 for row in rows)
+        assert all(row["dtype"] == "float64" for row in rows)
+    for n in ("1728", "3220"):
+        block = probe["kernels"]["batched_solve"][n]
+        assert set(block) == {"cpu", "cuda"}
+        for device in ("cpu", "cuda"):
+            rows = block[device]
+            assert [row["rhs"] for row in rows] == [1, 16, 64]
+            assert all(row["rel_residual"] < 1e-10 for row in rows)
+            # one factorisation per matrix, reused by every right-hand side
+            assert len({row["lu_factor_seconds"] for row in rows}) == 1
+
+
+def test_fp64_probe_separates_transfer_from_arithmetic(probe):
+    for n, row in probe["host_to_device"].items():
+        expected_mb = round(int(n) ** 2 * 8 / 1048576.0, 1)
+        assert row["matrix_mb"] == expected_mb
+        assert row["host_to_device_seconds"] > 0.0
+    pairwise = probe["kernels"]["pairwise"]
+    for device in ("cpu", "cuda"):
+        row = pairwise[device]
+        assert row["interactions"] == row["n_targets"] * row["n_triangles"]
+        assert row["ns_per_interaction"] > 0.0
+    # the transfer must be small against the factorisation it precedes, which is the point
+    # of the section: the CUDA lag is arithmetic, not PCIe
+    n = "3220"
+    transfer = probe["host_to_device"][n]["host_to_device_seconds"]
+    factor = probe["kernels"]["batched_solve"][n]["cuda"][0]["lu_factor_seconds"]
+    assert transfer < 0.5 * factor
+
+
+def test_the_baseline_document_keeps_the_gpu_range_and_the_600x_caveat(probe):
+    text = BASELINE_DOC.read_text(encoding="utf-8")
+    assert "## 7b." in text
+    assert "gpu_fp64_probe.json" in text
+    # a single speedup would overstate a ratio that moved between runs
+    assert "5-11x" in text
+    # the kernel win is not the stage win
+    assert "600x" in text
+    assert probe["kernels"]["pairwise"]["cuda"]["ns_per_interaction"] < 3.0

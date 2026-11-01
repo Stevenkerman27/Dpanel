@@ -1,0 +1,183 @@
+{
+  "environment": {
+    "python": "3.13.14",
+    "torch": "2.13.0+cu132",
+    "torch_threads": 16,
+    "cuda_available": true,
+    "gpu": "NVIDIA GeForce RTX 5060",
+    "gpu_total_memory_gb": 8.52,
+    "gpu_multi_processor_count": 30,
+    "gpu_warp_size": 32,
+    "cuda_version": "13.2"
+  },
+  "kernels": {
+    "matmul": {
+      "cpu": [
+        {
+          "n": 1024,
+          "dtype": "float64",
+          "seconds": 0.003756,
+          "tflops": 0.5718
+        },
+        {
+          "n": 2048,
+          "dtype": "float64",
+          "seconds": 0.028766,
+          "tflops": 0.5972
+        },
+        {
+          "n": 4096,
+          "dtype": "float64",
+          "seconds": 0.226093,
+          "tflops": 0.6079
+        }
+      ],
+      "cuda": [
+        {
+          "n": 1024,
+          "dtype": "float64",
+          "seconds": 0.008052,
+          "tflops": 0.2667
+        },
+        {
+          "n": 2048,
+          "dtype": "float64",
+          "seconds": 0.064352,
+          "tflops": 0.267
+        },
+        {
+          "n": 4096,
+          "dtype": "float64",
+          "seconds": 0.491315,
+          "tflops": 0.2797
+        }
+      ]
+    },
+    "batched_solve": {
+      "1728": {
+        "cpu": [
+          {
+            "n": 1728,
+            "rhs": 1,
+            "lu_factor_seconds": 0.007606,
+            "solve_seconds": 0.000306,
+            "rel_residual": 5.695275935112268e-15
+          },
+          {
+            "n": 1728,
+            "rhs": 16,
+            "lu_factor_seconds": 0.007606,
+            "solve_seconds": 0.000706,
+            "rel_residual": 4.05211120496527e-15
+          },
+          {
+            "n": 1728,
+            "rhs": 64,
+            "lu_factor_seconds": 0.007606,
+            "solve_seconds": 0.002373,
+            "rel_residual": 6.281630381205742e-15
+          }
+        ],
+        "cuda": [
+          {
+            "n": 1728,
+            "rhs": 1,
+            "lu_factor_seconds": 0.020005,
+            "solve_seconds": 0.00042,
+            "rel_residual": 2.4981953043059266e-15
+          },
+          {
+            "n": 1728,
+            "rhs": 16,
+            "lu_factor_seconds": 0.020005,
+            "solve_seconds": 0.001245,
+            "rel_residual": 5.930860402720149e-15
+          },
+          {
+            "n": 1728,
+            "rhs": 64,
+            "lu_factor_seconds": 0.020005,
+            "solve_seconds": 0.005779,
+            "rel_residual": 2.2619493447334547e-15
+          }
+        ]
+      },
+      "3220": {
+        "cpu": [
+          {
+            "n": 3220,
+            "rhs": 1,
+            "lu_factor_seconds": 0.038739,
+            "solve_seconds": 0.001779,
+            "rel_residual": 7.017959391440711e-15
+          },
+          {
+            "n": 3220,
+            "rhs": 16,
+            "lu_factor_seconds": 0.038739,
+            "solve_seconds": 0.003742,
+            "rel_residual": 6.558402896934568e-15
+          },
+          {
+            "n": 3220,
+            "rhs": 64,
+            "lu_factor_seconds": 0.038739,
+            "solve_seconds": 0.006815,
+            "rel_residual": 7.886943440349912e-15
+          }
+        ],
+        "cuda": [
+          {
+            "n": 3220,
+            "rhs": 1,
+            "lu_factor_seconds": 0.098889,
+            "solve_seconds": 0.000812,
+            "rel_residual": 2.962998501718626e-15
+          },
+          {
+            "n": 3220,
+            "rhs": 16,
+            "lu_factor_seconds": 0.098889,
+            "solve_seconds": 0.003468,
+            "rel_residual": 9.676512483280205e-15
+          },
+          {
+            "n": 3220,
+            "rhs": 64,
+            "lu_factor_seconds": 0.098889,
+            "solve_seconds": 0.008757,
+            "rel_residual": 5.296276775566718e-15
+          }
+        ]
+      }
+    },
+    "pairwise": {
+      "cpu": {
+        "n_targets": 18992,
+        "n_triangles": 794,
+        "interactions": 15079648.0,
+        "seconds": 0.085693,
+        "ms_per_target": 0.0045,
+        "ns_per_interaction": 5.683
+      },
+      "cuda": {
+        "n_targets": 18992,
+        "n_triangles": 794,
+        "interactions": 15079648.0,
+        "seconds": 0.015675,
+        "ms_per_target": 0.0008,
+        "ns_per_interaction": 1.039
+      }
+    }
+  },
+  "host_to_device": {
+    "1728": {
+      "matrix_mb": 22.8,
+      "host_to_device_seconds": 0.0017
+    },
+    "3220": {
+      "matrix_mb": 79.1,
+      "host_to_device_seconds": 0.0046
+    }
+  }
+}
