@@ -221,14 +221,26 @@ def area_terms(
         q = sub[:, 0][:, None, :]
         a = (sub[:, 1] - sub[:, 0])[:, None, :]
         ba = (sub[:, 2] - sub[:, 1])[:, None, :]
-        source = q + uu * a + (uu * vv) * ba
-        r = p[None, None, :] - source
-        den = (np.einsum("sqi,sqi->sq", r, r) + core * core) ** 1.5
         quad = np.empty((len(sub), 3))
+        plane = p[None, None, :]
+        core2 = core * core
         for first in range(0, len(sub), step):
             sl = slice(first, first + step)
-            quad[sl] = np.einsum("q,sqi->si", w, r[sl] / den[sl, :, None])
-        np.add.at(out, own, quad * a2[:, None])
+            source = q[sl] + uu * a[sl]
+            source += (uu * vv) * ba[sl]
+            r = plane - source
+            # |r|^3 as sqrt(|r|^2) * |r|^2: pow(x, 1.5) is a libm call per node,
+            # sqrt plus one multiply is not, and the two differ by < 2 ulp.
+            z = np.einsum("sqi,sqi->sq", r, r)
+            z += core2
+            d = np.sqrt(z)
+            d *= z
+            np.divide(r, d[:, :, None], out=r)
+            np.einsum("q,sqi->si", w, r, out=quad[sl])
+        # own ascends and every face owns one contiguous run of sub-triangles,
+        # so one reduceat replaces the scattered np.add.at accumulation.
+        starts = np.flatnonzero(np.r_[True, own[1:] != own[:-1]])
+        out[f0:f1] += np.add.reduceat(quad * a2[:, None], starts, axis=0)
         _profile.end("area_terms.kernel")
         if return_sub_areas:
             kept.append((sub, own, a2))

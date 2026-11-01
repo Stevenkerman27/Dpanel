@@ -109,6 +109,39 @@ node, so the strip refinement is not a better use of the budget than order: 48x1
 cheapest configuration that is inside the 1e-3 scale of the sampling gate is
 32x1 at 142 ms per target, still 126 times the analytic edge path.
 
+## 4b. Kernel rewrite and its measured ceiling
+
+The kernel was rewritten in panel/p1_projection_duffy.py: the strip loop now builds
+the source points in place, computes |r|^3 as sqrt(|r|^2) * |r|^2 instead of
+pow(x, 1.5), divides in place, and accumulates with one np.add.reduceat over the
+contiguous per-face runs instead of a scattered np.add.at. Both changes are
+rearrangements, so the result is bit-for-bit the same up to rounding:
+
+| check | order x strips | max relative difference |
+| --- | --- | --- |
+| area_terms vs per-face reference, 300 random triangles | 16x8 | 4.33e-16 |
+| same | 48x1 | 4.16e-16 |
+| same | 48x8 | 3.71e-16 |
+
+Cost, measured inside one process on the same arrays (best of three):
+
+| scope | configuration | before | after | speedup |
+| --- | --- | --- | --- | --- |
+| area_terms, 300 triangles | 16x8 | 0.0433 s | 0.0351 s | 1.23x |
+| area_terms, 300 triangles | 48x1 | 0.0403 s | 0.0314 s | 1.28x |
+| area_terms, 300 triangles | 48x8 | 0.3111 s | 0.2428 s | 1.28x |
+| full TotalVelocity, CAD case, 4 targets | 16x8 | 0.943 s | 0.781 s | 1.21x |
+| full TotalVelocity, CAD case, 4 targets | 48x1 | 0.891 s | 0.697 s | 1.28x |
+
+That is the ceiling of this kind of work, and the reason is structural rather than
+a missed trick: about half of the kernel time is the (sub-triangle, node, 3)
+source-point construction that any Duffy evaluation must perform, and section 3's
+3.3x gap to the isolated micro-benchmark was measured on an array that was handed
+in ready-made. A batched target-by-face kernel can still remove the per-face
+projection and per-chunk allocation, i.e. at most the 4 to 28 percent projection
+share plus what is left of the assembly overhead, so it cannot change the order of
+magnitude: the fan stays 100 to 260 times the analytic edge path.
+
 ## 5. What this means for the plan
 
 The Phase 1 plan expected the induced-velocity stage to be dominated by per-target
@@ -122,9 +155,11 @@ once the ladder (two evaluations per point) and the gate bookkeeping are counted
 
 Consequences, in order of value:
 
-1. Do not vectorise the fan as a performance project. Its ceiling is 4 percent of
-   a backend that is 260 times slower than the default. Record the law above and
-   spend the effort on what the default runs.
+1. Do not vectorise the fan as a performance project. Measured above: the kernel
+   rewrite is worth 1.21 to 1.28x with parity at 4e-16, and a batched kernel can
+   add at most the projection share on top of that, on a backend 100 to 260 times
+   slower than the default. Record the law and spend the effort on what the
+   default runs.
 2. The fan needs a near-field restriction to be viable at all. A hybrid that uses
    the fan only for the triangles within near_ratio * core of the target and the
    closed-form edge integral or a far-field moment expansion elsewhere is the only
@@ -158,8 +193,9 @@ Contract tests: test/test_issue92_wake_profile.py (5 tests, 0.4 s, no fixtures).
 
 ## 8. Next
 
-* Batched target x face kernel with the 3.3x assembly overhead removed, kept as an
-  opt-in backend and gated on parity with area_terms at 1e-13.
+* Batched target x face kernel, kept as an opt-in backend and gated on parity with
+  area_terms at 1e-13; its expected ceiling is the projection share, not an order
+  of magnitude (section 4b).
 * Near-field fan plus far-field reduction, since that is the only route to a fan
   that can be used in production.
 * CUDA for the influence kernel and the near-field fan only after CPU parity.
