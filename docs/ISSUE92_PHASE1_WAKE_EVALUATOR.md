@@ -429,6 +429,62 @@ would silently poison an iteration instead of stopping it.
 * The 232 MB is torch's allocator high-water mark at chunk 256, not a tuned figure;
   chunking is exposed and larger chunks trade memory for fewer launches.
 
+## 6e. Where the speed-up actually comes from
+
+Section 6d reports two very different factors, 1.5x to 6.6x for the fan kernel and 22.9x
+for the analytic evaluator, from the same snapshot and the same kind of parity check.
+The difference is worth attributing, because the two kernels are not the same shape of
+work and the two numbers do not mean the same thing.
+
+### Batching and the device are separate effects
+
+Analytic evaluator, 48 targets, torch chunk=1 (a Python loop of single-target calls) vs
+one batched call:
+
+| path | ms/target | vs NumPy |
+| --- | --- | --- |
+| NumPy, one target per call | 0.901 | 1.0x |
+| torch CPU, chunk=1 | 1.253 | 0.72x |
+| torch CPU, chunk=48 | 0.248 | 3.6x |
+| torch CUDA, chunk=1 | 1.477 | 0.61x |
+| torch CUDA, chunk=48 | 0.054 | 16.7x |
+
+Both backends are *slower* than NumPy when called per target: a 6.9k-term kernel is too
+small to pay a dispatch, and for CUDA also a host-to-device round trip. Nearly all of
+the 22.9x is therefore batching (amortising host overhead), about 3.6x, times the device
+(about 4.6x on top of the batched CPU path), not a claim that one GPU op is 23x a CPU op.
+
+### The fan kernel cannot move the same way
+
+fan 16x4 on the same sheet, 6 targets, stage seconds from panel/velocity_profile.py:
+
+| backend | total ms | fan build ms | kernel ms | kernel speed-up |
+| --- | --- | --- | --- | --- |
+| NumPy | 110.4 | 37.0 (34%) | 73.1 | 1.0x |
+| torch CPU | 72.3 | 40.8 (56%) | 31.3 | 2.34x |
+| torch CUDA | 58.5 | 37.7 (64%) | 20.6 | 3.55x |
+
+Three things cap it:
+
+* The kernel is 1.84M quadrature-node evaluations per target (7181 fan sub-triangles at
+  order 16). That is a flat elementwise stream over contiguous float64 arrays, already
+  vectorised with in-place buffers; it is bandwidth-bound, and a GPU only has a
+  bandwidth ratio to offer, not a throughput ratio.
+* The fan partition is target-dependent and, by design, stays on the CPU: 1666 Python
+  calls to projection_fan per target. Once the kernel is 3.55x faster, that 37 ms is
+  64 percent of the wall time, so the end-to-end ceiling is 110/37 = 3.0x even with an
+  infinitely fast kernel, and the realised 1.9x is what Amdahl allows.
+* In small configurations the kernel is smaller than its own launch cost: fan 8x1 is
+  20.2 ms in NumPy and 29.6 ms on CUDA (0.68x).
+
+### What this implies for the next unit
+
+The analytic evaluator is the lever for a device port, and it must be batched. For the
+fan, the GPU is the wrong lever: the remaining 64 percent is the per-face Python fan
+build, which is exactly what a fused target-chunk x face-chunk kernel would serialise
+(the item still open in step 3), and its ceiling on this configuration is 3.0x of the
+fan's own budget, not the 1.4x that the projection share alone suggested.
+
 ## 7. Reproduction
 
     python -m tools.issue92.wake_evaluator_profile \
