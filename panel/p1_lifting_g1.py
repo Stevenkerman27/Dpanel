@@ -13,10 +13,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
+import time
 import numpy as np
 from scipy.linalg import lstsq, null_space
 from scipy.optimize import least_squares
 from .p1_closed_body import Mesh, influence_block
+from .p1_pressure_kutta_reduced import solve_structured_pressure
 
 
 @dataclass(frozen=True)
@@ -471,7 +473,8 @@ def assemble(wing, *, backend='numpy'):
 
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
-          jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100, backend='numpy'):
+          jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
+          pressure_solver='reference', backend='numpy'):
     ops=assemble(wing,backend=backend);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(K)
     alpha=np.deg2rad(alpha_deg);U=np.array([np.cos(alpha),0,np.sin(alpha)])
     rhs=-ops['mesh'].centers@U
@@ -510,8 +513,30 @@ def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
             v=N@t
             return np.vstack([B,kutta_weight*pressure_jac(v)])@N
         z0=N.T@initial
-        result=least_squares(f,z0,jac=jac,max_nfev=max_nfev,
-                             ftol=1e-11,xtol=1e-11,gtol=1e-11)
+        t_pressure=time.perf_counter()
+        pressure_history=pressure_nfev=pressure_cost=pressure_optimality=None
+        pressure_precompute=None
+        if pressure_solver=='reference':
+            result=least_squares(f,z0,jac=jac,max_nfev=max_nfev,
+                                 ftol=1e-11,xtol=1e-11,gtol=1e-11)
+            pressure_nfev=result.nfev
+            pressure_cost=result.cost
+            pressure_optimality=float(np.linalg.norm(jac(result.x).T@result.fun,np.inf))
+        elif pressure_solver=='structured':
+            # Same residual, Jacobian, tolerances and budget; only the linear step
+            # changes (structured Gauss-Newton on the feasible subspace).
+            result=solve_structured_pressure(wall_operator=B,reduction=N,wall_rhs=bw,
+                                             pressure=pressure_residual,
+                                             pressure_jacobian=pressure_jac,x0=z0,
+                                             weight=kutta_weight,max_nfev=max_nfev)
+            pressure_history=result.history
+            pressure_nfev=result.nfev
+            pressure_cost=result.cost
+            pressure_optimality=result.optimality
+            pressure_precompute=result.precompute_seconds
+        else:
+            raise ValueError("pressure_solver must be 'reference' or 'structured'")
+        pressure_seconds=time.perf_counter()-t_pressure
         mu_gamma=N@result.x;mu,gamma=mu_gamma[:nm],mu_gamma[nm:]
     elif kutta!='signed_speed':raise ValueError('kutta must be signed_speed or pressure')
     vel=np.einsum('fij,j->fi',ops['grad'],mu)
@@ -529,6 +554,15 @@ def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
                 signed_kutta_rms=float(np.sqrt(np.mean((K@mu)**2))),jump_rms=float(np.sqrt(np.mean((J@mu_gamma)**2))),
                 wall_rms=float(np.sqrt(np.mean((A@mu+W@gamma-rhs)**2))),
                 alpha_deg=alpha_deg,method=kutta,ops=ops,
+                pressure_solver=pressure_solver if kutta=='pressure' else None,
+                pressure_status=result.status if kutta=='pressure' else None,
+                pressure_message=result.message if kutta=='pressure' else None,
+                pressure_seconds=pressure_seconds if kutta=='pressure' else None,
+                pressure_history=pressure_history if kutta=='pressure' else None,
+                pressure_nfev=pressure_nfev if kutta=='pressure' else None,
+                pressure_cost=pressure_cost if kutta=='pressure' else None,
+                pressure_optimality=pressure_optimality if kutta=='pressure' else None,
+                pressure_precompute_seconds=pressure_precompute if kutta=='pressure' else None,
                 diagnostics=dict(n_wall_faces=len(wing.faces),n_wall_dofs=nm,
                                  n_gamma_dofs=ng,n_kutta_rows=nk,
                                  cp_min=float(cp.min()),cp_max=float(cp.max()),

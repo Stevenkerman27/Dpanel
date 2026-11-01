@@ -11,12 +11,14 @@ synthetic biplane or raised tail. No Gmsh or automatic CAD TE guessing.
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
+import time
 import numpy as np
 from scipy.linalg import lstsq, null_space
 from scipy.optimize import least_squares
 
 from .p1_closed_body import Mesh
 from .p1_lifting_g1 import Wing, make_wing, _doublet_matrix, _gradient_map, _interpolation_basis
+from .p1_pressure_kutta_reduced import solve_structured_pressure
 
 
 @dataclass(frozen=True)
@@ -275,7 +277,7 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 
 
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
-                max_nfev=80,operators=None,backend='numpy'):
+                max_nfev=80,operators=None,pressure_solver='reference', backend='numpy'):
     """Solve wall P1 mu and ALL independent wake Gamma simultaneously."""
     ops=assemble_multi(mesh,backend=backend) if operators is None else operators
     A,W,J,K,grad=ops['A'],ops['W'],ops['J'],ops['K'],ops['grad'];ms=ops['mesh']
@@ -309,8 +311,17 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
         def d_fun(z):
             state=Nj@z
             return np.vstack((B,kut_weight*jac(state)))@Nj
-        rr=least_squares(fun,Nj.T@x,jac=d_fun,max_nfev=max_nfev,
-                         xtol=1e-11,ftol=1e-11,gtol=1e-11)
+        t_pressure=time.perf_counter()
+        if pressure_solver=='reference':
+            rr=least_squares(fun,Nj.T@x,jac=d_fun,max_nfev=max_nfev,
+                             xtol=1e-11,ftol=1e-11,gtol=1e-11)
+        elif pressure_solver=='structured':
+            rr=solve_structured_pressure(wall_operator=B,reduction=Nj,wall_rhs=bw,
+                                         pressure=pressure,pressure_jacobian=jac,
+                                         x0=Nj.T@x,weight=kut_weight,max_nfev=max_nfev)
+        else:
+            raise ValueError("pressure_solver must be 'reference' or 'structured'")
+        pressure_seconds=time.perf_counter()-t_pressure
         x=Nj@rr.x
         nonlinear=pressure_kutta_acceptance(
             result=rr,fun=fun,jac=d_fun,z=rr.x,
@@ -347,7 +358,13 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
                 pressure_kutta_rms=float(np.linalg.norm(pressure(x))/np.sqrt(len(K))),
                 wall_rms=float(np.linalg.norm(A@mu+W@gamma-rhs)/np.sqrt(len(rhs))),
                 linear_constrained_rank=rank,linear_singular_min=float(sv[-1]),
-                nonlinear=nonlinear,physical_accuracy_accepted=False)
+                nonlinear=nonlinear,physical_accuracy_accepted=False,
+                pressure_solver=pressure_solver if kutta=='pressure' else None,
+                pressure_status=rr.status if kutta=='pressure' else None,
+                pressure_message=rr.message if kutta=='pressure' else None,
+                pressure_nfev=getattr(rr,'nfev',None) if kutta=='pressure' else None,
+                pressure_seconds=pressure_seconds if kutta=='pressure' else None,
+                pressure_history=getattr(rr,'history',None) if kutta=='pressure' else None)
 
 
 def alpha_sensitivity_multi(mesh,alpha_deg=5.,*,operators=None):

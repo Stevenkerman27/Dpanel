@@ -1,0 +1,1431 @@
+{
+  "max_nfev": 100,
+  "multi_max_nfev": 80,
+  "repeat": 1,
+  "fixtures": {
+    "g1_wing_rect": {
+      "solvers": {
+        "reference": {
+          "solver": "reference",
+          "seconds_total": 0.03576319996500388,
+          "seconds_nonlinear": 0.006117400014773011,
+          "nfev": 4,
+          "status": 2,
+          "message": "`ftol` termination condition is satisfied.",
+          "precompute_seconds": null,
+          "loads": {
+            "CL": 0.31947298897042903,
+            "CD_pressure": -0.013407339445502762,
+            "CL_gamma": 0.2819235972196489,
+            "CM_y": -0.0486012741190873,
+            "wall_rms": 0.00212459011517394,
+            "pressure_kutta_rms": 1.498242139372573e-07,
+            "jump_rms": 1.3136335981433191e-16,
+            "signed_kutta_rms": 0.005679977072573431
+          },
+          "history": null
+        },
+        "structured": {
+          "solver": "structured",
+          "seconds_total": 0.031210399989504367,
+          "seconds_nonlinear": 0.0024819999816827476,
+          "nfev": 7,
+          "status": 2,
+          "message": "ftol termination condition is satisfied",
+          "precompute_seconds": 0.00028390000807121396,
+          "loads": {
+            "CL": 0.31947298897041854,
+            "CD_pressure": -0.013407339445503149,
+            "CL_gamma": 0.28192359721963856,
+            "CM_y": -0.04860127411908337,
+            "wall_rms": 0.002124590115173932,
+            "pressure_kutta_rms": 1.4982421393321734e-07,
+            "jump_rms": 8.599750569898517e-17,
+            "signed_kutta_rms": 0.0056799770725727144
+          },
+          "history": [
+            {
+              "iteration": 0,
+              "nfev": 1,
+              "cost": 0.0043883226087119975,
+              "gradient_inf": 3.9108192459391375,
+              "gradient_relative": 0.18482581279306093,
+              "wall_rms": 0.001590254141937991,
+              "pressure_rms": 0.008243012796300872
+            },
+            {
+              "iteration": 1,
+              "nfev": 3,
+              "cost": 0.00014153417859590994,
+              "gradient_inf": 0.0012461756154952103,
+              "gradient_relative": 0.0003279520415298762,
+              "wall_rms": 0.0015897760925415176,
+              "pressure_rms": 2.6809806613408845e-06
+            },
+            {
+              "iteration": 2,
+              "nfev": 5,
+              "cost": 0.0001415336937693753,
+              "gradient_inf": 9.130987775052686e-07,
+              "gradient_relative": 2.4030188460282986e-07,
+              "wall_rms": 0.0015897758848280135,
+              "pressure_rms": 1.489406045035036e-07
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "CL": {
+          "reference": 0.31947298897042903,
+          "candidate": 0.31947298897041854,
+          "delta": -1.049160758270773e-14,
+          "relative": -3.2840358793772234e-14
+        },
+        "CD_pressure": {
+          "reference": -0.013407339445502762,
+          "candidate": -0.013407339445503149,
+          "delta": -3.86843335142828e-16,
+          "relative": -2.8853102191918267e-14
+        },
+        "CL_gamma": {
+          "reference": 0.2819235972196489,
+          "candidate": 0.28192359721963856,
+          "delta": -1.0325074129013956e-14,
+          "relative": -3.6623660562083454e-14
+        },
+        "CM_y": {
+          "reference": -0.0486012741190873,
+          "candidate": -0.04860127411908337,
+          "delta": 3.9343528435153985e-15,
+          "relative": 8.095163994826733e-14
+        },
+        "wall_rms": {
+          "reference": 0.00212459011517394,
+          "candidate": 0.002124590115173932,
+          "delta": -7.806255641895632e-18,
+          "relative": -3.6742407799711216e-15
+        },
+        "pressure_kutta_rms": {
+          "reference": 1.498242139372573e-07,
+          "candidate": 1.4982421393321734e-07,
+          "delta": -4.039950111708987e-18,
+          "relative": -2.696460075139002e-11
+        },
+        "jump_rms": {
+          "reference": 1.3136335981433191e-16,
+          "candidate": 8.599750569898517e-17,
+          "delta": -4.5365854115346746e-17,
+          "relative": -0.3453463292920228
+        },
+        "signed_kutta_rms": {
+          "reference": 0.005679977072573431,
+          "candidate": 0.0056799770725727144,
+          "delta": -7.164407955784213e-16,
+          "relative": -1.2613445202760705e-13
+        }
+      },
+      "speedup_nonlinear": 2.464705906494622,
+      "speedup_total": 1.1458744513697536
+    },
+    "g1_wing_camber": {
+      "solvers": {
+        "reference": {
+          "solver": "reference",
+          "seconds_total": 0.036992200009990484,
+          "seconds_nonlinear": 0.008039999986067414,
+          "nfev": 10,
+          "status": 3,
+          "message": "`xtol` termination condition is satisfied.",
+          "precompute_seconds": null,
+          "loads": {
+            "CL": 0.45029134820016536,
+            "CD_pressure": -0.013572436550737716,
+            "CL_gamma": 0.42222006422924224,
+            "CM_y": -0.1295120782621358,
+            "wall_rms": 0.0021683210362745116,
+            "pressure_kutta_rms": 1.5674789403526948e-07,
+            "jump_rms": 1.3136335981433191e-16,
+            "signed_kutta_rms": 0.02113464895608814
+          },
+          "history": null
+        },
+        "structured": {
+          "solver": "structured",
+          "seconds_total": 0.03135630005272105,
+          "seconds_nonlinear": 0.002321799984201789,
+          "nfev": 7,
+          "status": 4,
+          "message": "relative gradient tolerance reached",
+          "precompute_seconds": 0.0002533000078983605,
+          "loads": {
+            "CL": 0.45029134820015126,
+            "CD_pressure": -0.013572436550739073,
+            "CL_gamma": 0.42222006422923064,
+            "CM_y": -0.1295120782621284,
+            "wall_rms": 0.002168321036274507,
+            "pressure_kutta_rms": 1.567478941143651e-07,
+            "jump_rms": 4.965068306494546e-17,
+            "signed_kutta_rms": 0.021134648956089533
+          },
+          "history": [
+            {
+              "iteration": 0,
+              "nfev": 1,
+              "cost": 0.08740701433337673,
+              "gradient_inf": 19.040524312518407,
+              "gradient_relative": 0.20366941609960817,
+              "wall_rms": 0.0016252878393849324,
+              "pressure_rms": 0.03736502898528923
+            },
+            {
+              "iteration": 1,
+              "nfev": 3,
+              "cost": 0.0001474392924236762,
+              "gradient_inf": 0.014814180144568284,
+              "gradient_relative": 0.003856899926023005,
+              "wall_rms": 0.001622348855491977,
+              "pressure_rms": 2.724910989315256e-05
+            },
+            {
+              "iteration": 2,
+              "nfev": 5,
+              "cost": 0.000147393072128386,
+              "gradient_inf": 1.1309683023535635e-05,
+              "gradient_relative": 2.9453039469062263e-06,
+              "wall_rms": 0.0016223498740357701,
+              "pressure_rms": 1.676419407188474e-07
+            },
+            {
+              "iteration": 3,
+              "nfev": 7,
+              "cost": 0.0001473930720957746,
+              "gradient_inf": 4.168114721303669e-10,
+              "gradient_relative": 1.0854736085981298e-10,
+              "wall_rms": 0.001622349875071847,
+              "pressure_rms": 1.567478941143651e-07
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "CL": {
+          "reference": 0.45029134820016536,
+          "candidate": 0.45029134820015126,
+          "delta": -1.4099832412739488e-14,
+          "relative": -3.131268781667058e-14
+        },
+        "CD_pressure": {
+          "reference": -0.013572436550737716,
+          "candidate": -0.013572436550739073,
+          "delta": -1.3565537582138631e-15,
+          "relative": -9.994916926984117e-14
+        },
+        "CL_gamma": {
+          "reference": 0.42222006422924224,
+          "candidate": 0.42222006422923064,
+          "delta": -1.1601830607332886e-14,
+          "relative": -2.747816030133928e-14
+        },
+        "CM_y": {
+          "reference": -0.1295120782621358,
+          "candidate": -0.1295120782621284,
+          "delta": 7.382983113757291e-15,
+          "relative": 5.700613574290688e-14
+        },
+        "wall_rms": {
+          "reference": 0.0021683210362745116,
+          "candidate": 0.002168321036274507,
+          "delta": -4.7704895589362195e-18,
+          "relative": -2.2000845258286148e-15
+        },
+        "pressure_kutta_rms": {
+          "reference": 1.5674789403526948e-07,
+          "candidate": 1.567478941143651e-07,
+          "delta": 7.909561897725135e-17,
+          "relative": 5.046040297004196e-10
+        },
+        "jump_rms": {
+          "reference": 1.3136335981433191e-16,
+          "candidate": 4.965068306494546e-17,
+          "delta": -8.171267674938646e-17,
+          "relative": -0.6220355269907728
+        },
+        "signed_kutta_rms": {
+          "reference": 0.02113464895608814,
+          "candidate": 0.021134648956089533,
+          "delta": 1.3912482277333993e-15,
+          "relative": 6.582783705676976e-14
+        }
+      },
+      "speedup_nonlinear": 3.4628305800559662,
+      "speedup_total": 1.1797374035773827
+    },
+    "g2_conventional": {
+      "solvers": {
+        "reference": {
+          "solver": "reference",
+          "seconds_total": 0.12622340000234544,
+          "seconds_nonlinear": 0.05708439997397363,
+          "nfev": 5,
+          "status": 1,
+          "message": "`gtol` termination condition is satisfied.",
+          "accepted": true,
+          "loads": {
+            "CL": 0.3654723302039162,
+            "CD_pressure": -0.017593346735200358,
+            "CL_gamma": 0.34233313568958107,
+            "CM_y": -0.11257278167355603,
+            "wall_rms": 0.0019177823458160234,
+            "pressure_kutta_rms": 1.6760907509220812e-07,
+            "jump_rms": 7.850462293418875e-17,
+            "signed_kutta_rms": 0.016867759453107343
+          },
+          "nonlinear": {
+            "success": true,
+            "message": "`gtol` termination condition is satisfied.",
+            "nfev": 5,
+            "status": 1,
+            "cost": 0.0002149766382400917,
+            "optimality": 3.596378405108379e-12,
+            "floor_method": "least_squares of min ||B null(J) z - bw|| (lapack gelsd)",
+            "accepted_at_residual_floor": false,
+            "gradient_absolute": 3.596378405108379e-12,
+            "gradient_relative": 4.372568419571767e-13,
+            "residual_norm": 0.020735314718619134,
+            "wall_rms": 0.001496442432038161,
+            "wall_floor_rms": 0.0014154047143111223,
+            "wall_over_floor": 1.0572540962366936,
+            "pressure_rms": 1.6760907509220812e-07,
+            "criteria": {
+              "stationary": true,
+              "wall_at_floor": false,
+              "kutta": true
+            },
+            "tolerances": {
+              "gradient_relative": 1e-06,
+              "pressure_rms": 0.0001,
+              "wall_floor_ratio": 1.05
+            }
+          },
+          "history": null
+        },
+        "structured": {
+          "solver": "structured",
+          "seconds_total": 0.07442580000497401,
+          "seconds_nonlinear": 0.00538399996003136,
+          "nfev": 7,
+          "status": 4,
+          "message": "relative gradient tolerance reached",
+          "accepted": true,
+          "loads": {
+            "CL": 0.36547233109364924,
+            "CD_pressure": -0.01759334645006751,
+            "CL_gamma": 0.3423331354153357,
+            "CM_y": -0.11257278213414115,
+            "wall_rms": 0.001917782348961743,
+            "pressure_kutta_rms": 1.6760978402746254e-07,
+            "jump_rms": 0.0,
+            "signed_kutta_rms": 0.016867758871247297
+          },
+          "nonlinear": {
+            "success": true,
+            "message": "relative gradient tolerance reached",
+            "nfev": 7,
+            "status": 4,
+            "cost": 0.0002149766382400966,
+            "optimality": 5.132882634147117e-10,
+            "floor_method": "least_squares of min ||B null(J) z - bw|| (lapack gelsd)",
+            "accepted_at_residual_floor": false,
+            "gradient_absolute": 5.13288381793707e-10,
+            "gradient_relative": 6.24069080557829e-11,
+            "residual_norm": 0.02073531471861937,
+            "wall_rms": 0.0014964424320380951,
+            "wall_floor_rms": 0.0014154047143111223,
+            "wall_over_floor": 1.057254096236647,
+            "pressure_rms": 1.6760978402746254e-07,
+            "criteria": {
+              "stationary": true,
+              "wall_at_floor": false,
+              "kutta": true
+            },
+            "tolerances": {
+              "gradient_relative": 1e-06,
+              "pressure_rms": 0.0001,
+              "wall_floor_ratio": 1.05
+            }
+          },
+          "history": [
+            {
+              "iteration": 0,
+              "nfev": 1,
+              "cost": 0.08873562549591306,
+              "gradient_inf": 18.894008222561666,
+              "gradient_relative": 0.11306193541412347,
+              "wall_rms": 0.0014988517381006813,
+              "pressure_rms": 0.029752303451794034
+            },
+            {
+              "iteration": 1,
+              "nfev": 3,
+              "cost": 0.000215056219583463,
+              "gradient_inf": 0.02029033468105402,
+              "gradient_relative": 0.0024663899607220117,
+              "wall_rms": 0.0014964411662891045,
+              "pressure_rms": 2.8275046180744317e-05
+            },
+            {
+              "iteration": 2,
+              "nfev": 5,
+              "cost": 0.00021497663830575395,
+              "gradient_inf": 1.7331288782821184e-05,
+              "gradient_relative": 2.1071823626675616e-06,
+              "wall_rms": 0.001496442430540908,
+              "pressure_rms": 1.818001285019883e-07
+            },
+            {
+              "iteration": 3,
+              "nfev": 7,
+              "cost": 0.0002149766382400966,
+              "gradient_inf": 5.132882634147117e-10,
+              "gradient_relative": 6.240689366296329e-11,
+              "wall_rms": 0.0014964424320380956,
+              "pressure_rms": 1.6760978402746254e-07
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "CL": {
+          "reference": 0.3654723302039162,
+          "candidate": 0.36547233109364924,
+          "delta": 8.897330650015078e-10,
+          "relative": 2.434474490873438e-09
+        },
+        "CD_pressure": {
+          "reference": -0.017593346735200358,
+          "candidate": -0.01759334645006751,
+          "delta": 2.8513284788811433e-10,
+          "relative": 1.6206856613450762e-08
+        },
+        "CL_gamma": {
+          "reference": 0.34233313568958107,
+          "candidate": 0.3423331354153357,
+          "delta": -2.742453486526131e-10,
+          "relative": -8.011066416348657e-10
+        },
+        "CM_y": {
+          "reference": -0.11257278167355603,
+          "candidate": -0.11257278213414115,
+          "delta": -4.605851255945481e-10,
+          "relative": -4.091443053527584e-09
+        },
+        "wall_rms": {
+          "reference": 0.0019177823458160234,
+          "candidate": 0.001917782348961743,
+          "delta": 3.145719578920292e-12,
+          "relative": 1.6402901954871092e-09
+        },
+        "pressure_kutta_rms": {
+          "reference": 1.6760907509220812e-07,
+          "candidate": 1.6760978402746254e-07,
+          "delta": 7.089352544204929e-13,
+          "relative": 4.229694925710202e-06
+        },
+        "jump_rms": {
+          "reference": 7.850462293418875e-17,
+          "candidate": 0.0,
+          "delta": -7.850462293418875e-17,
+          "relative": -1.0
+        },
+        "signed_kutta_rms": {
+          "reference": 0.016867759453107343,
+          "candidate": 0.016867758871247297,
+          "delta": -5.818600462559331e-10,
+          "relative": -3.4495396254227714e-08
+        }
+      },
+      "speedup_nonlinear": 10.602600371052219,
+      "speedup_total": 1.6959629589995635
+    },
+    "g2_tail_low": {
+      "solvers": {
+        "reference": {
+          "solver": "reference",
+          "seconds_total": 0.1305531999678351,
+          "seconds_nonlinear": 0.058453099976759404,
+          "nfev": 5,
+          "status": 2,
+          "message": "`ftol` termination condition is satisfied.",
+          "accepted": true,
+          "loads": {
+            "CL": 0.3628331801624354,
+            "CD_pressure": -0.017749943753945112,
+            "CL_gamma": 0.34093083993870726,
+            "CM_y": -0.10785366039367245,
+            "wall_rms": 0.0019218623450907228,
+            "pressure_kutta_rms": 1.7155103468140226e-07,
+            "jump_rms": 1.7554167342883504e-16,
+            "signed_kutta_rms": 0.01679697507490231
+          },
+          "nonlinear": {
+            "success": true,
+            "message": "`ftol` termination condition is satisfied.",
+            "nfev": 5,
+            "status": 2,
+            "cost": 0.00021461294974594488,
+            "optimality": 1.0222401203107247e-11,
+            "floor_method": "least_squares of min ||B null(J) z - bw|| (lapack gelsd)",
+            "accepted_at_residual_floor": false,
+            "gradient_absolute": 1.0222401203107247e-11,
+            "gradient_relative": 1.2456540677174041e-12,
+            "residual_norm": 0.020717767724634083,
+            "wall_rms": 0.0014951760863515693,
+            "wall_floor_rms": 0.0014154704202528593,
+            "wall_over_floor": 1.0563103721266542,
+            "pressure_rms": 1.7155103468140226e-07,
+            "criteria": {
+              "stationary": true,
+              "wall_at_floor": false,
+              "kutta": true
+            },
+            "tolerances": {
+              "gradient_relative": 1e-06,
+              "pressure_rms": 0.0001,
+              "wall_floor_ratio": 1.05
+            }
+          },
+          "history": null
+        },
+        "structured": {
+          "solver": "structured",
+          "seconds_total": 0.0736511999857612,
+          "seconds_nonlinear": 0.005177000013645738,
+          "nfev": 7,
+          "status": 4,
+          "message": "relative gradient tolerance reached",
+          "accepted": true,
+          "loads": {
+            "CL": 0.36283318117853136,
+            "CD_pressure": -0.01774994347492911,
+            "CL_gamma": 0.340930839744551,
+            "CM_y": -0.10785366101494447,
+            "wall_rms": 0.001921862348374393,
+            "pressure_kutta_rms": 1.715516944484775e-07,
+            "jump_rms": 1.7554167342883504e-16,
+            "signed_kutta_rms": 0.016796974550449838
+          },
+          "nonlinear": {
+            "success": true,
+            "message": "relative gradient tolerance reached",
+            "nfev": 7,
+            "status": 4,
+            "cost": 0.0002146129497459445,
+            "optimality": 4.676907956355588e-10,
+            "floor_method": "least_squares of min ||B null(J) z - bw|| (lapack gelsd)",
+            "accepted_at_residual_floor": false,
+            "gradient_absolute": 4.676907144389805e-10,
+            "gradient_relative": 5.6990606061377037e-11,
+            "residual_norm": 0.020717767724634024,
+            "wall_rms": 0.0014951760863514863,
+            "wall_floor_rms": 0.0014154704202528593,
+            "wall_over_floor": 1.0563103721265954,
+            "pressure_rms": 1.715516944484775e-07,
+            "criteria": {
+              "stationary": true,
+              "wall_at_floor": false,
+              "kutta": true
+            },
+            "tolerances": {
+              "gradient_relative": 1e-06,
+              "pressure_rms": 0.0001,
+              "wall_floor_ratio": 1.05
+            }
+          },
+          "history": [
+            {
+              "iteration": 0,
+              "nfev": 1,
+              "cost": 0.08831520623087329,
+              "gradient_inf": 19.058794424232637,
+              "gradient_relative": 0.11448160732030836,
+              "wall_rms": 0.0014975333924039467,
+              "pressure_rms": 0.029681630014165704
+            },
+            {
+              "iteration": 1,
+              "nfev": 3,
+              "cost": 0.0002146859946251037,
+              "gradient_inf": 0.02060513976742048,
+              "gradient_relative": 0.0025103185683486053,
+              "wall_rms": 0.0014951748637639616,
+              "pressure_rms": 2.7092211956940234e-05
+            },
+            {
+              "iteration": 2,
+              "nfev": 5,
+              "cost": 0.00021461294980218534,
+              "gradient_inf": 1.5290497329995678e-05,
+              "gradient_relative": 1.8632286990376712e-06,
+              "wall_rms": 0.0014951760851002122,
+              "pressure_rms": 1.832606911043344e-07
+            },
+            {
+              "iteration": 3,
+              "nfev": 7,
+              "cost": 0.0002146129497459445,
+              "gradient_inf": 4.676907956355588e-10,
+              "gradient_relative": 5.6990615955612734e-11,
+              "wall_rms": 0.0014951760863514893,
+              "pressure_rms": 1.715516944484775e-07
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "CL": {
+          "reference": 0.3628331801624354,
+          "candidate": 0.36283318117853136,
+          "delta": 1.016095985129084e-09,
+          "relative": 2.8004494646112352e-09
+        },
+        "CD_pressure": {
+          "reference": -0.017749943753945112,
+          "candidate": -0.01774994347492911,
+          "delta": 2.7901600127555604e-10,
+          "relative": 1.571926115053417e-08
+        },
+        "CL_gamma": {
+          "reference": 0.34093083993870726,
+          "candidate": 0.340930839744551,
+          "delta": -1.9415624663565723e-10,
+          "relative": -5.694886583758828e-10
+        },
+        "CM_y": {
+          "reference": -0.10785366039367245,
+          "candidate": -0.10785366101494447,
+          "delta": -6.212720199405553e-10,
+          "relative": -5.760323921069293e-09
+        },
+        "wall_rms": {
+          "reference": 0.0019218623450907228,
+          "candidate": 0.001921862348374393,
+          "delta": 3.28367021074083e-12,
+          "relative": 1.7085876202990086e-09
+        },
+        "pressure_kutta_rms": {
+          "reference": 1.7155103468140226e-07,
+          "candidate": 1.715516944484775e-07,
+          "delta": 6.597670752422634e-13,
+          "relative": 3.845893884974559e-06
+        },
+        "jump_rms": {
+          "reference": 1.7554167342883504e-16,
+          "candidate": 1.7554167342883504e-16,
+          "delta": 0.0,
+          "relative": 0.0
+        },
+        "signed_kutta_rms": {
+          "reference": 0.01679697507490231,
+          "candidate": 0.016796974550449838,
+          "delta": -5.244524710346088e-10,
+          "relative": -3.122303085501596e-08
+        }
+      },
+      "speedup_nonlinear": 11.29092134879012,
+      "speedup_total": 1.7725875476988104
+    },
+    "g1_wingbody_cad": {
+      "solvers": {
+        "reference": {
+          "solver": "reference",
+          "seconds_total": 1.9914904999895953,
+          "seconds_nonlinear": 1.144273100013379,
+          "nfev": 15,
+          "status": 2,
+          "message": "`ftol` termination condition is satisfied.",
+          "precompute_seconds": null,
+          "loads": {
+            "CL": 0.5361115367532608,
+            "CD_pressure": 0.01596183706159363,
+            "CL_gamma": 0.5411492998787445,
+            "CM_y": -0.1360040833956841,
+            "wall_rms": 0.001175875878163269,
+            "pressure_kutta_rms": 1.628041101575382e-06,
+            "jump_rms": 7.292144878782058e-16,
+            "signed_kutta_rms": 0.047822639599320114
+          },
+          "history": null
+        },
+        "structured": {
+          "solver": "structured",
+          "seconds_total": 1.0250433000037447,
+          "seconds_nonlinear": 0.1618031000252813,
+          "nfev": 29,
+          "status": 2,
+          "message": "ftol termination condition is satisfied",
+          "precompute_seconds": 0.030770300014410168,
+          "loads": {
+            "CL": 0.5361115364897128,
+            "CD_pressure": 0.015961837015539715,
+            "CL_gamma": 0.5411492995949563,
+            "CM_y": -0.13600408324463995,
+            "wall_rms": 0.00117587587736278,
+            "pressure_kutta_rms": 1.6280410723465725e-06,
+            "jump_rms": 6.193150338741552e-16,
+            "signed_kutta_rms": 0.04782263957331871
+          },
+          "history": [
+            {
+              "iteration": 0,
+              "nfev": 1,
+              "cost": 7.2363230944796575,
+              "gradient_inf": 628.2024757738704,
+              "gradient_relative": 0.04333427764421867,
+              "wall_rms": 0.0013461185011863633,
+              "pressure_rms": 0.08110378047803397
+            },
+            {
+              "iteration": 1,
+              "nfev": 3,
+              "cost": 0.17251294670872308,
+              "gradient_inf": 52.06034328134245,
+              "gradient_relative": 0.023028979334406945,
+              "wall_rms": 0.0013450637031681607,
+              "pressure_rms": 0.012497145308500485
+            },
+            {
+              "iteration": 2,
+              "nfev": 5,
+              "cost": 0.004337441273905805,
+              "gradient_inf": 12.957103000513204,
+              "gradient_relative": 0.035468303631549306,
+              "wall_rms": 0.0013455260326724855,
+              "pressure_rms": 0.0018142133064134687
+            },
+            {
+              "iteration": 3,
+              "nfev": 7,
+              "cost": 0.0007343087479981059,
+              "gradient_inf": 2.1687528342618396,
+              "gradient_relative": 0.014445919400318705,
+              "wall_rms": 0.0013455363086122898,
+              "pressure_rms": 0.0001256381409651146
+            },
+            {
+              "iteration": 4,
+              "nfev": 9,
+              "cost": 0.0007169789043645144,
+              "gradient_inf": 0.047828424749013145,
+              "gradient_relative": 0.00032157837928481015,
+              "wall_rms": 0.0013455366377827826,
+              "pressure_rms": 5.497296249435573e-06
+            },
+            {
+              "iteration": 5,
+              "nfev": 11,
+              "cost": 0.0007169485917431063,
+              "gradient_inf": 0.0026002475419687372,
+              "gradient_relative": 1.748024389843938e-05,
+              "wall_rms": 0.0013455364481201625,
+              "pressure_rms": 1.687329265790326e-06
+            },
+            {
+              "iteration": 6,
+              "nfev": 13,
+              "cost": 0.0007169482425482038,
+              "gradient_inf": 0.004703833666633506,
+              "gradient_relative": 3.1594609114086524e-05,
+              "wall_rms": 0.0013455363509553729,
+              "pressure_rms": 1.6198030892459818e-06
+            },
+            {
+              "iteration": 7,
+              "nfev": 15,
+              "cost": 0.0007169482099394209,
+              "gradient_inf": 6.626378156470144e-05,
+              "gradient_relative": 4.449763581049106e-07,
+              "wall_rms": 0.0013455363134800137,
+              "pressure_rms": 1.6218579806365793e-06
+            },
+            {
+              "iteration": 8,
+              "nfev": 17,
+              "cost": 0.0007169482084597099,
+              "gradient_inf": 0.0005540323765266313,
+              "gradient_relative": 3.719313780582952e-06,
+              "wall_rms": 0.0013455363007663606,
+              "pressure_rms": 1.6252368837814326e-06
+            },
+            {
+              "iteration": 9,
+              "nfev": 19,
+              "cost": 0.0007169482076071874,
+              "gradient_inf": 5.691584338944355e-05,
+              "gradient_relative": 3.820361161273771e-07,
+              "wall_rms": 0.0013455362944713636,
+              "pressure_rms": 1.626873816193861e-06
+            },
+            {
+              "iteration": 10,
+              "nfev": 21,
+              "cost": 0.0007169482073963811,
+              "gradient_inf": 7.674456026344956e-05,
+              "gradient_relative": 5.150713843229608e-07,
+              "wall_rms": 0.00134553629234411,
+              "pressure_rms": 1.6274481944738573e-06
+            },
+            {
+              "iteration": 11,
+              "nfev": 23,
+              "cost": 0.0007169482073044219,
+              "gradient_inf": 1.6366640754861586e-05,
+              "gradient_relative": 1.0983793527892039e-07,
+              "wall_rms": 0.0013455362910996102,
+              "pressure_rms": 1.6277928862070893e-06
+            },
+            {
+              "iteration": 12,
+              "nfev": 25,
+              "cost": 0.0007169482072681867,
+              "gradient_inf": 1.1924794562300145e-05,
+              "gradient_relative": 8.002449096555212e-08,
+              "wall_rms": 0.0013455362906441425,
+              "pressure_rms": 1.6279182995693678e-06
+            },
+            {
+              "iteration": 13,
+              "nfev": 27,
+              "cost": 0.000716948207252783,
+              "gradient_inf": 3.5956149711259196e-06,
+              "gradient_relative": 2.4128650091098e-08,
+              "wall_rms": 0.001345536290341769,
+              "pressure_rms": 1.6280039686488612e-06
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "CL": {
+          "reference": 0.5361115367532608,
+          "candidate": 0.5361115364897128,
+          "delta": -2.6354807225459354e-10,
+          "relative": -4.915918688313706e-10
+        },
+        "CD_pressure": {
+          "reference": 0.01596183706159363,
+          "candidate": 0.015961837015539715,
+          "delta": -4.605391415446469e-11,
+          "relative": -2.885251489333689e-09
+        },
+        "CL_gamma": {
+          "reference": 0.5411492998787445,
+          "candidate": 0.5411492995949563,
+          "delta": -2.837882151496274e-10,
+          "relative": -5.244175964252673e-10
+        },
+        "CM_y": {
+          "reference": -0.1360040833956841,
+          "candidate": -0.13600408324463995,
+          "delta": 1.5104414941014e-10,
+          "relative": 1.1105854003713919e-09
+        },
+        "wall_rms": {
+          "reference": 0.001175875878163269,
+          "candidate": 0.00117587587736278,
+          "delta": -8.004890153512356e-13,
+          "relative": -6.807597895465024e-10
+        },
+        "pressure_kutta_rms": {
+          "reference": 1.628041101575382e-06,
+          "candidate": 1.6280410723465725e-06,
+          "delta": -2.9228809644634714e-14,
+          "relative": -1.7953361015487453e-08
+        },
+        "jump_rms": {
+          "reference": 7.292144878782058e-16,
+          "candidate": 6.193150338741552e-16,
+          "delta": -1.0989945400405055e-16,
+          "relative": -0.15070936717648714
+        },
+        "signed_kutta_rms": {
+          "reference": 0.047822639599320114,
+          "candidate": 0.04782263957331871,
+          "delta": -2.6001402420039454e-11,
+          "relative": -5.437048778129159e-10
+        }
+      },
+      "speedup_nonlinear": 7.07200974415564,
+      "speedup_total": 1.9428354880055505
+    },
+    "g1_swept30": {
+      "solvers": {
+        "reference": {
+          "solver": "reference",
+          "seconds_total": 9.798962800006848,
+          "seconds_nonlinear": 3.9494799999520183,
+          "nfev": 7,
+          "status": 2,
+          "message": "`ftol` termination condition is satisfied.",
+          "precompute_seconds": null,
+          "loads": {
+            "CL": 0.4674214526153768,
+            "CD_pressure": 0.007219985624543298,
+            "CL_gamma": 0.4591177927908034,
+            "CM_y": -0.3761363619455591,
+            "wall_rms": 0.00035486769060383673,
+            "pressure_kutta_rms": 2.6372262787424175e-07,
+            "jump_rms": 5.550585043421512e-16,
+            "signed_kutta_rms": 0.017770707504551658
+          },
+          "history": null
+        },
+        "structured": {
+          "solver": "structured",
+          "seconds_total": 6.299477199965622,
+          "seconds_nonlinear": 0.4573118999833241,
+          "nfev": 13,
+          "status": 2,
+          "message": "ftol termination condition is satisfied",
+          "precompute_seconds": 0.21571770001901314,
+          "loads": {
+            "CL": 0.46742145261538987,
+            "CD_pressure": 0.007219985624544143,
+            "CL_gamma": 0.4591177927908167,
+            "CM_y": -0.37613636194556954,
+            "wall_rms": 0.0003548676906038365,
+            "pressure_kutta_rms": 2.6372262832601016e-07,
+            "jump_rms": 6.701818236159655e-16,
+            "signed_kutta_rms": 0.017770707504550304
+          },
+          "history": [
+            {
+              "iteration": 0,
+              "nfev": 1,
+              "cost": 0.7701196142414696,
+              "gradient_inf": 51.45548012049911,
+              "gradient_relative": 0.031007998681867155,
+              "wall_rms": 0.0003550585330857732,
+              "pressure_rms": 0.03126832953752366
+            },
+            {
+              "iteration": 1,
+              "nfev": 3,
+              "cost": 0.00021934130009907811,
+              "gradient_inf": 0.6604690249430167,
+              "gradient_relative": 0.023590786299272175,
+              "wall_rms": 0.0003490091154808918,
+              "pressure_rms": 0.00025449239827289827
+            },
+            {
+              "iteration": 2,
+              "nfev": 5,
+              "cost": 0.00016833883370019333,
+              "gradient_inf": 0.007773266197291123,
+              "gradient_relative": 0.0003169165802859784,
+              "wall_rms": 0.00034900440427601634,
+              "pressure_rms": 2.667416605634613e-06
+            },
+            {
+              "iteration": 3,
+              "nfev": 7,
+              "cost": 0.00016833299081881923,
+              "gradient_inf": 7.424124091600004e-05,
+              "gradient_relative": 3.0268406383934466e-06,
+              "wall_rms": 0.00034900409676330503,
+              "pressure_rms": 2.688252088766612e-07
+            },
+            {
+              "iteration": 4,
+              "nfev": 9,
+              "cost": 0.00016833298789474603,
+              "gradient_inf": 2.541289310442866e-06,
+              "gradient_relative": 1.0360887921952259e-07,
+              "wall_rms": 0.0003490040958854975,
+              "pressure_rms": 2.6387336671965404e-07
+            },
+            {
+              "iteration": 5,
+              "nfev": 11,
+              "cost": 0.00016833298786151092,
+              "gradient_inf": 2.4561122959835657e-08,
+              "gradient_relative": 1.0013618949555998e-09,
+              "wall_rms": 0.00034900409591142863,
+              "pressure_rms": 2.63733171916201e-07
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "CL": {
+          "reference": 0.4674214526153768,
+          "candidate": 0.46742145261538987,
+          "delta": 1.304512053934559e-14,
+          "relative": 2.7908690254488425e-14
+        },
+        "CD_pressure": {
+          "reference": 0.007219985624543298,
+          "candidate": 0.007219985624544143,
+          "delta": 8.448103328007051e-16,
+          "relative": 1.1700997435907551e-13
+        },
+        "CL_gamma": {
+          "reference": 0.4591177927908034,
+          "candidate": 0.4591177927908167,
+          "delta": 1.3322676295501878e-14,
+          "relative": 2.901799168905733e-14
+        },
+        "CM_y": {
+          "reference": -0.3761363619455591,
+          "candidate": -0.37613636194556954,
+          "delta": -1.0436096431476471e-14,
+          "relative": -2.7745513296018324e-14
+        },
+        "wall_rms": {
+          "reference": 0.00035486769060383673,
+          "candidate": 0.0003548676906038365,
+          "delta": -2.168404344971009e-19,
+          "relative": -6.11045863679866e-16
+        },
+        "pressure_kutta_rms": {
+          "reference": 2.6372262787424175e-07,
+          "candidate": 2.6372262832601016e-07,
+          "delta": 4.517684105498701e-16,
+          "relative": 1.7130437922274136e-09
+        },
+        "jump_rms": {
+          "reference": 5.550585043421512e-16,
+          "candidate": 6.701818236159655e-16,
+          "delta": 1.1512331927381427e-16,
+          "relative": 0.20740754059836822
+        },
+        "signed_kutta_rms": {
+          "reference": 0.017770707504551658,
+          "candidate": 0.017770707504550304,
+          "delta": -1.3530843112619095e-15,
+          "relative": -7.614127411164359e-14
+        }
+      },
+      "speedup_nonlinear": 8.636293960633948,
+      "speedup_total": 1.5555200041140436
+    },
+    "g1_wingbody_cad_3x": {
+      "solvers": {
+        "reference": {
+          "solver": "reference",
+          "seconds_total": 12.104194300016388,
+          "seconds_nonlinear": 7.038102500024252,
+          "nfev": 17,
+          "status": 2,
+          "message": "`ftol` termination condition is satisfied.",
+          "precompute_seconds": null,
+          "loads": {
+            "CL": 0.5535718574685162,
+            "CD_pressure": 0.013536902441149601,
+            "CL_gamma": 0.564202904082225,
+            "CM_y": -0.1492822162576438,
+            "wall_rms": 0.0005093399582370193,
+            "pressure_kutta_rms": 1.5034714023535466e-07,
+            "jump_rms": 6.185561624302953e-16,
+            "signed_kutta_rms": 0.04204913217048438
+          },
+          "history": null
+        },
+        "structured": {
+          "solver": "structured",
+          "seconds_total": 5.506358099984936,
+          "seconds_nonlinear": 0.46751049999147654,
+          "nfev": 26,
+          "status": 2,
+          "message": "ftol termination condition is satisfied",
+          "precompute_seconds": 0.17070449999300763,
+          "loads": {
+            "CL": 0.5535717122315617,
+            "CD_pressure": 0.013536888729257903,
+            "CL_gamma": 0.5642027401527062,
+            "CM_y": -0.14928213525682754,
+            "wall_rms": 0.0005093398872102577,
+            "pressure_kutta_rms": 1.5035119892854846e-07,
+            "jump_rms": 6.232078993142315e-16,
+            "signed_kutta_rms": 0.042049565707827995
+          },
+          "history": [
+            {
+              "iteration": 0,
+              "nfev": 1,
+              "cost": 5.126480958053762,
+              "gradient_inf": 525.5141453427541,
+              "gradient_relative": 0.05075945204927272,
+              "wall_rms": 0.0004980665964439131,
+              "pressure_rms": 0.0682654047436827
+            },
+            {
+              "iteration": 1,
+              "nfev": 3,
+              "cost": 0.14782675509679666,
+              "gradient_inf": 133.87224055187468,
+              "gradient_relative": 0.07415933497482491,
+              "wall_rms": 0.0004948291319570189,
+              "pressure_rms": 0.011581007326796573
+            },
+            {
+              "iteration": 2,
+              "nfev": 5,
+              "cost": 0.0006908876086574771,
+              "gradient_inf": 5.8118852788741036,
+              "gradient_relative": 0.04758773906014281,
+              "wall_rms": 0.0004948549376629695,
+              "pressure_rms": 0.000599852641310214
+            },
+            {
+              "iteration": 3,
+              "nfev": 7,
+              "cost": 0.0003178656162827869,
+              "gradient_inf": 1.4558781465306432,
+              "gradient_relative": 0.01752880760090956,
+              "wall_rms": 0.0004948510608458531,
+              "pressure_rms": 0.00014393224894930772
+            },
+            {
+              "iteration": 4,
+              "nfev": 9,
+              "cost": 0.0002951109581859377,
+              "gradient_inf": 0.06135289957520232,
+              "gradient_relative": 0.0007658638846299653,
+              "wall_rms": 0.000494850564775154,
+              "pressure_rms": 5.565725363140102e-06
+            },
+            {
+              "iteration": 5,
+              "nfev": 12,
+              "cost": 0.00029509894093861385,
+              "gradient_inf": 0.050076740446864096,
+              "gradient_relative": 0.0006249173241973209,
+              "wall_rms": 0.0004948505223335965,
+              "pressure_rms": 4.4831398032058264e-06
+            },
+            {
+              "iteration": 6,
+              "nfev": 14,
+              "cost": 0.0002950774292969016,
+              "gradient_inf": 0.006181986496792428,
+              "gradient_relative": 7.712110328066147e-05,
+              "wall_rms": 0.0004948505247725256,
+              "pressure_rms": 7.347519003244209e-07
+            },
+            {
+              "iteration": 7,
+              "nfev": 16,
+              "cost": 0.00029507685480204416,
+              "gradient_inf": 0.00012841105185398033,
+              "gradient_relative": 1.6018046915416782e-06,
+              "wall_rms": 0.0004948505196626349,
+              "pressure_rms": 1.520930827854072e-07
+            },
+            {
+              "iteration": 8,
+              "nfev": 18,
+              "cost": 0.00029507685474129507,
+              "gradient_inf": 0.0003629821102213827,
+              "gradient_relative": 4.5275996738414125e-06,
+              "wall_rms": 0.0004948505190497913,
+              "pressure_rms": 1.5408279452483142e-07
+            },
+            {
+              "iteration": 9,
+              "nfev": 20,
+              "cost": 0.00029507685348097336,
+              "gradient_inf": 3.868007306071638e-05,
+              "gradient_relative": 4.824660144256652e-07,
+              "wall_rms": 0.0004948505190082044,
+              "pressure_rms": 1.5046876088567062e-07
+            },
+            {
+              "iteration": 10,
+              "nfev": 22,
+              "cost": 0.0002950768534546218,
+              "gradient_inf": 2.5210345705580567e-05,
+              "gradient_relative": 3.144517580935042e-07,
+              "wall_rms": 0.0004948505190058577,
+              "pressure_rms": 1.5039759419048895e-07
+            },
+            {
+              "iteration": 11,
+              "nfev": 24,
+              "cost": 0.0002950768534456871,
+              "gradient_inf": 4.6103453744186666e-06,
+              "gradient_relative": 5.7505414564257176e-08,
+              "wall_rms": 0.0004948505190101515,
+              "pressure_rms": 1.5035510775502396e-07
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "CL": {
+          "reference": 0.5535718574685162,
+          "candidate": 0.5535717122315617,
+          "delta": -1.4523695457402397e-07,
+          "relative": -2.6236332756905757e-07
+        },
+        "CD_pressure": {
+          "reference": 0.013536902441149601,
+          "candidate": 0.013536888729257903,
+          "delta": -1.3711891698464651e-08,
+          "relative": -1.012926831531497e-06
+        },
+        "CL_gamma": {
+          "reference": 0.564202904082225,
+          "candidate": 0.5642027401527062,
+          "delta": -1.6392951873722694e-07,
+          "relative": -2.905506468526373e-07
+        },
+        "CM_y": {
+          "reference": -0.1492822162576438,
+          "candidate": -0.14928213525682754,
+          "delta": 8.100081624884403e-08,
+          "relative": 5.426019138746307e-07
+        },
+        "wall_rms": {
+          "reference": 0.0005093399582370193,
+          "candidate": 0.0005093398872102577,
+          "delta": -7.102676162062255e-11,
+          "relative": -1.3944863439826673e-07
+        },
+        "pressure_kutta_rms": {
+          "reference": 1.5034714023535466e-07,
+          "candidate": 1.5035119892854846e-07,
+          "delta": 4.058693193794225e-12,
+          "relative": 2.699547984378494e-05
+        },
+        "jump_rms": {
+          "reference": 6.185561624302953e-16,
+          "candidate": 6.232078993142315e-16,
+          "delta": 4.651736883936186e-18,
+          "relative": 0.00752031451058478
+        },
+        "signed_kutta_rms": {
+          "reference": 0.04204913217048438,
+          "candidate": 0.042049565707827995,
+          "delta": 4.335373436151202e-07,
+          "relative": 1.0310256626875972e-05
+        }
+      },
+      "speedup_nonlinear": 15.054426585397692,
+      "speedup_total": 2.1982214160843445
+    },
+    "g1_elliptic": {
+      "solvers": {
+        "reference": {
+          "solver": "reference",
+          "seconds_total": 17.955664600012824,
+          "seconds_nonlinear": 9.627869000018109,
+          "nfev": 12,
+          "status": 2,
+          "message": "`ftol` termination condition is satisfied.",
+          "precompute_seconds": null,
+          "loads": {
+            "CL": 0.3472736155437683,
+            "CD_pressure": 0.0049227372732021,
+            "CL_gamma": 0.3400753819393768,
+            "CM_y": -0.07531996207332511,
+            "wall_rms": 0.0002970747257516866,
+            "pressure_kutta_rms": 7.640932439940158e-07,
+            "jump_rms": 3.714185619381564e-16,
+            "signed_kutta_rms": 0.008780662154406798
+          },
+          "history": null
+        },
+        "structured": {
+          "solver": "structured",
+          "seconds_total": 9.245963199995458,
+          "seconds_nonlinear": 0.9334333000006154,
+          "nfev": 26,
+          "status": 5,
+          "message": "relative gradient stagnated",
+          "precompute_seconds": 0.2896123999962583,
+          "loads": {
+            "CL": 0.34727363830978286,
+            "CD_pressure": 0.004922738570969415,
+            "CL_gamma": 0.3400754044409887,
+            "CM_y": -0.07531997502602951,
+            "wall_rms": 0.0002970747235363282,
+            "pressure_kutta_rms": 7.642082199791285e-07,
+            "jump_rms": 4.136371057228619e-16,
+            "signed_kutta_rms": 0.008780662374955554
+          },
+          "history": [
+            {
+              "iteration": 0,
+              "nfev": 1,
+              "cost": 0.22630890257435982,
+              "gradient_inf": 94.27468781663306,
+              "gradient_relative": 0.06192737559603914,
+              "wall_rms": 0.0002845523089990541,
+              "pressure_rms": 0.014764938633982075
+            },
+            {
+              "iteration": 1,
+              "nfev": 3,
+              "cost": 0.0004054546567244525,
+              "gradient_inf": 5.793256559074826,
+              "gradient_relative": 0.08781304831362774,
+              "wall_rms": 0.0002842455911198387,
+              "pressure_rms": 0.0005151898108043875
+            },
+            {
+              "iteration": 2,
+              "nfev": 5,
+              "cost": 0.00013011202464320722,
+              "gradient_inf": 0.056342158276634684,
+              "gradient_relative": 0.0015063451475375606,
+              "wall_rms": 0.00028424225568831956,
+              "pressure_rms": 5.744115812913898e-06
+            },
+            {
+              "iteration": 3,
+              "nfev": 7,
+              "cost": 0.0001300782050660234,
+              "gradient_inf": 0.00015270766302373373,
+              "gradient_relative": 4.08302483169871e-06,
+              "wall_rms": 0.00028424211057394885,
+              "pressure_rms": 7.250519784171204e-07
+            },
+            {
+              "iteration": 4,
+              "nfev": 9,
+              "cost": 0.00013007820238503882,
+              "gradient_inf": 4.331296243016601e-06,
+              "gradient_relative": 1.158078183697885e-07,
+              "wall_rms": 0.00028424208565497046,
+              "pressure_rms": 7.383083783543937e-07
+            },
+            {
+              "iteration": 5,
+              "nfev": 11,
+              "cost": 0.00013007820176925842,
+              "gradient_inf": 1.3630224369887856e-06,
+              "gradient_relative": 3.6443762596734747e-08,
+              "wall_rms": 0.0002842420639615499,
+              "pressure_rms": 7.507617415555072e-07
+            },
+            {
+              "iteration": 6,
+              "nfev": 13,
+              "cost": 0.00013007820157350582,
+              "gradient_inf": 4.454815141438413e-07,
+              "gradient_relative": 1.1911050680821392e-08,
+              "wall_rms": 0.0002842420542107049,
+              "pressure_rms": 7.563441637125185e-07
+            },
+            {
+              "iteration": 7,
+              "nfev": 15,
+              "cost": 0.00013007820150874586,
+              "gradient_inf": 1.7259632704901416e-07,
+              "gradient_relative": 4.614791205555341e-09,
+              "wall_rms": 0.0002842420480376129,
+              "pressure_rms": 7.598946236822797e-07
+            },
+            {
+              "iteration": 8,
+              "nfev": 17,
+              "cost": 0.00013007820148707678,
+              "gradient_inf": 6.036189440513875e-08,
+              "gradient_relative": 1.6139253289707668e-09,
+              "wall_rms": 0.00028424204463536445,
+              "pressure_rms": 7.618532280264037e-07
+            },
+            {
+              "iteration": 9,
+              "nfev": 19,
+              "cost": 0.00013007820148072883,
+              "gradient_inf": 5.949060772625573e-08,
+              "gradient_relative": 1.5906294642383622e-09,
+              "wall_rms": 0.0002842420426104543,
+              "pressure_rms": 7.630206767753066e-07
+            },
+            {
+              "iteration": 10,
+              "nfev": 22,
+              "cost": 0.00013007820147678865,
+              "gradient_inf": 4.0415177067389056e-08,
+              "gradient_relative": 1.0806003786671449e-09,
+              "wall_rms": 0.00028424204201870165,
+              "pressure_rms": 7.633601943727592e-07
+            },
+            {
+              "iteration": 11,
+              "nfev": 24,
+              "cost": 0.00013007820146856557,
+              "gradient_inf": 7.349355877424311e-08,
+              "gradient_relative": 1.965033354470099e-09,
+              "wall_rms": 0.00028424204108528544,
+              "pressure_rms": 7.638941677265114e-07
+            },
+            {
+              "iteration": 12,
+              "nfev": 26,
+              "cost": 0.00013007820142340028,
+              "gradient_inf": 5.203364060813042e-08,
+              "gradient_relative": 1.3912490301399192e-09,
+              "wall_rms": 0.0002842420404919392,
+              "pressure_rms": 7.642082199791285e-07
+            }
+          ]
+        }
+      },
+      "comparison": {
+        "CL": {
+          "reference": 0.3472736155437683,
+          "candidate": 0.34727363830978286,
+          "delta": 2.2766014573516458e-08,
+          "relative": 6.555641878485054e-08
+        },
+        "CD_pressure": {
+          "reference": 0.0049227372732021,
+          "candidate": 0.004922738570969415,
+          "delta": 1.2977673154862535e-09,
+          "relative": 2.636271739608994e-07
+        },
+        "CL_gamma": {
+          "reference": 0.3400753819393768,
+          "candidate": 0.3400754044409887,
+          "delta": 2.250161190708866e-08,
+          "relative": 6.616654160253178e-08
+        },
+        "CM_y": {
+          "reference": -0.07531996207332511,
+          "candidate": -0.07531997502602951,
+          "delta": -1.2952704395163828e-08,
+          "relative": -1.7196907750105047e-07
+        },
+        "wall_rms": {
+          "reference": 0.0002970747257516866,
+          "candidate": 0.0002970747235363282,
+          "delta": -2.2153583763458162e-12,
+          "relative": -7.457242856120818e-09
+        },
+        "pressure_kutta_rms": {
+          "reference": 7.640932439940158e-07,
+          "candidate": 7.642082199791285e-07,
+          "delta": 1.1497598511267167e-10,
+          "relative": 0.00015047376222262755
+        },
+        "jump_rms": {
+          "reference": 3.714185619381564e-16,
+          "candidate": 4.136371057228619e-16,
+          "delta": 4.221854378470553e-17,
+          "relative": 0.11366837339630644
+        },
+        "signed_kutta_rms": {
+          "reference": 0.008780662154406798,
+          "candidate": 0.008780662374955554,
+          "delta": 2.2054875634114346e-10,
+          "relative": 2.511755405945729e-08
+        }
+      },
+      "speedup_nonlinear": 10.31446917526058,
+      "speedup_total": 1.9420004397185622
+    }
+  }
+}
