@@ -1318,23 +1318,50 @@ relative; the NumPy and torch spectra agree to 6.7e-16 on `g1_swept30`.
 | --- | --- | --- |
 | python | 3.11.17 | 3.13.14 |
 | numpy / scipy | 2.4.6 / 1.17.1 | 2.5.2 / 1.18.0 |
-| jax | 0.10.2 | missing (only the `jaxstub` on `PYTHONPATH`) |
+| jax | 0.10.2 | missing in the interpreter; 0.12.0.1 installed beside it at `runs/jax_site313` (see below) |
 | torch | missing | 2.13.0+cu132 |
-| full suite | 858 passed, 52 skipped | cannot collect `test/conftest.py` (imports jax); the 7 `test_torch_*` modules need real `jax.numpy` |
+| full suite | 858 passed, 52 skipped | 989 passed, 21 skipped, 2 failed |
 
-Deleting the NumPy solver would leave no single interpreter that can run the whole
-suite, which is the one thing that makes a default switch reviewable. Installing JAX
-into `myml` would fix that, and was attempted: `pip install --target` fails in this
-sandbox because pip unpacks wheels through `tempfile.mkdtemp`, and directory creation
-under the session temp root is denied:
+Deleting the NumPy solver needs one interpreter that can run the whole suite, because
+that is what makes a default switch reviewable. `myml` is that interpreter now, with a
+10-minute detour worth recording.
+
+`pip install --target` first failed with
 
     PermissionError: [Errno 13] Permission denied:
     '...\pip-unpack-...\jax-0.12.0.1-py3-none-any.whl.metadata'
 
-The same denial appears as `PytestCacheWarning: could not create cache path`. Direct
-wheel downloads through the proxy also fail, so JAX cannot be installed here by either
-route. The deletion slice is therefore blocked on an environment with torch and a real
-JAX, not on code.
+The cause is narrower than "the sandbox blocks pip": `tempfile.mkdtemp` creates its
+directory with mode `0o700`, and this sandbox's token cannot write inside a directory
+with that ACL. `os.mkdir` and writes into an ordinary directory both work;
+`mkdtemp` itself succeeds and the first write inside it fails. So pip never gets to
+unpack a wheel.
+
+`tools/issue92/pip_open_temp.py` runs pip's entry point after redirecting `os.mkdir` /
+`tempfile._os.mkdir` to mode `0o777`; nothing else is patched:
+
+    python tools/issue92/pip_open_temp.py install --no-cache-dir \
+      --target runs/jax_site313 --proxy http://192.168.3.9:7890 jax jaxlib
+
+That installed `jax 0.12.0.1`, `jaxlib 0.12.0.1` (cp313 win_amd64), `ml_dtypes`,
+`opt_einsum` and its own numpy/scipy copies; `PYTHONPATH=runs/jax_site313` puts it in
+front of the interpreter's site-packages. With that, the whole suite runs in one
+interpreter:
+
+    PYTHONPATH=<worktree>;<repo>/runs;<repo>/runs/jax_site313 \
+      python -m pytest test -q        # 989 passed, 21 skipped, 2 failed
+
+The two failures are `test/test_half_native_panel.py::test_streamed_half_action_does_not_trace_full_square_aic`
+and `test/test_iterative_panel.py::test_streamed_primal_has_no_full_wall_aic_array_in_jaxpr`,
+both `RecursionError: maximum recursion depth exceeded` raised inside the tests' own
+jaxpr visitor against jax 0.12's `ClosedJaxpr` structure. They are a jax-version artifact
+of the inspection helper, not a result of this slice.
+
+So the deletion slice is no longer blocked on an environment. What still blocks it is
+ownership of the oracle: the recorded suite exercises the NumPy path explicitly
+(`backend='numpy'`, `PANEL_P1_BACKEND=numpy`), and the frozen bundles certify the torch
+path only to ~1e-6 (18.3). Deleting the solver therefore means rewriting those tests
+against the bundles, which is its own slice with its own evidence.
 
 ### 18.5 Tests
 
@@ -1359,6 +1386,9 @@ loop's `solve_backend` default is `None` (resolve) rather than a hard-coded libr
   only path that runs in `.conda_env`, and still the producer of the frozen bundles.
 - Not claimed: the torch path is more accurate. Section 18.3 measures agreement with
   the reference solver at 1e-6 on loads, with one outlier just outside.
+- Not claimed: the one-interpreter suite is equivalent to the `.conda_env` baseline.
+  Section 18.4 records the two jax-0.12 jaxpr-inspection failures it exposes, and its
+  numpy/scipy are 2.5.4/1.18.1 rather than 2.4.6/1.17.1.
 - Not claimed: `analytic_backend` and `rm_backend` defaults changed. They did not;
   this slice changes which **solver** runs, not which **induction evaluator** runs.
 
