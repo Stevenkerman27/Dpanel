@@ -130,3 +130,24 @@ def test_torch_rejects_numpy_operators_of_the_wrong_width():
     mesh = _mesh()
     with pytest.raises(Exception):
         solve_multi_torch(mesh, 5., kutta="magic")
+
+
+@pytest.mark.skipif(os.environ.get("PANEL_TORCH_PARITY") != "1",
+                    reason="torch only")
+def test_cuda_matches_cpu_when_a_device_is_present():
+    """The device must not change the answer: CPU and CUDA agree to 1e-10."""
+    torch = _torch()
+    if not torch.cuda.is_available():
+        pytest.skip("no CUDA device on this host")
+    from panel.p1_lifting_g2 import assemble_multi
+    from panel.p1_solve_torch import solve_multi_torch
+    from tools.issue92.s5_loop_parity import _mesh as case_mesh
+    mesh = case_mesh("g2_conventional")
+    operators = assemble_multi(mesh)
+    cpu = solve_multi_torch(mesh, 5., operators=operators, device="cpu")
+    cuda = solve_multi_torch(mesh, 5., operators=operators, device="cuda")
+    assert cpu["device"] == "cpu" and cuda["device"] == "cuda"
+    for key in LOADS:
+        relative = abs(cuda[key]-cpu[key])/max(abs(cpu[key]), 1e-12)
+        assert relative <= 1e-10, (key, cuda[key], cpu[key], relative)
+    assert int(cuda["linear_constrained_rank"]) == int(cpu["linear_constrained_rank"])

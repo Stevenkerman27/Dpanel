@@ -123,6 +123,9 @@ Each slice ends with the full suite plus a clean-master baseline, and may only s
 | S4 | assembly and post-processing on tensors: face→DOF scatter, Cp, forces/moments — **delivered, §11**: `mesh_kernel`, `doublet_matrix`, `gradient_map`, `wake_operator`, `loads`; the Kutta and jump/contact rows are rebuilt inside the coupled loop, so they move with S5 | A/W to 1e-12 max-relative and 1e-13 Frobenius on all 8 fixtures, `grad` bit-identical; loads to 1e-13 against the shared NumPy map |
 | S5 | coupled free-wake loop and sampling entirely in torch; snapshot schema records the backend — **delivered, §12**. The gate was rewritten once: the 192-face fixtures give three accepted updates, the 872-face CAD body accepts one and then stops `blocked_updated_nonlinear_solve` on both backends (structured solver's line search, §12.5) | identical status and per-iteration decisions (`rank`, `kinematic_candidate`, `nonlinear_success`, wake eligibility) on three cases; loads to 1e-5 relative, states to 1e-5, `cp` to 1e-3 absolute, residuals to 1e-5 absolute. Declared first at 1e-9 and revised once with the flat-valley evidence in §12.4; then B2 (CUDA) starts |
 
+| B2 | whole-chain device selection, device=cpu or cuda in one process, no silent fallback — **delivered, §13**: cold/warm solve, one coupled iteration, uploaded bytes, peak VRAM, plus a profile that attributes the iteration | identical loads to 1e-5 relative against the S5 NumPy records on both devices, identical status and acceptance; **no speedup claimed** — measured 11.4x and 4.3x slower solves on CUDA, and the iteration is 86% a Python geometry gate |
+| B3 | VSPAERO cross-check on four geometries (rectangular, swept tapered, elliptic, wing-body), several angles of attack, two mesh levels | compares only CL(alpha) intercept and slope, induced drag, spanwise circulation, and a Cp definition that can be aligned; thick-sheet and VLM results reported separately |
+
 Estimated relative difficulty, from the inventory: S1 ~15% of the work, S2 ~20%, S3 ~30%, S4
 ~25%, S5 ~10%. S3 is the schedule risk (no library equivalent), S2 is the correctness risk (§3).
 
@@ -675,3 +678,81 @@ python -m tools.issue92.s5_loop_parity judge
 # flat-valley evidence (needs SciPy, so .conda_env)
 python runs/issue92/s5_conditioning.py
 ```
+
+## 13. B2 delivered: `device=cpu|cuda` for the whole solve, and what it measured
+
+`solve_backend="torch"` plus `solve_device="cuda"` now runs the full steady solve and
+a coupled wake iteration on the device, in one process, with no silent fallback:
+`solve_device` is validated, `solve_device="cuda"` requires the torch backend, and
+`resolve_device` in `panel/p1_projection_duffy.py` raises when CUDA is absent. Parity
+against the S5 NumPy records (`runs/issue92/s5/<case>_numpy.json`) is inherited from the
+S5 gate: loads to 1e-5 relative at the same iteration index, same status, same
+acceptance decisions.
+
+`tools/issue92/b2_cuda_bench.py` runs, per case and device, two whole solves (cold then
+warm, with `torch.cuda.synchronize()` outside the timer) followed by one coupled wake
+iteration, and records the operator bytes that must be uploaded, peak device memory, and
+the relative load differences at iteration 0 and 1.
+
+### 13.1 Measurements (RTX 5060, torch 2.13.0+cu132, float64)
+
+| Case | Device | Solve cold (s) | Solve warm (s) | Coupled iteration (s) | Status | Solve max rel | Iteration max rel | Peak VRAM (MiB) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `g2_conventional` | CPU | 0.0146 | 0.0084 | 0.264 | `iteration_limit` | 6.7e-14 | 8.6e-14 | - |
+| `g2_conventional` | CUDA | 15.43 | 0.0709 | 0.387 | `iteration_limit` | 1.3e-14 | 9.6e-14 | 418.0 |
+| `g2_cad` | CPU | 0.184 | 0.193 | 33.79 | `blocked_updated_nonlinear_solve` | 1.3e-8 | 1.4e-6 | - |
+| `g2_cad` | CUDA | 0.973 | 0.865 | 32.29 | `blocked_updated_nonlinear_solve` | 5.2e-9 | 7.8e-7 | 88.2 |
+
+Cold start is dominated by CUDA context creation plus the one-time upload: 15.4 s for
+the first case in the process against 0.015 s on CPU; the CAD body, which runs second
+and finds the context already built, starts at 0.97 s. An isolated CAD-only run pays the
+same 16.1 s, so the cost is context creation, not transfer. The uploaded operator set is
+3.0 MiB for the small fixture and 12.0 MiB for the CAD body.
+
+Warm, the device loses everywhere it competes: the dense reduced solve is 11.4x slower
+on CUDA for the 108-unknown fixture (0.0074 s vs 0.0844 s) and 4.3x slower for the
+542-unknown CAD body (0.199 s vs 0.865 s), because these matrices are 192x116 and
+589x487 and every one of the small `torch.linalg` calls pays launch latency. The coupled
+iteration is 32.44 s on CUDA against 33.89 s on CPU (1.04x), which is noise next to the
+fact that neither number is device-bound.
+
+### 13.2 Attribution: the iteration is a Python geometry gate, not a kernel
+
+`tools/issue92/b2_profile.py` profiles one CAD iteration with `cProfile` (torch CPU,
+1 iteration): 49.97 s total, of which
+
+* `geometry_audit` **43.08 s (86%)**, through `_bounds_overlap` called **5,850,348**
+  times and 23.9M `numpy.ufunc.reduce` calls - a Python double loop over wake/step
+  triangle pairs;
+* the wake induction (`TorchAnalyticSheetField.velocity`, 32 calls, 312 blocks) **3.37 s
+  (7%)**;
+* `assemble_multi` 1.37 s, of which `_doublet_matrix` 1.36 s.
+
+So the coupled loop is bounded by object-level Python over triangle pairs, and by the
+sampling ladder (8 `limits` calls, 32 block evaluations) only in second place. Moving the
+induction to CUDA cannot move a 34 s iteration by more than the 3.4 s that induction
+occupies, and this run confirms it: 32.4 s vs 33.9 s. This retires the earlier hope that
+GPU-resident induction inside the loop would be the lever - that measurement
+(22.9x on 18,992 targets, section 6d) is real, but the loop only spends 7% of its time
+there, and it calls the kernel in 32 pieces, not one.
+
+### 13.3 What B2 delivers, and what it does not claim
+
+Delivered: `device` is threaded through the solve and the evaluator, parity holds on both
+devices to 1e-13 (small) and 1.4e-6 (CAD, inside the S5 gate), the CUDA path is opt-in
+and fails closed without a device, defaults are unchanged (`solve_device="cpu"`), and the
+cold/warm/H2D/VRAM accounting above is reproducible with one command.
+
+Not claimed: any CUDA speedup. On the fixtures in this repository the GPU is slower for
+the solve and neutral for the iteration. The measured lever for the iteration is the
+geometry gate: 86% of its time is `_bounds_overlap` in Python.
+
+### 13.4 Reproduce
+
+```
+python -m tools.issue92.b2_cuda_bench            # both cases, cpu then cuda
+python -m tools.issue92.b2_cuda_bench --device cuda --case g2_cad
+python -m tools.issue92.b2_profile               # cProfile of one CAD iteration
+```
+
+`docs/issue92/b2_cuda_bench.json` holds the table above in machine-readable form.
