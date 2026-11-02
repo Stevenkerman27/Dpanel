@@ -1,0 +1,933 @@
+{
+  "schema": "dpanel.issue92.s3.judge.v1",
+  "cases": {
+    "g1_wing_rect": {
+      "status": "ok",
+      "kind": "g1",
+      "rows": {
+        "reference": {
+          "status": 2,
+          "nfev": 4,
+          "message": "`ftol` termination condition is satisfied.",
+          "seconds": 0.037015900015830994,
+          "loads": {
+            "CL": 0.31947298897042903,
+            "CL_gamma": 0.2819235972196489,
+            "CD_pressure": -0.013407339445502762,
+            "CM_y": -0.0486012741190873
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 8.13416151924498e-12,
+          "wall_over_floor": 1.057799746828881,
+          "pressure_rms": 1.498242139372573e-07,
+          "wall_rms": 0.0015897758847331384
+        },
+        "structured": {
+          "status": 2,
+          "nfev": 7,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 0.03161740000359714,
+          "loads": {
+            "CL": 0.31947298897041854,
+            "CL_gamma": 0.28192359721963856,
+            "CD_pressure": -0.013407339445503149,
+            "CM_y": -0.04860127411908337
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 8.36823382617504e-12,
+          "wall_over_floor": 1.057799746828882,
+          "pressure_rms": 1.4982421393321737e-07,
+          "wall_rms": 0.00158977588473314
+        },
+        "torch": {
+          "status": 2,
+          "nfev": 7,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 0.008825899916701019,
+          "loads": {
+            "CL": 0.31947298897041276,
+            "CL_gamma": 0.28192359721963306,
+            "CD_pressure": -0.013407339445503397,
+            "CM_y": -0.04860127411908102
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 8.296511151535989e-12,
+          "wall_over_floor": 1.0577997468288798,
+          "pressure_rms": 1.498242142567422e-07,
+          "wall_rms": 0.0015897758847331367
+        }
+      },
+      "comparisons": {
+        "reference": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 0.0,
+            "CL_gamma": 0.0,
+            "CD_pressure": 0.0,
+            "CM_y": 0.0
+          },
+          "loads_relative": 0.0,
+          "wall_over_floor_delta": 0.0,
+          "gradient_relative_delta": 0.0,
+          "pressure_rms_delta": 0.0
+        },
+        "structured": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.049160758270773e-14,
+            "CL_gamma": 1.0325074129013956e-14,
+            "CD_pressure": 3.86843335142828e-16,
+            "CM_y": 3.9343528435153985e-15
+          },
+          "loads_relative": 3.2840358793772234e-14,
+          "wall_over_floor_delta": 1.1102230246251565e-15,
+          "gradient_relative_delta": 2.3407230693005995e-13,
+          "pressure_rms_delta": 4.0399236419293855e-18
+        },
+        "torch": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.6264767310758543e-14,
+            "CL_gamma": 1.582067810090848e-14,
+            "CD_pressure": 6.349087922075114e-16,
+            "CM_y": 6.279698983036042e-15
+          },
+          "loads_relative": 5.091124405595378e-14,
+          "wall_over_floor_delta": 1.1102230246251565e-15,
+          "gradient_relative_delta": 1.6234963229100842e-13,
+          "pressure_rms_delta": 3.1948491936678147e-16
+        }
+      }
+    },
+    "g1_wing_camber": {
+      "status": "ok",
+      "kind": "g1",
+      "rows": {
+        "reference": {
+          "status": 3,
+          "nfev": 10,
+          "message": "`xtol` termination condition is satisfied.",
+          "seconds": 0.04018670006189495,
+          "loads": {
+            "CL": 0.45029134820016536,
+            "CL_gamma": 0.42222006422924224,
+            "CD_pressure": -0.013572436550737716,
+            "CM_y": -0.1295120782621358
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 1.0843906525310963e-10,
+          "wall_over_floor": 1.0595427809330251,
+          "pressure_rms": 1.5674789403526948e-07,
+          "wall_rms": 0.0016223498750718456
+        },
+        "structured": {
+          "status": 4,
+          "nfev": 7,
+          "message": "relative gradient tolerance reached",
+          "seconds": 0.03269559994805604,
+          "loads": {
+            "CL": 0.45029134820015126,
+            "CL_gamma": 0.42222006422923064,
+            "CD_pressure": -0.013572436550739073,
+            "CM_y": -0.1295120782621284
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 1.0854785643766049e-10,
+          "wall_over_floor": 1.0595427809330273,
+          "pressure_rms": 1.567478941143651e-07,
+          "wall_rms": 0.0016223498750718491
+        },
+        "torch": {
+          "status": 4,
+          "nfev": 7,
+          "message": "relative gradient tolerance reached",
+          "seconds": 0.0029706000350415707,
+          "loads": {
+            "CL": 0.4502913482001543,
+            "CL_gamma": 0.42222006422923136,
+            "CD_pressure": -0.013572436550738795,
+            "CM_y": -0.12951207826212957
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 1.0841526734241998e-10,
+          "wall_over_floor": 1.059542780933026,
+          "pressure_rms": 1.5674789381904322e-07,
+          "wall_rms": 0.0016223498750718472
+        }
+      },
+      "comparisons": {
+        "reference": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 0.0,
+            "CL_gamma": 0.0,
+            "CD_pressure": 0.0,
+            "CM_y": 0.0
+          },
+          "loads_relative": 0.0,
+          "wall_over_floor_delta": 0.0,
+          "gradient_relative_delta": 0.0,
+          "pressure_rms_delta": 0.0
+        },
+        "structured": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.4099832412739488e-14,
+            "CL_gamma": 1.1601830607332886e-14,
+            "CD_pressure": 1.3565537582138631e-15,
+            "CM_y": 7.382983113757291e-15
+          },
+          "loads_relative": 3.131268781667058e-14,
+          "wall_over_floor_delta": 2.220446049250313e-15,
+          "gradient_relative_delta": 1.087911845508643e-13,
+          "pressure_rms_delta": 7.909561897725135e-17
+        },
+        "torch": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.1046719095020308e-14,
+            "CL_gamma": 1.0880185641326534e-14,
+            "CD_pressure": 1.078998002057574e-15,
+            "CM_y": 6.217248937900877e-15
+          },
+          "loads_relative": 2.453238139967498e-14,
+          "wall_over_floor_delta": 8.881784197001252e-16,
+          "gradient_relative_delta": 2.379791068964411e-14,
+          "pressure_rms_delta": 2.1622625620100271e-16
+        }
+      }
+    },
+    "g1_swept30": {
+      "status": "ok",
+      "kind": "g1",
+      "rows": {
+        "reference": {
+          "status": 2,
+          "nfev": 7,
+          "message": "`ftol` termination condition is satisfied.",
+          "seconds": 11.020245599909686,
+          "loads": {
+            "CL": 0.4674214526153768,
+            "CL_gamma": 0.4591177927908034,
+            "CD_pressure": 0.007219985624543298,
+            "CM_y": -0.3761363619455591
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 2.089692522983736e-11,
+          "wall_over_floor": 1.1558328838014376,
+          "pressure_rms": 2.637226278742418e-07,
+          "wall_rms": 0.0003490040959155217
+        },
+        "structured": {
+          "status": 2,
+          "nfev": 13,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 7.187033099937253,
+          "loads": {
+            "CL": 0.46742145261538987,
+            "CL_gamma": 0.4591177927908167,
+            "CD_pressure": 0.007219985624544143,
+            "CM_y": -0.37613636194556954
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 2.124544765079926e-11,
+          "wall_over_floor": 1.155832883801425,
+          "pressure_rms": 2.637226283260101e-07,
+          "wall_rms": 0.0003490040959155179
+        },
+        "torch": {
+          "status": 2,
+          "nfev": 13,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 0.251147500006482,
+          "loads": {
+            "CL": 0.46742145261539014,
+            "CL_gamma": 0.4591177927908177,
+            "CD_pressure": 0.007219985624543635,
+            "CM_y": -0.37613636194557004
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 2.1679091497225774e-11,
+          "wall_over_floor": 1.1558328838014318,
+          "pressure_rms": 2.637226266251542e-07,
+          "wall_rms": 0.00034900409591552
+        }
+      },
+      "comparisons": {
+        "reference": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 0.0,
+            "CL_gamma": 0.0,
+            "CD_pressure": 0.0,
+            "CM_y": 0.0
+          },
+          "loads_relative": 0.0,
+          "wall_over_floor_delta": 0.0,
+          "gradient_relative_delta": 0.0,
+          "pressure_rms_delta": 0.0
+        },
+        "structured": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.304512053934559e-14,
+            "CL_gamma": 1.3322676295501878e-14,
+            "CD_pressure": 8.448103328007051e-16,
+            "CM_y": 1.0436096431476471e-14
+          },
+          "loads_relative": 2.850249217479669e-14,
+          "wall_over_floor_delta": 1.2656542480726785e-14,
+          "gradient_relative_delta": 3.485224209618981e-13,
+          "pressure_rms_delta": 4.517683046707517e-16
+        },
+        "torch": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.3322676295501878e-14,
+            "CL_gamma": 1.432187701766452e-14,
+            "CD_pressure": 3.365363543395006e-16,
+            "CM_y": 1.0935696792557792e-14
+          },
+          "loads_relative": 3.064017908790644e-14,
+          "wall_over_floor_delta": 5.773159728050814e-15,
+          "gradient_relative_delta": 7.821662673884136e-13,
+          "pressure_rms_delta": 1.2490876177012763e-15
+        }
+      }
+    },
+    "g1_elliptic": {
+      "status": "ok",
+      "kind": "g1",
+      "rows": {
+        "reference": {
+          "status": 2,
+          "nfev": 12,
+          "message": "`ftol` termination condition is satisfied.",
+          "seconds": 20.024872199981473,
+          "loads": {
+            "CL": 0.3472736155437683,
+            "CL_gamma": 0.3400753819393768,
+            "CD_pressure": 0.0049227372732021,
+            "CM_y": -0.07531996207332511
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 2.0705225960056238e-10,
+          "wall_over_floor": 1.063850011219569,
+          "pressure_rms": 7.640932439940158e-07,
+          "wall_rms": 0.0002842420407485267
+        },
+        "structured": {
+          "status": 5,
+          "nfev": 26,
+          "message": "relative gradient stagnated",
+          "seconds": 10.545926699996926,
+          "loads": {
+            "CL": 0.34727363830978286,
+            "CL_gamma": 0.3400754044409887,
+            "CD_pressure": 0.004922738570969415,
+            "CM_y": -0.07531997502602951
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 1.3912993918741387e-09,
+          "wall_over_floor": 1.0638500102592192,
+          "pressure_rms": 7.642082199791285e-07,
+          "wall_rms": 0.0002842420404919381
+        },
+        "torch": {
+          "status": 2,
+          "nfev": 21,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 0.4824833000311628,
+          "loads": {
+            "CL": 0.3472735401552399,
+            "CL_gamma": 0.34007530742104725,
+            "CD_pressure": 0.004922732979476236,
+            "CM_y": -0.07531991918622981
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 8.74485682098788e-10,
+          "wall_over_floor": 1.0638500137989317,
+          "pressure_rms": 7.636973589407931e-07,
+          "wall_rms": 0.00028424204143768714
+        }
+      },
+      "comparisons": {
+        "reference": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 0.0,
+            "CL_gamma": 0.0,
+            "CD_pressure": 0.0,
+            "CM_y": 0.0
+          },
+          "loads_relative": 0.0,
+          "wall_over_floor_delta": 0.0,
+          "gradient_relative_delta": 0.0,
+          "pressure_rms_delta": 0.0
+        },
+        "structured": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 2.2766014573516458e-08,
+            "CL_gamma": 2.250161190708866e-08,
+            "CD_pressure": 1.2977673154862535e-09,
+            "CM_y": 1.2952704395163828e-08
+          },
+          "loads_relative": 6.555641878485054e-08,
+          "wall_over_floor_delta": 9.60349799683513e-10,
+          "gradient_relative_delta": 1.1842471322735764e-09,
+          "pressure_rms_delta": 1.1497598511267167e-10
+        },
+        "torch": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 7.538852836441734e-08,
+            "CL_gamma": 7.451832956251181e-08,
+            "CD_pressure": 4.293725863573072e-09,
+            "CM_y": 4.288709530564372e-08
+          },
+          "loads_relative": 2.1708683006733008e-07,
+          "wall_over_floor_delta": 2.5793627234094174e-09,
+          "gradient_relative_delta": 6.674334224982256e-10,
+          "pressure_rms_delta": 3.9588505322271184e-10
+        }
+      }
+    },
+    "g2_conventional": {
+      "status": "ok",
+      "kind": "g2",
+      "rows": {
+        "reference": {
+          "status": 1,
+          "nfev": 5,
+          "message": "`gtol` termination condition is satisfied.",
+          "seconds": 0.07625389995519072,
+          "loads": {
+            "CL": 0.3654723302039162,
+            "CL_gamma": 0.34233313568958107,
+            "CD_pressure": -0.017593346735200358,
+            "CM_y": -0.11257278167355603
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 7.385794998278763e-13,
+          "wall_over_floor": 1.0572540962366919,
+          "pressure_rms": 1.6760907509220812e-07,
+          "wall_rms": 0.0014964424320381587
+        },
+        "structured": {
+          "status": 4,
+          "nfev": 7,
+          "message": "relative gradient tolerance reached",
+          "seconds": 0.021825000061653554,
+          "loads": {
+            "CL": 0.36547233109364924,
+            "CL_gamma": 0.3423331354153357,
+            "CD_pressure": -0.01759334645006751,
+            "CM_y": -0.11257278213414115
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 6.236883912109726e-11,
+          "wall_over_floor": 1.0572540962366463,
+          "pressure_rms": 1.6760978402746254e-07,
+          "wall_rms": 0.001496442432038094
+        },
+        "torch": {
+          "status": 4,
+          "nfev": 7,
+          "message": "relative gradient tolerance reached",
+          "seconds": 0.013876700075343251,
+          "loads": {
+            "CL": 0.3654723310936416,
+            "CL_gamma": 0.34233313541532817,
+            "CD_pressure": -0.01759334645006813,
+            "CM_y": -0.11257278213412622
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 6.228763634713251e-11,
+          "wall_over_floor": 1.0572540962366441,
+          "pressure_rms": 1.676097831155548e-07,
+          "wall_rms": 0.001496442432038091
+        }
+      },
+      "comparisons": {
+        "reference": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 0.0,
+            "CL_gamma": 0.0,
+            "CD_pressure": 0.0,
+            "CM_y": 0.0
+          },
+          "loads_relative": 0.0,
+          "wall_over_floor_delta": 0.0,
+          "gradient_relative_delta": 0.0,
+          "pressure_rms_delta": 0.0
+        },
+        "structured": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 8.897330650015078e-10,
+            "CL_gamma": 2.742453486526131e-10,
+            "CD_pressure": 2.8513284788811433e-10,
+            "CM_y": 4.605851255945481e-10
+          },
+          "loads_relative": 2.434474490873438e-09,
+          "wall_over_floor_delta": 4.551914400963142e-14,
+          "gradient_relative_delta": 6.163025962126938e-11,
+          "pressure_rms_delta": 7.089352544204929e-13
+        },
+        "torch": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 8.897254044626379e-10,
+            "CL_gamma": 2.742528981691805e-10,
+            "CD_pressure": 2.8513222685710993e-10,
+            "CM_y": 4.605701930948669e-10
+          },
+          "loads_relative": 2.434453530219958e-09,
+          "wall_over_floor_delta": 4.773959005888173e-14,
+          "gradient_relative_delta": 6.154905684730463e-11,
+          "pressure_rms_delta": 7.080233466904128e-13
+        }
+      }
+    },
+    "g2_tail_low": {
+      "status": "ok",
+      "kind": "g2",
+      "rows": {
+        "reference": {
+          "status": 2,
+          "nfev": 5,
+          "message": "`ftol` termination condition is satisfied.",
+          "seconds": 0.07152890006545931,
+          "loads": {
+            "CL": 0.3628331801624354,
+            "CL_gamma": 0.34093083993870726,
+            "CD_pressure": -0.017749943753945112,
+            "CM_y": -0.10785366039367245
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 8.664303564131337e-13,
+          "wall_over_floor": 1.056310372126655,
+          "pressure_rms": 1.7155103468140226e-07,
+          "wall_rms": 0.0014951760863515704
+        },
+        "structured": {
+          "status": 4,
+          "nfev": 7,
+          "message": "relative gradient tolerance reached",
+          "seconds": 0.02190130006056279,
+          "loads": {
+            "CL": 0.36283318117853136,
+            "CL_gamma": 0.340930839744551,
+            "CD_pressure": -0.01774994347492911,
+            "CM_y": -0.10785366101494447
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 5.732714407611652e-11,
+          "wall_over_floor": 1.0563103721265943,
+          "pressure_rms": 1.715516944484775e-07,
+          "wall_rms": 0.0014951760863514845
+        },
+        "torch": {
+          "status": 4,
+          "nfev": 7,
+          "message": "relative gradient tolerance reached",
+          "seconds": 0.003599800053052604,
+          "loads": {
+            "CL": 0.3628331811785291,
+            "CL_gamma": 0.34093083974454863,
+            "CD_pressure": -0.01774994347492911,
+            "CM_y": -0.10785366101494344
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 5.73072260437055e-11,
+          "wall_over_floor": 1.0563103721266005,
+          "pressure_rms": 1.7155169535603143e-07,
+          "wall_rms": 0.0014951760863514934
+        }
+      },
+      "comparisons": {
+        "reference": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 0.0,
+            "CL_gamma": 0.0,
+            "CD_pressure": 0.0,
+            "CM_y": 0.0
+          },
+          "loads_relative": 0.0,
+          "wall_over_floor_delta": 0.0,
+          "gradient_relative_delta": 0.0,
+          "pressure_rms_delta": 0.0
+        },
+        "structured": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.016095985129084e-09,
+            "CL_gamma": 1.9415624663565723e-10,
+            "CD_pressure": 2.7901600127555604e-10,
+            "CM_y": 6.212720199405553e-10
+          },
+          "loads_relative": 2.8004494646112352e-09,
+          "wall_over_floor_delta": 6.061817714453355e-14,
+          "gradient_relative_delta": 5.6460713719703384e-11,
+          "pressure_rms_delta": 6.597670752422634e-13
+        },
+        "torch": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.0160937091718836e-09,
+            "CL_gamma": 1.9415863361516017e-10,
+            "CD_pressure": 2.7901600127555604e-10,
+            "CM_y": 6.212709929842575e-10
+          },
+          "loads_relative": 2.800443191873997e-09,
+          "wall_over_floor_delta": 5.440092820663267e-14,
+          "gradient_relative_delta": 5.6440795687292365e-11,
+          "pressure_rms_delta": 6.606746291700551e-13
+        }
+      }
+    },
+    "g1_wingbody_cad": {
+      "status": "ok",
+      "kind": "g1",
+      "rows": {
+        "reference": {
+          "status": 2,
+          "nfev": 15,
+          "message": "`ftol` termination condition is satisfied.",
+          "seconds": 2.139727000030689,
+          "loads": {
+            "CL": 0.5361115367532608,
+            "CL_gamma": 0.5411492998787445,
+            "CD_pressure": 0.01596183706159363,
+            "CM_y": -0.1360040833956841
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": true,
+            "kutta": true
+          },
+          "gradient_relative": 1.3363486267303875e-08,
+          "wall_over_floor": 1.0143376709606955,
+          "pressure_rms": 1.6280411015753819e-06,
+          "wall_rms": 0.0013455362902108476
+        },
+        "structured": {
+          "status": 2,
+          "nfev": 29,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 1.1377305999631062,
+          "loads": {
+            "CL": 0.5361115364897128,
+            "CL_gamma": 0.5411492995949563,
+            "CD_pressure": 0.015961837015539715,
+            "CM_y": -0.13600408324463995
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": true,
+            "kutta": true
+          },
+          "gradient_relative": 1.3393795906550879e-08,
+          "wall_over_floor": 1.0143376709607772,
+          "pressure_rms": 1.6280410723465722e-06,
+          "wall_rms": 0.0013455362902109562
+        },
+        "torch": {
+          "status": 2,
+          "nfev": 29,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 0.04601719998754561,
+          "loads": {
+            "CL": 0.5361115365754094,
+            "CL_gamma": 0.541149299687493,
+            "CD_pressure": 0.01596183703074081,
+            "CM_y": -0.13600408329394126
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": true,
+            "kutta": true
+          },
+          "gradient_relative": 1.344430241936526e-08,
+          "wall_over_floor": 1.0143376709607548,
+          "pressure_rms": 1.6280410796582263e-06,
+          "wall_rms": 0.0013455362902109263
+        }
+      },
+      "comparisons": {
+        "reference": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 0.0,
+            "CL_gamma": 0.0,
+            "CD_pressure": 0.0,
+            "CM_y": 0.0
+          },
+          "loads_relative": 0.0,
+          "wall_over_floor_delta": 0.0,
+          "gradient_relative_delta": 0.0,
+          "pressure_rms_delta": 0.0
+        },
+        "structured": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 2.6354807225459354e-10,
+            "CL_gamma": 2.837882151496274e-10,
+            "CD_pressure": 4.605391415446469e-11,
+            "CM_y": 1.5104414941014e-10
+          },
+          "loads_relative": 5.244175964252673e-10,
+          "wall_over_floor_delta": 8.171241461241152e-14,
+          "gradient_relative_delta": 3.0309639247003965e-11,
+          "pressure_rms_delta": 2.9228809644634714e-14
+        },
+        "torch": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.7785140027370971e-10,
+            "CL_gamma": 1.9125145911402797e-10,
+            "CD_pressure": 3.0852820298576944e-11,
+            "CM_y": 1.0174283637809367e-10
+          },
+          "loads_relative": 3.534171792458786e-10,
+          "wall_over_floor_delta": 5.928590951498336e-14,
+          "gradient_relative_delta": 8.08161520613847e-11,
+          "pressure_rms_delta": 2.191715559888218e-14
+        }
+      }
+    },
+    "g1_wingbody_cad_3x": {
+      "status": "ok",
+      "kind": "g1",
+      "rows": {
+        "reference": {
+          "status": 2,
+          "nfev": 17,
+          "message": "`ftol` termination condition is satisfied.",
+          "seconds": 13.521435300004669,
+          "loads": {
+            "CL": 0.5535718574685162,
+            "CL_gamma": 0.564202904082225,
+            "CD_pressure": 0.013536902441149601,
+            "CM_y": -0.1492822162576438
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 1.744296421296567e-09,
+          "wall_over_floor": 1.0577264270993878,
+          "pressure_rms": 1.5034714023535466e-07,
+          "wall_rms": 0.0004948505190112863
+        },
+        "structured": {
+          "status": 2,
+          "nfev": 26,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 6.5867347999010235,
+          "loads": {
+            "CL": 0.5535717122315617,
+            "CL_gamma": 0.5642027401527062,
+            "CD_pressure": 0.013536888729257903,
+            "CM_y": -0.14928213525682754
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 2.2945923470996632e-08,
+          "wall_over_floor": 1.0577264270973488,
+          "pressure_rms": 1.5035119892854846e-07,
+          "wall_rms": 0.0004948505190103325
+        },
+        "torch": {
+          "status": 2,
+          "nfev": 26,
+          "message": "ftol termination condition is satisfied",
+          "seconds": 0.3042707999702543,
+          "loads": {
+            "CL": 0.5535717122323053,
+            "CL_gamma": 0.564202740153511,
+            "CD_pressure": 0.013536888729343248,
+            "CM_y": -0.14928213525722778
+          },
+          "accepted": false,
+          "accepted_at_floor": false,
+          "criteria": {
+            "stationary": true,
+            "wall_at_floor": false,
+            "kutta": true
+          },
+          "gradient_relative": 2.295012770362383e-08,
+          "wall_over_floor": 1.0577264270973548,
+          "pressure_rms": 1.5035119982241687e-07,
+          "wall_rms": 0.0004948505190103352
+        }
+      },
+      "comparisons": {
+        "reference": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 0.0,
+            "CL_gamma": 0.0,
+            "CD_pressure": 0.0,
+            "CM_y": 0.0
+          },
+          "loads_relative": 0.0,
+          "wall_over_floor_delta": 0.0,
+          "gradient_relative_delta": 0.0,
+          "pressure_rms_delta": 0.0
+        },
+        "structured": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.4523695457402397e-07,
+            "CL_gamma": 1.6392951873722694e-07,
+            "CD_pressure": 1.3711891698464651e-08,
+            "CM_y": 8.100081624884403e-08
+          },
+          "loads_relative": 2.905506468526373e-07,
+          "wall_over_floor_delta": 2.0390356070265625e-12,
+          "gradient_relative_delta": 2.1201627049700066e-08,
+          "pressure_rms_delta": 4.058693193794225e-12
+        },
+        "torch": {
+          "accepted_matches_reference": true,
+          "loads_absolute_delta": {
+            "CL": 1.4523621094664207e-07,
+            "CL_gamma": 1.639287139365564e-07,
+            "CD_pressure": 1.371180635353908e-08,
+            "CM_y": 8.100041601344365e-08
+          },
+          "loads_relative": 2.905492204142678e-07,
+          "wall_over_floor_delta": 2.0330404026935867e-12,
+          "gradient_relative_delta": 2.1205831282327265e-08,
+          "pressure_rms_delta": 4.0595870622106875e-12
+        }
+      }
+    }
+  }
+}
