@@ -124,6 +124,7 @@ Each slice ends with the full suite plus a clean-master baseline, and may only s
 | S5 | coupled free-wake loop and sampling entirely in torch; snapshot schema records the backend — **delivered, §12**. The gate was rewritten once: the 192-face fixtures give three accepted updates, the 872-face CAD body accepts one and then stops `blocked_updated_nonlinear_solve` on both backends (structured solver's line search, §12.5) | identical status and per-iteration decisions (`rank`, `kinematic_candidate`, `nonlinear_success`, wake eligibility) on three cases; loads to 1e-5 relative, states to 1e-5, `cp` to 1e-3 absolute, residuals to 1e-5 absolute. Declared first at 1e-9 and revised once with the flat-valley evidence in §12.4; then B2 (CUDA) starts |
 | S6 | public entry-point dispatch: `solve` / `solve_multi` take `backend='numpy'|'torch'` and `device`, and the torch branch fails closed on the unported SciPy trust-region solver - **delivered, §15** | all 8 fixtures: identical `status`/`nfev`/`message`/rank/acceptance classification; loads ≤ 6.4e-9 relative, state ≤ 1.8e-8, `|dcp|` ≤ 8.7e-7. Declared first at 1e-9 loads / 1e-9 state / 1e-12 `cp` and revised once with the flat-valley evidence (§15.4) |
 | S7 | retire the NumPy reference: freeze the production default solve of all 8 fixtures as re-runnable bundles, then move the last per-target evaluator (RM-P1 regularized sheet) onto torch with `rm_backend='numpy'|'torch'` - **delivered, §16** | bundles: 8/8 re-run bitwise identical (`loads=0.0`, `state=0.0`, same rank and margin). RM field: ≤ 1.9e-15 relative on both quadratures, CPU and CUDA; coupled iteration 0 bitwise identical, iteration 1 ≤ 4.9e-14 with the solver held fixed, decisions identical |
+| S8 | implicit adjoint/VJP for the whole chain (no differentiation through the pivots): linear level, and the pressure level with the **exact** Hessian of the quartic objective, plus the diagnostics that decide whether a derivative is certifiable at all - **delivered, §17** | 4 fixtures: linear `dL/dalpha` 2.2e-8 … 2.1e-7 against finite differences; pressure level 6.9e-9 … 1.5e-6 on 3 fixtures, with the Gauss-Newton operator 2-3 orders worse. `g1_wingbody_cad` pressure is declared **not certifiable** (FD stability 0.63, `cond = 2.7e+11`, forward residual floor 1e-4) rather than passed |
 
 | B2 | whole-chain device selection, device=cpu or cuda in one process, no silent fallback — **delivered, §13**: cold/warm solve, one coupled iteration, uploaded bytes, peak VRAM, plus a profile that attributes the iteration | identical loads to 1e-5 relative against the S5 NumPy records on both devices, identical status and acceptance; **no speedup claimed** — measured 11.4x and 4.3x slower solves on CUDA, and the iteration is 86% a Python geometry gate |
 | B3 | VSPAERO cross-check on four geometries (rectangular, swept tapered, elliptic, wing-body), several angles of attack, two mesh levels | compares only CL(alpha) intercept and slope, induced drag, spanwise circulation, and a Cp definition that can be aligned; thick-sheet and VLM results reported separately |
@@ -1074,4 +1075,141 @@ python -m tools.issue92.s7_rm_parity --device cpu
 python -m tools.issue92.s7_rm_parity --device cuda --out docs/issue92/s7_rm_parity_cuda.json
 python -m pytest test/test_p1_regularized_sheet_torch.py     # 8 passed, 1 skipped
 ```
+
+## 17. S8 delivered: the implicit adjoint, and the oracle gate (2026-11-02)
+
+Route B asks for "an implicit adjoint/VJP with no differentiation through the pivot" so that
+the solve chain is differentiable end to end. `panel/p1_implicit_adjoint.py` implements it
+for both levels of the chain:
+
+* **linear level** - the state is `x = N (B N)^+ b(alpha)` with `N` the null-space basis of
+  the Kutta and endpoint constraints. The adjoint is
+  `dL/db = B N ((B N)^T)^+`, i.e. one QR of the reduced operator and two triangular solves,
+  never a derivative of `lstsq` itself.
+* **pressure level** - the state is the minimiser of
+  `phi(x) = 0.5 |B x - b|^2 + 0.5 w^2 |p(x)|^2`, where `p` is the pressure-Kutta jump and is
+  *quadratic* in `x`. The adjoint solves `H (dL/db) = ...` with `H` the Hessian of `phi` on
+  the constraint null space.
+
+`AdjointProblem` also exposes the diagnostics the gate needs: `stationarity(state, alpha)`
+(`|grad phi| / |B^T b|`), `reduced_hessian(state)`, `conditioning(...)` and, for the pressure
+level, the forward solve's `nfev`/`status`.
+
+### 17.1 The pressure objective is quartic, so Gauss-Newton is the wrong operator
+
+`p` is a difference of mean squared speeds, so each `p_p` is a *quadratic form* in the wall
+strengths. `phi` is therefore quartic, and the Jacobian-only operator
+`[B; w J_p(x)]^T [B; w J_p(x)]` is not its Hessian. The missing term is
+
+```
+w^2 sum_p p_p d^2 p_p / dx^2 ,     d^2 p_p = 2 ( mean_top(g_i g_j) - mean_bot(g_i g_j) )
+```
+
+which is **state independent** - it depends on the geometry gradients `g` and on the pressure
+weights `p` only. `_face_weights` folds `p` into one weight per face with `index_add_`, and
+the correction is one `einsum("fic,fid->cd", grad, grad*face_weights)` on the wall block. The
+adjoint defaults to `hessian="exact"`; `"gauss_newton"` is kept only so that the tool can
+report what the cheaper operator would have given.
+
+Measured: the omission is not academic. On `g1_swept30` the Gauss-Newton adjoint is 0.53%
+off the finite difference in `dCL/dalpha` where the exact adjoint is 9.4e-7 off; on
+`g1_wing_rect` it is 3.9e-5 vs 8.6e-8. The exact correction buys two to four digits, which is
+the difference between an adjoint that can be certified and one that cannot.
+
+### 17.2 The gate is on the oracle first
+
+A finite difference of "the solved state" is only a valid oracle when the map
+`alpha -> state` is itself stable at the differencing scale. The tool therefore declares
+`fd_stability = |fd(h) - fd(h/10)| / |reference|` and requires it below **2e-2** before it
+judges the adjoint at all; otherwise the level is reported as `oracle_stable=false` and the
+case joins `unstable`, not `failed`. This ordering matters: a large disagreement with an
+unstable difference is evidence about the difference, not about the adjoint.
+
+Declared before measuring: `linear_relative = 1e-6`, `pressure_relative = 2e-2`,
+`pressure_floor = 1e-4` (absolute floor on the load scale), `fd_stability = 2e-2`, alpha 4 deg,
+step 1e-4 with Richardson extrapolation from `h` and `h/10`.
+
+### 17.3 Measurements (4 fixtures, torch float64, production forward capped at 400 evaluations)
+
+| Fixture | level | dCL rel (exact) | dCL rel (GN) | dCD_p rel (exact) | dCM_y rel (exact) | fd stability |
+| --- | --- | --- | --- | --- | --- | --- |
+| g1_wing_rect | linear | 5.30e-08 | - | - | - | 3.6e-09 (CL) |
+| g1_wing_rect | pressure | 8.63e-08 | 3.92e-05 | 9.61e-08 | 2.50e-07 | 3.6e-09 |
+| g1_swept30 | linear | 2.13e-07 | - | - | - | 3.4e-08 (CL) |
+| g1_swept30 | pressure | 9.41e-07 | 5.27e-03 | 9.75e-07 | 1.54e-06 | 3.4e-08 |
+| g2_conventional | linear | 8.18e-08 | - | - | - | 6.1e-09 (CL) |
+| g2_conventional | pressure | 6.86e-09 | 6.27e-07 | 8.21e-09 | 4.22e-08 | 6.1e-09 |
+| g1_wingbody_cad | linear | 2.16e-08 | - | - | - | 4.7e-09 (CL) |
+| g1_wingbody_cad | pressure | 0.419 | 0.452 | 0.337 | 0.522 | **0.63** (CL) |
+
+`certified = [g1_wing_rect, g1_swept30, g2_conventional]`, `unstable = {g1_wingbody_cad:
+[pressure]}`, so `passed = false` in `docs/issue92/s8_adjoint.json`. The linear level of the
+same CAD body agrees to 2.2e-8, so the machinery is not the problem there.
+
+### 17.4 Why the CAD body is not certified - it is the forward solve, not the adjoint
+
+Four measurements, in order:
+
+1. `max_nfev = 80` (the driver default) on `g1_wingbody_cad` stops on the **iteration limit**:
+   `status 0`, `stationarity = 1.17e-3`, pressure residual 8.5e-6. The state the adjoint would
+   differentiate is not a stationary point at all.
+2. `max_nfev = 200` brings `stationarity` to 9.8e-5, and 400/800 stop at `status 2` after 222
+   evaluations with `stationarity = 9.77e-5` - two orders worse than the other fixtures
+   (1.2e-5) but converged by the solver's own criterion.
+3. The reduced Hessian there is `cond = 2.68e+11` (against 5.0e7 - 6.1e8 on the certified
+   cases), so the state response to a 1e-4 degree angle change is dominated by the solve
+   path: perturbing alpha by +-1e-4, +-1e-5 and +-1e-3 changes the state by less than 1e-4
+   relative (the branch is stable, `nfev` 222-352) but the *difference quotient* moves by
+   40-97% depending on the step.
+4. With the 400-evaluation cap the differences also change sign against the earlier
+   80-evaluation run (`dCL` was -0.024, now +0.033), i.e. the oracle is measuring the
+   iteration cap, not the derivative.
+
+Conclusion recorded rather than tuned: on this geometry no finite-difference oracle can
+certify a derivative at the working point, because the forward problem has a residual floor
+of `1e-4` relative and a condition number of `1e11`. The adjoint result there is neither
+confirmed nor refuted. The honest production statement for the wing-body CAD fixture is
+that it is *not yet differentiable in a certified sense* - it needs either a better
+conditioned formulation (the augmented fixed-point form, not the pressure-Kutta least
+squares) or a continuation that removes the residual floor, and both are modelling work
+outside S8.
+
+### 17.5 Tests
+
+`test/test_p1_implicit_adjoint.py`, **11 passed** in 1.3 s (torch environment):
+
+* linear state equals the projected `lstsq` solution; adjoint equals autograd of it;
+* `gradcheck` on the implicit state, and a directional VJP against a central difference;
+* pressure level against a central difference;
+* **the reduced Hessian equals the autograd Jacobian of the reduced gradient** - computed at
+  the solved state, since the identity only holds at a point where both are evaluated;
+* **the Gauss-Newton Hessian is not the exact one** when the pressure residual is non-zero,
+  i.e. the correction is load bearing and the test would catch its removal;
+* exact is at least as accurate as Gauss-Newton against a difference;
+* rank deficiency and unknown `hessian` names raise `ValueError`;
+* an AST guard forbidding `numpy`/`scipy` imports in the module.
+
+### 17.6 Reproduce
+
+```bash
+# stage 1: production forward solves, NumPy/SciPy environment
+python -m tools.issue92.s8_adjoint --stage prepare
+# stage 2: adjoints and differences, torch environment
+python -m tools.issue92.s8_adjoint --stage adjoint
+python -m pytest test/test_p1_implicit_adjoint.py     # 11 passed
+# the two diagnostics quoted in 17.4
+python -m tools.issue92.cad_conditioning_probe --probe stationarity
+python -m tools.issue92.cad_conditioning_probe --probe branch
+```
+
+### 17.7 Not claimed
+
+* Not a certified adjoint on `g1_wingbody_cad`: 17.4 shows the oracle is invalid there, not
+  that the adjoint is wrong.
+* Not an efficiency claim: the adjoint costs one extra QR plus a triangular solve per
+  gradient, and the timings in the JSON are single-shot wall clock on a laptop.
+* Not a statement that the production forward default (`max_nfev = 80`) is adequate: 17.4
+  shows it is not, on this fixture, and changing it is a defaults change that needs its own
+  A/B evidence.
+
 
