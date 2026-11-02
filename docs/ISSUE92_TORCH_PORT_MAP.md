@@ -118,7 +118,7 @@ Each slice ends with the full suite plus a clean-master baseline, and may only s
 | slice | content | parity gate |
 | --- | --- | --- |
 | S1 | `p1_pressure_kutta_reduced.py`: `qr`, `solve`, `solve_triangular`, `OptimizeResult` → torch — **delivered, §8** | A/W/J/K and `z` vectors to 1e-12 relative; identical `status`/`nfev` on all fixtures that exercise the reduced path; 10 existing tests still pass |
-| S2 | rank-aware constrained solve in G1/G2: `null_space`, `lstsq` → torch | identical `rank` and null-space dimension on all 8 fixed fixtures **plus** the §3 gap report; `mu`/`Gamma`/`CL`/`CD_p`/`CM_y` to 1e-11 relative |
+| S2 | rank-aware constrained solve in G1/G2: `null_space`, `lstsq` → torch — **delivered, §9** | identical `rank` and null-space dimension on all 8 fixed fixtures **plus** the §3 gap report; `mu`/`Gamma`/`CL`/`CD_p`/`CM_y` to 1e-11 relative |
 | S3 | nonlinear solve: `least_squares` → torch trust-region (G1 :506, G2 :304) | identical `status`, `success`, `nfev` (or documented ±1), identical floor behaviour, loads to 1e-10 |
 | S4 | assembly and post-processing on tensors: face→DOF scatter, Kutta, jump/contact constraints, Cp, forces/moments, using the already-validated batched influence kernel (#96) | bitwise-or-1e-13 parity on A/W/J/K; loads to 1e-11; `test_p1_coupled_material_wake` unchanged |
 | S5 | coupled free-wake loop and sampling entirely in torch; snapshot schema records the backend | ≥3 accepted geometry updates with identical gate decisions and loads to 1e-10 vs the NumPy reference; then B2 (CUDA) starts |
@@ -191,3 +191,89 @@ the four gated parity tests skipping where torch is absent). In the torch interp
 Gate to S2: the three gated scenarios hold at 1e-11 relative on the iterate with identical decisions, and
 the static test forbids NumPy/SciPy in the torch module. S2 (rank-aware `null_space`/`lstsq`) inherits the
 per-scenario reporting rule and must add the singular-value gap table described in §3.
+## 9. S2 delivered: rank-aware constrained solve (2026-11-02)
+
+Files: `panel/p1_rank_aware_torch.py` (`RankReport`, `LeastSquaresResult`, `null_space`, `lstsq`,
+`constrained_solve`), `tools/issue92/s2_rank_parity.py` (stages `capture` / `torch` / `loads` /
+`compare`), `tools/issue92/s2_loads.py` (the state -> load map used on both states),
+`test/test_p1_rank_aware_torch.py`, evidence `docs/issue92/s2_rank_parity.json`,
+`docs/issue92/s2_loads.json`, `docs/issue92/s2_reference.npz`.
+
+The port mirrors the SciPy semantics rather than "something reasonable": the truncation threshold is
+`s.max() * 1e-11` on the constraint spectrum (the same `rcond` the production calls pass), the least-squares
+solve reproduces `gelsd` (default `rcond = max(rows, cols) * eps`, inverse-singular-value truncation,
+minimum-norm among the retained directions), and `constrained_solve` composes them exactly as the production
+code does — `N = null_space(constraints)`, `t = lstsq(B N, bw)`, `z = N t`. `RankReport.margin` is the
+decisive singular value divided by the threshold (i.e. how many times above the cut it sits), and
+`gap_ratio` is smallest-kept over largest-discarded; both are reported per fixture because they bound how
+far a backend difference can move the decision.
+
+The captured object is the **initial constrained solve** of each of the eight frozen Phase-0 fixtures,
+rebuilt from the operators the production solve actually returned (same `B = sqrt(area/mean) [A W]`,
+same `bw = sqrt(area/mean)(-c U)`, same stacked constraints). `capture` also re-applies the load map to
+the NumPy state and asserts it reproduces the production `CL`/`CL_gamma`/`CD_pressure`/`CM_y` — the
+difference is `0.0` for seven fixtures and `5.6e-17` for `g2_conventional`, so the rebuilt system is the
+production system, not a lookalike.
+
+| fixture | wall x | constraints | rank (np / torch) | null dim | state relative | max relative | singular relative | margin over threshold |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| g1_wing_rect | 112x68 | 10x68 | 58 / 58 | 58 / 58 | 1.07e-14 | 2.27e-14 | 5.8e-16 | 1.05e10 |
+| g1_wing_camber | 112x68 | 10x68 | 58 / 58 | 58 / 58 | 8.61e-15 | 1.69e-14 | 1.2e-15 | 1.05e10 |
+| g1_swept30 | 2764x1462 | 126x1462 | 1336 / 1336 | 1336 / 1336 | 1.86e-14 | 8.47e-14 | 1.1e-15 | 1.68e9 |
+| g1_elliptic | 3220x1728 | 166x1728 | 1562 / 1562 | 1562 / 1562 | **1.79e-12** | 1.40e-11 | 7.7e-14 | **5.49e4** |
+| g2_conventional | 192x116 | 16x116 | 100 / 100 | 100 / 100 | 8.36e-15 | 2.78e-14 | 8.7e-16 | 5.78e9 |
+| g2_tail_low | 192x116 | 16x116 | 100 / 100 | 100 / 100 | 1.39e-14 | 4.42e-14 | 8.7e-16 | 5.78e9 |
+| g1_wingbody_cad | 792x541 | 187x541 | 354 / 354 | 354 / 354 | 1.38e-13 | 3.47e-13 | 4.7e-16 | 7.04e6 |
+| g1_wingbody_cad_3x | 2410x1352 | 189x1352 | 1163 / 1163 | 1163 / 1163 | 1.24e-13 | 6.73e-13 | 8.4e-16 | 6.88e6 |
+
+Loads, computed by one map applied to both states (relative difference, NumPy vs torch):
+
+| fixture | CL | CL_gamma | CD_pressure | CM_y |
+| --- | --- | --- | --- | --- |
+| g1_wing_rect | 4.6e-14 | 7.4e-14 | 1.8e-13 | 1.6e-13 |
+| g1_wing_camber | 1.3e-14 | 1.8e-14 | 1.4e-13 | 3.5e-14 |
+| g1_swept30 | 3.5e-14 | 4.8e-14 | 7.2e-13 | 4.1e-14 |
+| g1_elliptic | 1.0e-13 | 5.1e-14 | 1.6e-12 | 1.7e-13 |
+| g2_conventional | 5.3e-14 | 3.3e-14 | 2.4e-13 | 2.1e-13 |
+| g2_tail_low | 6.0e-15 | 8.4e-15 | 4.4e-13 | 3.5e-13 |
+| g1_wingbody_cad | 1.5e-13 | 1.5e-13 | 8.1e-13 | 3.1e-13 |
+| g1_wingbody_cad_3x | 3.2e-13 | 2.7e-13 | 1.4e-12 | 5.8e-13 |
+
+Three findings:
+
+1. **The decision is identical; the basis is not.** Rank and null-space dimension agree on 8/8, and the
+   projectors `N N^T` agree to 1e-12 or better, but the individual basis columns are *not* comparable. The
+   first attempt at this measurement compared states expressed in each backend's own basis and reported
+   0.27–1.97 relative differences while the end-to-end state agreed to 1e-14 — a pure artefact. The cause is
+   structural: a constraint matrix of full column rank has a null space spanned by its *zero* singular
+   vectors, and any orthonormal basis of that subspace is a valid answer, so two SVD implementations are free
+   to return different rotations. Only basis-invariant quantities may be compared: `rank`, `null_dim`, the
+   projector, singular values, and `z = N t` in the original unknown space.
+2. **End-to-end parity tracks the truncation margin, not the problem size.** Seven fixtures sit 1e6–1e10 times
+   above the truncation threshold and agree to 1e-13 or better. `g1_elliptic` sits at 5.5e4 (its decisive
+   singular value is the closest any fixture comes to the cut) and is the only one at 1e-12. That is the
+   quantified version of the §3 correctness risk: the closer a fixture is to the threshold, the larger the
+   fraction of its error a backend difference can own, and the fixture set contains no case that actually
+   flips rank — which is why the margin is reported instead of hidden.
+3. **Nothing here is wired into production yet.** `constrained_solve` is exercised through the parity tool
+   only; G1/G2 still call SciPy. The torch module is guarded by an AST test that forbids `numpy`/`scipy`
+   entirely, because a NumPy LAPACK call after torch has run in the same interpreter kills the process (§6f);
+   the four stages therefore run in two interpreters, with the states exchanged through `.npz`.
+
+What S2 does **not** claim: that the torch decision is correct where the fixture set cannot decide (no rank
+flip is exercised); that the nonlinear pressure-Kutta path has any torch support (that is S3); that
+`mu`/`Gamma` parity on *assembled* systems is established (the wall operators here are production operators
+but assembled by NumPy in S4's absence). Iterate parity of 1.8e-12 on the tightest fixture is the number to
+beat in S3/S4, not a stamp of approval.
+
+Reproduce (two interpreters, in this order):
+
+    python -m tools.issue92.s2_rank_parity capture --work runs/issue92/s2
+    <torch python> -m tools.issue92.s2_rank_parity torch --work runs/issue92/s2
+    python -m tools.issue92.s2_rank_parity loads   --work runs/issue92/s2 --out runs/issue92/s2/s2_loads.json
+    python -m tools.issue92.s2_rank_parity compare --work runs/issue92/s2 --out docs/issue92/s2_rank_parity.json
+
+Test state: `test/test_p1_rank_aware_torch.py` gives 14 passed in the torch interpreter with
+`PANEL_TORCH_PARITY=1`, and 1 passed / 13 skipped in `.conda_env` (the static guard runs where torch is
+absent, the numerics skip). The gate to S3 is met on all eight fixtures: identical rank and null dimension,
+loads to 1.6e-12 relative, and the gap/margin table above.
