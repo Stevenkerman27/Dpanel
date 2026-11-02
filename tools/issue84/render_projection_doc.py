@@ -1,4 +1,4 @@
-"""Render docs/ISSUE84_PROJECTION_DUFFY.md from the bench, gate-set and probe JSON."""
+"""Render docs/archive/issue/ISSUE84_PROJECTION_DUFFY.md from the bench, gate-set and probe JSON."""
 import json
 from pathlib import Path
 
@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BENCH = ROOT / "docs/issue84/projection_duffy_bench.json"
 GATE = ROOT / "docs/issue84/projection_gate_set.json"
 PROBE = ROOT / "docs/issue84/worst_node_probe.json"
-OUT = ROOT / "docs/ISSUE84_PROJECTION_DUFFY.md"
+OUT = ROOT / "docs/archive/issue/ISSUE84_PROJECTION_DUFFY.md"
 
 STRATS = [("fan", 16, 1), ("fan", 16, 8), ("fan", 32, 8), ("fan", 48, 64),
           ("legacy", 16, 1), ("legacy", 32, 1), ("legacy", 48, 1), ("legacy", 96, 1)]
@@ -107,7 +107,7 @@ def main():
     add("   collapse direction is nearly parallel to the long edge and the peak is smeared")
     add("   along the short one.")
     add("")
-    add("The measured consequence (`docs/ISSUE84_RM_BENCH.md`) is that raising the order")
+    add("The measured consequence (`docs/archive/issue/ISSUE84_RM_BENCH.md`) is that raising the order")
     add("does not converge: order 32 can be worse than order 16. That is aliasing, not")
     add("truncation error, and it is why C3 asked for a projection-aware decomposition.")
     add("")

@@ -1,7 +1,7 @@
 """S1 parity: torque the reduced pressure-Kutta solve onto torch, compare.
 
 The two backends cannot share an interpreter: once torch runs an op, the next
-NumPy LAPACK call dies with 0xC0000005 (docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md
+NumPy LAPACK call dies with 0xC0000005 (docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md
 section 6f). So parity is measured across processes:
 
     python -m tools.issue92.s1_parity numpy --out a.npz   (.conda_env, no torch)

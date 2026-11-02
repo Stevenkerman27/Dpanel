@@ -1,4 +1,4 @@
-"""Render docs/ISSUE84_P0_PROFILE.md from the measured P0 profiling artifacts."""
+"""Render docs/archive/issue/ISSUE84_P0_PROFILE.md from the measured P0 profiling artifacts."""
 from __future__ import annotations
 
 import json
@@ -440,8 +440,8 @@ def main():
     add("python -m tools.issue84.render_p0_profile_doc")
     add("```")
     add("")
-    (DOCS / "ISSUE84_P0_PROFILE.md").write_text("\n".join(lines), encoding="utf-8")
-    print("wrote", DOCS / "ISSUE84_P0_PROFILE.md")
+    (DOCS / "../../docs/archive/issue/ISSUE84_P0_PROFILE.md").write_text("\n".join(lines), encoding="utf-8")
+    print("wrote", DOCS / "../../docs/archive/issue/ISSUE84_P0_PROFILE.md")
     return 0
 
 

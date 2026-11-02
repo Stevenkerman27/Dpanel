@@ -2,7 +2,7 @@
 
 The production assembly in `panel/p1_lifting_g1.py::assemble` and
 `panel/p1_lifting_g2.py::assemble_multi` spends 12.2 s of the 22.9 s elliptic solve in
-`_doublet_matrix` (docs/ISSUE92_PHASE0_BASELINE.md). This slice ports exactly those three
+`_doublet_matrix` (docs/archive/issue/ISSUE92_PHASE0_BASELINE.md). This slice ports exactly those three
 operators to torch (`panel/p1_assembly_torch.py`) and measures them on the eight frozen
 fixtures:
 

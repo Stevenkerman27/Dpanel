@@ -104,7 +104,7 @@ Coupled: wall and wake share the P1 potential representation; the wall solve is
 sheet strength to the wall loading, and the B2 loop moves the wake with the
 kinematic map under the geometry gates (root/attachment/area/fold/step/wall/
 intersection) and per-node step caps. See
-`docs/ISSUE84_T5_CONTACT_AND_STEP_CONTROL.md` for the gate semantics.
+`docs/archive/issue/ISSUE84_T5_CONTACT_AND_STEP_CONTROL.md` for the gate semantics.
 
 Not coupled: method 3; any filament-based geometry update; the Galerkin wall
 weak form (implemented and measured in issue #71 but not yet the B2 wall

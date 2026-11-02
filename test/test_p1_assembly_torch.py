@@ -3,7 +3,7 @@
 The static guard runs everywhere. The numerical tests need torch and skip without it.
 Every NumPy reference is computed *before* the first torch kernel runs in that test:
 a NumPy LAPACK call after torch has executed dies with 0xC0000005 (see
-docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md 6f).
+docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md 6f).
 """
 import ast
 import importlib.util

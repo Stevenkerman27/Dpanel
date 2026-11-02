@@ -46,7 +46,7 @@ DPanel 侧运行环境：`.conda_env`（Py3.11 / JAX 0.10.2 CPU），worktree `r
 
 ## 相关文档
 
-- `docs/VSP_TRAPEZOID_CONVERGENCE.md`：三方法收敛结论与归因；
-- `docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md`：panel 模式 `CLi` 异常（`LECluster` 根因）；
+- `docs/archive/notes/VSP_TRAPEZOID_CONVERGENCE.md`：三方法收敛结论与归因；
+- `docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md`：panel 模式 `CLi` 异常（`LECluster` 根因）；
 - `docs/VSPAPI.md`：`vspapi` 包与模式规则；
 - `docs/issue49_vspaero/README.md`：证据包索引（本仓库里的规范副本）。

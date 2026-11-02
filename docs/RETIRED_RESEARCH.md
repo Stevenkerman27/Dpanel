@@ -26,28 +26,28 @@ Three reasons, in order of weight.
 
 | Module | What it did | Where its result lives |
 | --- | --- | --- |
-| `panel/p1_g1.py` | the first P1 collocation lifting solve (Dirichlet potentials, least squares) | docs/INTEGRATION_P1.md, docs/P1_G1_END_TO_END.md, docs/ISSUE49_P1_G1_DESIGN.md |
-| `panel/p1_dirichlet.py` | the Dirichlet-collocation wall operator that p1_g1 and the G0 work built on | docs/ISSUE49_P1_G0_SPHERE.md |
-| `panel/p1_galerkin_wall.py` | P1 Galerkin mass/weak-form wall operator | docs/ISSUE71_GALERKIN_WALL_PROTOTYPE.md |
-| `panel/p1_galerkin_solver.py` | the weak-form Galerkin solve behind the issue 71 convergence result | docs/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md |
-| `panel/p1_rank_aware_kutta.py` | the rank-aware Kutta variant and its rank-gap diagnostics | docs/ISSUE69_P1_DIRICHLET_RANK_KUTTA.md |
-| `panel/p1_rank_gauge.py` | percentage-rank gauge experiment | docs/ISSUE56_RANK_GAUGE.md |
-| `panel/p1_gate_checks.py` | the G0/G1 acceptance gate suite | docs/ISSUE49_P1_GATES.md |
-| `panel/p1_doublet_moment.py` | doublet moment bookkeeping used by the gate work | docs/ISSUE49_P1_G0_SPHERE.md |
-| `panel/p1_g0_acceptance.py` | G0 sphere acceptance harness | docs/ISSUE56_G0_ACCEPTANCE.md |
-| `panel/p1_solution_status.py` | a status enum the Galerkin tools shared | docs/ISSUE77_CONTACT_TRACE_FIX.md |
-| `panel/p1_te_jump_integral.py` | trailing-edge jump integral audit | docs/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md |
-| `panel/p1_te_trace_audit.py` | TE trace audit for the collocation line | docs/ISSUE71_P1_GALERKIN_TE_TRACE_AUDIT.md |
-| `panel/p1_solid_angle.py` | an early solid-angle helper predating panel/p1_analytic_sheet_velocity.py | docs/ISSUE56_SOLID_ANGLE_FREE_TERMS.md |
-| `panel/p1_wake.py` | an early wake-sheet helper predating panel/wake_velocity.py | docs/INTEGRATION_P1.md |
-| `panel/p1_edge_singularity.py` | the wedge exponent study (PR 74) | docs/ISSUE71_EDGE_SINGULARITY_DERIVATION.md, docs/ISSUE71_EDGE_EXPONENT_MEASUREMENT.md |
-| `panel/probe_pressure_reconstruction.py` | the first pressure-reconstruction probe | docs/PRESSURE_RECONSTRUCTION_PROBE.md |
-| `panel/affine_consistent_recovery.py` | affine-consistent pressure recovery variant | docs/ISSUE49_PHASE0_BASELINE.md |
-| `panel/manufactured_surface_recovery.py` | manufactured-surface recovery oracle | docs/MANUFACTURED_SURFACE_RECOVERY.md |
-| `panel/relax_wake.py` | an early wake relaxation driver | docs/WAKE_ACCURACY.md |
-| `panel/analytic_sphere.py` | analytic sphere reference solution | docs/ISSUE49_PHASE0_BASELINE.md |
-| `panel/audit_reference.py` | the sphere reference audit | docs/ISSUE49_PHASE0_BASELINE.md |
-| `panel/run_p1_rank_aware_kutta.py` | CLI driver for the rank-aware variant | docs/ISSUE69_P1_DIRICHLET_RANK_KUTTA.md |
+| `panel/p1_g1.py` | the first P1 collocation lifting solve (Dirichlet potentials, least squares) | docs/archive/notes/INTEGRATION_P1.md, docs/archive/notes/P1_G1_END_TO_END.md, docs/archive/issue/ISSUE49_P1_G1_DESIGN.md |
+| `panel/p1_dirichlet.py` | the Dirichlet-collocation wall operator that p1_g1 and the G0 work built on | docs/archive/issue/ISSUE49_P1_G0_SPHERE.md |
+| `panel/p1_galerkin_wall.py` | P1 Galerkin mass/weak-form wall operator | docs/archive/issue/ISSUE71_GALERKIN_WALL_PROTOTYPE.md |
+| `panel/p1_galerkin_solver.py` | the weak-form Galerkin solve behind the issue 71 convergence result | docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md |
+| `panel/p1_rank_aware_kutta.py` | the rank-aware Kutta variant and its rank-gap diagnostics | docs/archive/issue/ISSUE69_P1_DIRICHLET_RANK_KUTTA.md |
+| `panel/p1_rank_gauge.py` | percentage-rank gauge experiment | docs/archive/issue/ISSUE56_RANK_GAUGE.md |
+| `panel/p1_gate_checks.py` | the G0/G1 acceptance gate suite | docs/archive/issue/ISSUE49_P1_GATES.md |
+| `panel/p1_doublet_moment.py` | doublet moment bookkeeping used by the gate work | docs/archive/issue/ISSUE49_P1_G0_SPHERE.md |
+| `panel/p1_g0_acceptance.py` | G0 sphere acceptance harness | docs/archive/issue/ISSUE56_G0_ACCEPTANCE.md |
+| `panel/p1_solution_status.py` | a status enum the Galerkin tools shared | docs/archive/issue/ISSUE77_CONTACT_TRACE_FIX.md |
+| `panel/p1_te_jump_integral.py` | trailing-edge jump integral audit | docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md |
+| `panel/p1_te_trace_audit.py` | TE trace audit for the collocation line | docs/archive/issue/ISSUE71_P1_GALERKIN_TE_TRACE_AUDIT.md |
+| `panel/p1_solid_angle.py` | an early solid-angle helper predating panel/p1_analytic_sheet_velocity.py | docs/archive/issue/ISSUE56_SOLID_ANGLE_FREE_TERMS.md |
+| `panel/p1_wake.py` | an early wake-sheet helper predating panel/wake_velocity.py | docs/archive/notes/INTEGRATION_P1.md |
+| `panel/p1_edge_singularity.py` | the wedge exponent study (PR 74) | docs/archive/issue/ISSUE71_EDGE_SINGULARITY_DERIVATION.md, docs/archive/issue/ISSUE71_EDGE_EXPONENT_MEASUREMENT.md |
+| `panel/probe_pressure_reconstruction.py` | the first pressure-reconstruction probe | docs/archive/pr/PRESSURE_RECONSTRUCTION_PROBE.md |
+| `panel/affine_consistent_recovery.py` | affine-consistent pressure recovery variant | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
+| `panel/manufactured_surface_recovery.py` | manufactured-surface recovery oracle | docs/archive/notes/MANUFACTURED_SURFACE_RECOVERY.md |
+| `panel/relax_wake.py` | an early wake relaxation driver | docs/archive/notes/WAKE_ACCURACY.md |
+| `panel/analytic_sphere.py` | analytic sphere reference solution | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
+| `panel/audit_reference.py` | the sphere reference audit | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
+| `panel/run_p1_rank_aware_kutta.py` | CLI driver for the rank-aware variant | docs/archive/issue/ISSUE69_P1_DIRICHLET_RANK_KUTTA.md |
 
 Also removed: 19 test modules that existed to test the modules above, and 13 tools that drove
 them (`tools/issue71/*.py`, four `_galerkin_*` helpers plus `_bridge_diagnose.py` under
@@ -71,7 +71,7 @@ python -m tools.issue71.galerkin_ab --help                 # the A/B driver
 ```
 
 The frozen outputs are still in the live tree, for example `docs/issue71/galerkin_ab/*.json` and
-`docs/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md`.
+`docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md`.
 
 ## Test baseline
 

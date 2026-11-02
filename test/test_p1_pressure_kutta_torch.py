@@ -4,7 +4,7 @@ The reference values in docs/issue92/s1_reference_<scenario>.npz were produced b
 the NumPy/SciPy backend in a separate process (tools/issue92/s1_parity.py numpy
 stage), because torch and NumPy LAPACK cannot share an interpreter: once torch
 runs an op, the next LAPACK call dies with 0xC0000005
-(docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f).
+(docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f).
 
 Running these tests therefore needs two conditions:
 

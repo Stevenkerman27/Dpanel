@@ -1,4 +1,4 @@
-"""Render docs/MESH_REFINEMENT_STUDY.md from runs/mesh_study/results.json."""
+"""Render docs/archive/notes/MESH_REFINEMENT_STUDY.md from runs/mesh_study/results.json."""
 from __future__ import annotations
 
 import json
@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(r"D:\3D\Projects\panel")
 STUDY = ROOT / "runs" / "mesh_study"
 CASES = STUDY / "cases"
-DOC = ROOT / "docs" / "MESH_REFINEMENT_STUDY.md"
+DOC = ROOT / "docs" / "../../docs/archive/notes/MESH_REFINEMENT_STUDY.md"
 
 DIR_A = ["a_s013", "a_s010", "a_s0075", "a_s0055"]
 DIR_B = ["b_le", "b_te", "b_lete", "b_lete_s015"]

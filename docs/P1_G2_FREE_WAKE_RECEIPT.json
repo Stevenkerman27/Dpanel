@@ -87,7 +87,7 @@
     "panel/p1_steady_free_wake.py": "44c44d136978998940c41a28d6c180dd8e76bb7547aabd392c9cfa71e317fe7a",
     "panel/run_p1_steady_wake.py": "db5398230a5c1c79094a1823b076d338a20d9801e4784689986541ee0b8f4c38",
     "test/test_p1_steady_free_wake.py": "90c8f00ae3a38fa2ec58cc93418916d70dd1be544be415bdfb2d8a8d82e4b618",
-    "docs/P1_G2_STEADY_FREE_WAKE.md": "4d9d466c0d82d8581895cd285858f3858105dcee71798316f0ac323584e53d3a",
+    "docs/archive/notes/P1_G2_STEADY_FREE_WAKE.md": "4d9d466c0d82d8581895cd285858f3858105dcee71798316f0ac323584e53d3a",
     "runs/g2_steady_free_wake/report.json": "c3572150ad041c4eb5ada796741169dfa673f9c763849adf597e3e66e0103ee5",
     "runs/g2_steady_free_wake_linear/report.json": "7559d6499d1a634918d4a211c4612b541ceb879641419b3189ca271032c85dce"
   },

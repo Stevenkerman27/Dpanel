@@ -1,4 +1,4 @@
-"""Render the markdown tables for docs/ISSUE92_B3_VSPAERO_PROTOCOL.md."""
+"""Render the markdown tables for docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md."""
 from __future__ import annotations
 
 import json

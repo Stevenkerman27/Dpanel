@@ -21,7 +21,7 @@
 
 * `audit/run_case.py`、`audit/junction/run_experiments.py`、`audit/reference_wing3d/run_reference.py` —— 早期 WBCAero 对照，各自 `import openvsp`。
 * `runs/vsp_conv/*.py`（`dep_vsp.py`、`panel_wake.py`、`panel_ladder.py`、`cluster_probe.py`、`vsp_case.py` …）—— 一次性驱动脚本。
-* `vspapi` 之前的一次性 API 内省脚本（`runs/_probe_*.py`、`runs/_enum*.py`）—— 结论已固化进 `vspapi.api.geometry_sets()` 与 `test/test_vspapi_core.py`；脚本本身在 2026-10-27 清理时删除，见 `docs/CLEANUP_2026-10-27.md`。
+* `vspapi` 之前的一次性 API 内省脚本（`runs/_probe_*.py`、`runs/_enum*.py`）—— 结论已固化进 `vspapi.api.geometry_sets()` 与 `test/test_vspapi_core.py`；脚本本身在 2026-10-27 清理时删除，见 `docs/archive/notes/CLEANUP_2026-10-27.md`。
 
 **关键事实：`panel/` 求解器本身零 VSP 代码。** 所有 VSP 使用都在外部对照与审计里，所以可以整体收进一个独立包而不碰求解器（没有循环依赖）。
 
@@ -72,7 +72,7 @@ VSPAERO 没有分析方法开关，模式由**几何集**决定：
 ### 3.2 聚类门（`LECluster`）
 
 panel 模式的 `CLi`（后缘 Kutta-Joukowski 环量求和）在前缘弦向聚类过紧时会错到
-100 倍以上（证据见 `docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` 第 4.3 节）。其余设置
+100 倍以上（证据见 `docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` 第 4.3 节）。其余设置
 全同时实测：
 
 | `LECluster` | `CLi`@5deg | `CLwtot`@5deg |

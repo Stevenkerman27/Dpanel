@@ -1,6 +1,6 @@
 # tools/issue71 — evidence scripts for issue #71
 
-These are the four measurements behind `docs/ISSUE71_VELOCITY_AND_KUTTA_TESTS.md`.
+These are the four measurements behind `docs/archive/issue/ISSUE71_VELOCITY_AND_KUTTA_TESTS.md`.
 They import the production modules (`panel.p1_lifting_g1`, `panel.p1_lifting_g2`) and only
 read them; no production default is changed.
 

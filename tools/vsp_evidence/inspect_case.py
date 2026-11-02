@@ -2,7 +2,7 @@
 
 Replaces the one-off `runs/_an_user*.py` probes that were deleted in the 2026-10-27 cleanup.
 Everything here goes through `vspapi.results`, so the column handling documented in
-docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md is the same code path.
+docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md is the same code path.
 
 Usage:
     .conda_env\\python.exe runs\\vsp_conv\\inspect_case.py runs\\vsp_conv\\evidence\\l3

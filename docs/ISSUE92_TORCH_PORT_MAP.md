@@ -104,7 +104,7 @@ stopping behaviour governs the whole free-wake trajectory. Two facts constrain t
 ## 5. Test-time isolation, not a production worker
 
 Route B forbids an out-of-process GPU worker as the production architecture. It does not remove the
-fact measured in `docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md` §6f: after torch executes any op, the next
+fact measured in `docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md` §6f: after torch executes any op, the next
 NumPy LAPACK call in the same interpreter dies with `0xC0000005`. Parity testing therefore has to
 compare backends **across processes** (each backend writes an `.npz` of A/W/J/K, ranks, singular
 values, mu/Gamma, Cp, loads, residuals, status; a comparator reads both). That is test scaffolding,
@@ -517,7 +517,7 @@ The gain grows with face count and needs no GPU:
 Both columns time the same thing (build A, W and `grad` from geometry; the NumPy column is the
 `assemble` call inside capture, the torch column ends before the `.numpy()` copies). Amdahl: on
 the elliptic fixture one assembly costs 7.64 s of the 22.89 s pressure-Kutta solve measured in
-docs/ISSUE92_PHASE0_BASELINE.md, so replacing it with 1.20 s bounds the end-to-end gain at about
+docs/archive/issue/ISSUE92_PHASE0_BASELINE.md, so replacing it with 1.20 s bounds the end-to-end gain at about
 1.4x - and only once S5 runs the rest of the solve on the same path. The 12.21 s that PHASE0
 attributed to `_doublet_matrix` is spread over 1529 calls, most of them single-triangle wake
 contractions, which is why per-call parity matters more there than the batched block gain.
@@ -831,7 +831,7 @@ crossover in problem size, not a blanket speedup.
 * Not a claim that the gate is free: it is still 23% of the iteration, and the remaining
   cost is in the classification of the pairs that genuinely overlap, which is a geometry
   question (zero-thickness wake inside a thick trailing-edge gap, section 13 of
-  `docs/ISSUE84_T5_CONTACT_AND_STEP_CONTROL.md`), not a loop-shape question.
+  `docs/archive/issue/ISSUE84_T5_CONTACT_AND_STEP_CONTROL.md`), not a loop-shape question.
 
 ### 14.5 Reproduce
 
