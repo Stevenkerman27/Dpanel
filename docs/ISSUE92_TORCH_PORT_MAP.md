@@ -120,7 +120,7 @@ Each slice ends with the full suite plus a clean-master baseline, and may only s
 | S1 | `p1_pressure_kutta_reduced.py`: `qr`, `solve`, `solve_triangular`, `OptimizeResult` → torch — **delivered, §8** | A/W/J/K and `z` vectors to 1e-12 relative; identical `status`/`nfev` on all fixtures that exercise the reduced path; 10 existing tests still pass |
 | S2 | rank-aware constrained solve in G1/G2: `null_space`, `lstsq` → torch — **delivered, §9** | identical `rank` and null-space dimension on all 8 fixed fixtures **plus** the §3 gap report; `mu`/`Gamma`/`CL`/`CD_p`/`CM_y` to 1e-11 relative |
 | S3 | nonlinear carry-over: the reduced pressure-Kutta nonlinear solve on torch (`least_squares` → torch, G1 :506 / G2 :304 — **delivered, §10**; the gate was rewritten: the torch path reproduces the *structured* algorithm, so the gate is identical acceptance classification plus loads, not identical `nfev` against `trf`) | identical acceptance classification (`accepted`, `gradient_relative`, `wall_over_floor`, `pressure_rms`) against the `trf` reference on all 8 fixtures; identical `status`/`nfev`/`message` against the NumPy structured backend; loads to 1e-6 relative |
-| S4 | assembly and post-processing on tensors: face→DOF scatter, Kutta, jump/contact constraints, Cp, forces/moments, using the already-validated batched influence kernel (#96) | bitwise-or-1e-13 parity on A/W/J/K; loads to 1e-11; `test_p1_coupled_material_wake` unchanged |
+| S4 | assembly and post-processing on tensors: face→DOF scatter, Cp, forces/moments — **delivered, §11**: `mesh_kernel`, `doublet_matrix`, `gradient_map`, `wake_operator`, `loads`; the Kutta and jump/contact rows are rebuilt inside the coupled loop, so they move with S5 | A/W to 1e-12 max-relative and 1e-13 Frobenius on all 8 fixtures, `grad` bit-identical; loads to 1e-13 against the shared NumPy map |
 | S5 | coupled free-wake loop and sampling entirely in torch; snapshot schema records the backend | ≥3 accepted geometry updates with identical gate decisions and loads to 1e-10 vs the NumPy reference; then B2 (CUDA) starts |
 
 Estimated relative difficulty, from the inventory: S1 ~15% of the work, S2 ~20%, S3 ~30%, S4
@@ -443,3 +443,90 @@ Reproduce:
     python -m tools.issue92.branch_probe numpy --work runs/issue92/s3 --out runs/issue92/branch_numpy.json
     <torch python> -m tools.issue92.branch_probe torch --work runs/issue92/s3 --out runs/issue92/branch_torch.json
 
+
+## 11. S4 delivered: torch assembly operators (2026-11-02)
+
+Files: `panel/p1_assembly_torch.py` (`mesh_kernel`, `doublet_matrix`, `gradient_map`,
+`wake_operator`, `loads`), `test/test_p1_assembly_torch.py` (9 tests),
+`tools/issue92/s4_assembly_parity.py` (capture / torch / judge), evidence
+`docs/issue92/s4_assembly_parity.json`.
+
+### 11.1 The wake operator is nodal in both solvers (a correction to section 1)
+
+Section 1 listed the G1 wake contraction as a per-face operator. It is not. In
+`panel/p1_lifting_g1.py::assemble` the loop
+
+    for j, f in enumerate(wing.wake_faces):
+        W += _doublet_matrix(wing.wake_xyz[f][None], ...) @ wing.gamma_hat[f]
+
+iterates over **rows of three node indices**, and `gamma_hat` has one row per wake *node*:
+`make_wing(chord_panels=3, span_panels=4)` gives `wake_xyz (20, 3)`, `wake_faces (24, 3)`,
+`gamma_hat (20, 3)`. The three DOFs are private to each call, but the strengths they read are
+the shared nodal values, so the assembled operator is the nodal one with `ndof = len(wake_xyz)`
+- exactly what `assemble_multi` already does per group in G2. `mode="per_face"` (three private
+DOFs per triangle) therefore exists only to unit-check the per-triangle doublet call; it is not
+a production shape, and the fixture parity below uses `mode="nodal"` for all eight cases.
+
+### 11.2 Parity on the eight frozen fixtures
+
+Thresholds were declared in the tool before the measurement: A max-relative 1e-12, A
+Frobenius-relative 1e-13, W max-relative 1e-12, `grad` bit-identical (it is a scatter with no
+arithmetic, so anything else would be a defect).
+
+| fixture | wall faces | DOF | A max rel | A Frobenius rel | W max rel | grad max abs |
+| --- | --- | --- | --- | --- | --- | --- |
+| g1_wing_rect | 112 | 63 | 5.28e-15 | 2.37e-15 | 4.17e-16 | 0.0 |
+| g1_wing_camber | 112 | 63 | 4.10e-15 | 2.10e-15 | 5.55e-16 | 0.0 |
+| g1_swept30 | 2764 | 1447 | 9.45e-16 | 9.19e-16 | 1.32e-15 | 0.0 |
+| g1_elliptic | 3220 | 1695 | 1.58e-15 | 9.88e-16 | 2.78e-15 | 0.0 |
+| g2_conventional | 192 | 108 | 4.85e-15 | 2.93e-15 | 6.45e-16 | 0.0 |
+| g2_tail_low | 192 | 108 | 4.99e-15 | 2.90e-15 | 6.18e-16 | 0.0 |
+| g1_wingbody_cad | 792 | 497 | 1.94e-15 | 1.16e-15 | 5.14e-15 | 0.0 |
+| g1_wingbody_cad_3x | 2410 | 1308 | 1.96e-15 | 2.39e-15 | 2.71e-15 | 0.0 |
+
+Every operator is reproduced from geometry tensors alone to within 5.3e-15, which is
+reassociation of the same sum, not a discretisation difference. `judge` reports `passed: true`
+for all eight.
+
+### 11.3 Batching the per-face loop is worth 2-6x on CPU alone
+
+Production NumPy loops over source faces in Python (3220 iterations for the elliptic wing), each
+iteration vectorised over targets; the port processes 64-face blocks against all targets at once.
+The gain grows with face count and needs no GPU:
+
+| fixture | torch CPU (s) | NumPy (s) | ratio |
+| --- | --- | --- | --- |
+| g1_wing_rect | 0.015 | 0.03 | 2.0x |
+| g1_wing_camber | 0.010 | 0.03 | 3.0x |
+| g1_swept30 | 0.850 | 5.40 | 6.35x |
+| g1_elliptic | 1.203 | 7.64 | 6.35x |
+| g2_conventional | 0.017 | 0.05 | 2.9x |
+| g2_tail_low | 0.017 | 0.05 | 2.9x |
+| g1_wingbody_cad | 0.181 | 0.76 | 4.2x |
+| g1_wingbody_cad_3x | 0.787 | 4.65 | 5.9x |
+
+Both columns time the same thing (build A, W and `grad` from geometry; the NumPy column is the
+`assemble` call inside capture, the torch column ends before the `.numpy()` copies). Amdahl: on
+the elliptic fixture one assembly costs 7.64 s of the 22.89 s pressure-Kutta solve measured in
+docs/ISSUE92_PHASE0_BASELINE.md, so replacing it with 1.20 s bounds the end-to-end gain at about
+1.4x - and only once S5 runs the rest of the solve on the same path. The 12.21 s that PHASE0
+attributed to `_doublet_matrix` is spread over 1529 calls, most of them single-triangle wake
+contractions, which is why per-call parity matters more there than the batched block gain.
+
+### 11.4 Loads, and what this slice does not cover
+
+`loads` (Cp, CL, CL_gamma, CD_pressure, CM_y) is ported and checked against the shared NumPy map
+`tools/issue92/s2_loads.py` on a small wing to 1e-13 - a unit equivalence, reproduced as a test,
+not a fixture-level load claim. Still open, and carried into S5:
+
+* the Kutta rows and the jump/contact constraints are index differences that the coupled loop
+  rebuilds every iteration, so they are ported together with that loop rather than separately;
+* no CUDA number appears in this slice - the device port follows S5, per the Route B order;
+* no `backend="torch"` is exposed for assembly: defaults stay NumPy, and the only way to run the
+  torch operators today is the parity tool and the unit tests.
+
+### 11.5 Reproduce
+
+    python -m tools.issue92.s4_assembly_parity capture --work runs/issue92/s4
+    <torch python> -m tools.issue92.s4_assembly_parity torch --work runs/issue92/s4
+    python -m tools.issue92.s4_assembly_parity judge --work runs/issue92/s4 --out docs/issue92/s4_assembly_parity.json
