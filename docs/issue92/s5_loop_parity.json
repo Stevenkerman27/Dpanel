@@ -1,0 +1,864 @@
+{
+  "cases": {
+    "g2_conventional": {
+      "passed": true,
+      "iterations": 5,
+      "rows": [
+        {
+          "index": 0,
+          "load_relative": {
+            "CL": 2.3542762909294496e-14,
+            "CL_gamma": 2.3836837240703008e-14,
+            "CD_pressure": 1.617058192241219e-14,
+            "CM_y": 6.706342709426066e-14
+          },
+          "residual_absolute": {
+            "wall_rms": 1.214306433183765e-17,
+            "jump_rms": 1.570092458683775e-16,
+            "pressure_kutta_rms": 6.678270865762145e-16,
+            "signed_kutta_rms": 1.0061396160665481e-16
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012864960211925808,
+            0.012864960211925814
+          ],
+          "map_residual": [
+            1.7663320148128148,
+            1.7663320148128292
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                0.05685133898710809,
+                0.05685133898710737
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.013511596249757955,
+                0.013511596249763645
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 1,
+          "load_relative": {
+            "CL": 6.216718110607902e-15,
+            "CL_gamma": 8.417650851475361e-15,
+            "CD_pressure": 1.980558525399514e-14,
+            "CM_y": 8.622746760152925e-14
+          },
+          "residual_absolute": {
+            "wall_rms": 2.45029690981724e-17,
+            "jump_rms": 9.703705049464629e-17,
+            "pressure_kutta_rms": 2.9174824317378817e-16,
+            "signed_kutta_rms": 9.332812300755222e-16
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012929112760134623,
+            0.012929112760134637
+          ],
+          "map_residual": [
+            5.138198482414423,
+            5.138198482414424
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                2.52279332715612,
+                2.5227933271563097
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.37940405832035834,
+                0.3794040583203758
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 2,
+          "load_relative": {
+            "CL": 3.052464101407471e-14,
+            "CL_gamma": 2.4845888624011753e-14,
+            "CD_pressure": 5.882294210960553e-14,
+            "CM_y": 1.7550634546545527e-13
+          },
+          "residual_absolute": {
+            "wall_rms": 7.589415207398531e-18,
+            "jump_rms": 8.12739661758407e-17,
+            "pressure_kutta_rms": 1.0993349454837945e-17,
+            "signed_kutta_rms": 1.3530843112619095e-16
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012912678558777499,
+            0.012912678558777488
+          ],
+          "map_residual": [
+            4.719586513429501,
+            4.719586513429486
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                4.35804718673492,
+                4.358047186734944
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.7913997443463576,
+                0.79139974434612
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 3,
+          "load_relative": {
+            "CL": 2.92996216625623e-14,
+            "CL_gamma": 2.3218579206765954e-14,
+            "CD_pressure": 9.839682151018712e-14,
+            "CM_y": 1.4236163464095737e-13
+          },
+          "residual_absolute": {
+            "wall_rms": 3.0357660829594124e-18,
+            "jump_rms": 1.6974879239053857e-16,
+            "pressure_kutta_rms": 1.514105539232748e-15,
+            "signed_kutta_rms": 1.214306433183765e-16
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012909768745255713,
+            0.012909768745255758
+          ],
+          "map_residual": [
+            4.592273873886454,
+            4.592273873886714
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                4.684181306713223,
+                4.684181306713357
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.8823466770190812,
+                0.8823466770198765
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 4,
+          "load_relative": {
+            "CL": 5.43492487681516e-15,
+            "CL_gamma": 3.7070317271374126e-15,
+            "CD_pressure": 6.191227279562958e-15,
+            "CM_y": 7.594203446405431e-14
+          },
+          "residual_absolute": {
+            "wall_rms": 1.5395670849294163e-17,
+            "jump_rms": 7.965172246374729e-17,
+            "pressure_kutta_rms": 2.026253952273812e-16,
+            "signed_kutta_rms": 1.5716594692349872e-15
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.0129091838860717,
+            0.012909183886071705
+          ],
+          "map_residual": [
+            4.556101589171196,
+            4.556101589171403
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                4.854994527610046,
+                4.854994527610172
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.9333072370974259,
+                0.93330723709763
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        }
+      ],
+      "states": {
+        "0": {
+          "mu": 5.548955135353731e-15,
+          "gamma": 5.455364560653992e-14,
+          "cp_absolute": 2.396305376350938e-12
+        },
+        "1": {
+          "mu": 4.7876391619678474e-15,
+          "gamma": 5.702648505705198e-14,
+          "cp_absolute": 1.865174681370263e-12
+        },
+        "2": {
+          "mu": 5.361230745164911e-15,
+          "gamma": 7.272027064347421e-14,
+          "cp_absolute": 1.1155520951433573e-12
+        },
+        "3": {
+          "mu": 5.169324422246439e-15,
+          "gamma": 6.973757676515256e-14,
+          "cp_absolute": 3.6557423754857155e-12
+        },
+        "4": {
+          "mu": 4.5946737955413695e-15,
+          "gamma": 6.111737272255007e-14,
+          "cp_absolute": 1.2008172234345693e-12
+        }
+      },
+      "wakes": {
+        "wake_main_wing_0": 0.0,
+        "wake_raised_tail_0": 0.0,
+        "wake_main_wing_1": 1.4565884849833104e-14,
+        "wake_raised_tail_1": 2.0927695293308434e-14,
+        "wake_main_wing_2": 2.020818315563856e-14,
+        "wake_raised_tail_2": 2.227682062042603e-14,
+        "wake_main_wing_3": 2.106951062457053e-14,
+        "wake_raised_tail_3": 1.8344595377333852e-14,
+        "wake_main_wing_4": 2.0405871375628284e-14,
+        "wake_raised_tail_4": 1.4843249313617397e-14
+      },
+      "status": [
+        "iteration_limit",
+        "iteration_limit"
+      ],
+      "seconds": [
+        1.1768627000274137,
+        2.1025462000397965
+      ]
+    },
+    "g2_tail_low": {
+      "passed": true,
+      "iterations": 5,
+      "rows": [
+        {
+          "index": 0,
+          "load_relative": {
+            "CL": 9.179615444918804e-16,
+            "CL_gamma": 3.2564464554072387e-16,
+            "CD_pressure": 5.4729478317445275e-15,
+            "CM_y": 1.3639272823798729e-14
+          },
+          "residual_absolute": {
+            "wall_rms": 8.456776945386935e-18,
+            "jump_rms": 3.9567677877783214e-17,
+            "pressure_kutta_rms": 2.7271016124471106e-15,
+            "signed_kutta_rms": 2.7755575615628914e-16
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012733602438572583,
+            0.012733602438572605
+          ],
+          "map_residual": [
+            1.7647313554243176,
+            1.7647313554243376
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                0.056212344581442246,
+                0.05621234458144236
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.017011135194155654,
+                0.017011135194161354
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 1,
+          "load_relative": {
+            "CL": 6.087925604190856e-16,
+            "CL_gamma": 3.242672663578286e-16,
+            "CD_pressure": 1.7387571715181452e-14,
+            "CM_y": 2.5722289502954168e-14
+          },
+          "residual_absolute": {
+            "wall_rms": 6.7220534694101275e-18,
+            "jump_rms": 1.5776340674655846e-16,
+            "pressure_kutta_rms": 1.4386702407881582e-15,
+            "signed_kutta_rms": 1.141448047192739e-15
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012788769330252452,
+            0.01278876933025245
+          ],
+          "map_residual": [
+            5.134549116064677,
+            5.134549116064647
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                2.5400851165692644,
+                2.5400851165692115
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.4194745271125581,
+                0.4194745271125618
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 2,
+          "load_relative": {
+            "CL": 2.098710313435291e-14,
+            "CL_gamma": 1.5554457686020132e-14,
+            "CD_pressure": 1.662188169475901e-14,
+            "CM_y": 3.5913090074871685e-14
+          },
+          "residual_absolute": {
+            "wall_rms": 5.984795992119984e-17,
+            "jump_rms": 5.266666952827223e-17,
+            "pressure_kutta_rms": 4.2551565667112753e-16,
+            "signed_kutta_rms": 6.938893903907228e-18
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012788630911117932,
+            0.012788630911117965
+          ],
+          "map_residual": [
+            5.1031766188055565,
+            5.103176618805571
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                2.774092086691361,
+                2.7740920866915366
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.47916454405525244,
+                0.47916454405520315
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 3,
+          "load_relative": {
+            "CL": 3.648680697799523e-15,
+            "CL_gamma": 2.2676755633748257e-15,
+            "CD_pressure": 1.603889677848745e-14,
+            "CM_y": 5.349281153697268e-14
+          },
+          "residual_absolute": {
+            "wall_rms": 4.119968255444917e-18,
+            "jump_rms": 2.781015974980502e-17,
+            "pressure_kutta_rms": 1.1521588052805493e-15,
+            "signed_kutta_rms": 6.938893903907228e-17
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012788379458424438,
+            0.012788379458424398
+          ],
+          "map_residual": [
+            5.086661487829837,
+            5.086661487829833
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                2.8974175597238196,
+                2.8974175597238103
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.5092055403216538,
+                0.5092055403218889
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 4,
+          "load_relative": {
+            "CL": 5.427301685928976e-14,
+            "CL_gamma": 4.810624509738415e-14,
+            "CD_pressure": 7.801944842027876e-14,
+            "CM_y": 1.1060234686317286e-13
+          },
+          "residual_absolute": {
+            "wall_rms": 2.168404344971009e-19,
+            "jump_rms": 1.2739546522161074e-17,
+            "pressure_kutta_rms": 6.013444763978493e-16,
+            "signed_kutta_rms": 3.642919299551295e-16
+          },
+          "rank": [
+            100,
+            100
+          ],
+          "singular_min": [
+            0.012788357484549609,
+            0.012788357484549609
+          ],
+          "map_residual": [
+            5.085610290872069,
+            5.085610290872086
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                2.9053255562927487,
+                2.9053255562929654
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.5110556185373342,
+                0.5110556185375532
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        }
+      ],
+      "states": {
+        "0": {
+          "mu": 3.4436715920160925e-15,
+          "gamma": 4.010383059291382e-14,
+          "cp_absolute": 1.5409895581797173e-12
+        },
+        "1": {
+          "mu": 4.212883135652325e-15,
+          "gamma": 4.9278330283249366e-14,
+          "cp_absolute": 2.5446311724408588e-12
+        },
+        "2": {
+          "mu": 4.021336939252015e-15,
+          "gamma": 4.133588202491603e-14,
+          "cp_absolute": 1.645794611704332e-12
+        },
+        "3": {
+          "mu": 4.978765791332218e-15,
+          "gamma": 5.183635595023992e-14,
+          "cp_absolute": 1.3855583347321954e-12
+        },
+        "4": {
+          "mu": 5.170254533147972e-15,
+          "gamma": 6.704763726251224e-14,
+          "cp_absolute": 1.1928236176572682e-12
+        }
+      },
+      "wakes": {
+        "wake_main_wing_0": 0.0,
+        "wake_raised_tail_0": 0.0,
+        "wake_main_wing_1": 3.1945596891355434e-15,
+        "wake_raised_tail_1": 1.284760141923623e-14,
+        "wake_main_wing_2": 3.077742635806501e-15,
+        "wake_raised_tail_2": 1.5170189786956548e-14,
+        "wake_main_wing_3": 4.628767074535739e-15,
+        "wake_raised_tail_3": 1.6575062412716283e-14,
+        "wake_main_wing_4": 4.653056721736831e-15,
+        "wake_raised_tail_4": 1.664304011604823e-14
+      },
+      "status": [
+        "iteration_limit",
+        "iteration_limit"
+      ],
+      "seconds": [
+        2.193907600012608,
+        2.291674999985844
+      ]
+    },
+    "g2_cad": {
+      "passed": true,
+      "iterations": 2,
+      "rows": [
+        {
+          "index": 0,
+          "load_relative": {
+            "CL": 2.2196321640395305e-09,
+            "CL_gamma": 2.495635526176191e-09,
+            "CD_pressure": 1.3351440219588067e-08,
+            "CM_y": 6.686347293424012e-10
+          },
+          "residual_absolute": {
+            "wall_rms": 4.852437679100929e-12,
+            "jump_rms": 6.202771110635762e-16,
+            "pressure_kutta_rms": 3.049910167337932e-14,
+            "signed_kutta_rms": 8.138471778440515e-09
+          },
+          "rank": [
+            396,
+            396
+          ],
+          "singular_min": [
+            0.00756101657672189,
+            0.007561016576721956
+          ],
+          "map_residual": [
+            22.054559871007182,
+            22.054559871282375
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            true,
+            true
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                0.19337748282878764,
+                0.19337748348772704
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.005763417535212749,
+                0.005763417601430677
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        },
+        {
+          "index": 1,
+          "load_relative": {
+            "CL": 1.2730188615463412e-07,
+            "CL_gamma": 1.3322664313996378e-07,
+            "CD_pressure": 1.391272604800789e-06,
+            "CM_y": 2.6841382298920857e-08
+          },
+          "residual_absolute": {
+            "wall_rms": 4.756801033796443e-10,
+            "jump_rms": 7.743715040323435e-16,
+            "pressure_kutta_rms": 5.825753290513818e-09,
+            "signed_kutta_rms": 6.59688684630233e-07
+          },
+          "rank": [
+            396,
+            396
+          ],
+          "singular_min": [
+            0.007556115140353737,
+            0.007556115140445876
+          ],
+          "map_residual": [
+            52.013305974656504,
+            52.01330607089357
+          ],
+          "kinematic_candidate": [
+            false,
+            false
+          ],
+          "nonlinear_success": [
+            false,
+            false
+          ],
+          "wakes": {
+            "main_wing": {
+              "epsilon": [
+                41.03849109586735,
+                41.038503533923674
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            },
+            "raised_tail": {
+              "epsilon": [
+                0.005877545196008192,
+                0.0058775212307366105
+              ],
+              "quadrature": [
+                0.0,
+                0.0
+              ],
+              "eligibility_equal": true
+            }
+          }
+        }
+      ],
+      "states": {
+        "0": {
+          "mu": 6.277506108671824e-09,
+          "gamma": 1.6114580155168757e-08,
+          "cp_absolute": 7.018748281018006e-06
+        },
+        "1": {
+          "mu": 5.234186146747585e-07,
+          "gamma": 1.516310361093164e-06,
+          "cp_absolute": 0.0005681023153876197
+        }
+      },
+      "wakes": {
+        "wake_main_wing_0": 0.0,
+        "wake_raised_tail_0": 0.0,
+        "wake_main_wing_1": 8.036679404150409e-12,
+        "wake_raised_tail_1": 1.695662121673372e-11
+      },
+      "status": [
+        "blocked_updated_nonlinear_solve",
+        "blocked_updated_nonlinear_solve"
+      ],
+      "seconds": [
+        48.03046819998417,
+        36.394519299967214
+      ]
+    }
+  },
+  "thresholds": {
+    "declared_first": {
+      "load_relative": 1e-09,
+      "state_relative": 1e-09,
+      "residual_absolute": 1e-09
+    },
+    "load_relative": 1e-05,
+    "state_relative": 1e-05,
+    "cp_absolute": 0.001,
+    "residual_absolute": 1e-05,
+    "map_residual_absolute": 1e-05,
+    "decisions": "identical (status, rank, kinematic_candidate, nonlinear success, eligibility)"
+  },
+  "passed": true
+}

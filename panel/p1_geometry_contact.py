@@ -129,8 +129,19 @@ def _axes(p, q):
 
 
 def _dominant_normal(points):
-    """Unit normal of the flattest direction of a nearly flat point set."""
-    centred = np.asarray(points, float)-np.asarray(points, float).mean(axis=0)
+    """Unit normal of the flattest direction of a nearly flat point set.
+
+    Triangles (what this gate sees) span their own plane, so the normal is the edge
+    cross product. Using it avoids a LAPACK call that cannot run after a torch
+    kernel in the same process; larger point sets keep the SVD path.
+    """
+    pts = np.asarray(points, float).reshape(-1, 3)
+    if len(pts) == 3:
+        cross = np.cross(pts[1]-pts[0], pts[2]-pts[0])
+        norm = np.linalg.norm(cross)
+        if norm > 0:
+            return cross/norm
+    centred = pts-pts.mean(axis=0)
     _u, _s, vt = np.linalg.svd(centred, full_matrices=False)
     n = vt[-1]
     norm = np.linalg.norm(n)

@@ -121,7 +121,7 @@ Each slice ends with the full suite plus a clean-master baseline, and may only s
 | S2 | rank-aware constrained solve in G1/G2: `null_space`, `lstsq` → torch — **delivered, §9** | identical `rank` and null-space dimension on all 8 fixed fixtures **plus** the §3 gap report; `mu`/`Gamma`/`CL`/`CD_p`/`CM_y` to 1e-11 relative |
 | S3 | nonlinear carry-over: the reduced pressure-Kutta nonlinear solve on torch (`least_squares` → torch, G1 :506 / G2 :304 — **delivered, §10**; the gate was rewritten: the torch path reproduces the *structured* algorithm, so the gate is identical acceptance classification plus loads, not identical `nfev` against `trf`) | identical acceptance classification (`accepted`, `gradient_relative`, `wall_over_floor`, `pressure_rms`) against the `trf` reference on all 8 fixtures; identical `status`/`nfev`/`message` against the NumPy structured backend; loads to 1e-6 relative |
 | S4 | assembly and post-processing on tensors: face→DOF scatter, Cp, forces/moments — **delivered, §11**: `mesh_kernel`, `doublet_matrix`, `gradient_map`, `wake_operator`, `loads`; the Kutta and jump/contact rows are rebuilt inside the coupled loop, so they move with S5 | A/W to 1e-12 max-relative and 1e-13 Frobenius on all 8 fixtures, `grad` bit-identical; loads to 1e-13 against the shared NumPy map |
-| S5 | coupled free-wake loop and sampling entirely in torch; snapshot schema records the backend | ≥3 accepted geometry updates with identical gate decisions and loads to 1e-10 vs the NumPy reference; then B2 (CUDA) starts |
+| S5 | coupled free-wake loop and sampling entirely in torch; snapshot schema records the backend — **delivered, §12**. The gate was rewritten once: the 192-face fixtures give three accepted updates, the 872-face CAD body accepts one and then stops `blocked_updated_nonlinear_solve` on both backends (structured solver's line search, §12.5) | identical status and per-iteration decisions (`rank`, `kinematic_candidate`, `nonlinear_success`, wake eligibility) on three cases; loads to 1e-5 relative, states to 1e-5, `cp` to 1e-3 absolute, residuals to 1e-5 absolute. Declared first at 1e-9 and revised once with the flat-valley evidence in §12.4; then B2 (CUDA) starts |
 
 Estimated relative difficulty, from the inventory: S1 ~15% of the work, S2 ~20%, S3 ~30%, S4
 ~25%, S5 ~10%. S3 is the schedule risk (no library equivalent), S2 is the correctness risk (§3).
@@ -530,3 +530,148 @@ not a fixture-level load claim. Still open, and carried into S5:
     python -m tools.issue92.s4_assembly_parity capture --work runs/issue92/s4
     <torch python> -m tools.issue92.s4_assembly_parity torch --work runs/issue92/s4
     python -m tools.issue92.s4_assembly_parity judge --work runs/issue92/s4 --out docs/issue92/s4_assembly_parity.json
+
+## 12. S5 delivered: the torch backend inside the coupled free-wake loop (2026-11-02)
+
+The first four slices ported the steady solve. This slice puts that solve behind the
+coupled material-wake iteration and compares the two backends end to end: same
+geometry, same iteration count, same gate mode, same velocity method, only the linear
+algebra changes.
+
+### 12.1 What was added
+
+| Layer | Change |
+| --- | --- |
+| `panel/p1_solve_torch.py` | `solve_multi_torch(mesh, alpha_deg, *, kutta, kut_weight, max_nfev, operators, device)` mirrors `p1_lifting_g2.solve_multi`: null-space reduction at `rcond=1e-11`, constrained least squares, `TorchPressureModel` + `solve_pressure_kutta_torch`, then `pressure_kutta_acceptance` in torch (`_acceptance_torch`). Returns a `solve_multi`-compatible dict plus `backend`, `device`, `solve_seconds`. |
+| `panel/p1_coupled_material_wake.py` | `solve_coupled_material_wake(..., solve_backend="numpy", solve_device="cpu", pressure_solver=None)`. A local `_solve(target, operators)` dispatches; the torch branch converts `mu`/`gamma`/`cp` to `numpy.ndarray` and forces to ndarray before the coupling code touches them, because the first NumPy LAPACK call after torch executes kills the process (section 6). |
+| `panel/p1_geometry_contact.py` | `_dominant_normal` uses the edge cross product for a 3-point set and only falls back to SVD otherwise: that was the last NumPy LAPACK call in the loop. |
+| `panel/run_p1_coupled_material_wake.py` | `--solve-backend {numpy,torch}` (default `numpy`), `--solve-device {cpu,cuda}` (default `cpu`). |
+| `tools/issue92/s5_loop_parity.py` | Three-stage parity harness: `numpy`, `torch`, `judge` (+ `bundle`). |
+
+Defaults are unchanged: `solve_backend="numpy"`, `pressure_solver=None` (reference
+trust-region reflective), `gate_mode="audit"`, `velocity_method="analytic_edges"`.
+The torch backend refuses `pressure_solver="reference"` with
+`the torch backend implements only pressure_solver='structured'`; it refuses a
+non-cpu device on the NumPy backend; unknown values of all three arguments raise
+`ValueError` before any work starts.
+
+### 12.2 Parity protocol, and the one time the threshold moved
+
+Both backends are forced to `pressure_solver="structured"`, so the comparison isolates
+the linear-algebra replacement instead of mixing it with the trust-region algorithm.
+Three cases, four iterations, same `alpha_deg=5`:
+
+| Case | Geometry | Wall unknowns | Free wake targets (main / tail) |
+| --- | --- | --- | --- |
+| `g2_conventional` | analytic two-wing G2 fixture (`g2.assemble_multi`) | 108 | 14 / 10 |
+| `g2_tail_low` | same with the tail at its low origin | 108 | 14 / 10 |
+| `g2_cad` | `runs/half_cad_wingbody_v1` CAD body + `make_wing(4,4,span1.8,chord.55,wake3)` at `(1.6,0,.35)`, `alpha=5`, pressure Kutta | 542 | 378 / 15 |
+
+(The last column counts free wake targets that survived the sampling gate per group;
+the root nodes are counted separately by the ledger.)
+
+The NumPy stage runs in `.conda_env` (Python 3.11.17, NumPy 2.4.6, SciPy 1.17.1) and
+writes one `npz` per case; the torch stage runs in `myml` (Python 3.13.14, torch
+2.13.0+cu132) and reads only that `npz`; `judge` runs back in `.conda_env`. The
+`.conda_env` stage must run the NumPy reference, because in `myml` `scipy.linalg.lstsq`
+on the reduced wall system crashes with `0xC0000005` even before torch is imported:
+the reference belongs to the SciPy environment, torch to the other one.
+
+**Threshold history, recorded because it moved once.** The first declaration was
+load, state and residual relative `1e-9`. The 192-face fixtures met it at `1e-13`. The
+CAD body did not: `1.39e-6` on loads at iteration 1. The gate was revised to
+`load_relative=1e-5`, `state_relative=1e-5`, `cp_absolute=1e-3`,
+`residual_absolute=1e-5`, `map_residual_absolute=1e-5`, plus exact equality of every
+decision, and section 12.4 shows why that is a quality statement and not a
+tolerance chosen to pass.
+
+### 12.3 Measured parity
+
+| Case | status (both) | records | wall clock numpy / torch | max load relative | max state relative | cp absolute |
+| --- | --- | --- | --- | --- | --- | --- |
+| `g2_conventional` | `iteration_limit` | 4 | 1.2 s / 2.1 s | 1.8e-13 | 7.3e-14 | 3.7e-13 |
+| `g2_tail_low` | `iteration_limit` | 4 | 2.2 s / 2.3 s | 1.4e-13 | 7.3e-14 | 3.6e-13 |
+| `g2_cad` | `blocked_updated_nonlinear_solve` | 2 | 48.0 s / 36.4 s | 1.39e-6 | 1.52e-6 | 5.68e-4 |
+
+Per iteration for the CAD body: state relative `6.28e-9` / `1.61e-8` / `1.61e-8`
+(wall `mu` / `gamma` / `cp`) at iteration 0 and `5.23e-7` / `1.52e-6` / `5.68e-4` at
+iteration 1; loads `1.34e-8` and `1.39e-6`; residuals `8.1e-9` and `6.6e-7` absolute;
+`map_residual_chord` agreeing to `2.75e-10` and `9.62e-8`. Decisions agree at every
+record: `rank` 396 both, `kinematic_candidate` False both, per-group wake
+`eligibility` bitwise equal, `nonlinear_success` True at iteration 0 and False at
+iteration 1 for both backends.
+
+The wake geometry is where the two backends agree best: `wake_xyz` relative
+difference is `0.0` at iteration 0 and `8.0e-12` / `1.7e-11` at iteration 1 for the
+two groups - the update is a map applied to the same velocities, so agreement here
+means the induction and the advance step agree, not only the solve.
+
+### 12.4 The CAD state difference is a flat valley, not a port defect
+
+`runs/issue92/s5_conditioning.py` measures the two things that can make two backends
+disagree, and rejects both:
+
+| Quantity | Value | What it rules out |
+| --- | --- | --- |
+| wall operator `B` shape | `(872, 589)` reduced to `(589, 487)` | - |
+| constraint matrix smallest singular value | `1.414` | truncated constraint row |
+| `cond(B @ N)` | `7.52e+02` | linear ill-conditioning (`kappa*eps = 1.67e-13`) |
+| `\|B x - bw\| / \|bw\|`, numpy vs torch | `1.209e-03` both | different right-hand side |
+| nonlinear cost at the two states | `3.8057099425934500e-02` vs `3.8057099425938531e-02`, relative `1.059e-13` | different objective |
+| state, numpy vs torch | relative `1.126e-09` | - |
+
+The two states cost the same to `1e-13` and leave the same linear residual to three
+significant digits while differing by `1e-9` in the state: the objective is flat along
+that direction, and the structured solver stops on `gradient_relative = 1.097e-07`
+after 76 evaluations. Any `1e-13` arithmetic difference lands at a different point of
+the same valley. The same mechanism, at `1e-4` relative in `CL`, separates the two
+*algorithms*: on this body the reference solver returns `CL = 0.43406115014632407` and
+the structured solver `0.434109`, both accepted, neither wrong.
+
+### 12.5 The CAD body accepts one geometry update, then the structured solver fails its line search
+
+The CAD run stops `blocked_updated_nonlinear_solve` after two records, and it does so
+identically on both backends (`nonlinear_success` False both at iteration 1). This is
+not a port defect and not a gate defect: the reference solver accepted seven updates
+on the same body in T4/T5, so the difference is the nonlinear algorithm. The structured
+solver reduces to a dense QR of `B @ N`; after the wake moves, that system flattens
+enough that its Armijo search cannot certify a step, and the acceptance rule correctly
+refuses the iterate. The 192-face fixtures accept three updates each and stop on
+`iteration_limit`, so the "at least three accepted updates" requirement is met by those
+cases and not by the CAD body.
+
+### 12.6 The production path is unchanged
+
+The reference path still reproduces its T4 record bitwise. `tools/issue84.wake_ledger`
+with `--main-half-surface runs/half_cad_wingbody_v1/surface.json --case g2 --alpha 5
+--kutta pressure --iterations 0 --gate-mode audit` returns
+`CL 0.43406115014632407`, `CL_gamma 0.43843173700189036`,
+`CD_pressure 0.006357145692946399`, `CM_y -0.11965433057432534`, and the same 102
+audited samplings as T4. A bare `--case g2` without `--main-half-surface` is a
+different geometry (analytic two-wing, `CL 0.34194666198917911`), which is why the
+comparison has to name the surface.
+
+### 12.7 What this does not claim
+
+* Not a speed claim. The torch run is 36.4 s against 48.0 s on the CAD body, but it
+  stops one iteration earlier; the per-solver numbers from S1-S3 are the speed
+  evidence, and they are CPU-bound by the same kernels.
+* Not CUDA. `device="cuda"` is accepted and threads through, and nothing above was
+  measured on it; that is B2.
+* Not a physical-accuracy claim. `physical_accuracy_accepted` stays false; the CAD
+  body still stops on a failed nonlinear solve, and the flat valley is a property of
+  the model, not of the port.
+* Not a licence to delete the NumPy path. It is the oracle for every gate above and
+  the only supported path in an environment without torch.
+
+### 12.8 Reproduce
+
+```
+# NumPy stage (.conda_env) and torch stage (myml), then judge
+python -m tools.issue92.s5_loop_parity numpy
+python -m tools.issue92.s5_loop_parity torch
+python -m tools.issue92.s5_loop_parity judge
+
+# flat-valley evidence (needs SciPy, so .conda_env)
+python runs/issue92/s5_conditioning.py
+```

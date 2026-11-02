@@ -29,7 +29,9 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 BUNDLE = REPO / "docs" / "issue92" / "s3_reference_g1_wing_rect.npz"
 TORCH_MODULES = ("panel/p1_pressure_kutta_torch.py",
                  "panel/p1_pressure_kutta_torch_driver.py",
-                 "panel/p1_rank_aware_torch.py")
+                 "panel/p1_rank_aware_torch.py",
+                 "panel/p1_assembly_torch.py",
+                 "panel/p1_solve_torch.py")
 
 pytestmark = pytest.mark.filterwarnings("ignore::DeprecationWarning")
 

@@ -852,7 +852,9 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 adaptive_budget=2e-4, adaptive_max_escalations=2,
                                 gate_mode="audit", truncation_policy="advance",
                                  analytic_backend="loop", analytic_device="cpu",
-                                 analytic_chunk=64, save_callback=None):
+                                 analytic_chunk=64, solve_backend="numpy",
+                                 solve_device="cpu", pressure_solver=None,
+                                 save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -862,6 +864,25 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     from .p1_lifting_g2 import assemble_multi, solve_multi
     from .p1_steady_free_wake import (prepare_wake_material, reassemble_wake_only,
                                      with_wake_xyz)
+
+    def _solve(target, operators_for_solve):
+        """Solve the potential system on the selected backend.
+
+        'numpy' keeps the production NumPy/SciPy path. 'torch' uses the ported
+        torch.linalg chain (S5) and returns host arrays for everything downstream,
+        because a NumPy LAPACK call after a torch kernel crashes the process.
+        """
+        if solve_backend == "numpy":
+            return solve_multi(target, alpha_deg, kutta=kutta, max_nfev=max_nfev,
+                               operators=operators_for_solve,
+                               pressure_solver=pressure_solver or "reference")
+        from .p1_solve_torch import solve_multi_torch
+        solved = solve_multi_torch(target, alpha_deg, kutta=kutta, max_nfev=max_nfev,
+                                   operators=operators_for_solve, device=solve_device)
+        for key in ("mu", "gamma", "cp"):
+            solved[key] = np.asarray(solved[key])
+        solved["force"] = np.asarray(solved["force"], float)
+        return solved
     if (type(iterations) is not int or iterations < 0 or type(max_backtracks) is not int
             or max_backtracks < 0 or not 0 < relaxation <= 1
             or not all(np.isfinite(v) and v > 0 for v in
@@ -885,6 +906,16 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         raise ValueError("analytic_backend must be 'loop', 'numpy' or 'torch'")
     if analytic_backend != "loop" and velocity_method != "analytic_edges":
         raise ValueError("analytic_backend applies only to velocity_method='analytic_edges'")
+    if solve_backend not in ("numpy", "torch"):
+        raise ValueError("solve_backend must be 'numpy' or 'torch'")
+    if solve_device not in ("cpu", "cuda"):
+        raise ValueError("solve_device must be 'cpu' or 'cuda'")
+    if solve_backend != "torch" and solve_device != "cpu":
+        raise ValueError("solve_device='cuda' requires solve_backend='torch'")
+    if pressure_solver not in (None, "reference", "structured"):
+        raise ValueError("pressure_solver must be None, 'reference' or 'structured'")
+    if solve_backend == "torch" and pressure_solver == "reference":
+        raise ValueError("the torch backend implements only pressure_solver='structured'")
     gates = GeometryGates() if gates is None else gates
     if (not np.isfinite(gates.max_area_ratio) or gates.max_area_ratio <= 1
             or not 0 < gates.max_fold_deg < 90 or not gates.max_step_fraction > 0
@@ -897,7 +928,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     declared = declared_contact_pairs([g.wake_faces for g in mesh.groups], mesh.faces,
                                       group_labels=[g.name for g in mesh.groups])
     static = assemble_multi(mesh)
-    fixed = solve_multi(mesh, alpha_deg, kutta=kutta, max_nfev=max_nfev, operators=static)
+    fixed = _solve(mesh, static)
     current, history, incoming = mesh, [], None
     status = 'iteration_limit'
     load_names = ('CL', 'CL_gamma', 'CD_pressure', 'CM_y')
@@ -921,8 +952,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             initial_equivalence = {k: 0. for k in load_names}
             initial_equivalence["W_relative"] = w_relative
         else:
-            state = solve_multi(current, alpha_deg, kutta=kutta,
-                                max_nfev=max_nfev, operators=ops)
+            state = _solve(current, ops)
         field = TotalVelocity(current, state, method=velocity_method, core_radius=core_radius,
                               area_quadrature=area_quadrature,
                               fan_order=fan_order, fan_strips=fan_strips,
@@ -969,6 +999,11 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
         record.update(iteration=iteration, velocity_method=velocity_method,
+                      solve_backend=solve_backend, solve_device=solve_device,
+                      pressure_solver=(None if kutta != "pressure" else
+                                       (pressure_solver or
+                                        ("structured" if solve_backend == "torch"
+                                         else "reference"))),
                       analytic_backend=analytic_backend,
                       analytic_device=getattr(field, 'analytic_device', 'cpu'),
                       area_quadrature=area_quadrature, fan_order=fan_order,
@@ -980,7 +1015,13 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                             max(abs(state['CL_gamma']), 1e-12)),
                       wakes={}, incoming_update=incoming)
         constraint = ops['J'] if kutta == 'pressure' else np.vstack((ops['J'], ops['K']))
-        sv = np.linalg.svd(constraint, compute_uv=False)
+        if solve_backend == "torch":
+            import torch as _torch
+            _c = _torch.as_tensor(np.asarray(constraint, float), dtype=_torch.float64,
+                                  device=solve_device)
+            sv = _torch.linalg.svdvals(_c).detach().cpu().numpy()
+        else:
+            sv = np.linalg.svd(constraint, compute_uv=False)
         record['constraint_rank'] = int(np.sum(sv > 1e-11*sv[0]))
         record['constraint_singular_min'] = float(sv[-1])
         targets, counts, step_scales = {}, {}, {}
