@@ -745,7 +745,8 @@ cold/warm/H2D/VRAM accounting above is reproducible with one command.
 
 Not claimed: any CUDA speedup. On the fixtures in this repository the GPU is slower for
 the solve and neutral for the iteration. The measured lever for the iteration is the
-geometry gate: 86% of its time is `_bounds_overlap` in Python.
+geometry gate: 86% of its time is `_bounds_overlap` in Python; section 14 takes that
+lever and re-measures.
 
 ### 13.4 Reproduce
 
@@ -756,3 +757,83 @@ python -m tools.issue92.b2_profile               # cProfile of one CAD iteration
 ```
 
 `docs/issue92/b2_cuda_bench.json` holds the table above in machine-readable form.
+
+## 14. The lever section 13 identified: the geometry gate is now one array pass
+
+Section 13 measured 86% of a CAD iteration inside `_bounds_overlap`, called 5,850,348
+times from a Python double loop over wake/step triangle pairs. The gate now builds the
+pair mask for all boxes at once: `_bounds_candidates(first_min, first_max, second_min,
+second_max, tol)` in `panel/p1_coupled_material_wake.py` evaluates the same predicate
+(two boxes overlap unless they are separated on at least one axis) as a `(N, M)` boolean
+array, and `geometry_audit` scans `np.nonzero(mask[i])[0]` instead of `range(len(wall))`.
+Row-major scanning keeps the pair order, so pair counts, budget cut-offs and the order in
+which violations are reported are unchanged.
+
+### 14.1 The decision is unchanged, to the last bit
+
+Three independent checks, all run against the code at `b2264cc`:
+
+* the full audit detail of a CAD candidate hashes to the same value
+  (`9aa3999781224e5347f1723d6f13a3bd78ea4b9f02cda89a53237a560695818d`, 54 pairs tested,
+  same classes, same worst depth), measured by stashing the change and re-running
+  `runs/issue92/audit_fingerprint.py`;
+* the coupled CAD iteration keeps its parity numbers exactly (loop relative differences
+  CL 1.27e-7, CD_pressure 1.39e-6, CM_y 2.68e-8, solve 2.2e-9 ... 1.3e-8) and its status
+  (`blocked_updated_nonlinear_solve`);
+* `test/test_geometry_gate_vectorised.py` (8 tests) compares the mask against
+  `_bounds_overlap` for every pair of random boxes across four seeds, at tolerances that
+  straddle the contact boundary (0, 0.25, 0.49, 0.5, 0.51, 1.0), for degenerate boxes,
+  and for the row-major order the gate relies on.
+
+### 14.2 Measurements (same harness, `tools/issue92/b2_cuda_bench.py`)
+
+| Case | Device | Iteration before (s) | Iteration after (s) | Ratio |
+| --- | --- | --- | --- | --- |
+| `g2_conventional` | CPU | 0.264 | 0.222 | 1.19x |
+| `g2_conventional` | CUDA | 0.387 | 0.350 | 1.11x |
+| `g2_cad` | CPU | 33.79 | 6.83 | 4.95x |
+| `g2_cad` | CUDA | 32.29 | 5.04 | 6.41x |
+
+Parity and status are unchanged on all four rows (`iteration_limit` for the small
+fixture, `blocked_updated_nonlinear_solve` for the CAD body). `g2_cad` is where the
+gate dominated, and it is the row that moves by ~5x.
+
+### 14.3 What the balance looks like now, and where the device finally pays
+
+`tools/issue92/b2_profile.py` again, one CAD iteration: 9.69 s profiled (6.8 s wall), of
+which
+
+* the sampling ladder (`limits` -> `evaluate_many` -> `TorchAnalyticSheetField.velocity`,
+  32 block calls, 96268 `np.cross` calls) **3.79 s (39%)**;
+* `geometry_audit` **2.23 s (23%)**, now dominated by `classify_swept_wall` and
+  `convex_overlap` on the pairs that actually overlap rather than by the box test;
+* `assemble_multi` 1.38 s, `_doublet_matrix` 1.37 s.
+
+So the ordering section 13 predicted has flipped: induction is the largest single item
+again, and only now does the device show up in the loop. On the CAD body the coupled
+iteration is **5.04 s on CUDA against 6.83 s on CPU, 1.35x**, whereas the 108-unknown
+fixture is still 1.58x slower on CUDA (0.350 s vs 0.222 s) because it spends its time in
+launch latency, not arithmetic. That is the crossover B2 was meant to find, and it is a
+crossover in problem size, not a blanket speedup.
+
+### 14.4 Not claimed
+
+* Not a default change: `solve_device` stays `cpu`, the vectorised gate is the only
+  change on the default path and it is decision-equivalent.
+* Not a claim that CUDA is now generally faster. One CAD-size fixture is 1.35x; the small
+  fixture is slower; nothing here justifies switching the default.
+* Not a claim that the gate is free: it is still 23% of the iteration, and the remaining
+  cost is in the classification of the pairs that genuinely overlap, which is a geometry
+  question (zero-thickness wake inside a thick trailing-edge gap, section 13 of
+  `docs/ISSUE84_T5_CONTACT_AND_STEP_CONTROL.md`), not a loop-shape question.
+
+### 14.5 Reproduce
+
+```
+python -m tools.issue92.b2_cuda_bench --case g2_cad --out runs/issue92/cad_both.json
+python -m tools.issue92.b2_profile
+python -m pytest test/test_geometry_gate_vectorised.py test/test_p1_coupled_material_wake.py
+```
+
+`docs/issue92/b2_cuda_bench_vectorised.json` holds the post-change table, and
+`docs/issue92/b2_cuda_bench.json` the pre-change one, both from the same harness.

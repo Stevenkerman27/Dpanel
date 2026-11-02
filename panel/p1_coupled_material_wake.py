@@ -546,6 +546,26 @@ def _bounds_overlap(p, q, tol):
                 or np.any(q.max(axis=0) < p.min(axis=0)-tol))
 
 
+def _bounds_candidates(first_min, first_max, second_min, second_max, tol):
+    """Pair mask of bounding-box overlaps, same predicate as _bounds_overlap.
+
+    Two boxes overlap unless they are separated on at least one axis. Evaluating
+    the predicate for every pair at once replaces the Python double loop that
+    dominated the coupled iteration (5.85M calls, 86% of a CAD iteration in
+    tools/issue92/b2_profile.py); the pair ORDER is preserved because callers
+    scan the mask row by row.
+    """
+    first_min = np.asarray(first_min, float).reshape(-1, 3)
+    first_max = np.asarray(first_max, float).reshape(-1, 3)
+    second_min = np.asarray(second_min, float).reshape(-1, 3)
+    second_max = np.asarray(second_max, float).reshape(-1, 3)
+    separated = np.zeros((len(first_min), len(second_min)), bool)
+    for axis in range(3):
+        separated |= first_max[:, axis, None] < second_min[None, :, axis]-tol
+        separated |= second_max[None, :, axis] < first_min[:, axis, None]-tol
+    return ~separated
+
+
 def convex_overlap(p, q, tol):
     """Conservative SAT overlap of small convex point hulls, including coplanar.
 
@@ -747,11 +767,19 @@ def geometry_audit(mesh, candidates, materials, gates, *, declared=None, step_sc
         np.linalg.norm(wall[:, 2]-wall[:, 1], axis=1)),
         np.linalg.norm(wall[:, 0]-wall[:, 2], axis=1))
     pairs = 0
+    # Bounding boxes are computed once and compared for every pair at once; the
+    # scan order (i ascending, j ascending among overlapping pairs) is the same
+    # as the reference double loop, so pair counts and reported violations do
+    # not change.
+    hulls = np.asarray(swept, float)
+    hull_min, hull_max = hulls.min(axis=1), hulls.max(axis=1)
+    wall_min, wall_max = wall.min(axis=1), wall.max(axis=1)
+    near_wall = _bounds_candidates(hull_min, hull_max, wall_min, wall_max, tol)
+    near_self = _bounds_candidates(hull_min, hull_max, hull_min, hull_max, tol)
     for i, hull in enumerate(swept):
         label, face_id = owners[i]
-        for j, tri in enumerate(wall):
-            if not _bounds_overlap(hull, tri, tol):
-                continue
+        for j in np.nonzero(near_wall[i])[0]:
+            tri = wall[j]
             pairs += 1
             if pairs > gates.max_collision_pairs:
                 detail['contacts']['pairs_tested'] = pairs
@@ -806,10 +834,10 @@ def geometry_audit(mesh, candidates, materials, gates, *, declared=None, step_sc
     if detail['contacts']['violations_count']:
         return dict(reason='wall', detail=detail)
     for i, hull in enumerate(swept):
-        for j in range(i):
+        for j in np.nonzero(near_self[i])[0]:
+            if j >= i:
+                break
             if vertex_sets[i] & vertex_sets[j]:  # local fold gate covers neighbours
-                continue
-            if not _bounds_overlap(hull, swept[j], tol):
                 continue
             pairs += 1
             if pairs > gates.max_collision_pairs:
