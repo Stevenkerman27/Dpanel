@@ -107,6 +107,7 @@ def _solve_reference(system, pressure_solver, kutta=KUTTA):
         state = np.r_[out["mu"], out["gamma"]]
     elapsed = time.perf_counter() - started
     return dict(state=state, seconds=elapsed, status=out.get("pressure_status"),
+                success=out.get("pressure_success"),
                 nfev=out.get("pressure_nfev"), message=str(out.get("pressure_message")),
                 loads={key: float(out[key]) for key in ("CL", "CL_gamma", "CD_pressure", "CM_y")},
                 nonlinear=out.get("nonlinear"))
@@ -149,7 +150,9 @@ def _acceptance(system, state, decision):
         value = reduction @ t
         return np.vstack((system["B"], WEIGHT * jacobian(value))) @ reduction
 
-    stub = SimpleNamespace(success=bool(decision.get("success")),
+    # Fail closed: a missing success flag silently turns every stop into the
+    # "status == 0" branch and inverts the verdict (this tool shipped that bug once).
+    stub = SimpleNamespace(success=bool(decision["success"]),
                            status=int(decision["status"]),
                            message=str(decision["message"]),
                            nfev=int(decision["nfev"]))
@@ -181,7 +184,10 @@ def capture(work, only=()):
         runs = {}
         for label in ("reference", "structured"):
             out = _solve_reference(system, label)
-            runs[label] = dict(status=int(out["status"]), nfev=int(out["nfev"]),
+            if out["success"] is None:
+                raise RuntimeError("%s: %s did not report pressure_success" % (name, label))
+            runs[label] = dict(status=int(out["status"]), success=bool(out["success"]),
+                               nfev=int(out["nfev"]),
                                message=out["message"], seconds=out["seconds"],
                                loads=out["loads"])
             np.save(work / ("%s_%s_state.npy" % (name, label)), out["state"])
@@ -235,6 +241,7 @@ def torch(work, only=(), device="cpu"):
         result = out.result
         summary["cases"][name] = dict(status="ok", seconds=elapsed,
                                       status_flag=int(result.status),
+                                      success=bool(result.success),
                                       nfev=int(result.nfev), nit=int(result.nit),
                                       backtracks=int(result.backtracks),
                                       message=str(result.message),
@@ -274,7 +281,7 @@ def judge(work, out_path=None, only=()):
             row = torched["cases"][name]
             decisions["torch"] = dict(status=row["status_flag"], nfev=row["nfev"],
                                       message=row["message"], seconds=row["seconds"],
-                                      success=None)
+                                      success=bool(row["success"]))
         from tools.issue92.s2_loads import loads_multi, loads_single
 
         rows = {}

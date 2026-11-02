@@ -9,14 +9,14 @@
           "status": 2,
           "nfev": 4,
           "message": "`ftol` termination condition is satisfied.",
-          "seconds": 0.037015900015830994,
+          "seconds": 0.034704399993643165,
           "loads": {
             "CL": 0.31947298897042903,
             "CL_gamma": 0.2819235972196489,
             "CD_pressure": -0.013407339445502762,
             "CM_y": -0.0486012741190873
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -32,14 +32,14 @@
           "status": 2,
           "nfev": 7,
           "message": "ftol termination condition is satisfied",
-          "seconds": 0.03161740000359714,
+          "seconds": 0.03114889992866665,
           "loads": {
             "CL": 0.31947298897041854,
             "CL_gamma": 0.28192359721963856,
             "CD_pressure": -0.013407339445503149,
             "CM_y": -0.04860127411908337
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -55,14 +55,14 @@
           "status": 2,
           "nfev": 7,
           "message": "ftol termination condition is satisfied",
-          "seconds": 0.008825899916701019,
+          "seconds": 0.009081299998797476,
           "loads": {
             "CL": 0.31947298897041276,
             "CL_gamma": 0.28192359721963306,
             "CD_pressure": -0.013407339445503397,
             "CM_y": -0.04860127411908102
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -125,14 +125,14 @@
           "status": 3,
           "nfev": 10,
           "message": "`xtol` termination condition is satisfied.",
-          "seconds": 0.04018670006189495,
+          "seconds": 0.03636699996422976,
           "loads": {
             "CL": 0.45029134820016536,
             "CL_gamma": 0.42222006422924224,
             "CD_pressure": -0.013572436550737716,
             "CM_y": -0.1295120782621358
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -148,14 +148,14 @@
           "status": 4,
           "nfev": 7,
           "message": "relative gradient tolerance reached",
-          "seconds": 0.03269559994805604,
+          "seconds": 0.0317014999454841,
           "loads": {
             "CL": 0.45029134820015126,
             "CL_gamma": 0.42222006422923064,
             "CD_pressure": -0.013572436550739073,
             "CM_y": -0.1295120782621284
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -171,14 +171,14 @@
           "status": 4,
           "nfev": 7,
           "message": "relative gradient tolerance reached",
-          "seconds": 0.0029706000350415707,
+          "seconds": 0.0032484999392181635,
           "loads": {
             "CL": 0.4502913482001543,
             "CL_gamma": 0.42222006422923136,
             "CD_pressure": -0.013572436550738795,
             "CM_y": -0.12951207826212957
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -241,14 +241,14 @@
           "status": 2,
           "nfev": 7,
           "message": "`ftol` termination condition is satisfied.",
-          "seconds": 11.020245599909686,
+          "seconds": 10.864619300002232,
           "loads": {
             "CL": 0.4674214526153768,
             "CL_gamma": 0.4591177927908034,
             "CD_pressure": 0.007219985624543298,
             "CM_y": -0.3761363619455591
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -264,14 +264,14 @@
           "status": 2,
           "nfev": 13,
           "message": "ftol termination condition is satisfied",
-          "seconds": 7.187033099937253,
+          "seconds": 7.007444499991834,
           "loads": {
             "CL": 0.46742145261538987,
             "CL_gamma": 0.4591177927908167,
             "CD_pressure": 0.007219985624544143,
             "CM_y": -0.37613636194556954
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -287,14 +287,14 @@
           "status": 2,
           "nfev": 13,
           "message": "ftol termination condition is satisfied",
-          "seconds": 0.251147500006482,
+          "seconds": 0.24547849991358817,
           "loads": {
             "CL": 0.46742145261539014,
             "CL_gamma": 0.4591177927908177,
             "CD_pressure": 0.007219985624543635,
             "CM_y": -0.37613636194557004
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -357,14 +357,14 @@
           "status": 2,
           "nfev": 12,
           "message": "`ftol` termination condition is satisfied.",
-          "seconds": 20.024872199981473,
+          "seconds": 19.416775099933147,
           "loads": {
             "CL": 0.3472736155437683,
             "CL_gamma": 0.3400753819393768,
             "CD_pressure": 0.0049227372732021,
             "CM_y": -0.07531996207332511
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -380,14 +380,14 @@
           "status": 5,
           "nfev": 26,
           "message": "relative gradient stagnated",
-          "seconds": 10.545926699996926,
+          "seconds": 10.168849300011061,
           "loads": {
             "CL": 0.34727363830978286,
             "CL_gamma": 0.3400754044409887,
             "CD_pressure": 0.004922738570969415,
             "CM_y": -0.07531997502602951
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -403,14 +403,14 @@
           "status": 2,
           "nfev": 21,
           "message": "ftol termination condition is satisfied",
-          "seconds": 0.4824833000311628,
+          "seconds": 0.47838460002094507,
           "loads": {
             "CL": 0.3472735401552399,
             "CL_gamma": 0.34007530742104725,
             "CD_pressure": 0.004922732979476236,
             "CM_y": -0.07531991918622981
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -473,14 +473,14 @@
           "status": 1,
           "nfev": 5,
           "message": "`gtol` termination condition is satisfied.",
-          "seconds": 0.07625389995519072,
+          "seconds": 0.07156289997510612,
           "loads": {
             "CL": 0.3654723302039162,
             "CL_gamma": 0.34233313568958107,
             "CD_pressure": -0.017593346735200358,
             "CM_y": -0.11257278167355603
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -496,14 +496,14 @@
           "status": 4,
           "nfev": 7,
           "message": "relative gradient tolerance reached",
-          "seconds": 0.021825000061653554,
+          "seconds": 0.0257265999680385,
           "loads": {
             "CL": 0.36547233109364924,
             "CL_gamma": 0.3423331354153357,
             "CD_pressure": -0.01759334645006751,
             "CM_y": -0.11257278213414115
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -519,14 +519,14 @@
           "status": 4,
           "nfev": 7,
           "message": "relative gradient tolerance reached",
-          "seconds": 0.013876700075343251,
+          "seconds": 0.0036645999643951654,
           "loads": {
             "CL": 0.3654723310936416,
             "CL_gamma": 0.34233313541532817,
             "CD_pressure": -0.01759334645006813,
             "CM_y": -0.11257278213412622
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -589,14 +589,14 @@
           "status": 2,
           "nfev": 5,
           "message": "`ftol` termination condition is satisfied.",
-          "seconds": 0.07152890006545931,
+          "seconds": 0.0676198999863118,
           "loads": {
             "CL": 0.3628331801624354,
             "CL_gamma": 0.34093083993870726,
             "CD_pressure": -0.017749943753945112,
             "CM_y": -0.10785366039367245
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -612,14 +612,14 @@
           "status": 4,
           "nfev": 7,
           "message": "relative gradient tolerance reached",
-          "seconds": 0.02190130006056279,
+          "seconds": 0.020288200001232326,
           "loads": {
             "CL": 0.36283318117853136,
             "CL_gamma": 0.340930839744551,
             "CD_pressure": -0.01774994347492911,
             "CM_y": -0.10785366101494447
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -635,14 +635,14 @@
           "status": 4,
           "nfev": 7,
           "message": "relative gradient tolerance reached",
-          "seconds": 0.003599800053052604,
+          "seconds": 0.003724200068973005,
           "loads": {
             "CL": 0.3628331811785291,
             "CL_gamma": 0.34093083974454863,
             "CD_pressure": -0.01774994347492911,
             "CM_y": -0.10785366101494344
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -705,14 +705,14 @@
           "status": 2,
           "nfev": 15,
           "message": "`ftol` termination condition is satisfied.",
-          "seconds": 2.139727000030689,
+          "seconds": 2.099718000041321,
           "loads": {
             "CL": 0.5361115367532608,
             "CL_gamma": 0.5411492998787445,
             "CD_pressure": 0.01596183706159363,
             "CM_y": -0.1360040833956841
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -728,14 +728,14 @@
           "status": 2,
           "nfev": 29,
           "message": "ftol termination condition is satisfied",
-          "seconds": 1.1377305999631062,
+          "seconds": 1.10419510002248,
           "loads": {
             "CL": 0.5361115364897128,
             "CL_gamma": 0.5411492995949563,
             "CD_pressure": 0.015961837015539715,
             "CM_y": -0.13600408324463995
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -751,14 +751,14 @@
           "status": 2,
           "nfev": 29,
           "message": "ftol termination condition is satisfied",
-          "seconds": 0.04601719998754561,
+          "seconds": 0.045263800071552396,
           "loads": {
             "CL": 0.5361115365754094,
             "CL_gamma": 0.541149299687493,
             "CD_pressure": 0.01596183703074081,
             "CM_y": -0.13600408329394126
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -821,14 +821,14 @@
           "status": 2,
           "nfev": 17,
           "message": "`ftol` termination condition is satisfied.",
-          "seconds": 13.521435300004669,
+          "seconds": 13.341709699947387,
           "loads": {
             "CL": 0.5535718574685162,
             "CL_gamma": 0.564202904082225,
             "CD_pressure": 0.013536902441149601,
             "CM_y": -0.1492822162576438
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -844,14 +844,14 @@
           "status": 2,
           "nfev": 26,
           "message": "ftol termination condition is satisfied",
-          "seconds": 6.5867347999010235,
+          "seconds": 6.098380199982785,
           "loads": {
             "CL": 0.5535717122315617,
             "CL_gamma": 0.5642027401527062,
             "CD_pressure": 0.013536888729257903,
             "CM_y": -0.14928213525682754
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,
@@ -867,14 +867,14 @@
           "status": 2,
           "nfev": 26,
           "message": "ftol termination condition is satisfied",
-          "seconds": 0.3042707999702543,
+          "seconds": 0.32953729992732406,
           "loads": {
             "CL": 0.5535717122323053,
             "CL_gamma": 0.564202740153511,
             "CD_pressure": 0.013536888729343248,
             "CM_y": -0.14928213525722778
           },
-          "accepted": false,
+          "accepted": true,
           "accepted_at_floor": false,
           "criteria": {
             "stationary": true,

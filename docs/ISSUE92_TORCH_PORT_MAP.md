@@ -321,26 +321,20 @@ Decision quantities. `acc` is `pressure_kutta_acceptance`; `floor` is `wall_over
 
 | fixture | ref st/nfev | structured st/nfev | torch st/nfev | floor (ref / struct / torch) | grad (ref / struct / torch) | acc |
 | --- | --- | --- | --- | --- | --- | --- |
-| g1_wing_rect | 2 / 4 | 2 / 7 | 2 / 7 | 1.0577997468 (3x) | 8.13e-12 / 8.37e-12 / 8.30e-12 | False |
-| g1_wing_camber | 3 / 10 | 4 / 7 | 4 / 7 | 1.0595427809 (3x) | 1.084e-10 / 1.085e-10 / 1.084e-10 | False |
-| g1_swept30 | 2 / 7 | 2 / 13 | 2 / 13 | 1.1558328838 (3x) | 2.09e-11 / 2.13e-11 / 2.17e-11 | False |
-| g1_elliptic | 2 / 12 | **5 / 26** | **2 / 21** | 1.0638500112 / 1.0638500103 / 1.0638500138 | 2.07e-10 / 1.39e-09 / 8.75e-10 | False |
-| g2_conventional | 1 / 5 | 4 / 7 | 4 / 7 | 1.0572540962 (3x) | 7.39e-13 / 6.24e-11 / 6.23e-11 | False |
-| g2_tail_low | 2 / 5 | 4 / 7 | 4 / 7 | 1.0563103721 (3x) | 8.66e-13 / 5.73e-11 / 5.73e-11 | False |
-| g1_wingbody_cad | 2 / 15 | 2 / 29 | 2 / 29 | 1.0143376710 (3x) | 1.34e-08 / 1.34e-08 / 1.34e-08 | False |
-| g1_wingbody_cad_3x | 2 / 17 | 2 / 26 | 2 / 26 | 1.0577264271 (3x) | 1.74e-09 / 2.30e-08 / 2.30e-08 | False |
+| g1_wing_rect | 2 / 4 | 2 / 7 | 2 / 7 | 1.0577997468 (3x) | 8.13e-12 / 8.37e-12 / 8.30e-12 | True |
+| g1_wing_camber | 3 / 10 | 4 / 7 | 4 / 7 | 1.0595427809 (3x) | 1.084e-10 / 1.085e-10 / 1.084e-10 | True |
+| g1_swept30 | 2 / 7 | 2 / 13 | 2 / 13 | 1.1558328838 (3x) | 2.09e-11 / 2.12e-11 / 2.17e-11 | True |
+| g1_elliptic | 2 / 12 | **5 / 26** | **2 / 21** | 1.0638500112 / 1.0638500103 / 1.0638500138 | 2.07e-10 / 1.39e-09 / 8.74e-10 | True |
+| g2_conventional | 1 / 5 | 4 / 7 | 4 / 7 | 1.0572540962 (3x) | 7.39e-13 / 6.24e-11 / 6.23e-11 | True |
+| g2_tail_low | 2 / 5 | 4 / 7 | 4 / 7 | 1.0563103721 (3x) | 8.66e-13 / 5.73e-11 / 5.73e-11 | True |
+| g1_wingbody_cad | 2 / 15 | 2 / 29 | 2 / 29 | 1.0143376710 (3x) | 1.34e-08 / 1.34e-08 / 1.34e-08 | True |
+| g1_wingbody_cad_3x | 2 / 17 | 2 / 26 | 2 / 26 | 1.0577264271 (3x) | 1.74e-09 / 2.29e-08 / 2.30e-08 | True |
 
 Acceptance classification agrees **8/8** across the three backends; `status`/`nfev`/`message` agree **7/8** between
-NumPy structured and torch. The exception is `g1_elliptic`:
-
-* NumPy structured stops on its **stagnation rule** at nfev 26 (`relative gradient stagnated`), torch stops on
-  **ftol** at nfev 21 (`ftol termination condition is satisfied`). The two rules race in a flat valley: the last
-  NumPy step slightly raised the relative gradient (1.37e-09 -> 1.39e-09), torch reached the ftol branch first at
-  8.75e-10. Both land on the same floor (1.0638500103 vs 1.0638500138, 1.3e-09 apart), the same acceptance, and CL
-  agrees to 2.2e-07.
-* Same lesson as S1 stress scenario, one level deeper: **a stopping rule is part of the algorithm, not a rounding
-  detail.** When two backends run the same algorithm and still disagree on which criterion fires, the honest report
-  is the pair of branches, not "matched within an nfev tolerance".
+NumPy structured and torch. The exception is `g1_elliptic`: NumPy structured stops on its **stagnation rule** at
+nfev 26 (`relative gradient stagnated`), torch stops on **ftol** at nfev 21 (`ftol termination condition is
+satisfied`). Section 10.5 shows that this branch assignment is roundoff, not a backend property - and that it does
+not change any verdict, because both branches report `status > 0` and therefore `success = True`.
 
 Loads, relative difference against the `trf` reference:
 
@@ -357,14 +351,25 @@ Loads, relative difference against the `trf` reference:
 
 Three observations, of which the first two are about the production state rather than the port:
 
-1. **Every fixture is rejected, and by two different doors.** `wall_over_floor` is 1.056-1.156 on seven fixtures,
-   above the 1.05 threshold; `g1_wingbody_cad` sits at 1.014 and passes the floor, but its stopping status is 2,
-   and acceptance requires `status == 0`. So `pressure_kutta_acceptance` returns `False` on all eight in all three
-   backends - the port reproduces the verdict exactly and cannot turn the pressure-Kutta branch into an accepted
-   solve.
+1. **Every fixture is accepted, and the wall floor does not enter the verdict.** `pressure_kutta_acceptance` is
+   `accepted = bool(result.success) or (status == 0 and stationary and at_floor and kutta_ok)`
+   (`p1_lifting_g2.py:249`), and both backends define `success = status > 0`. Every fixture converges on
+   ftol/xtol/relative-gradient/stagnation, so `success` is `True` and the verdict is accepted even where
+   `wall_over_floor` is 1.156. The floor criterion, and the 1.05 threshold in it, only ever applies to a `status == 0`
+   stop - in scipy terms the iteration-limit stop that the criterion was written for. Any statement of the form
+   "this geometry is rejected on the wall floor" is therefore impossible for a converged stop, and no fixture in this
+   set exercises the floor branch at all.
 2. `g1_elliptic` and `g1_wingbody_cad_3x` are the cases where the *structured* algorithm itself sits 1e-07-3e-07
    away from the `trf` floor. That gap is a property of the two algorithms on a flat residual, present before this
    port; structured and torch agree with each other to 2e-09 there.
+
+**Correction (same day).** The first version of this table reported `False` for every `acc` and claimed the
+fixtures were "rejected by two different doors". That was a bug in this tool, not a property of the solves: `capture`
+never stored the result's `success` flag, the judge rebuilt its stub with `decision.get("success")` (which returned
+`None`), so every stop fell into the `status == 0` branch and the verdict inverted. Fixed by making G1/G2 report
+`pressure_success` in their result dictionaries (`p1_lifting_g1.py`, `p1_lifting_g2.py`, additive keys), storing it in
+`capture`/`torch`, and requiring it in the judge (`decision["success"]`, so a missing field now raises instead of
+silently flipping the verdict). All numbers in this table are from the corrected run.
 3. Timings in this stage are **not** comparable and are not claimed: the torch stage starts from the frozen system
    (assembly and the linear initial state are produced by `capture` in the NumPy process), while the NumPy rows
    include `g1.assemble` inside `solve`. Like-for-like on `g1_elliptic`: 8.77 s assembly + 10.55 s full solve in
@@ -404,3 +409,37 @@ Test state: `test/test_p1_pressure_kutta_torch_driver.py` gives 8 passed in the 
 `PANEL_TORCH_PARITY=1`, and 3 passed / 5 skipped in `.conda_env` (the three static guards run everywhere). The gate to
 S4 is met: 8/8 acceptance classification, 7/8 identical decisions with the eighth documented as a stopping-rule race,
 loads to 3e-07 relative.
+
+### 10.5 Which stopping rule fires is roundoff, not a backend property
+
+The `g1_elliptic` disagreement above is not a difference between NumPy and torch. Take the frozen system and
+perturb only the initial state by a relative epsilon, re-solve with the *same* backend, and the branch moves:
+
+| relative perturbation of x0 | NumPy structured | torch | cost |
+| --- | --- | --- | --- |
+| 0 | 5 / 26 (stagnation) | 2 / 21 (ftol) | 1.3007820142340028e-04 / 1.3007820147918641e-04 |
+| +1e-13 | 4 / 19 (relative gradient) | 5 / 22 (stagnation) | 1.3007820147933430e-04 / 1.3007820147213742e-04 |
+| -1e-13 | 4 / 19 | 5 / 22 | 1.3007820147950932e-04 / 1.3007820147432046e-04 |
+| +1e-11 | 2 / 21 (ftol) | 4 / 22 | 1.3007820147951986e-04 / 1.3007820147741727e-04 |
+| -1e-11 | 4 / 21 | 5 / 22 | 1.3007820147763554e-04 / 1.3007820146989794e-04 |
+| +1e-9 | 4 / 19 | 4 / 21 | 1.3007820147939797e-04 / 1.3007820147416911e-04 |
+| -1e-9 | 2 / 23 | 5 / 21 | 1.3007820147697591e-04 / 1.3007820147543011e-04 |
+
+Three things follow, and they are the answer to "is the nfev-26 stagnation stop a meaningful difference":
+
+1. **The branch is a coin toss.** A 1e-13 perturbation - eleven orders below the acceptance threshold and below the
+   load tolerance - moves NumPy among status 4 (nfev 19), 2 (21, 23) and 5 (26), and torch among 2, 4 and 5. Neither
+   backend "prefers" a rule; the rules race on roundoff-sized cost improvements at the residual floor.
+2. **The verdict is invariant anyway.** All of those statuses are `> 0`, so `success = True` and
+   `pressure_kutta_acceptance` accepts in every row; the cost varies by 1e-13 relative and the loads by 2e-07. Nothing
+   in the solve changes except which criterion happened to fire last.
+3. **Therefore `status`/`nfev` equality is not a gate, and never should have been.** This is why the S3 gate compares
+   the acceptance classification and the loads against the reference, and uses status/nfev only as a cross-check
+   against the *same* algorithm. It also means S4/S5 must not key any production decision on the stopping branch near
+   the floor: "did it converge" is `success` plus the residual criteria, not `status == 2`.
+
+Reproduce:
+
+    python -m tools.issue92.branch_probe numpy --work runs/issue92/s3 --out runs/issue92/branch_numpy.json
+    <torch python> -m tools.issue92.branch_probe torch --work runs/issue92/s3 --out runs/issue92/branch_torch.json
+
