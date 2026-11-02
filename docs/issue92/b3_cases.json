@@ -1,0 +1,325 @@
+{
+  "schema": "dpanel.issue92.b3.cases.v1",
+  "alphas_deg": [
+    0.0,
+    2.0,
+    4.0,
+    6.0
+  ],
+  "dpanel_levels": {
+    "coarse": {
+      "chord_panels": 4,
+      "span_panels": 6
+    },
+    "fine": {
+      "chord_panels": 8,
+      "span_panels": 10
+    }
+  },
+  "cases": {
+    "rect": {
+      "kind": "rect",
+      "make_wing": {
+        "chord_panels": 4,
+        "span_panels": 6,
+        "thickness": 0.12,
+        "camber": 0.0,
+        "span": 4.0,
+        "chord": 1.0,
+        "wake_panels": 2
+      },
+      "sref": 4.0,
+      "cref": 1.0,
+      "moment_reference": [
+        0.25,
+        0.0,
+        0.0
+      ],
+      "stations": [
+        {
+          "y": 0.0,
+          "chord": 1.0,
+          "le_x": 0.0,
+          "twist_deg": 0.0,
+          "thickness": 0.12
+        },
+        {
+          "y": 2.0,
+          "chord": 1.0,
+          "le_x": 0.0,
+          "twist_deg": 0.0,
+          "thickness": 0.12
+        }
+      ],
+      "geometry_sha256": "b7f99ef2d4217e45a5a9b73a121eb810022e32f38bd259ab1736dda806760534",
+      "symmetry": 0,
+      "n_stations": 2,
+      "chord_root": 1.0,
+      "chord_tip": 1.0,
+      "half_span": 2.0
+    },
+    "swept30": {
+      "kind": "cad_half",
+      "surface": "cases/geom_robust/surfaces/swept30_s075/surface.json",
+      "surface_sha256": "5155468398265f82fbd0e91299b1f313af2f14c54fba4e5b8702e353dded8a72",
+      "sref": 3.0,
+      "cref": 1.0,
+      "moment_reference": [
+        0.25,
+        0.0,
+        0.0
+      ],
+      "stations": [
+        {
+          "y": 0.0,
+          "chord": 1.0,
+          "le_x": 0.0,
+          "twist_deg": 0.0,
+          "thickness": 0.121497387
+        },
+        {
+          "y": 0.5,
+          "chord": 0.875,
+          "le_x": 0.319925135,
+          "twist_deg": 0.0,
+          "thickness": 0.121409003
+        },
+        {
+          "y": 1.0,
+          "chord": 0.75,
+          "le_x": 0.639850269,
+          "twist_deg": 0.0,
+          "thickness": 0.121143438
+        },
+        {
+          "y": 1.5,
+          "chord": 0.625,
+          "le_x": 0.959775404,
+          "twist_deg": 0.0,
+          "thickness": 0.121480706
+        },
+        {
+          "y": 2.0,
+          "chord": 0.5,
+          "le_x": 1.279700538,
+          "twist_deg": 0.0,
+          "thickness": 0.119588034
+        }
+      ],
+      "geometry_sha256": "811881503396fbe3ef3b195bb212ffe4e398eebfee8b2a732fd10ec667560ec5",
+      "symmetry": 1,
+      "n_stations": 5,
+      "chord_root": 1.0,
+      "chord_tip": 0.5,
+      "half_span": 2.0
+    },
+    "elliptic": {
+      "kind": "cad_half",
+      "surface": "cases/geom_robust/surfaces/elliptic_s075/surface.json",
+      "surface_sha256": "310ddab41dbde522a28b1f1884b3547be5e05d4d4b6b22b533882a20534d7018",
+      "sref": 3.1722548357643863,
+      "cref": 1.0,
+      "moment_reference": [
+        0.25,
+        0.0,
+        0.0
+      ],
+      "stations": [
+        {
+          "y": 0.0,
+          "chord": 1.0,
+          "le_x": 0.0,
+          "twist_deg": 0.0,
+          "thickness": 0.119723121
+        },
+        {
+          "y": 0.31286893,
+          "chord": 0.988303924,
+          "le_x": 0.002924019,
+          "twist_deg": 0.0,
+          "thickness": 0.119723121
+        },
+        {
+          "y": 0.618033989,
+          "chord": 0.95350369,
+          "le_x": 0.011624077,
+          "twist_deg": 0.0,
+          "thickness": 0.120011479
+        },
+        {
+          "y": 0.907980999,
+          "chord": 0.896456198,
+          "le_x": 0.025885951,
+          "twist_deg": 0.0,
+          "thickness": 0.120011479
+        },
+        {
+          "y": 1.175570505,
+          "chord": 0.818566145,
+          "le_x": 0.045358464,
+          "twist_deg": 0.0,
+          "thickness": 0.119767694
+        },
+        {
+          "y": 1.414213562,
+          "chord": 0.721751442,
+          "le_x": 0.069562139,
+          "twist_deg": 0.0,
+          "thickness": 0.119965339
+        },
+        {
+          "y": 1.618033989,
+          "chord": 0.60839599,
+          "le_x": 0.097901003,
+          "twist_deg": 0.0,
+          "thickness": 0.119767694
+        },
+        {
+          "y": 1.782013048,
+          "chord": 0.481290975,
+          "le_x": 0.129677256,
+          "twist_deg": 0.0,
+          "thickness": 0.119723121
+        },
+        {
+          "y": 1.902113033,
+          "chord": 0.343566145,
+          "le_x": 0.164108464,
+          "twist_deg": 0.0,
+          "thickness": 0.116633896
+        },
+        {
+          "y": 1.975376681,
+          "chord": 0.198612742,
+          "le_x": 0.200346815,
+          "twist_deg": 0.0,
+          "thickness": 0.119767694
+        },
+        {
+          "y": 2.0,
+          "chord": 0.05,
+          "le_x": 0.2375,
+          "twist_deg": 0.0,
+          "thickness": 0.106599932
+        }
+      ],
+      "geometry_sha256": "40c76b952cb9f3930747479df180185baf0f41d924b2a3a8423fef3795f0b46d",
+      "symmetry": 1,
+      "n_stations": 11,
+      "chord_root": 1.0,
+      "chord_tip": 0.05,
+      "half_span": 2.0
+    },
+    "bwb": {
+      "kind": "cad_half",
+      "surface": "cases/geom_robust/surfaces/bwb_s055/surface.json",
+      "surface_sha256": "da8d1097724c1444da00f967fca3404f3a4f9f729341df4399c3de1733205911",
+      "sref": 1.2414970407424226,
+      "cref": 1.0,
+      "moment_reference": [
+        0.25,
+        0.0,
+        0.0
+      ],
+      "stations": [
+        {
+          "y": 0.0,
+          "chord": 1.0,
+          "le_x": 0.0,
+          "twist_deg": 0.0,
+          "thickness": 0.220409441
+        },
+        {
+          "y": 0.083333333,
+          "chord": 0.939742009,
+          "le_x": 0.029166667,
+          "twist_deg": 0.0,
+          "thickness": 0.212223607
+        },
+        {
+          "y": 0.166666667,
+          "chord": 0.878932917,
+          "le_x": 0.058333333,
+          "twist_deg": 0.0,
+          "thickness": 0.20432254
+        },
+        {
+          "y": 0.25,
+          "chord": 0.817511605,
+          "le_x": 0.0875,
+          "twist_deg": 0.0,
+          "thickness": 0.195445286
+        },
+        {
+          "y": 0.333333333,
+          "chord": 0.75540253,
+          "le_x": 0.116666667,
+          "twist_deg": 0.0,
+          "thickness": 0.187228513
+        },
+        {
+          "y": 0.416666667,
+          "chord": 0.692510055,
+          "le_x": 0.145833333,
+          "twist_deg": 0.0,
+          "thickness": 0.178428384
+        },
+        {
+          "y": 0.5,
+          "chord": 0.628709385,
+          "le_x": 0.175,
+          "twist_deg": 0.0,
+          "thickness": 0.169335328
+        },
+        {
+          "y": 0.583333333,
+          "chord": 0.563831142,
+          "le_x": 0.204166667,
+          "twist_deg": 0.0,
+          "thickness": 0.160287825
+        },
+        {
+          "y": 0.666666667,
+          "chord": 0.497632846,
+          "le_x": 0.233333333,
+          "twist_deg": 0.0,
+          "thickness": 0.149649411
+        },
+        {
+          "y": 0.75,
+          "chord": 0.429739671,
+          "le_x": 0.2625,
+          "twist_deg": 0.0,
+          "thickness": 0.140406839
+        },
+        {
+          "y": 0.833333333,
+          "chord": 0.359497493,
+          "le_x": 0.291666667,
+          "twist_deg": 0.0,
+          "thickness": 0.128219693
+        },
+        {
+          "y": 0.916666667,
+          "chord": 0.28547259,
+          "le_x": 0.320833333,
+          "twist_deg": 0.0,
+          "thickness": 0.116162352
+        },
+        {
+          "y": 1.0,
+          "chord": 0.2,
+          "le_x": 0.35,
+          "twist_deg": 0.0,
+          "thickness": 0.098534573
+        }
+      ],
+      "geometry_sha256": "87c0d4fcdd56a9815db4a14287e96acce45cacc9a1184d37ea11f25ec564809c",
+      "symmetry": 1,
+      "n_stations": 13,
+      "chord_root": 1.0,
+      "chord_tip": 0.2,
+      "half_span": 1.0
+    }
+  }
+}

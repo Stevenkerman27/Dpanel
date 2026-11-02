@@ -1,0 +1,132 @@
+{
+  "stage": "s4_assembly",
+  "thresholds": {
+    "a_max_relative": 1e-12,
+    "a_frobenius_relative": 1e-13,
+    "w_max_relative": 1e-12,
+    "grad_max_abs": 0.0
+  },
+  "cases": {
+    "g1_wing_rect": {
+      "kind": "g1",
+      "n_wall_faces": 112,
+      "n_dof": 63,
+      "n_gamma": 5,
+      "wake_mode": "nodal",
+      "numpy_assemble_seconds": 0.03210980002768338,
+      "a_max_relative": 5.28181406767597e-15,
+      "a_frobenius_relative": 2.365714607668599e-15,
+      "w_max_relative": 4.165875962374188e-16,
+      "grad_max_abs": 0.0,
+      "torch_assembly_seconds": 0.015239399974234402,
+      "passed": true
+    },
+    "g1_wing_camber": {
+      "kind": "g1",
+      "n_wall_faces": 112,
+      "n_dof": 63,
+      "n_gamma": 5,
+      "wake_mode": "nodal",
+      "numpy_assemble_seconds": 0.02889900002628565,
+      "a_max_relative": 4.0958045468984805e-15,
+      "a_frobenius_relative": 2.0975653599280874e-15,
+      "w_max_relative": 5.547346767199734e-16,
+      "grad_max_abs": 0.0,
+      "torch_assembly_seconds": 0.01040069991722703,
+      "passed": true
+    },
+    "g1_swept30": {
+      "kind": "g1",
+      "n_wall_faces": 2764,
+      "n_dof": 1447,
+      "n_gamma": 15,
+      "wake_mode": "nodal",
+      "numpy_assemble_seconds": 5.403177400003187,
+      "a_max_relative": 9.44943556028782e-16,
+      "a_frobenius_relative": 9.19362104361174e-16,
+      "w_max_relative": 1.3154105409429764e-15,
+      "grad_max_abs": 0.0,
+      "torch_assembly_seconds": 0.8495694999583066,
+      "passed": true
+    },
+    "g1_elliptic": {
+      "kind": "g1",
+      "n_wall_faces": 3220,
+      "n_dof": 1695,
+      "n_gamma": 33,
+      "wake_mode": "nodal",
+      "numpy_assemble_seconds": 7.641376300016418,
+      "a_max_relative": 1.5757765294551752e-15,
+      "a_frobenius_relative": 9.880731953733845e-16,
+      "w_max_relative": 2.7787727386049376e-15,
+      "grad_max_abs": 0.0,
+      "torch_assembly_seconds": 1.2034178000176325,
+      "passed": true
+    },
+    "g2_conventional": {
+      "kind": "g2",
+      "n_wall_faces": 192,
+      "n_dof": 108,
+      "n_gamma": 8,
+      "wake_mode": "nodal",
+      "numpy_assemble_seconds": 0.05457909998949617,
+      "a_max_relative": 4.8475026867910025e-15,
+      "a_frobenius_relative": 2.9325344827278214e-15,
+      "w_max_relative": 6.448243957573883e-16,
+      "grad_max_abs": 0.0,
+      "torch_assembly_seconds": 0.016680900007486343,
+      "passed": true
+    },
+    "g2_tail_low": {
+      "kind": "g2",
+      "n_wall_faces": 192,
+      "n_dof": 108,
+      "n_gamma": 8,
+      "wake_mode": "nodal",
+      "numpy_assemble_seconds": 0.05337139999028295,
+      "a_max_relative": 4.990141653912506e-15,
+      "a_frobenius_relative": 2.899231709973136e-15,
+      "w_max_relative": 6.180927441661964e-16,
+      "grad_max_abs": 0.0,
+      "torch_assembly_seconds": 0.017258099978789687,
+      "passed": true
+    },
+    "g1_wingbody_cad": {
+      "kind": "g1",
+      "n_wall_faces": 792,
+      "n_dof": 497,
+      "n_gamma": 44,
+      "wake_mode": "nodal",
+      "numpy_assemble_seconds": 0.762427999987267,
+      "a_max_relative": 1.940277501321369e-15,
+      "a_frobenius_relative": 1.1581321082680152e-15,
+      "w_max_relative": 5.138503011625744e-15,
+      "grad_max_abs": 0.0,
+      "torch_assembly_seconds": 0.18145750008989125,
+      "passed": true
+    },
+    "g1_wingbody_cad_3x": {
+      "kind": "g1",
+      "n_wall_faces": 2410,
+      "n_dof": 1308,
+      "n_gamma": 44,
+      "wake_mode": "nodal",
+      "numpy_assemble_seconds": 4.648438700009137,
+      "a_max_relative": 1.955518650434656e-15,
+      "a_frobenius_relative": 2.3928373672196157e-15,
+      "w_max_relative": 2.711132834863422e-15,
+      "grad_max_abs": 0.0,
+      "torch_assembly_seconds": 0.7868697999510914,
+      "passed": true
+    }
+  },
+  "passed": true,
+  "claims": [
+    "A, W and grad are reproduced entrywise from geometry tensors alone",
+    "grad is bit-identical because it is a scatter with no arithmetic"
+  ],
+  "non_claims": [
+    "assembly wall time on CPU is not a speed claim; the S5 solve stage is",
+    "loads and Cp post-processing are not covered here"
+  ]
+}

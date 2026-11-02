@@ -1,0 +1,156 @@
+{
+  "configs": [
+    {
+      "cuda_peak_vram_bytes": 41734144,
+      "errors": {
+        "numpy:cpu": {
+          "max": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "torch:cpu": {
+          "max": 3.552713678800501e-15,
+          "median": 4.440892098500626e-16,
+          "p90": 1.7763568394002505e-15
+        },
+        "torch:cuda": {
+          "max": 4.440892098500626e-15,
+          "median": 4.440892098500626e-16,
+          "p90": 2.0428103653102887e-15
+        }
+      },
+      "name": "fan16x4_gate109",
+      "order": 16,
+      "points": 109,
+      "strips": 4,
+      "times": {
+        "numpy:cpu": {
+          "best_s": 11.68419229995925,
+          "cold_s": 11.68419229995925,
+          "per_point_ms": 107.19442477026834
+        },
+        "torch:cpu": {
+          "best_s": 7.750341700040735,
+          "cold_s": 8.067812999943271,
+          "per_point_ms": 71.1040522939517
+        },
+        "torch:cuda": {
+          "best_s": 6.077888600004371,
+          "cold_s": 18.3929837999749,
+          "per_point_ms": 55.760445871599735
+        }
+      }
+    },
+    {
+      "cuda_peak_vram_bytes": 171761664,
+      "errors": {
+        "numpy:cpu": {
+          "max": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "torch:cpu": {
+          "max": 7.993605777301127e-15,
+          "median": 2.3869795029440866e-15,
+          "p90": 5.506706202140776e-15
+        },
+        "torch:cuda": {
+          "max": 7.105427357601002e-15,
+          "median": 2.220446049250313e-15,
+          "p90": 4.6185277824406506e-15
+        }
+      },
+      "name": "fan48x8_gate8",
+      "order": 48,
+      "points": 8,
+      "strips": 8,
+      "times": {
+        "numpy:cpu": {
+          "best_s": 11.007935200002976,
+          "cold_s": 11.007935200002976,
+          "per_point_ms": 1375.991900000372
+        },
+        "torch:cpu": {
+          "best_s": 3.0289775000419468,
+          "cold_s": 3.11378600000171,
+          "per_point_ms": 378.62218750524335
+        },
+        "torch:cuda": {
+          "best_s": 1.6708759000175633,
+          "cold_s": 2.5771015000063926,
+          "per_point_ms": 208.8594875021954
+        }
+      }
+    },
+    {
+      "cuda_peak_vram_bytes": 171761664,
+      "errors": {
+        "numpy:cpu": {
+          "max": 0.0,
+          "median": 0.0,
+          "p90": 0.0
+        },
+        "torch:cpu": {
+          "max": 1.7763568394002505e-15,
+          "median": 4.440892098500626e-16,
+          "p90": 1.7763568394002505e-15
+        },
+        "torch:cuda": {
+          "max": 2.6645352591003757e-15,
+          "median": 5.551115123125783e-16,
+          "p90": 1.7763568394002505e-15
+        }
+      },
+      "name": "fan8x1_gate40",
+      "order": 8,
+      "points": 40,
+      "strips": 1,
+      "times": {
+        "numpy:cpu": {
+          "best_s": 0.8098994999891147,
+          "cold_s": 0.8155665000085719,
+          "per_point_ms": 20.247487499727868
+        },
+        "torch:cpu": {
+          "best_s": 1.0612940000137314,
+          "cold_s": 1.1537300000200048,
+          "per_point_ms": 26.532350000343286
+        },
+        "torch:cuda": {
+          "best_s": 1.183554199989885,
+          "cold_s": 1.203488000028301,
+          "per_point_ms": 29.588854999747127
+        }
+      }
+    }
+  ],
+  "cuda": {
+    "available": true,
+    "device": "NVIDIA GeForce RTX 5060",
+    "version": "13.2"
+  },
+  "geometry": {
+    "core": 0.01,
+    "faces": 1666,
+    "gate_points": 109
+  },
+  "passed": true,
+  "python": "3.13.14",
+  "schema": "dpanel.issue92.backend_parity.v1",
+  "thresholds": {
+    "cpu_max_relative_error": 1e-12,
+    "cuda_max_relative_error": 1e-10
+  },
+  "torch": "2.13.0+cu132",
+  "verdict": {
+    "fan16x4_gate109:numpy:cpu": true,
+    "fan16x4_gate109:torch:cpu": true,
+    "fan16x4_gate109:torch:cuda": true,
+    "fan48x8_gate8:numpy:cpu": true,
+    "fan48x8_gate8:torch:cpu": true,
+    "fan48x8_gate8:torch:cuda": true,
+    "fan8x1_gate40:numpy:cpu": true,
+    "fan8x1_gate40:torch:cpu": true,
+    "fan8x1_gate40:torch:cuda": true
+  }
+}

@@ -3,7 +3,7 @@
 These tests drive panel.run_half_groups rather than the library API: they assert
 that the entry point reports reproducible hashes, real exit codes, the block
 structure [[D, W1..WG], [-T_g, M_g]] and the small-fixture battery F0-F8 as
-published in docs/ISSUE39_SHED_GROUPS_V2.md.
+published in docs/archive/issue/ISSUE39_SHED_GROUPS_V2.md.
 """
 import json
 from pathlib import Path

@@ -7,6 +7,7 @@ source-strength identity are only meaningful in double precision.
 temp directory (``PermissionError: [WinError 5]`` while listing
 ``pytest-of-*``), so pytest cannot create its own base temporary directory.
 """
+import os
 import pathlib
 import shutil
 import uuid

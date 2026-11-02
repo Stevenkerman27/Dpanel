@@ -1,4 +1,4 @@
-"""Render docs/ISSUE49_WAKE_SENSITIVITY.md from the VSPAERO wake sweep JSONs."""
+"""Render docs/archive/issue/ISSUE49_WAKE_SENSITIVITY.md from the VSPAERO wake sweep JSONs."""
 import json
 from pathlib import Path
 
@@ -6,7 +6,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 RES = HERE / "wakesweep" / "results.json"
 REF = HERE / "wakesweep" / "results_ref.json"
-OUT = ROOT / "docs" / "ISSUE49_WAKE_SENSITIVITY.md"
+OUT = ROOT / "docs" / "../../../docs/archive/issue/ISSUE49_WAKE_SENSITIVITY.md"
 
 
 def pct(new, old):
@@ -84,7 +84,7 @@ def main():
     if len(rl) == 4:
         a("- 松弛因子 0.2 / 0.5 / 1.0 的 CLtot 为 %.6f / %.6f / %.6f，跨度只有 %.2f%%：**在 nodes 32 上 relax 不是敏感项**。" % (
             rl[0]["CLtot"], rl[1]["CLtot"], rl[2]["CLtot"], abs(pct(rl[2]["CLtot"], rl[0]["CLtot"]))))
-        a("- 需要修正早先的记录：`docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` 的「relax = 1 会发散」是在**粗网格 + nodes 8** 上观察的；在 12996 面、nodes 32 上")
+        a("- 需要修正早先的记录：`docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` 的「relax = 1 会发散」是在**粗网格 + nodes 8** 上观察的；在 12996 面、nodes 32 上")
         a("  relax = 1 给出 %.6f（比 relax = 0.5 低 %.2f%%），并未发散。该结论不能外推。" % (rl[2]["CLtot"], abs(pct(rl[2]["CLtot"], rl[1]["CLtot"]))))
         a("- 冻结尾迹（`FreezeWakeAtIteration = 1`）给 %.6f，比迭代尾迹高 %+.2f%%。" % (rl[3]["CLtot"], pct(rl[3]["CLtot"], rl[1]["CLtot"])))
     a("")

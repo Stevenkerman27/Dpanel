@@ -1,6 +1,6 @@
 """Item C3 follow-up: the near-sheet aliasing source is sliver triangles, not *distance*.
 
-Earlier (docs/ISSUE84_RM_BENCH.md section 3) I reported that no single quadrature
+Earlier (docs/archive/issue/ISSUE84_RM_BENCH.md section 3) I reported that no single quadrature
 order converges near the sheet and that order 32 is the worst.  Re-measuring per
 part shows the effect is owned by a handful of 520:1 sliver triangles in the
 main-wing wake sheet (edges 0.05 / 26.0 / 26.0).  For them the fixed

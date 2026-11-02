@@ -1,0 +1,191 @@
+{
+  "meta": {
+    "alpha_deg": 5.0,
+    "env": {
+      "numpy": "2.4.6"
+    },
+    "fan_targets": 16,
+    "repeat": 1,
+    "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json",
+    "wake_triangles": 794,
+    "wall_faces": 872
+  },
+  "records": [
+    {
+      "config": {
+        "method": "analytic_edges"
+      },
+      "counters": {
+        "total.call.count": 393
+      },
+      "label": "analytic_edges",
+      "ms_per_target": 1.126141,
+      "peak_rss_mb": 157.7,
+      "repeat": 1,
+      "seconds": 0.442574,
+      "stages_seconds": {
+        "evaluator": {},
+        "fan": {}
+      },
+      "targets": 393
+    },
+    {
+      "config": {
+        "area_quadrature": "legacy_duffy",
+        "core_radius": 0.01,
+        "method": "rm_regularized_p1"
+      },
+      "counters": {
+        "field.area_velocity.calls": 393,
+        "field.area_velocity.legacy_calls": 393,
+        "field.call.count": 393,
+        "field.edge_velocity.calls": 393,
+        "total.call.count": 393
+      },
+      "label": "rm_regularized_p1/legacy_duffy/order48",
+      "ms_per_target": 278.199794,
+      "peak_rss_mb": 348.5,
+      "repeat": 1,
+      "seconds": 109.332519,
+      "stages_seconds": {
+        "evaluator": {
+          "field.edge_velocity": 0.05633
+        },
+        "fan": {}
+      },
+      "targets": 393
+    },
+    {
+      "config": {
+        "area_quadrature": "projection_fan",
+        "core_radius": 0.01,
+        "fan_order": 16,
+        "fan_strips": 8,
+        "method": "rm_regularized_p1"
+      },
+      "counters": {
+        "area_terms.calls": 16,
+        "area_terms.node_sets": 16,
+        "area_terms.subtriangles": 224248,
+        "area_terms.triangles": 26656,
+        "fan.calls": 26656,
+        "fan.region.edge": 1371,
+        "fan.region.interior": 2,
+        "fan.region.vertex": 25283,
+        "fan.strips": 213248,
+        "fan.subtriangles": 224248,
+        "field.area_velocity.calls": 16,
+        "field.area_velocity.fan_calls": 16,
+        "field.call.count": 16,
+        "field.edge_velocity.calls": 16,
+        "total.call.count": 16
+      },
+      "label": "rm_regularized_p1/projection_fan/16x8",
+      "ms_per_target": 327.619869,
+      "peak_rss_mb": 348.5,
+      "repeat": 1,
+      "seconds": 5.241918,
+      "stages_seconds": {
+        "evaluator": {
+          "field.edge_velocity": 0.001371
+        },
+        "fan": {
+          "area_terms.kernel": 3.766192,
+          "area_terms.nodes": 0.000416,
+          "area_terms.projection": 1.461279
+        }
+      },
+      "targets": 16
+    },
+    {
+      "config": {
+        "area_quadrature": "projection_fan",
+        "core_radius": 0.01,
+        "fan_order": 48,
+        "fan_strips": 8,
+        "method": "rm_regularized_p1"
+      },
+      "counters": {
+        "area_terms.calls": 16,
+        "area_terms.node_sets": 16,
+        "area_terms.subtriangles": 224248,
+        "area_terms.triangles": 26656,
+        "fan.calls": 26656,
+        "fan.region.edge": 1371,
+        "fan.region.interior": 2,
+        "fan.region.vertex": 25283,
+        "fan.strips": 213248,
+        "fan.subtriangles": 224248,
+        "field.area_velocity.calls": 16,
+        "field.area_velocity.fan_calls": 16,
+        "field.call.count": 16,
+        "field.edge_velocity.calls": 16,
+        "total.call.count": 16
+      },
+      "label": "rm_regularized_p1/projection_fan/48x8",
+      "ms_per_target": 2191.633819,
+      "peak_rss_mb": 348.5,
+      "repeat": 1,
+      "seconds": 35.066141,
+      "stages_seconds": {
+        "evaluator": {
+          "field.edge_velocity": 0.001625
+        },
+        "fan": {
+          "area_terms.kernel": 33.546695,
+          "area_terms.nodes": 0.000778,
+          "area_terms.projection": 1.490701
+        }
+      },
+      "targets": 16
+    },
+    {
+      "config": {
+        "area_quadrature": "projection_fan_adaptive",
+        "core_radius": 0.01,
+        "fan_order": 16,
+        "fan_strips": 8,
+        "method": "rm_regularized_p1"
+      },
+      "counters": {
+        "area_terms.calls": 90,
+        "area_terms.node_sets": 90,
+        "area_terms.subtriangles": 119952,
+        "area_terms.triangles": 8358,
+        "fan.calls": 8358,
+        "fan.region.edge": 1476,
+        "fan.region.interior": 4,
+        "fan.region.vertex": 6878,
+        "fan.strips": 100896,
+        "fan.subtriangles": 119952,
+        "field.area_velocity.adaptive_calls": 16,
+        "field.area_velocity.calls": 16,
+        "field.call.count": 16,
+        "field.edge_velocity.calls": 16,
+        "total.call.count": 16
+      },
+      "label": "rm_regularized_p1/projection_fan_adaptive/16x8",
+      "ms_per_target": 3567.298938,
+      "peak_rss_mb": 3184.4,
+      "repeat": 1,
+      "seconds": 57.076783,
+      "stages_seconds": {
+        "evaluator": {
+          "field.edge_velocity": 0.001545
+        },
+        "fan": {
+          "area_terms.kernel": 51.02281,
+          "area_terms.nodes": 0.006749,
+          "area_terms.projection": 0.680058
+        }
+      },
+      "targets": 16
+    }
+  ],
+  "targets": {
+    "n_free_targets": 393,
+    "n_wake_nodes": 785,
+    "n_wake_triangles": 794,
+    "n_wall_faces": 872
+  }
+}

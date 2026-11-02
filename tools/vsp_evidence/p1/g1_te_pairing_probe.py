@@ -7,7 +7,7 @@ Run with PYTHONPATH pointing at the PR #59 worktree (module `panel.p1_lifting_g1
 
 It is a probe, not a fix: the TE pairs are reconstructed from upper_te_faces/lower_te_faces
 (the real cross-TE pairing) instead of trailing_edges (the TE edge chain), and the lower-bank
-potential trace is duplicated at each shared TE node. See docs/ISSUE58_G1_TE_PAIRING_DEFECT.md.
+potential trace is duplicated at each shared TE node. See docs/archive/issue/ISSUE58_G1_TE_PAIRING_DEFECT.md.
 """
 """Probe: corrected DPanel half-surface adapter for PR59 G1 (TE pairs from upper/lower faces)."""
 import json, sys, numpy as np

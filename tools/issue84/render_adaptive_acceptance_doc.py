@@ -1,4 +1,4 @@
-"""Render docs/ISSUE84_ADAPTIVE_AREA.md from the adaptive acceptance payload."""
+"""Render docs/archive/issue/ISSUE84_ADAPTIVE_AREA.md from the adaptive acceptance payload."""
 from __future__ import annotations
 
 import argparse
@@ -219,7 +219,7 @@ def main(argv=None):
     parser.add_argument("--json", type=Path,
                         default=Path("docs/issue84/adaptive_area_acceptance.json"))
     parser.add_argument("--out", type=Path,
-                        default=Path("docs/ISSUE84_ADAPTIVE_AREA.md"))
+                        default=Path("docs/archive/issue/ISSUE84_ADAPTIVE_AREA.md"))
     args = parser.parse_args(argv)
     payload = json.loads(args.json.read_text(encoding="utf-8"))
     args.out.write_text(render(payload), encoding="utf-8")

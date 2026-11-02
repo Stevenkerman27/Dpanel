@@ -1,6 +1,6 @@
 """End-to-end check of the subdivision rung through the production limits() gate.
 
-The kernel-level experiment (docs/ISSUE84_SLIVER_SUBDIVISION.md) split the sliver faces
+The kernel-level experiment (docs/archive/issue/ISSUE84_SLIVER_SUBDIVISION.md) split the sliver faces
 by hand. This tool asks the same question through the production path: build the G2
 coupled case, construct TotalVelocity with projection_fan_adaptive, and call
 panel.p1_coupled_material_wake.limits() on the special targets with the rung off

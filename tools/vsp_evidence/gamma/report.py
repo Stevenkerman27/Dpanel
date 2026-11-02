@@ -141,7 +141,7 @@ def main():
                     "而除最外侧内部站位外其余 16 个原始站位偏差 ≤ 1.2%%，Gamma_sum 只增 +0.44%% → 细化修正的是翼尖卸载形状，不是整体环量水平。" % (
                         prof_stats["all_max"], prof_stats["all_y"], prof_stats["inner_max"], prof_stats["inner_y"]), ""]
     text = chr(10).join(out) + chr(10)
-    dest = ROOT / "docs" / "ISSUE49_GAMMA_REFINEMENT.md"
+    dest = ROOT / "docs" / "../../../docs/archive/issue/ISSUE49_GAMMA_REFINEMENT.md"
     dest.write_text(text, encoding="utf-8")
     print(json.dumps({"wrote": str(dest), "chars": len(text)}))
 

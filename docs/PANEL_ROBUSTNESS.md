@@ -8,7 +8,7 @@
 
 ## 为什么新增一个小求解器
 
-前阶段的 VortexAD 闭环保留，见 [WINGBODY_PANEL_LOOP.md](WINGBODY_PANEL_LOOP.md)。它定位了表面势梯度模板秩亏，但其默认尾迹接口不能直接表达机身遮挡后缘、流体侧带洞尾迹与接触势跳跃的相容约束。本轮没有改造上游接口，而在 `panel/` 独立实现透明的JAX源/偶极子求解器；解析核来自本仓库独立 `core/triangle_kernel.py` 的公式。
+前阶段的 VortexAD 闭环保留，见 [archive/notes/WINGBODY_PANEL_LOOP.md](archive/notes/WINGBODY_PANEL_LOOP.md)。它定位了表面势梯度模板秩亏，但其默认尾迹接口不能直接表达机身遮挡后缘、流体侧带洞尾迹与接触势跳跃的相容约束。本轮没有改造上游接口，而在 `panel/` 独立实现透明的JAX源/偶极子求解器；解析核来自本仓库独立 `core/triangle_kernel.py` 的公式。
 
 `panel/cad.py` 复用旧OCC布尔、部件识别和两遍接触站位构造，只生成二维表面网格，不生成或优化体网格。壁面通过共享边一致绕序、连通组件正体积检查；尾迹仅保留真正邻接流体的曲面。双机身粗例616壁面、细例1646壁面，CAD生成分别为数秒量级。旧P2双机身体网格失败记录不改写。
 

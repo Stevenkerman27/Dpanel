@@ -132,7 +132,7 @@ def test_crossover_verdict_reports_the_first_win():
 # arithmetic, and the document carrying the honest range rather than a single speedup.
 
 PROBE = ROOT / "docs/issue92/gpu_fp64_probe.json"
-BASELINE_DOC = ROOT / "docs/ISSUE92_PHASE0_BASELINE.md"
+BASELINE_DOC = ROOT / "docs/archive/issue/ISSUE92_PHASE0_BASELINE.md"
 
 
 @pytest.fixture(scope="module")
