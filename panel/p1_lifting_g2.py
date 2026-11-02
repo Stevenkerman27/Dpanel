@@ -265,8 +265,26 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 
 
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
-                max_nfev=80,operators=None,pressure_solver='reference'):
-    """Solve wall P1 mu and ALL independent wake Gamma simultaneously."""
+                max_nfev=80,operators=None,pressure_solver='reference',
+                backend='numpy', device='cpu'):
+    """Solve wall P1 mu and ALL independent wake Gamma simultaneously.
+
+    backend='torch' runs the same equations through torch.linalg and the
+    structured pressure-Kutta solver, so a torch or CUDA process never
+    re-enters NumPy/SciPy LAPACK. The SciPy reference stays the NumPy default.
+    """
+    if backend not in ('numpy','torch'):
+        raise ValueError("backend must be 'numpy' or 'torch'")
+    if backend=='torch':
+        if kutta=='pressure' and pressure_solver not in (None,'structured'):
+            raise ValueError("backend='torch' supports pressure_solver='structured' only")
+        from .p1_solve_torch import solve_multi_torch
+        out=solve_multi_torch(mesh,alpha_deg,kutta=kutta,kut_weight=kut_weight,
+                              max_nfev=max_nfev,operators=operators,device=device)
+        for key in ('mu','cp','gamma'):
+            value=out.get(key)
+            if hasattr(value,'detach'):out[key]=value.detach().cpu().numpy()
+        return out
     ops=assemble_multi(mesh) if operators is None else operators
     A,W,J,K,grad=ops['A'],ops['W'],ops['J'],ops['K'],ops['grad'];ms=ops['mesh']
     nm=A.shape[1];ng=W.shape[1];alpha=np.deg2rad(alpha_deg)

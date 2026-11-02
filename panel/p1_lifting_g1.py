@@ -460,7 +460,16 @@ def assemble(wing):
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
-          pressure_solver='reference'):
+          pressure_solver='reference', backend='numpy', device='cpu'):
+    if backend not in ('numpy','torch'):
+        raise ValueError("backend must be 'numpy' or 'torch'")
+    if backend=='torch':
+        if kutta=='pressure' and pressure_solver not in (None,'structured'):
+            raise ValueError("backend='torch' supports pressure_solver='structured' only")
+        from .p1_solve_torch import solve_single_torch
+        return solve_single_torch(wing,alpha_deg,kutta=kutta,wall_weight=wall_weight,
+                                  jump_weight=jump_weight,kutta_weight=kutta_weight,
+                                  max_nfev=max_nfev,device=device)
     ops=assemble(wing);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(K)
     alpha=np.deg2rad(alpha_deg);U=np.array([np.cos(alpha),0,np.sin(alpha)])
     rhs=-ops['mesh'].centers@U
