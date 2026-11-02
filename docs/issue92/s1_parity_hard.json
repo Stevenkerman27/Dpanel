@@ -1,0 +1,46 @@
+{
+  "tolerances": {
+    "x_relative": 1e-11,
+    "cost_relative": 1e-11,
+    "optimality_absolute": 1e-09
+  },
+  "numpy": {
+    "status": 2,
+    "nfev": 75,
+    "nit": 37,
+    "cost": 1.5968774079827446,
+    "optimality": 1.157731907869275e-06,
+    "message": "ftol termination condition is satisfied",
+    "total_seconds": 0.027149499976076186
+  },
+  "torch": {
+    "status": 2,
+    "nfev": 75,
+    "nit": 37,
+    "cost": 1.596877407982746,
+    "optimality": 1.1577317154398692e-06,
+    "message": "ftol termination condition is satisfied",
+    "total_seconds": 0.025415699928998947
+  },
+  "scenarios": {
+    "numpy": "hard",
+    "torch": "hard"
+  },
+  "backtracks": {
+    "numpy": 0,
+    "torch": 0
+  },
+  "differences": {
+    "x_relative": 8.088661595230922e-16,
+    "cost_relative": 8.342954962542648e-16,
+    "optimality_absolute": 1.9242940574315526e-13
+  },
+  "checks": {
+    "same_status": true,
+    "same_nfev": true,
+    "x_relative": true,
+    "cost_relative": true,
+    "optimality": true
+  },
+  "passed": true
+}

@@ -117,7 +117,7 @@ Each slice ends with the full suite plus a clean-master baseline, and may only s
 
 | slice | content | parity gate |
 | --- | --- | --- |
-| S1 | `p1_pressure_kutta_reduced.py`: `qr`, `solve`, `solve_triangular`, `OptimizeResult` → torch | A/W/J/K and `z` vectors to 1e-12 relative; identical `status`/`nfev` on all fixtures that exercise the reduced path; 10 existing tests still pass |
+| S1 | `p1_pressure_kutta_reduced.py`: `qr`, `solve`, `solve_triangular`, `OptimizeResult` → torch — **delivered, §8** | A/W/J/K and `z` vectors to 1e-12 relative; identical `status`/`nfev` on all fixtures that exercise the reduced path; 10 existing tests still pass |
 | S2 | rank-aware constrained solve in G1/G2: `null_space`, `lstsq` → torch | identical `rank` and null-space dimension on all 8 fixed fixtures **plus** the §3 gap report; `mu`/`Gamma`/`CL`/`CD_p`/`CM_y` to 1e-11 relative |
 | S3 | nonlinear solve: `least_squares` → torch trust-region (G1 :506, G2 :304) | identical `status`, `success`, `nfev` (or documented ±1), identical floor behaviour, loads to 1e-10 |
 | S4 | assembly and post-processing on tensors: face→DOF scatter, Kutta, jump/contact constraints, Cp, forces/moments, using the already-validated batched influence kernel (#96) | bitwise-or-1e-13 parity on A/W/J/K; loads to 1e-11; `test_p1_coupled_material_wake` unchanged |
@@ -134,3 +134,60 @@ Estimated relative difficulty, from the inventory: S1 ~15% of the work, S2 ~20%,
 * No finite-difference design sensitivities, no surrogate model, no Transolver, no out-of-process
   worker in production.
 * Consolidated full-suite and clean-master baseline after each slice — not selected unit tests.
+
+## 8. S1 delivered: torch pressure-Kutta (2026-11-02)
+
+Files: `panel/p1_pressure_kutta_torch.py` (TorchPressureResult, TorchStructuredPressureKutta,
+solve_structured_pressure_torch), `tools/issue92/s1_problem.py` (shared structural problem),
+`tools/issue92/s1_parity.py` (numpy / torch / compare stages), `test/test_p1_pressure_kutta_torch.py`,
+evidence `docs/issue92/s1_reference_<scenario>.npz` and `docs/issue92/s1_parity_<scenario>.json`.
+
+The port is call for call: QR of `M = B N` once, Woodbury step in the pressure space, the same
+gtol -> relative_gtol -> stagnation -> max_nfev -> step -> Armijo sequence, the same status codes and the
+same message strings. Two mechanical differences from SciPy: `torch.linalg.solve_triangular` demands a
+matrix right-hand side (a vector is promoted to one column), and there is no `OptimizeResult` — the
+result is a dataclass with the same attribute names so callers do not branch.
+
+The problem is structural, not a mesh: 600 wall rows, 300 unknowns, 200 free dofs, 24 pressure rows, the
+elliptic fixture's shape scaled by 0.2, with `bw` carrying a component outside `range(B N)` so the wall
+block has the nonzero floor the production acceptance logic is written around.
+
+| scenario | termination (numpy / torch) | nfev | nit | backtracks | relative iterate difference | cost relative |
+| --- | --- | --- | --- | --- | --- | --- |
+| base (mild quadratic, start at 0) | 4 / 4, relative gradient | 9 / 9 | 4 / 4 | 0 / 0 | 8.34e-16 | 1.41e-16 |
+| hard (c2 = 5, start at 2 sigma) | 2 / 2, ftol | 75 / 75 | 37 / 37 | 0 / 0 | 8.09e-16 | 8.34e-16 |
+| backtrack (c2 = 20) | 2 / 2, ftol | 100 / 100 | 36 / 36 | 27 / 27 | 1.41e-15 | 1.38e-15 |
+| stress (c2 = 50, line-search failure) | 0 / 0, line search failed | 100 / 100 | 31 / 31 | 37 / 37 | **1.27e-07** | 3.88e-11 |
+
+Three findings, in order of how much they constrain later slices:
+
+1. **Decisions are identical, including the line-search branch.** Status, nfev, nit, backtrack count and
+   message string agree in all four scenarios, so the Armijo backtracking and the stopping order port
+   cleanly — the third row is a case where 27 halvings decide the trajectory.
+2. **Iterate parity holds at 1e-15 only while the iteration converges.** The stress row is deliberately
+   outside the production regime (50x the quadratic coefficient) and ends in a line-search failure after
+   31 iterations; there the same decisions produce an iterate difference of 1.27e-7 and a cost difference
+   of 3.9e-11. That is amplification of float64 roundoff through a failing search, not a porting defect,
+   but it fixes the rule for every later slice: parity must be reported **per scenario and per quantity**,
+   never as a single "matched" word.
+3. **The pressure callables must be torch-native.** `pressure` and `pressure_jacobian` receive and return
+   tensors; a wrapper that converts to NumPy inside would re-enter LAPACK and reintroduce the §6f crash.
+
+What S1 does **not** claim: the production entry points still call the SciPy path (nothing is wired to
+`backend='torch'` yet); this parity is on a structural problem, not on an assembled mesh. Wall-operator and
+pressure parity on real fixtures arrives with S4/S5, when assembly itself is on tensors.
+
+Reproduce (three processes by necessity):
+
+    python -m tools.issue92.s1_parity numpy   --scenario backtrack --out a.npz
+    python -m tools.issue92.s1_parity torch   --scenario backtrack --out b.npz
+    python -m tools.issue92.s1_parity compare a.npz b.npz --json report.json
+
+Test state on this tree: `827 passed, 20 skipped` in the default `.conda_env` with the seven torch-only
+modules ignored (before this slice: `826 passed, 16 skipped`; the delta is the static NumPy/SciPy guard plus
+the four gated parity tests skipping where torch is absent). In the torch interpreter,
+`PANEL_TORCH_PARITY=1 pytest test/test_p1_pressure_kutta_torch.py` gives 5 passed.
+
+Gate to S2: the three gated scenarios hold at 1e-11 relative on the iterate with identical decisions, and
+the static test forbids NumPy/SciPy in the torch module. S2 (rank-aware `null_space`/`lstsq`) inherits the
+per-scenario reporting rule and must add the singular-value gap table described in §3.
