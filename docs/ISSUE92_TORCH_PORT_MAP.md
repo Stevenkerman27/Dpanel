@@ -123,6 +123,7 @@ Each slice ends with the full suite plus a clean-master baseline, and may only s
 | S4 | assembly and post-processing on tensors: face→DOF scatter, Cp, forces/moments — **delivered, §11**: `mesh_kernel`, `doublet_matrix`, `gradient_map`, `wake_operator`, `loads`; the Kutta and jump/contact rows are rebuilt inside the coupled loop, so they move with S5 | A/W to 1e-12 max-relative and 1e-13 Frobenius on all 8 fixtures, `grad` bit-identical; loads to 1e-13 against the shared NumPy map |
 | S5 | coupled free-wake loop and sampling entirely in torch; snapshot schema records the backend — **delivered, §12**. The gate was rewritten once: the 192-face fixtures give three accepted updates, the 872-face CAD body accepts one and then stops `blocked_updated_nonlinear_solve` on both backends (structured solver's line search, §12.5) | identical status and per-iteration decisions (`rank`, `kinematic_candidate`, `nonlinear_success`, wake eligibility) on three cases; loads to 1e-5 relative, states to 1e-5, `cp` to 1e-3 absolute, residuals to 1e-5 absolute. Declared first at 1e-9 and revised once with the flat-valley evidence in §12.4; then B2 (CUDA) starts |
 | S6 | public entry-point dispatch: `solve` / `solve_multi` take `backend='numpy'|'torch'` and `device`, and the torch branch fails closed on the unported SciPy trust-region solver - **delivered, §15** | all 8 fixtures: identical `status`/`nfev`/`message`/rank/acceptance classification; loads ≤ 6.4e-9 relative, state ≤ 1.8e-8, `|dcp|` ≤ 8.7e-7. Declared first at 1e-9 loads / 1e-9 state / 1e-12 `cp` and revised once with the flat-valley evidence (§15.4) |
+| S7 | retire the NumPy reference: freeze the production default solve of all 8 fixtures as re-runnable bundles, then move the last per-target evaluator (RM-P1 regularized sheet) onto torch with `rm_backend='numpy'|'torch'` - **delivered, §16** | bundles: 8/8 re-run bitwise identical (`loads=0.0`, `state=0.0`, same rank and margin). RM field: ≤ 1.9e-15 relative on both quadratures, CPU and CUDA; coupled iteration 0 bitwise identical, iteration 1 ≤ 4.9e-14 with the solver held fixed, decisions identical |
 
 | B2 | whole-chain device selection, device=cpu or cuda in one process, no silent fallback — **delivered, §13**: cold/warm solve, one coupled iteration, uploaded bytes, peak VRAM, plus a profile that attributes the iteration | identical loads to 1e-5 relative against the S5 NumPy records on both devices, identical status and acceptance; **no speedup claimed** — measured 11.4x and 4.3x slower solves on CUDA, and the iteration is 86% a Python geometry gate |
 | B3 | VSPAERO cross-check on four geometries (rectangular, swept tapered, elliptic, wing-body), several angles of attack, two mesh levels | compares only CL(alpha) intercept and slope, induced drag, spanwise circulation, and a Cp definition that can be aligned; thick-sheet and VLM results reported separately |
@@ -938,3 +939,139 @@ python -m pytest test/test_backend_dispatch.py     # 6 tests
   10.5 showed, which stopping rule fires is roundoff, not a backend property.
 * Not a speed claim: the per-kernel numbers are sections 11-14; this section only shows
   the dispatch is faithful.
+
+## 16. S7 delivered: frozen reference bundles and the torch-aware RM-P1 evaluator (2026-11-02)
+
+S6 made `backend='torch'` reachable from the public entry points. Two things still stood
+between that and deleting the NumPy path:
+
+1. **Nothing recorded what the NumPy production path produces.** Deleting it would delete
+   the oracle at the same time. S7 freezes the oracle first.
+2. **One evaluator was still per-target NumPy**: the regularized P1 sheet (RM-P1) used by
+   `velocity_method='rm_regularized_p1'` in the coupled free-wake loop. Porting the solve
+   chain had left its induction field behind, so a "torch loop" still ran NumPy physics.
+
+### 16.1 The frozen bundles
+
+`tools/issue92/s7_reference_export.py` has two stages. `export` runs the production
+default solve (kutta `pressure`, `pressure_solver='reference'`, SciPy `trf`, `rcond=1e-11`)
+for every fixture and writes `docs/issue92/references/<fixture>.npz` plus
+`docs/issue92/s7_reference_index.json` (schema `dpanel.issue92.s7.reference.v1`). Each
+bundle holds `mu`, `gamma`, `cp`, `singular`, the four loads and the four residuals, plus
+the decision record (`pressure_status`, `pressure_success`, `pressure_nfev`,
+`pressure_message`, `constrained_rank`, `spectrum_rank`) and a spectrum summary
+(`threshold = s_max*1e-11`, `rank`, `margin_over_threshold` = smallest kept singular
+value over the threshold, `gap_ratio` = smallest kept over largest discarded). `verify`
+re-runs the live code and compares against the bundle.
+
+| fixture | bytes | status | success | nfev | constrained rank | spectrum rank | margin | CL |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| g1_wing_rect | 5497 | 2 | true | 4 | 58 | 5 | 1.000E+011 | 0.319472988970 |
+| g1_wing_camber | 5491 | 3 | true | 10 | 58 | 5 | 1.000E+011 | 0.450291348200 |
+| g1_swept30 | 28658 | 2 | true | 7 | 1336 | 63 | 5.785E+010 | 0.467421452615 |
+| g1_elliptic | 38986 | 2 | true | 12 | 1562 | 83 | 6.092E+010 | 0.347273615544 |
+| g2_conventional | 6487 | 1 | true | 5 | 100 | 8 | 1.000E+011 | 0.365472330204 |
+| g2_tail_low | 6486 | 2 | true | 5 | 100 | 8 | 1.000E+011 | 0.362833180162 |
+| g1_wingbody_cad | 12382 | 2 | true | 15 | 354 | 99 | 4.778E+010 | 0.536111536753 |
+| g1_wingbody_cad_3x | 26482 | 2 | true | 17 | 1163 | 101 | 4.527E+010 | 0.553571857469 |
+
+`verify` passed 8/8 with `loads = 0.0`, `state = 0.0`, identical rank and margin and an
+empty failure list: the SciPy reference path on the current HEAD reproduces the bundles
+exactly.
+
+`gap_ratio` is `null` for every fixture, i.e. **no singular value is discarded anywhere in
+this set**. Section 3 flagged rank truncation as the one place where two correct backends
+may legitimately disagree; on these eight systems they cannot, because the cut is nowhere
+near a candidate. That makes the bundles a safe retirement oracle for the fixtures we
+have, and it does not generalise to a system whose spectrum is dense near `s_max*1e-11`:
+the index records the margin, so such a case would be visible if it appeared.
+
+### 16.2 The RM-P1 evaluator on torch
+
+`panel/p1_regularized_sheet_velocity_torch.py` adds `TorchRegularizedP1SheetField`, a
+subclass of `RegularizedP1SheetField` that keeps every geometric preparation, the gate
+helpers and the quadrature plan from the parent and replaces only the per-target
+evaluation:
+
+* the **edge sum** is batched over (targets x edges) with the same closed forms
+  (`effective2 = |rho|^2 + core^2`, `i0`, `i1`, `torch.linalg.cross`);
+* `legacy_duffy` **area terms** are batched as one `einsum("q,bfq,bfqi->bfi", weights,
+  1/den, r)` product times the triangle area gradient;
+* `projection_fan` **area terms delegate per target** to `area_terms(..., backend=...)`,
+  because the fan partition is still built in Python per target (section 6e measured the
+  Amdahl limit of that at 3.0x). On CUDA the delegated kernel is the torch one; on CPU it
+  stays NumPy, because a CPU torch kernel is slower here (0.151 s vs 0.123 s for 8 targets
+  on 794 faces) and the transfer is pure overhead;
+* `projection_fan_adaptive` **is refused**, not silently downgraded;
+* temporaries are bounded by `CHUNK_BYTES = 2.0e8`, with the batch size derived from
+  `faces * order^2 * 3 * 8` bytes per target;
+* a non-finite result raises `FloatingPointError`.
+
+The governor is `TotalVelocity(..., rm_backend='numpy'|'torch', rm_device='cpu'|'cuda')`,
+threaded through `solve_coupled_material_wake` and `replay_snapshot` (old snapshots fall
+back to `numpy`/`cpu`), recorded per iteration as `rm_backend`/`rm_device` and in the
+snapshot as `sampling_rm_backend`/`sampling_rm_device`, so a replay only claims
+`reproduce_recorded_samples` when the selector matches what was recorded. The CLI gained
+`--rm-backend`, `--rm-device` and the two replay counterparts. Fails closed: unknown
+values, `rm_device='cuda'` without `rm_backend='torch'`, and `rm_backend != 'numpy'`
+outside `method='rm_regularized_p1'` all raise.
+
+### 16.3 Measured
+
+`tools/issue92/s7_rm_parity.py` declares its bounds before measuring
+(`field_relative=1e-12`, `loads_relative=1e-9` gated on **iteration 0 only**, decisions =
+`status`/`success`/`message`/`criteria` and never `nfev`), evaluates the real G2 CAD wake
+(794 triangles, 64 targets), and runs one coupled iteration twice with the same solver so
+that the evaluator is the only difference.
+
+| device | quadrature | field rel | numpy s | torch s | speedup |
+| --- | --- | --- | --- | --- | --- |
+| CPU | legacy_duffy | 1.94e-15 | 0.1646 | 0.0663 | 2.48x |
+| CPU | projection_fan 8x1 | 1.94e-15 | 0.6177 | 0.6691 | 0.92x |
+| CUDA | legacy_duffy | 2.15e-16 | 0.1658 | 0.0146 | 11.36x |
+| CUDA | projection_fan 8x1 | 1.08e-16 | 0.6610 | 0.9973 | 0.66x |
+
+Coupled iteration, both runs with `solve_backend='torch'`:
+
+| iteration | CL relative | CL_gamma | CD_pressure | CM_y | decisions |
+| --- | --- | --- | --- | --- | --- |
+| 0 (frozen geometry) | 0.0 | 0.0 | 0.0 | 0.0 | identical |
+| 1 (after an accepted update) | 5.8e-15 | 2.9e-15 | 1.6e-14 | 4.9e-14 | identical |
+
+Both devices pass with an empty failure list.
+
+Two attribution notes, both load-bearing:
+
+* An earlier run of the same tool reported iteration 1 loads at 3e-9 relative and `nfev`
+  8 vs 5. That was **not** the evaluator: it was the NumPy structured solve on one side
+  and the torch structured solve on the other (section 15). Holding the solver fixed
+  drops the same difference to 5e-14. This is why the tool pins `solve_backend` on both
+  runs.
+* The first version of the tool crashed with `0xC0000005` because the NumPy run used
+  `solve_backend='numpy'` and therefore called SciPy `lstsq` *after* a torch kernel had
+  run. That is the section 6f constraint again, and it is now a comment in the tool rather
+  than a lesson to relearn.
+
+### 16.4 Not claimed
+
+* Not a claim that the fan path is fast: it is 0.92x on CPU and 0.66x on CUDA, and the
+  reason is section 6e's Amdahl limit, unchanged. The Duffy path is the one that moved.
+* Not a claim that iteration >= 1 is gated: only iteration 0 runs on frozen geometry, and
+  the loop's geometry update amplifies differences, so later iterations are reported
+  uncalibrated rather than measured against a bound chosen after seeing them.
+* Not a claim that the bundles make the NumPy path deletable in every environment: they
+  make it *checkable* after deletion, which is what S9 needs.
+
+### 16.5 Reproduce
+
+```bash
+# frozen bundles (NumPy/SciPy environment)
+python -m tools.issue92.s7_reference_export --stage export
+python -m tools.issue92.s7_reference_export --stage verify
+
+# RM-P1 parity and cost (torch environment)
+python -m tools.issue92.s7_rm_parity --device cpu
+python -m tools.issue92.s7_rm_parity --device cuda --out docs/issue92/s7_rm_parity_cuda.json
+python -m pytest test/test_p1_regularized_sheet_torch.py     # 8 passed, 1 skipped
+```
+

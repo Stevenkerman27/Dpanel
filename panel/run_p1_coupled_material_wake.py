@@ -117,6 +117,14 @@ def main(argv=None):
                          "ported torch.linalg chain (opt-in, parity-gated)")
     parser.add_argument('--solve-device', choices=('cpu', 'cuda'), default='cpu',
                     help='device for --solve-backend torch (no silent fallback)')
+    parser.add_argument('--rm-backend', choices=('numpy', 'torch'), default='numpy',
+                    help="regularized-sheet (rm_regularized_p1) evaluator backend: 'numpy' is "
+                         "the per-target reference, 'torch' batches the edge sum and the "
+                         "Duffy area term on --rm-device")
+    parser.add_argument('--rm-device', choices=('cpu', 'cuda'), default='cpu',
+                    help='device for --rm-backend torch (no silent fallback)')
+    parser.add_argument('--replay-rm-backend', choices=('numpy', 'torch'), default=None)
+    parser.add_argument('--replay-rm-device', choices=('cpu', 'cuda'), default=None)
     parser.add_argument('--replay-analytic-backend', choices=('loop', 'numpy', 'torch'),
                     default=None)
     parser.add_argument('--replay-analytic-device', choices=('cpu', 'cuda'), default=None)
@@ -172,7 +180,9 @@ def main(argv=None):
                 fan_refinement_strips=args.replay_fan_refinement_strips,
                 analytic_backend=args.replay_analytic_backend,
                 analytic_device=args.replay_analytic_device,
-                analytic_chunk=args.replay_analytic_chunk)
+                analytic_chunk=args.replay_analytic_chunk,
+                rm_backend=args.replay_rm_backend,
+                rm_device=args.replay_rm_device)
             _write_json(args.out/'replay.json', replay)
             replay_ok = (replay['bitwise_equal']
                          if replay['replay_mode'] == 'reproduce_recorded_samples'
@@ -237,6 +247,8 @@ def main(argv=None):
                    analytic_backend=args.analytic_backend,
                    analytic_device=args.analytic_device,
                    analytic_chunk=args.analytic_chunk,
+                   rm_backend=args.rm_backend,
+                   rm_device=args.rm_device,
                    solve_backend=args.solve_backend,
                    solve_device=args.solve_device,
                    save_callback=save)
