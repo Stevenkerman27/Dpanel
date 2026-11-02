@@ -1,0 +1,1679 @@
+{
+  "schema": "dpanel.issue92.b3.matrix.v1",
+  "thresholds": {
+    "declared_before_reading": true,
+    "slope_relative": 0.15,
+    "intercept_absolute": 0.02,
+    "cd_relative": 0.3,
+    "gamma_shape_rms_relative": 0.15
+  },
+  "revisions": [
+    "intercept is gated only for uncambered cases (DPanel CL at alpha=0 <= 0.02); the VSPAERO rebuild omits camber, so the camber offset is reported",
+    "induced drag is gated only for VLM runs; thick-panel CDi goes negative at zero incidence and is reported without a threshold"
+  ],
+  "cases": {
+    "rect": {
+      "geometry_sha256": "b7f99ef2d4217e45a5a9b73a121eb810022e32f38bd259ab1736dda806760534",
+      "camber_omitted": true,
+      "dpanel": {
+        "CL": {
+          "fit": {
+            "slope_per_deg": 0.0640645968869423,
+            "intercept": 0.0005259454161360082,
+            "max_residual": 0.0006751512633765278
+          },
+          "at_4deg": 0.2574594842272817
+        },
+        "CL_gamma": {
+          "fit": {
+            "slope_per_deg": 0.05672525859731371,
+            "intercept": 9.687509767370746e-05,
+            "max_residual": 0.00012452960139663904
+          },
+          "at_4deg": 0.2271224390883252
+        },
+        "CD_pressure": {
+          "fit": {
+            "slope_per_deg": 0.004273167208139595,
+            "intercept": -0.03397421955697349,
+            "max_residual": 0.0028429877764933054
+          },
+          "at_4deg": -0.019693385939827276
+        },
+        "CD_trefftz": {
+          "fit": {
+            "slope_per_deg": 0.0013433109529065715,
+            "intercept": -0.0008935004113511556,
+            "max_residual": 0.0008948112223798482
+          },
+          "at_4deg": 0.0035888646109813556
+        }
+      },
+      "vspaero": {
+        "panel/coarse": {
+          "exit": 0,
+          "panels": 432,
+          "panel_types": {
+            "3": 16,
+            "4": 416
+          },
+          "area": 8.286558872739528,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.06889931591664997,
+              "intercept": 0.00022391639780004987,
+              "max_residual": 0.0002805159016000536
+            },
+            "at_4deg": 0.276101695966
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06870764180924997,
+              "intercept": 0.00024189169850006564,
+              "max_residual": 0.0003036010675000478
+            },
+            "at_4deg": 0.275376060003
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06898627397934998,
+              "intercept": 6.24533197000477e-05,
+              "max_residual": 7.458389390002651e-05
+            },
+            "at_4deg": 0.276082133131
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.002924553471649999,
+              "intercept": -0.0017254800846999952,
+              "max_residual": 0.001946011080600003
+            },
+            "at_4deg": 0.008032401496
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.003101926090549998,
+              "intercept": 0.0080591547846,
+              "max_residual": 0.0020640614516999976
+            },
+            "at_4deg": 0.018409479224
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0021731496852999996,
+              "intercept": 0.008455093090599998,
+              "max_residual": 0.0014481374191999963
+            },
+            "at_4deg": 0.015702192978
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019167410754999996,
+              "intercept": 1.797530089999986e-05,
+              "max_residual": 2.3085166299999975e-05
+            },
+            "at_4deg": -0.000725635963
+          }
+        },
+        "panel/fine": {
+          "exit": 0,
+          "panels": 1360,
+          "panel_types": {
+            "3": 16,
+            "4": 1344
+          },
+          "area": 8.294757087982163,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.06795801847435,
+              "intercept": -0.002078868705799951,
+              "max_residual": 0.0017057449893999599
+            },
+            "at_4deg": 0.271458950181
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06776689522679999,
+              "intercept": -0.0020614110518999296,
+              "max_residual": 0.001727881762700001
+            },
+            "at_4deg": 0.270734051618
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06811194914069998,
+              "intercept": -0.0022058945825999786,
+              "max_residual": 0.0015618184368000332
+            },
+            "at_4deg": 0.271803720417
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.002676959204449999,
+              "intercept": -0.0027537197875999965,
+              "max_residual": 0.0018972753753000015
+            },
+            "at_4deg": 0.00617208027
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.002849171142349998,
+              "intercept": 0.007033390402200003,
+              "max_residual": 0.002015549361899998
+            },
+            "at_4deg": 0.016538612693
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0021942469925499996,
+              "intercept": 0.008428206916599998,
+              "max_residual": 0.0015057550426999956
+            },
+            "at_4deg": 0.015786186756
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019112324754999991,
+              "intercept": 1.745765389999993e-05,
+              "max_residual": 2.2136773299999738e-05
+            },
+            "at_4deg": -0.000724898563
+          }
+        },
+        "vlm/coarse": {
+          "exit": 0,
+          "panels": 168,
+          "panel_types": {
+            "4": 168
+          },
+          "area": 3.9999999999999996,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.06563069049634998,
+              "intercept": 0.00015833557870003807,
+              "max_residual": 0.00020330801890006134
+            },
+            "at_4deg": 0.262884405583
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06544088439934999,
+              "intercept": 0.00017452770070003505,
+              "max_residual": 0.00022409966890002408
+            },
+            "at_4deg": 0.262162164967
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06555250038559998,
+              "intercept": 6.81136877000553e-05,
+              "max_residual": 8.756466490000836e-05
+            },
+            "at_4deg": 0.262365679895
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0020337277631499993,
+              "intercept": -0.0013519409166999985,
+              "max_residual": 0.0013547397776000002
+            },
+            "at_4deg": 0.005436626941
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0021929210718999994,
+              "intercept": 0.008444785215299998,
+              "max_residual": 0.0014606883820999974
+            },
+            "at_4deg": 0.015765148949
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0019651897736999995,
+              "intercept": 0.008593872643900002,
+              "max_residual": 0.0013095378972999994
+            },
+            "at_4deg": 0.015148272501
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00018980609699999993,
+              "intercept": 1.6192121999999946e-05,
+              "max_residual": 2.0791649999999718e-05
+            },
+            "at_4deg": -0.000722240616
+          }
+        },
+        "vlm/fine": {
+          "exit": 0,
+          "panels": 600,
+          "panel_types": {
+            "4": 600
+          },
+          "area": 3.9999999999999996,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.0640833994477,
+              "intercept": -0.0043858256196000036,
+              "max_residual": 0.007803991625799991
+            },
+            "at_4deg": 0.254398278564
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06389451092324999,
+              "intercept": -0.004370319707499957,
+              "max_residual": 0.007790496309000028
+            },
+            "at_4deg": 0.253677757481
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06399241972024998,
+              "intercept": -0.004463948312499909,
+              "max_residual": 0.00787251929300005
+            },
+            "at_4deg": 0.253858924217
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0020727498000999997,
+              "intercept": -0.0014440031752999982,
+              "max_residual": 0.0014977903719000014
+            },
+            "at_4deg": 0.005510567243
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0022235203616499995,
+              "intercept": 0.008352677727799997,
+              "max_residual": 0.0016083796930999959
+            },
+            "at_4deg": 0.01581449878
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0019417627040999993,
+              "intercept": 0.0085452133862,
+              "max_residual": 0.001410868469399999
+            },
+            "at_4deg": 0.015062588336
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00018888852464999997,
+              "intercept": 1.55059127e-05,
+              "max_residual": 1.9527102899999913e-05
+            },
+            "at_4deg": -0.000720521083
+          }
+        }
+      },
+      "comparisons": {
+        "panel/coarse:cl_CLwtot_vs_CL": {
+          "slope_relative": 0.07682366441941693,
+          "camber_lift_offset": -0.00046349209643596054,
+          "cambered": false,
+          "slope_ok": true,
+          "intercept_ok": true,
+          "passed": true
+        },
+        "panel/coarse:gamma_shape": {
+          "rms_relative": 0.1477489077079623,
+          "strips": 14,
+          "dpanel_stations": 5,
+          "passed": true
+        },
+        "panel/fine:cl_CLwtot_vs_CL": {
+          "slope_relative": 0.06317611364823277,
+          "camber_lift_offset": -0.002731839998735987,
+          "cambered": false,
+          "slope_ok": true,
+          "intercept_ok": true,
+          "passed": true
+        },
+        "panel/fine:gamma_shape": {
+          "rms_relative": 0.13359770311730107,
+          "strips": 30,
+          "dpanel_stations": 5,
+          "passed": true
+        },
+        "vlm/coarse:cl_CLi_vs_CL_gamma": {
+          "slope_relative": 0.15699235436289388,
+          "camber_lift_offset": 6.146048102633061e-05,
+          "cambered": false,
+          "slope_ok": false,
+          "intercept_ok": true,
+          "passed": false
+        },
+        "vlm/coarse:gamma_shape": {
+          "rms_relative": 0.1493710295778864,
+          "strips": 14,
+          "dpanel_stations": 5,
+          "passed": true
+        },
+        "vlm/fine:cl_CLi_vs_CL_gamma": {
+          "slope_relative": 0.1297154218832374,
+          "camber_lift_offset": -0.004482700717273711,
+          "cambered": false,
+          "slope_ok": true,
+          "intercept_ok": true,
+          "passed": true
+        },
+        "vlm/fine:gamma_shape": {
+          "rms_relative": 0.14733890647278897,
+          "strips": 30,
+          "dpanel_stations": 5,
+          "passed": true
+        }
+      },
+      "cd_report": {
+        "vlm/coarse": {
+          "cd_vlm": 0.005436626941,
+          "cd_dpanel": 0.0035888646109813556,
+          "cd_relative": 0.5148598596795169,
+          "k_vlm": 0.0786683215501067,
+          "k_dpanel": 0.06957240045208726,
+          "k_relative": 0.1307403659915912,
+          "cdi_at_zero": 0.0,
+          "gated": false
+        },
+        "vlm/fine": {
+          "cd_vlm": 0.005510567243,
+          "cd_dpanel": 0.0035888646109813556,
+          "cd_relative": 0.5354625599802623,
+          "k_vlm": 0.08514672920015001,
+          "k_dpanel": 0.06957240045208726,
+          "k_relative": 0.22385786097445914,
+          "cdi_at_zero": 0.0,
+          "gated": false
+        }
+      },
+      "cambered": false
+    },
+    "swept30": {
+      "geometry_sha256": "811881503396fbe3ef3b195bb212ffe4e398eebfee8b2a732fd10ec667560ec5",
+      "camber_omitted": true,
+      "dpanel": {
+        "CL": {
+          "fit": {
+            "slope_per_deg": 0.06319310327433511,
+            "intercept": 0.1566732787680124,
+            "max_residual": 0.00045135446292393633
+          },
+          "at_4deg": 0.4098970463282768
+        },
+        "CL_gamma": {
+          "fit": {
+            "slope_per_deg": 0.060529156077706134,
+            "intercept": 0.1621367962779149,
+            "max_residual": 0.00023164689089844037
+          },
+          "at_4deg": 0.4044850674796379
+        },
+        "CD_pressure": {
+          "fit": {
+            "slope_per_deg": 0.003236567233361164,
+            "intercept": -0.00802464172405566,
+            "max_residual": 0.0020319698212269374
+          },
+          "at_4deg": 0.002901673479021804
+        },
+        "CD_trefftz": {
+          "fit": {
+            "slope_per_deg": 0.0022921422268585615,
+            "intercept": 0.0006357622967932521,
+            "max_residual": 0.0008052322280785763
+          },
+          "at_4deg": 0.009005809035283899
+        }
+      },
+      "vspaero": {
+        "panel/coarse": {
+          "exit": 0,
+          "panels": 720,
+          "panel_types": {
+            "3": 8,
+            "4": 712
+          },
+          "area": 3.0898295413637733,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.06878489626989999,
+              "intercept": 0.003694222991800012,
+              "max_residual": 0.0022088427095999785
+            },
+            "at_4deg": 0.277352554439
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06858534233045,
+              "intercept": 0.0037123478939000147,
+              "max_residual": 0.002193396974800005
+            },
+            "at_4deg": 0.27659594682
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06906634648904998,
+              "intercept": 0.0037950723191000077,
+              "max_residual": 0.0022405357631999634
+            },
+            "at_4deg": 0.278586038963
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0019282230832999999,
+              "intercept": -0.009737752901899996,
+              "max_residual": 0.0014329653593000034
+            },
+            "at_4deg": -0.003457825928
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0021060032018499993,
+              "intercept": 0.0004925057442000004,
+              "max_residual": 0.0015543514345999982
+            },
+            "at_4deg": 0.007362167117
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.002249950336099999,
+              "intercept": 0.008847823305200004,
+              "max_residual": 0.0015672501435999991
+            },
+            "at_4deg": 0.016280374506
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019955393944999993,
+              "intercept": 1.8124902099999902e-05,
+              "max_residual": 2.3483236699999802e-05
+            },
+            "at_4deg": -0.000756607619
+          }
+        },
+        "panel/fine": {
+          "exit": 0,
+          "panels": 2480,
+          "panel_types": {
+            "3": 8,
+            "4": 2472
+          },
+          "area": 3.0928166025323565,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.07064641262094998,
+              "intercept": 0.0010969512893999845,
+              "max_residual": 0.0006195209392999557
+            },
+            "at_4deg": 0.28384246652
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.07044623409864999,
+              "intercept": 0.0011156073823000523,
+              "max_residual": 0.0006035023386000149
+            },
+            "at_4deg": 0.283084339601
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.07089187343549998,
+              "intercept": 0.0011398818920000707,
+              "max_residual": 0.0005533098000000125
+            },
+            "at_4deg": 0.284952997955
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0026750301946499994,
+              "intercept": -0.0067914055871999965,
+              "max_residual": 0.0013673799274000011
+            },
+            "at_4deg": 0.002541335264
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.002859067825249999,
+              "intercept": 0.0034352155130000055,
+              "max_residual": 0.0014884314900000008
+            },
+            "at_4deg": 0.013383055324
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.002483392126799999,
+              "intercept": 0.008719017014100003,
+              "max_residual": 0.0016607463917000017
+            },
+            "at_4deg": 0.017022444061
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00020017852229999998,
+              "intercept": 1.8656092399999987e-05,
+              "max_residual": 2.3931076799999884e-05
+            },
+            "at_4deg": -0.00075812692
+          }
+        },
+        "vlm/coarse": {
+          "exit": 0,
+          "panels": 336,
+          "panel_types": {
+            "4": 336
+          },
+          "area": 1.4999999998653406,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.06571965666849998,
+              "intercept": 0.00014443558300003393,
+              "max_residual": 0.0001852198990000553
+            },
+            "at_4deg": 0.263208282156
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06552243292089999,
+              "intercept": 0.00016026942430002298,
+              "max_residual": 0.00020554728310001602
+            },
+            "at_4deg": 0.262455548391
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06552940702539997,
+              "intercept": 0.00015431055780003354,
+              "max_residual": 0.00019936116660007608
+            },
+            "at_4deg": 0.262471299826
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0016575350842499997,
+              "intercept": -0.0011028341619999983,
+              "max_residual": 0.0011041710955000013
+            },
+            "at_4deg": 0.00442714588
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0018128219563000002,
+              "intercept": 0.009142921646599998,
+              "max_residual": 0.0012075069311999979
+            },
+            "at_4deg": 0.015191740236
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.001943944231499999,
+              "intercept": 0.009055443212000002,
+              "max_residual": 0.0012950305710000016
+            },
+            "at_4deg": 0.015541362878
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019722374759999995,
+              "intercept": 1.5833841299999774e-05,
+              "max_residual": 2.0327384100000067e-05
+            },
+            "at_4deg": -0.000752733765
+          }
+        },
+        "vlm/fine": {
+          "exit": 0,
+          "panels": 1200,
+          "panel_types": {
+            "4": 1200
+          },
+          "area": 1.5000000000177438,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.06508344374104999,
+              "intercept": 0.00016459453460003091,
+              "max_residual": 0.00021166050319998408
+            },
+            "at_4deg": 0.260710030002
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06488658666369998,
+              "intercept": 0.00018007752740004047,
+              "max_residual": 0.0002315343898000588
+            },
+            "at_4deg": 0.259957958572
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06487930597034999,
+              "intercept": 0.00018722865320004275,
+              "max_residual": 0.00024079147739997087
+            },
+            "at_4deg": 0.259945244012
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0018863924339999998,
+              "intercept": -0.0012553132534999978,
+              "max_residual": 0.0012567791195000014
+            },
+            "at_4deg": 0.005037874961
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0020381153368999993,
+              "intercept": 0.008992811086299997,
+              "max_residual": 0.0013577314560999955
+            },
+            "at_4deg": 0.015792997481
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.002048387061749999,
+              "intercept": 0.008986453835999999,
+              "max_residual": 0.0013644022174999961
+            },
+            "at_4deg": 0.015821996902
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019685707734999998,
+              "intercept": 1.5482992799999883e-05,
+              "max_residual": 1.9873886600000018e-05
+            },
+            "at_4deg": -0.00075207143
+          }
+        }
+      },
+      "comparisons": {
+        "panel/coarse:cl_CLwtot_vs_CL": {
+          "slope_relative": 0.09294120577079171,
+          "camber_lift_offset": -0.1528782064489124,
+          "cambered": true,
+          "slope_ok": true,
+          "intercept_ok": false,
+          "passed": true,
+          "intercept_note": "camber omitted in the VSPAERO rebuild"
+        },
+        "panel/coarse:gamma_shape": {
+          "rms_relative": 0.04352643903401028,
+          "strips": 28,
+          "dpanel_stations": 15,
+          "passed": true
+        },
+        "panel/fine:cl_CLwtot_vs_CL": {
+          "slope_relative": 0.12182927823219597,
+          "camber_lift_offset": -0.15553339687601234,
+          "cambered": true,
+          "slope_ok": true,
+          "intercept_ok": false,
+          "passed": true,
+          "intercept_note": "camber omitted in the VSPAERO rebuild"
+        },
+        "panel/fine:gamma_shape": {
+          "rms_relative": 0.017835621822744483,
+          "strips": 60,
+          "dpanel_stations": 15,
+          "passed": true
+        },
+        "vlm/coarse:cl_CLi_vs_CL_gamma": {
+          "slope_relative": 0.08575207267271963,
+          "camber_lift_offset": -0.16199236069491488,
+          "cambered": true,
+          "slope_ok": true,
+          "intercept_ok": false,
+          "passed": true,
+          "intercept_note": "camber omitted in the VSPAERO rebuild"
+        },
+        "vlm/coarse:gamma_shape": {
+          "rms_relative": 0.023543182965680823,
+          "strips": 28,
+          "dpanel_stations": 15,
+          "passed": true
+        },
+        "vlm/fine:cl_CLi_vs_CL_gamma": {
+          "slope_relative": 0.07524122189143281,
+          "camber_lift_offset": -0.1619722017433149,
+          "cambered": true,
+          "slope_ok": true,
+          "intercept_ok": false,
+          "passed": true,
+          "intercept_note": "camber omitted in the VSPAERO rebuild"
+        },
+        "vlm/fine:gamma_shape": {
+          "rms_relative": 0.01433147128166994,
+          "strips": 60,
+          "dpanel_stations": 15,
+          "passed": true
+        }
+      },
+      "cd_report": {
+        "vlm/coarse": {
+          "cd_vlm": 0.00442714588,
+          "cd_dpanel": 0.009005809035283899,
+          "cd_relative": 0.5084121967660133,
+          "k_vlm": 0.0639035126729967,
+          "k_dpanel": 0.05504498366751408,
+          "k_relative": 0.1609325394479254,
+          "cdi_at_zero": 0.0,
+          "gated": false
+        },
+        "vlm/fine": {
+          "cd_vlm": 0.005037874961,
+          "cd_dpanel": 0.009005809035283899,
+          "cd_relative": 0.4405971810792248,
+          "k_vlm": 0.07411940169829996,
+          "k_dpanel": 0.05504498366751408,
+          "k_relative": 0.346524183674943,
+          "cdi_at_zero": 0.0,
+          "gated": false
+        }
+      },
+      "cambered": true
+    },
+    "elliptic": {
+      "geometry_sha256": "40c76b952cb9f3930747479df180185baf0f41d924b2a3a8423fef3795f0b46d",
+      "camber_omitted": true,
+      "dpanel": {
+        "CL": {
+          "fit": {
+            "slope_per_deg": 0.06946038327013102,
+            "intercept": 0.001520310686654131,
+            "max_residual": 0.0006030604220585989
+          },
+          "at_4deg": 0.2799649041892368
+        },
+        "CL_gamma": {
+          "fit": {
+            "slope_per_deg": 0.06824510108176288,
+            "intercept": 0.0006051278345256936,
+            "max_residual": 0.00015011705248679785
+          },
+          "at_4deg": 0.273735649214064
+        },
+        "CD_pressure": {
+          "fit": {
+            "slope_per_deg": 0.0034231235382661215,
+            "intercept": -0.011569887368013796,
+            "max_residual": 0.002203872051544883
+          },
+          "at_4deg": -5.4814796337278116e-05
+        },
+        "CD_trefftz": {
+          "fit": {
+            "slope_per_deg": 0.0017086961309441852,
+            "intercept": -0.001133827400489168,
+            "max_residual": 0.001135539713696258
+          },
+          "at_4deg": 0.004570419477939379
+        }
+      },
+      "vspaero": {
+        "panel/coarse": {
+          "exit": 0,
+          "panels": 1728,
+          "panel_types": {
+            "3": 8,
+            "4": 1720
+          },
+          "area": 3.2317894174420743,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.07640270658539998,
+              "intercept": -0.007300245468199945,
+              "max_residual": 0.003308005631399935
+            },
+            "at_4deg": 0.295002575242
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.07620232948759997,
+              "intercept": -0.0072788296257999575,
+              "max_residual": 0.0032796002745999475
+            },
+            "at_4deg": 0.29425088805
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.07739370646774998,
+              "intercept": -0.007979990102999929,
+              "max_residual": 0.004088191073999992
+            },
+            "at_4deg": 0.297506644694
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.003572589388499999,
+              "intercept": -0.016531264952999992,
+              "max_residual": 0.0033689980150000036
+            },
+            "at_4deg": -0.005609905414
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0037801332026499985,
+              "intercept": -0.006455646722699994,
+              "max_residual": 0.0035251638439
+            },
+            "at_4deg": 0.005139722244
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.00161151496565,
+              "intercept": 0.009128489142799998,
+              "max_residual": 0.0012194367463999965
+            },
+            "at_4deg": 0.014355112259
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00020037709779999996,
+              "intercept": 2.1415842399999956e-05,
+              "max_residual": 2.840535679999993e-05
+            },
+            "at_4deg": -0.000751687192
+          }
+        },
+        "panel/fine": {
+          "exit": 0,
+          "panels": 6080,
+          "panel_types": {
+            "3": 8,
+            "4": 6072
+          },
+          "area": 3.234643481623257,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.07268690008584998,
+              "intercept": -0.004397720500299948,
+              "max_residual": 0.0005653032800999602
+            },
+            "at_4deg": 0.285784576563
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.0724882682354,
+              "intercept": -0.00437823862869994,
+              "max_residual": 0.0005400457719000329
+            },
+            "at_4deg": 0.285034788541
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.07411059395054999,
+              "intercept": -0.0049072300988999475,
+              "max_residual": 0.001117947275300013
+            },
+            "at_4deg": 0.290417198428
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0031791294200499997,
+              "intercept": -0.005938805751399998,
+              "max_residual": 0.001751041895800001
+            },
+            "at_4deg": 0.005026670033
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0033699155192499987,
+              "intercept": 0.004152164647999999,
+              "max_residual": 0.001882688416999994
+            },
+            "at_4deg": 0.015749138308
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0014026215929499994,
+              "intercept": 0.009279802403899999,
+              "max_residual": 0.0009590203256999962
+            },
+            "at_4deg": 0.01393126845
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019863185049999997,
+              "intercept": 1.9481871499999972e-05,
+              "max_residual": 2.5257507499999916e-05
+            },
+            "at_4deg": -0.000749788023
+          }
+        },
+        "vlm/coarse": {
+          "exit": 0,
+          "panels": 840,
+          "panel_types": {
+            "4": 840
+          },
+          "area": 1.5861274180201421,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.07161522568624998,
+              "intercept": -0.007108537992499934,
+              "max_residual": 0.012467884533000018
+            },
+            "at_4deg": 0.282962519841
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.07141784250709998,
+              "intercept": -0.0070900618947999615,
+              "max_residual": 0.012451699158399998
+            },
+            "at_4deg": 0.282214520766
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.07183656914934998,
+              "intercept": -0.007495600182799924,
+              "max_residual": 0.012805940520900033
+            },
+            "at_4deg": 0.282975756908
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.002510430483299999,
+              "intercept": -0.0017601926298999977,
+              "max_residual": 0.0018281145327000007
+            },
+            "at_4deg": 0.006657180479
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.002689972721899999,
+              "intercept": 0.0083310716513,
+              "max_residual": 0.0019664085580999996
+            },
+            "at_4deg": 0.017354065601
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0014149079856999999,
+              "intercept": 0.009236732620899992,
+              "max_residual": 0.0010097766452999927
+            },
+            "at_4deg": 0.013963186709
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019738317909999994,
+              "intercept": 1.8476097799999792e-05,
+              "max_residual": 2.3057544600000018e-05
+            },
+            "at_4deg": -0.000747999074
+          }
+        },
+        "vlm/fine": {
+          "exit": 0,
+          "panels": 3000,
+          "panel_types": {
+            "4": 3000
+          },
+          "area": 1.586127418040696,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.0665492068528,
+              "intercept": 0.00024582853060007225,
+              "max_residual": 0.0004666401761999617
+            },
+            "at_4deg": 0.266909296118
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06635410157555,
+              "intercept": 0.0002617536626000074,
+              "max_residual": 0.00048703696720003853
+            },
+            "at_4deg": 0.266165196932
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.0667459335908,
+              "intercept": -0.00010880522439993544,
+              "max_residual": 0.00017237129620006897
+            },
+            "at_4deg": 0.266893256058
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0023038688301499992,
+              "intercept": -0.0015299398951999982,
+              "max_residual": 0.0015349629781
+            },
+            "at_4deg": 0.006165641696
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0024603388034499987,
+              "intercept": 0.008587469631400006,
+              "max_residual": 0.0016391906403000027
+            },
+            "at_4deg": 0.016806755819
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.00116851959195,
+              "intercept": 0.009449243991900001,
+              "max_residual": 0.0007793524358000008
+            },
+            "at_4deg": 0.013366900006
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019510527724999995,
+              "intercept": 1.592513199999985e-05,
+              "max_residual": 2.0396790999999874e-05
+            },
+            "at_4deg": -0.000744099186
+          }
+        }
+      },
+      "comparisons": {
+        "panel/coarse:cl_CLwtot_vs_CL": {
+          "slope_relative": 0.11421363983504558,
+          "camber_lift_offset": -0.00950030078965406,
+          "cambered": false,
+          "slope_ok": true,
+          "intercept_ok": true,
+          "passed": true
+        },
+        "panel/coarse:gamma_shape": {
+          "rms_relative": 0.06888976846813484,
+          "strips": 70,
+          "dpanel_stations": 33,
+          "passed": true
+        },
+        "panel/fine:cl_CLwtot_vs_CL": {
+          "slope_relative": 0.06694766803019689,
+          "camber_lift_offset": -0.006427540785554079,
+          "cambered": false,
+          "slope_ok": true,
+          "intercept_ok": true,
+          "passed": true
+        },
+        "panel/fine:gamma_shape": {
+          "rms_relative": 0.04017734911597529,
+          "strips": 150,
+          "dpanel_stations": 33,
+          "passed": true
+        },
+        "vlm/coarse:cl_CLi_vs_CL_gamma": {
+          "slope_relative": 0.04938265972306837,
+          "camber_lift_offset": -0.007713665827025627,
+          "cambered": false,
+          "slope_ok": true,
+          "intercept_ok": true,
+          "passed": true
+        },
+        "vlm/coarse:gamma_shape": {
+          "rms_relative": 0.06265258839747538,
+          "strips": 70,
+          "dpanel_stations": 33,
+          "passed": true
+        },
+        "vlm/fine:cl_CLi_vs_CL_gamma": {
+          "slope_relative": 0.024850050803369286,
+          "camber_lift_offset": -0.0003592993039256213,
+          "cambered": false,
+          "slope_ok": true,
+          "intercept_ok": true,
+          "passed": true
+        },
+        "vlm/fine:gamma_shape": {
+          "rms_relative": 0.04305661071356746,
+          "strips": 150,
+          "dpanel_stations": 33,
+          "passed": true
+        }
+      },
+      "cd_report": {
+        "vlm/coarse": {
+          "cd_vlm": 0.006657180479,
+          "cd_dpanel": 0.004570419477939379,
+          "cd_relative": 0.45657975403199935,
+          "k_vlm": 0.08314430404105748,
+          "k_dpanel": 0.06099487440851061,
+          "k_relative": 0.36313591670345924,
+          "cdi_at_zero": 0.0,
+          "gated": false
+        },
+        "vlm/fine": {
+          "cd_vlm": 0.006165641696,
+          "cd_dpanel": 0.004570419477939379,
+          "cd_relative": 0.3490319052245602,
+          "k_vlm": 0.08654677373090988,
+          "k_dpanel": 0.06099487440851061,
+          "k_relative": 0.4189187955575824,
+          "cdi_at_zero": 0.0,
+          "gated": false
+        }
+      },
+      "cambered": false
+    },
+    "bwb": {
+      "geometry_sha256": "87c0d4fcdd56a9815db4a14287e96acce45cacc9a1184d37ea11f25ec564809c",
+      "camber_omitted": true,
+      "dpanel": {
+        "CL": {
+          "fit": {
+            "slope_per_deg": 0.05859881562234405,
+            "intercept": 0.10334187904692407,
+            "max_residual": 0.0005374592717670712
+          },
+          "at_4deg": 0.33827460080806737
+        },
+        "CL_gamma": {
+          "fit": {
+            "slope_per_deg": 0.05867711309279186,
+            "intercept": 0.1087973232255547,
+            "max_residual": 0.00019507023623260844
+          },
+          "at_4deg": 0.34370084583295474
+        },
+        "CD_pressure": {
+          "fit": {
+            "slope_per_deg": 0.0034952173914114255,
+            "intercept": -0.009676589199104945,
+            "max_residual": 0.001770152412674312
+          },
+          "at_4deg": 0.002554951942406162
+        },
+        "CD_trefftz": {
+          "fit": {
+            "slope_per_deg": 0.0032282735082260006,
+            "intercept": -0.00014437068412407955,
+            "max_residual": 0.0013197256768567754
+          },
+          "at_4deg": 0.01145844817891594
+        }
+      },
+      "vspaero": {
+        "panel/coarse": {
+          "exit": 0,
+          "panels": 2064,
+          "panel_types": {
+            "3": 8,
+            "4": 2056
+          },
+          "area": 1.308365481011909,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.06206704547484999,
+              "intercept": -0.006887915320799964,
+              "max_residual": 0.0024942661514000264
+            },
+            "at_4deg": 0.24387453273
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06186716462844999,
+              "intercept": -0.0068737345250999785,
+              "max_residual": 0.002512178694300038
+            },
+            "at_4deg": 0.243107102683
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06419528383359999,
+              "intercept": -0.007621268863799971,
+              "max_residual": 0.002028153471400035
+            },
+            "at_4deg": 0.251188019942
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0029345003136499992,
+              "intercept": -0.00025171863269999646,
+              "max_residual": 0.001988255378600002
+            },
+            "at_4deg": 0.009643946049
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.0030726735389499985,
+              "intercept": 0.010257310445899998,
+              "max_residual": 0.0020846918887999933
+            },
+            "at_4deg": 0.020618707039
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0010365777164999992,
+              "intercept": 0.009917708035000002,
+              "max_residual": 0.0007838721969999976
+            },
+            "at_4deg": 0.013280146704
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019988084654999996,
+              "intercept": 1.4180795399999733e-05,
+              "max_residual": 1.791254280000018e-05
+            },
+            "at_4deg": -0.000767430048
+          }
+        },
+        "panel/fine": {
+          "exit": 0,
+          "panels": 7280,
+          "panel_types": {
+            "3": 8,
+            "4": 7272
+          },
+          "area": 1.3096299895922565,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.06184132100349999,
+              "intercept": -0.007810548107999963,
+              "max_residual": 0.001516973944999972
+            },
+            "at_4deg": 0.240835924956
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.06164144206124999,
+              "intercept": -0.007796303415499982,
+              "max_residual": 0.0015292197670000035
+            },
+            "at_4deg": 0.240068896313
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.06441414379184998,
+              "intercept": -0.008750774063299988,
+              "max_residual": 0.0012975424506000283
+            },
+            "at_4deg": 0.249744287194
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.00311403398975,
+              "intercept": 0.002204316537,
+              "max_residual": 0.0020667339049999997
+            },
+            "at_4deg": 0.012593718591
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.003252063493549999,
+              "intercept": 0.012712687859599997,
+              "max_residual": 0.0021617299436999943
+            },
+            "at_4deg": 0.023562739222
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0009971414926499996,
+              "intercept": 0.009996402487800001,
+              "max_residual": 0.0006279886203999982
+            },
+            "at_4deg": 0.013356979838
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019987894239999996,
+              "intercept": 1.4244692699999828e-05,
+              "max_residual": 1.8242433899999934e-05
+            },
+            "at_4deg": -0.000767028643
+          }
+        },
+        "vlm/coarse": {
+          "exit": 0,
+          "panels": 1008,
+          "panel_types": {
+            "4": 1008
+          },
+          "area": 0.620748520257106,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.04845157140185,
+              "intercept": 3.218841020001725e-05,
+              "max_residual": 5.649324439999104e-05
+            },
+            "at_4deg": 0.193894967262
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.04825756637979999,
+              "intercept": 4.074666610003341e-05,
+              "max_residual": 6.748742569998023e-05
+            },
+            "at_4deg": 0.193138499611
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.04844135519624999,
+              "intercept": -0.00013563544199995427,
+              "max_residual": 0.0001611746609999909
+            },
+            "at_4deg": 0.193468610682
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0019329179777499996,
+              "intercept": -0.0012877574069999982,
+              "max_residual": 0.0012886027385000008
+            },
+            "at_4deg": 0.00515784776
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.002013754826049999,
+              "intercept": 0.009260278466099996,
+              "max_residual": 0.0013424333011999925
+            },
+            "at_4deg": 0.015975839174
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.00120742174745,
+              "intercept": 0.009798850119899996,
+              "max_residual": 0.0008043710657999973
+            },
+            "at_4deg": 0.013828669004
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019400502204999998,
+              "intercept": 8.558255899999928e-06,
+              "max_residual": 1.0994181299999926e-05
+            },
+            "at_4deg": -0.000756467651
+          }
+        },
+        "vlm/fine": {
+          "exit": 0,
+          "panels": 3600,
+          "panel_types": {
+            "4": 3600
+          },
+          "area": 0.6207485202565496,
+          "alphas": [
+            0.0,
+            2.0,
+            4.0,
+            6.0
+          ],
+          "CLi": {
+            "fit": {
+              "slope_per_deg": 0.05633990906529998,
+              "intercept": 9.864634560007229e-05,
+              "max_residual": 0.00024243996119999167
+            },
+            "at_4deg": 0.225700722568
+          },
+          "CLtot": {
+            "fit": {
+              "slope_per_deg": 0.05614267746509999,
+              "intercept": 0.00011027281969999266,
+              "max_residual": 0.00025734447090006163
+            },
+            "at_4deg": 0.224938327151
+          },
+          "CLwtot": {
+            "fit": {
+              "slope_per_deg": 0.05644698185304999,
+              "intercept": -0.00017613508790000241,
+              "max_residual": 0.0002149394141999772
+            },
+            "at_4deg": 0.225513265889
+          },
+          "CDi": {
+            "fit": {
+              "slope_per_deg": 0.0024817015698999994,
+              "intercept": -0.0016532271996999976,
+              "max_residual": 0.0016568263191000011
+            },
+            "at_4deg": 0.006627550119
+          },
+          "CDtot": {
+            "fit": {
+              "slope_per_deg": 0.002593952774849999,
+              "intercept": 0.008874086086699998,
+              "max_residual": 0.001731635885399995
+            },
+            "at_4deg": 0.017530312532
+          },
+          "CDwtot": {
+            "fit": {
+              "slope_per_deg": 0.0009724901764499989,
+              "intercept": 0.0099586314474,
+              "max_residual": 0.000647272529299997
+            },
+            "at_4deg": 0.013213916869
+          },
+          "CLo": {
+            "fit": {
+              "slope_per_deg": -0.00019723160019999994,
+              "intercept": 1.162647409999974e-05,
+              "max_residual": 1.4904509700000026e-05
+            },
+            "at_4deg": -0.000762395417
+          }
+        }
+      },
+      "comparisons": {
+        "panel/coarse:cl_CLwtot_vs_CL": {
+          "slope_relative": 0.09550480076805465,
+          "camber_lift_offset": -0.11096314791072405,
+          "cambered": true,
+          "slope_ok": true,
+          "intercept_ok": false,
+          "passed": true,
+          "intercept_note": "camber omitted in the VSPAERO rebuild"
+        },
+        "panel/coarse:gamma_shape": {
+          "rms_relative": 0.4963886399621722,
+          "strips": 84,
+          "dpanel_stations": 31,
+          "passed": false
+        },
+        "panel/fine:cl_CLwtot_vs_CL": {
+          "slope_relative": 0.09923968782892116,
+          "camber_lift_offset": -0.11209265311022407,
+          "cambered": true,
+          "slope_ok": true,
+          "intercept_ok": false,
+          "passed": true,
+          "intercept_note": "camber omitted in the VSPAERO rebuild"
+        },
+        "panel/fine:gamma_shape": {
+          "rms_relative": 0.5246086695503515,
+          "strips": 180,
+          "dpanel_stations": 31,
+          "passed": false
+        },
+        "vlm/coarse:cl_CLi_vs_CL_gamma": {
+          "slope_relative": 0.17426797522862472,
+          "camber_lift_offset": -0.10876513481535469,
+          "cambered": true,
+          "slope_ok": false,
+          "intercept_ok": false,
+          "passed": false,
+          "intercept_note": "camber omitted in the VSPAERO rebuild"
+        },
+        "vlm/coarse:gamma_shape": {
+          "rms_relative": 0.13909837233789596,
+          "strips": 84,
+          "dpanel_stations": 31,
+          "passed": true
+        },
+        "vlm/fine:cl_CLi_vs_CL_gamma": {
+          "slope_relative": 0.03983161243457615,
+          "camber_lift_offset": -0.10869867687995463,
+          "cambered": true,
+          "slope_ok": true,
+          "intercept_ok": false,
+          "passed": true,
+          "intercept_note": "camber omitted in the VSPAERO rebuild"
+        },
+        "vlm/fine:gamma_shape": {
+          "rms_relative": 0.14230138574704437,
+          "strips": 180,
+          "dpanel_stations": 31,
+          "passed": true
+        }
+      },
+      "cd_report": {
+        "vlm/coarse": {
+          "cd_vlm": 0.00515784776,
+          "cd_dpanel": 0.01145844817891594,
+          "cd_relative": 0.5498650707788973,
+          "k_vlm": 0.137194103436932,
+          "k_dpanel": 0.09699840727163518,
+          "k_relative": 0.4143954245839568,
+          "cdi_at_zero": 0.0,
+          "gated": false
+        },
+        "vlm/fine": {
+          "cd_vlm": 0.006627550119,
+          "cd_dpanel": 0.01145844817891594,
+          "cd_relative": 0.4216014232018791,
+          "k_vlm": 0.13010294332896993,
+          "k_dpanel": 0.09699840727163518,
+          "k_relative": 0.3412894808120769,
+          "cdi_at_zero": 0.0,
+          "gated": false
+        }
+      },
+      "cambered": true
+    }
+  },
+  "findings": [
+    {
+      "case": "rect",
+      "kind": "cl_slope",
+      "pair": "vlm/coarse:CLi",
+      "slope_relative": 0.15699235436289388,
+      "classification": "model_form"
+    },
+    {
+      "case": "bwb",
+      "kind": "gamma_shape",
+      "pair": "panel/coarse",
+      "rms_relative": 0.4963886399621722,
+      "classification": "discretization"
+    },
+    {
+      "case": "bwb",
+      "kind": "gamma_shape",
+      "pair": "panel/fine",
+      "rms_relative": 0.5246086695503515,
+      "classification": "discretization"
+    },
+    {
+      "case": "bwb",
+      "kind": "cl_slope",
+      "pair": "vlm/coarse:CLi",
+      "slope_relative": 0.17426797522862472,
+      "classification": "model_form"
+    }
+  ],
+  "manifest": {
+    "alphas_deg": [
+      0.0,
+      2.0,
+      4.0,
+      6.0
+    ],
+    "vspaero_runs": 16,
+    "dpanel_cases": 4
+  },
+  "passed": false,
+  "n_comparisons": 32,
+  "n_failed": 4
+}
