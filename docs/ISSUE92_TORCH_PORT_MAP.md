@@ -1500,3 +1500,63 @@ call reaches torch with `backend_source='default'`. `test/conftest.py` no longer
 - Not claimed: the two jax-0.12 jaxpr-inspection failures (section 18.4) are fixed.
 - Not claimed: `panel/p1_closed_body.py` or `panel/p1_geometry_contact.py` were ported;
   they are off the coupled path (section 18.2) and keep their LAPACK calls.
+
+## 20. S11: the live path holds no NumPy LAPACK (2026-11-03)
+
+### 20.1 What changed
+
+| File | Change |
+| --- | --- |
+| `panel/p1_geometry_contact.py:131` | `_dominant_normal` uses `torch.linalg.svd` for point sets larger than a triangle (lazy import). The triangle fast path is unchanged. |
+| `panel/p1_coupled_material_wake.py:1090` | the constraint spectrum is always `torch.linalg.svdvals`; the NumPy `else` branch is deleted because `solve_backend` can only resolve to torch |
+| `panel/run_p1_coupled_material_wake.py:115` | the `--solve-backend` flag is removed; `--solve-device` remains |
+| `test/test_live_path_has_no_numpy_lapack.py` | new executable assertion, see 20.3 |
+
+The reason is not tidiness. Section 6f recorded that a NumPy/SciPy LAPACK call after a torch
+kernel kills the interpreter (0xC0000005). The coupled loop solves with torch and then runs
+geometry predicates, so a NumPy SVD inside `coplanar_overlap_area` was a latent crash, not a
+style defect. It happened to survive because `np.linalg.svd` was the call that did not crash in
+the probes; nothing guaranteed that.
+
+### 20.2 Evidence that behaviour is unchanged
+
+- Geometry audit fingerprint, same case and setup as section 14.1: `pairs_tested` 54,
+  `detail_sha` `9aa3999781224e5347f1723d6f13a3bd78ea4b9f02cda89a53237a560695818d`, byte-identical
+  to the value recorded before this change.
+- `_dominant_normal` on a 6-point swept hull: torch SVD and NumPy SVD return the same unit normal,
+  `|dot| = 1.0`.
+- Targeted tests (`test_p1_gate_contact`, `test_p1_geometry_contact`, `test_p1_solve_torch`,
+  `test_backend_dispatch`): 42 passed, 3 skipped.
+- Full suite (myml, torch 2.13.0+cu132, jax 0.12.0.1 via `runs/jax_site313`):
+  **1000 passed, 21 skipped, 2 failed** in 210.38 s. The two failures are the pre-existing jax 0.12
+  jaxpr recursion failures (`test_half_native_panel`, `test_iterative_panel`) that also fail on
+  clean master. The previous baseline was 997 passed; the +3 are the new guard tests.
+
+### 20.3 The guard
+
+`test/test_live_path_has_no_numpy_lapack.py` walks imports from twelve production entries
+(`p1_lifting_g1`, `p1_lifting_g2`, `p1_coupled_material_wake`, `p1_solve_torch`,
+`p1_implicit_adjoint`, `p1_steady_free_wake`, the three wake evaluators, `p1_batched_influence`)
+and fails if any reachable module calls `np.linalg.{svd,svdvals,qr,solve,lstsq,eig,eigh,...}` or
+imports scipy. One module is allowlisted with its reason inline: `panel/p1_closed_body.py` keeps
+`qr`/`svd`/`solve` inside its own standalone closed-body demo (`run_p1_closed.py`); the P1 chain
+imports `Mesh` and `influence_block` and never enters `solve()`. A third test plants a
+`np.linalg.svd` call in a temporary module and asserts the scanner finds it, so the guard cannot
+silently pass by scanning nothing.
+
+### 20.4 Not claimed
+
+- `panel/p1_closed_body.py` still contains LAPACK; it is off the solve path, not ported.
+- The default device is still `cpu`. This section changes no numerics and buys no speed.
+- Elementwise NumPy remains everywhere (`np.cross`, `np.linalg.norm`, array bookkeeping). The ban is
+  on LAPACK entry points, because those are the calls that crash after a torch kernel, not on NumPy
+  as a data library.
+
+### 20.5 Reproduce
+
+```
+python -m pytest test/test_live_path_has_no_numpy_lapack.py -q
+python runs/issue92/audit_fingerprint.py            # prints pairs_tested and detail_sha
+python -m pytest test -q                            # full suite
+```
+

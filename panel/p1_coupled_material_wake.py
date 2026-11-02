@@ -1088,13 +1088,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                             max(abs(state['CL_gamma']), 1e-12)),
                       wakes={}, incoming_update=incoming)
         constraint = ops['J'] if kutta == 'pressure' else np.vstack((ops['J'], ops['K']))
-        if solve_backend == "torch":
-            import torch as _torch
-            _c = _torch.as_tensor(np.asarray(constraint, float), dtype=_torch.float64,
-                                  device=solve_device)
-            sv = _torch.linalg.svdvals(_c).detach().cpu().numpy()
-        else:
-            sv = np.linalg.svd(constraint, compute_uv=False)
+        import torch as _torch
+        _c = _torch.as_tensor(np.asarray(constraint, float), dtype=_torch.float64,
+                              device=solve_device)
+        sv = _torch.linalg.svdvals(_c).detach().cpu().numpy()
         record['constraint_rank'] = int(np.sum(sv > 1e-11*sv[0]))
         record['constraint_singular_min'] = float(sv[-1])
         targets, counts, step_scales = {}, {}, {}

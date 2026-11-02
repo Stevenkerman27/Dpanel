@@ -132,8 +132,11 @@ def _dominant_normal(points):
     """Unit normal of the flattest direction of a nearly flat point set.
 
     Triangles (what this gate sees) span their own plane, so the normal is the edge
-    cross product. Using it avoids a LAPACK call that cannot run after a torch
-    kernel in the same process; larger point sets keep the SVD path.
+    cross product. Larger sets (a swept triangle's six-vertex hull) use torch's SVD:
+    a NumPy LAPACK call after a torch kernel in the same process kills it
+    (docs/ISSUE92_TORCH_PORT_MAP.md section 6f), and this module runs inside the
+    coupled loop, after the solve. torch is imported lazily so that importing this
+    module still works in an interpreter without it.
     """
     pts = np.asarray(points, float).reshape(-1, 3)
     if len(pts) == 3:
@@ -142,8 +145,10 @@ def _dominant_normal(points):
         if norm > 0:
             return cross/norm
     centred = pts-pts.mean(axis=0)
-    _u, _s, vt = np.linalg.svd(centred, full_matrices=False)
-    n = vt[-1]
+    import torch
+    _u, _s, vt = torch.linalg.svd(torch.as_tensor(centred, dtype=torch.float64),
+                                  full_matrices=False)
+    n = vt[-1].detach().cpu().numpy()
     norm = np.linalg.norm(n)
     return n/norm if norm > 0 else np.array([0., 0., 1.])
 
