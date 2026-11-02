@@ -147,15 +147,24 @@ def _mesh(mesh):
                 normal,norm/2,grad,dict(diameter=float(np.linalg.norm(np.ptp(mesh.xyz,axis=0)))))
 
 
-def assemble_multi(mesh: MultiLiftingMesh):
+def assemble_multi(mesh: MultiLiftingMesh, *, backend='numpy'):
     """Assemble all wall/wake interactions in ONE coupled potential system.
 
     No superposition of separate wing solutions; cross-component influence
     appears in A and all wake groups act on every wall collocation target.
+    backend='torch' routes the wall influence matrix through
+    panel/p1_batched_influence.py; the default does not move.
     """
     ms=_mesh(mesh);nf=len(mesh.faces);nm=mesh.ndof_mu
-    A=_doublet_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
-                      face_dofs=mesh.dof_face,ndof=nm)
+    if backend not in ('numpy','torch'):
+        raise ValueError("backend must be 'numpy' or 'torch'")
+    if backend=='numpy':
+        A=_doublet_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
+                          face_dofs=mesh.dof_face,ndof=nm)
+    else:
+        from .p1_batched_influence import influence_matrix
+        A=influence_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
+                           face_dofs=mesh.dof_face,ndof=nm)
     grad=_gradient_map(mesh,ms)
     W_parts=[];J_parts=[];K_parts=[];TEface=[];slices={};offset=0;groups_receipt=[]
     for gi,group in enumerate(mesh.groups):

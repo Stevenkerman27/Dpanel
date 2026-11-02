@@ -1,0 +1,1216 @@
+{
+  "block": {
+    "source_block": 256,
+    "target_block": 512
+  },
+  "fixtures": {
+    "g1_elliptic": {
+      "A": {
+        "max_abs": 4.663661763628507e-16,
+        "max_elementwise_relative": 0.00019383940204155043,
+        "max_rel_to_reference_scale": 1.5799690195522456e-15,
+        "reference_max_abs": 0.2951742537932904,
+        "shape": [
+          3220,
+          1695
+        ]
+      },
+      "A_matches_assembled": {
+        "max_abs": 4.663661763628507e-16,
+        "max_elementwise_relative": 0.00019383940204155043,
+        "max_rel_to_reference_scale": 1.5799690195522456e-15,
+        "reference_max_abs": 0.2951742537932904,
+        "shape": [
+          3220,
+          1695
+        ]
+      },
+      "W": {
+        "max_abs": 2.1946962476537824e-16,
+        "max_elementwise_relative": 1.865530302352079e-11,
+        "max_rel_to_reference_scale": 7.677776101171875e-15,
+        "reference_max_abs": 0.02858505143590735,
+        "shape": [
+          3220,
+          33
+        ]
+      },
+      "W_matches_assembled": {
+        "max_abs": 2.1946962476537824e-16,
+        "max_elementwise_relative": 1.865530302352079e-11,
+        "max_rel_to_reference_scale": 7.677776101171875e-15,
+        "reference_max_abs": 0.02858505143590735,
+        "shape": [
+          3220,
+          33
+        ]
+      },
+      "assembly_backend": {
+        "A": {
+          "max_abs": 4.663661763628507e-16,
+          "max_elementwise_relative": 0.00019383940204155043,
+          "max_rel_to_reference_scale": 1.5799690195522456e-15,
+          "reference_max_abs": 0.2951742537932904,
+          "shape": [
+            3220,
+            1695
+          ]
+        },
+        "W": {
+          "max_abs": 2.1946962476537824e-16,
+          "max_elementwise_relative": 1.865530302352079e-11,
+          "max_rel_to_reference_scale": 7.677776101171875e-15,
+          "reference_max_abs": 0.02858505143590735,
+          "shape": [
+            3220,
+            33
+          ]
+        },
+        "numpy": 14.22803479997674,
+        "speedup": 7.924748933699249,
+        "torch": 1.7953925000037998
+      },
+      "kind": "wing",
+      "loads": {
+        "CD_pressure": {
+          "batched": 0.004922737273201249,
+          "delta": -8.508818649666239e-16,
+          "reference": 0.0049227372732021
+        },
+        "CL": {
+          "batched": 0.34727361554375136,
+          "delta": -1.6930901125533637e-14,
+          "reference": 0.3472736155437683
+        },
+        "CL_gamma": {
+          "batched": 0.3400753819393595,
+          "delta": -1.7319479184152442e-14,
+          "reference": 0.3400753819393768
+        },
+        "CM_y": {
+          "batched": -0.07531996207331478,
+          "delta": 1.033895191682177e-14,
+          "reference": -0.07531996207332511
+        },
+        "constrained_rank": {
+          "batched": 1562.0,
+          "delta": 0.0,
+          "reference": 1562.0
+        },
+        "jump_rms": {
+          "batched": 4.1847337658775184e-16,
+          "delta": 4.7054814649595447e-17,
+          "reference": 3.714185619381564e-16
+        },
+        "pressure_kutta_rms": {
+          "batched": 7.640932442851639e-07,
+          "delta": 2.911480938608789e-16,
+          "reference": 7.640932439940158e-07
+        },
+        "signed_kutta_rms": {
+          "batched": 0.00878066215440646,
+          "delta": -3.382710778154774e-16,
+          "reference": 0.008780662154406798
+        },
+        "wall_rms": {
+          "batched": 0.0002970747257516871,
+          "delta": 4.87890977618477e-19,
+          "reference": 0.0002970747257516866
+        }
+      },
+      "seconds": {
+        "batched_A": 1.219632200023625,
+        "batched_W": 0.5533204000093974,
+        "reference_A": 9.601686100009829,
+        "reference_W": 4.545758499996737,
+        "reference_W_note": "per-wake-triangle reference loop",
+        "speedup_A": 7.8726079057471905,
+        "speedup_W": 8.21541822770231,
+        "whole_fixture": 178.4104767999961
+      },
+      "state": {
+        "cp": {
+          "max_abs": 1.003767513552134e-09,
+          "max_elementwise_relative": 3.8965016649148737e-08,
+          "max_rel_to_reference_scale": 3.964639884548783e-10,
+          "reference_max_abs": 2.531799968678298,
+          "shape": [
+            3220
+          ]
+        },
+        "gamma": {
+          "max_abs": 1.9095419689918458e-11,
+          "max_elementwise_relative": 1.0963295475099896e-10,
+          "max_rel_to_reference_scale": 1.082456017546461e-10,
+          "reference_max_abs": 0.17640827322666575,
+          "shape": [
+            33
+          ]
+        },
+        "mu": {
+          "max_abs": 1.4843459794633418e-11,
+          "max_elementwise_relative": 2.0969708653823947e-11,
+          "max_rel_to_reference_scale": 1.3303202619929415e-11,
+          "reference_max_abs": 1.1157809302548363,
+          "shape": [
+            1695
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "g1_swept30": {
+      "A": {
+        "max_abs": 3.0623290361853073e-16,
+        "max_elementwise_relative": 3.5876530734971744e-06,
+        "max_rel_to_reference_scale": 9.501154537456664e-16,
+        "reference_max_abs": 0.3223112542915288,
+        "shape": [
+          2764,
+          1447
+        ]
+      },
+      "A_matches_assembled": {
+        "max_abs": 3.0623290361853073e-16,
+        "max_elementwise_relative": 3.5876530734971744e-06,
+        "max_rel_to_reference_scale": 9.501154537456664e-16,
+        "reference_max_abs": 0.3223112542915288,
+        "shape": [
+          2764,
+          1447
+        ]
+      },
+      "W": {
+        "max_abs": 5.036119091195168e-17,
+        "max_elementwise_relative": 3.9545916705587305e-13,
+        "max_rel_to_reference_scale": 1.9094006133375393e-15,
+        "reference_max_abs": 0.0263753926547257,
+        "shape": [
+          2764,
+          15
+        ]
+      },
+      "W_matches_assembled": {
+        "max_abs": 5.036119091195168e-17,
+        "max_elementwise_relative": 3.9545916705587305e-13,
+        "max_rel_to_reference_scale": 1.9094006133375393e-15,
+        "reference_max_abs": 0.0263753926547257,
+        "shape": [
+          2764,
+          15
+        ]
+      },
+      "assembly_backend": {
+        "A": {
+          "max_abs": 3.0623290361853073e-16,
+          "max_elementwise_relative": 3.5876530734971744e-06,
+          "max_rel_to_reference_scale": 9.501154537456664e-16,
+          "reference_max_abs": 0.3223112542915288,
+          "shape": [
+            2764,
+            1447
+          ]
+        },
+        "W": {
+          "max_abs": 5.036119091195168e-17,
+          "max_elementwise_relative": 3.9545916705587305e-13,
+          "max_rel_to_reference_scale": 1.9094006133375393e-15,
+          "reference_max_abs": 0.0263753926547257,
+          "shape": [
+            2764,
+            15
+          ]
+        },
+        "numpy": 9.968846899981145,
+        "speedup": 8.086445994988754,
+        "torch": 1.2327846999978647
+      },
+      "kind": "wing",
+      "loads": {
+        "CD_pressure": {
+          "batched": 0.007219985624544183,
+          "delta": 8.847089727481716e-16,
+          "reference": 0.007219985624543298
+        },
+        "CL": {
+          "batched": 0.4674214526153883,
+          "delta": 1.149080830487037e-14,
+          "reference": 0.4674214526153768
+        },
+        "CL_gamma": {
+          "batched": 0.4591177927908154,
+          "delta": 1.199040866595169e-14,
+          "reference": 0.4591177927908034
+        },
+        "CM_y": {
+          "batched": -0.37613636194556826,
+          "delta": -9.159339953157541e-15,
+          "reference": -0.3761363619455591
+        },
+        "constrained_rank": {
+          "batched": 1336.0,
+          "delta": 0.0,
+          "reference": 1336.0
+        },
+        "jump_rms": {
+          "batched": 6.282553789676534e-16,
+          "delta": 7.319687462550215e-17,
+          "reference": 5.550585043421512e-16
+        },
+        "pressure_kutta_rms": {
+          "batched": 2.6372262713238615e-07,
+          "delta": -7.41855595644313e-16,
+          "reference": 2.6372262787424175e-07
+        },
+        "signed_kutta_rms": {
+          "batched": 0.01777070750454986,
+          "delta": -1.797173521111972e-15,
+          "reference": 0.017770707504551658
+        },
+        "wall_rms": {
+          "batched": 0.0003548676906038335,
+          "delta": -3.2526065174565133e-18,
+          "reference": 0.00035486769060383673
+        }
+      },
+      "seconds": {
+        "batched_A": 0.8876770999631844,
+        "batched_W": 0.3680574999889359,
+        "reference_A": 7.125155400019139,
+        "reference_W": 2.836069899960421,
+        "reference_W_note": "per-wake-triangle reference loop",
+        "speedup_A": 8.02674238224085,
+        "speedup_W": 7.705507699328707,
+        "whole_fixture": 119.95240919996286
+      },
+      "state": {
+        "cp": {
+          "max_abs": 4.1877612488860905e-13,
+          "max_elementwise_relative": 2.4713567209272905e-09,
+          "max_rel_to_reference_scale": 1.7387033886359064e-13,
+          "reference_max_abs": 2.4085541422747117,
+          "shape": [
+            2764
+          ]
+        },
+        "gamma": {
+          "max_abs": 2.2010171463193728e-14,
+          "max_elementwise_relative": 1.1269720778630342e-13,
+          "max_rel_to_reference_scale": 1.0608835137573154e-13,
+          "reference_max_abs": 0.20747019986426815,
+          "shape": [
+            15
+          ]
+        },
+        "mu": {
+          "max_abs": 1.199040866595169e-14,
+          "max_elementwise_relative": 5.526266030636152e-13,
+          "max_rel_to_reference_scale": 6.730931922202951e-15,
+          "reference_max_abs": 1.781389086167934,
+          "shape": [
+            1447
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "g1_wing_camber": {
+      "A": {
+        "max_abs": 1.437482674126328e-15,
+        "max_elementwise_relative": 45.83309216320665,
+        "max_rel_to_reference_scale": 4.096074870268899e-15,
+        "reference_max_abs": 0.3509415036722608,
+        "shape": [
+          112,
+          63
+        ]
+      },
+      "A_matches_assembled": {
+        "max_abs": 1.437482674126328e-15,
+        "max_elementwise_relative": 45.83309216320665,
+        "max_rel_to_reference_scale": 4.096074870268899e-15,
+        "reference_max_abs": 0.3509415036722608,
+        "shape": [
+          112,
+          63
+        ]
+      },
+      "W": {
+        "max_abs": 1.0408340855860843e-17,
+        "max_elementwise_relative": 1.1822011618015678e-14,
+        "max_rel_to_reference_scale": 5.547346767199734e-16,
+        "reference_max_abs": 0.018762737021242513,
+        "shape": [
+          112,
+          5
+        ]
+      },
+      "W_matches_assembled": {
+        "max_abs": 1.0408340855860843e-17,
+        "max_elementwise_relative": 1.1822011618015678e-14,
+        "max_rel_to_reference_scale": 5.547346767199734e-16,
+        "reference_max_abs": 0.018762737021242513,
+        "shape": [
+          112,
+          5
+        ]
+      },
+      "assembly_backend": {
+        "A": {
+          "max_abs": 1.437482674126328e-15,
+          "max_elementwise_relative": 45.83309216320665,
+          "max_rel_to_reference_scale": 4.096074870268899e-15,
+          "reference_max_abs": 0.3509415036722608,
+          "shape": [
+            112,
+            63
+          ]
+        },
+        "W": {
+          "max_abs": 1.0408340855860843e-17,
+          "max_elementwise_relative": 1.1822011618015678e-14,
+          "max_rel_to_reference_scale": 5.547346767199734e-16,
+          "reference_max_abs": 0.018762737021242513,
+          "shape": [
+            112,
+            5
+          ]
+        },
+        "numpy": 0.04508419998455793,
+        "speedup": 6.358753727033615,
+        "torch": 0.007090100029017776
+      },
+      "kind": "wing",
+      "loads": {
+        "CD_pressure": {
+          "batched": -0.013572436881108235,
+          "delta": -3.303705191359807e-10,
+          "reference": -0.013572436550737716
+        },
+        "CL": {
+          "batched": 0.4502913469465699,
+          "delta": -1.2535954496684099e-09,
+          "reference": 0.45029134820016536
+        },
+        "CL_gamma": {
+          "batched": 0.42222006435991943,
+          "delta": 1.3067719129011834e-10,
+          "reference": 0.42222006422924224
+        },
+        "CM_y": {
+          "batched": -0.12951207785821087,
+          "delta": 4.0392492128837887e-10,
+          "reference": -0.1295120782621358
+        },
+        "constrained_rank": {
+          "batched": 58.0,
+          "delta": 0.0,
+          "reference": 58.0
+        },
+        "jump_rms": {
+          "batched": 1.8577584504832502e-16,
+          "delta": 5.4412485233993107e-17,
+          "reference": 1.3136335981433191e-16
+        },
+        "pressure_kutta_rms": {
+          "batched": 1.5674720813711085e-07,
+          "delta": -6.858981586350146e-13,
+          "reference": 1.5674789403526948e-07
+        },
+        "signed_kutta_rms": {
+          "batched": 0.021134649617574424,
+          "delta": 6.614862824161349e-10,
+          "reference": 0.02113464895608814
+        },
+        "wall_rms": {
+          "batched": 0.00216832102995146,
+          "delta": -6.323051457424178e-12,
+          "reference": 0.0021683210362745116
+        }
+      },
+      "seconds": {
+        "batched_A": 0.004446699982509017,
+        "batched_W": 0.002147099992725998,
+        "reference_A": 0.04158700001426041,
+        "reference_W": 0.0092391999787651,
+        "reference_W_note": "per-wake-triangle reference loop",
+        "speedup_A": 9.352328733182322,
+        "speedup_W": 4.303106520453591,
+        "whole_fixture": 0.5723276999779046
+      },
+      "singular_values": {
+        "condition": 50.29873838735687,
+        "max_abs": 8.881784197001252e-16,
+        "sigma_max": 1.3815215986891762,
+        "sigma_min": 0.027466327048800025
+      },
+      "state": {
+        "cp": {
+          "max_abs": 2.610738361497056e-06,
+          "max_elementwise_relative": 2.531980794304094e-06,
+          "max_rel_to_reference_scale": 2.6942790344524315e-07,
+          "reference_max_abs": 9.689933106827022,
+          "shape": [
+            112
+          ]
+        },
+        "gamma": {
+          "max_abs": 1.8900138676336553e-09,
+          "max_elementwise_relative": 1.0316939238767321e-08,
+          "max_rel_to_reference_scale": 6.498231862629294e-09,
+          "reference_max_abs": 0.2908504817291828,
+          "shape": [
+            5
+          ]
+        },
+        "mu": {
+          "max_abs": 4.71080796593526e-09,
+          "max_elementwise_relative": 8.577561526537575e-08,
+          "max_rel_to_reference_scale": 3.955949843558478e-09,
+          "reference_max_abs": 1.1908158981352928,
+          "shape": [
+            63
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "g1_wing_rect": {
+      "A": {
+        "max_abs": 1.849709892632473e-15,
+        "max_elementwise_relative": 156.87810270414082,
+        "max_rel_to_reference_scale": 5.2818914668160454e-15,
+        "reference_max_abs": 0.3501983909085297,
+        "shape": [
+          112,
+          63
+        ]
+      },
+      "A_matches_assembled": {
+        "max_abs": 1.849709892632473e-15,
+        "max_elementwise_relative": 156.87810270414082,
+        "max_rel_to_reference_scale": 5.2818914668160454e-15,
+        "reference_max_abs": 0.3501983909085297,
+        "shape": [
+          112,
+          63
+        ]
+      },
+      "W": {
+        "max_abs": 4.553649124439119e-18,
+        "max_elementwise_relative": 1.400027481058239e-14,
+        "max_rel_to_reference_scale": 3.6451414670774144e-16,
+        "reference_max_abs": 0.012492379693812332,
+        "shape": [
+          112,
+          5
+        ]
+      },
+      "W_matches_assembled": {
+        "max_abs": 4.553649124439119e-18,
+        "max_elementwise_relative": 1.400027481058239e-14,
+        "max_rel_to_reference_scale": 3.6451414670774144e-16,
+        "reference_max_abs": 0.012492379693812332,
+        "shape": [
+          112,
+          5
+        ]
+      },
+      "assembly_backend": {
+        "A": {
+          "max_abs": 1.849709892632473e-15,
+          "max_elementwise_relative": 156.87810270414082,
+          "max_rel_to_reference_scale": 5.2818914668160454e-15,
+          "reference_max_abs": 0.3501983909085297,
+          "shape": [
+            112,
+            63
+          ]
+        },
+        "W": {
+          "max_abs": 4.553649124439119e-18,
+          "max_elementwise_relative": 1.400027481058239e-14,
+          "max_rel_to_reference_scale": 3.6451414670774144e-16,
+          "reference_max_abs": 0.012492379693812332,
+          "shape": [
+            112,
+            5
+          ]
+        },
+        "numpy": 0.044299200002569705,
+        "speedup": 6.397273535910934,
+        "torch": 0.006924699991941452
+      },
+      "kind": "wing",
+      "loads": {
+        "CD_pressure": {
+          "batched": -0.013407339445502547,
+          "delta": 2.1510571102112408e-16,
+          "reference": -0.013407339445502762
+        },
+        "CL": {
+          "batched": 0.31947298897043414,
+          "delta": 5.10702591327572e-15,
+          "reference": 0.31947298897042903
+        },
+        "CL_gamma": {
+          "batched": 0.281923597219655,
+          "delta": 6.106226635438361e-15,
+          "reference": 0.2819235972196489
+        },
+        "CM_y": {
+          "batched": -0.04860127411909081,
+          "delta": -3.5110803153770576e-15,
+          "reference": -0.0486012741190873
+        },
+        "constrained_rank": {
+          "batched": 58.0,
+          "delta": 0.0,
+          "reference": 58.0
+        },
+        "jump_rms": {
+          "batched": 7.021666937153402e-17,
+          "delta": -6.114669044279789e-17,
+          "reference": 1.3136335981433191e-16
+        },
+        "pressure_kutta_rms": {
+          "batched": 1.4982421451420711e-07,
+          "delta": 5.76949821637807e-16,
+          "reference": 1.498242139372573e-07
+        },
+        "signed_kutta_rms": {
+          "batched": 0.0056799770725730146,
+          "delta": -4.163336342344337e-16,
+          "reference": 0.005679977072573431
+        },
+        "wall_rms": {
+          "batched": 0.0021245901151739385,
+          "delta": -1.3010426069826053e-18,
+          "reference": 0.00212459011517394
+        }
+      },
+      "seconds": {
+        "batched_A": 0.0038459000061266124,
+        "batched_W": 0.0020946000004187226,
+        "reference_A": 0.030919000040739775,
+        "reference_W": 0.009589699970092624,
+        "reference_W_note": "per-wake-triangle reference loop",
+        "speedup_A": 8.039470602845903,
+        "speedup_W": 4.578296556944327,
+        "whole_fixture": 0.5316430000239052
+      },
+      "singular_values": {
+        "condition": 50.22331541798393,
+        "max_abs": 1.3322676295501878e-15,
+        "sigma_max": 1.3813141812894492,
+        "sigma_min": 0.027503444760535047
+      },
+      "state": {
+        "cp": {
+          "max_abs": 5.728750807065808e-13,
+          "max_elementwise_relative": 8.343209172765107e-12,
+          "max_rel_to_reference_scale": 1.803210659123824e-13,
+          "reference_max_abs": 3.1769725728270677,
+          "shape": [
+            112
+          ]
+        },
+        "gamma": {
+          "max_abs": 4.757305660518796e-14,
+          "max_elementwise_relative": 3.2599737733713493e-13,
+          "max_rel_to_reference_scale": 2.3766866122529566e-13,
+          "reference_max_abs": 0.2001654587522229,
+          "shape": [
+            5
+          ]
+        },
+        "mu": {
+          "max_abs": 2.4424906541753444e-14,
+          "max_elementwise_relative": 5.798665291775963e-14,
+          "max_rel_to_reference_scale": 2.128470041844433e-14,
+          "reference_max_abs": 1.1475334893878966,
+          "shape": [
+            63
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "g1_wingbody_cad": {
+      "A": {
+        "max_abs": 7.531003815355874e-16,
+        "max_elementwise_relative": 3041.333415924736,
+        "max_rel_to_reference_scale": 2.039829738178995e-15,
+        "reference_max_abs": 0.3691976675503801,
+        "shape": [
+          792,
+          497
+        ]
+      },
+      "A_matches_assembled": {
+        "max_abs": 7.531003815355874e-16,
+        "max_elementwise_relative": 3041.333415924736,
+        "max_rel_to_reference_scale": 2.039829738178995e-15,
+        "reference_max_abs": 0.3691976675503801,
+        "shape": [
+          792,
+          497
+        ]
+      },
+      "W": {
+        "max_abs": 4.740673999192868e-16,
+        "max_elementwise_relative": 2.2153963092402126e-11,
+        "max_rel_to_reference_scale": 5.113942054929684e-15,
+        "reference_max_abs": 0.09270097213211485,
+        "shape": [
+          792,
+          44
+        ]
+      },
+      "W_matches_assembled": {
+        "max_abs": 4.740673999192868e-16,
+        "max_elementwise_relative": 2.2153963092402126e-11,
+        "max_rel_to_reference_scale": 5.113942054929684e-15,
+        "reference_max_abs": 0.09270097213211485,
+        "shape": [
+          792,
+          44
+        ]
+      },
+      "assembly_backend": {
+        "A": {
+          "max_abs": 7.531003815355874e-16,
+          "max_elementwise_relative": 3041.333415924736,
+          "max_rel_to_reference_scale": 2.039829738178995e-15,
+          "reference_max_abs": 0.3691976675503801,
+          "shape": [
+            792,
+            497
+          ]
+        },
+        "W": {
+          "max_abs": 4.740673999192868e-16,
+          "max_elementwise_relative": 2.2153963092402126e-11,
+          "max_rel_to_reference_scale": 5.113942054929684e-15,
+          "reference_max_abs": 0.09270097213211485,
+          "shape": [
+            792,
+            44
+          ]
+        },
+        "numpy": 1.3712841999949887,
+        "speedup": 8.69222831320103,
+        "torch": 0.15775979997124523
+      },
+      "kind": "wing",
+      "loads": {
+        "CD_pressure": {
+          "batched": 0.015961837061618765,
+          "delta": 2.5136143166903935e-14,
+          "reference": 0.01596183706159363
+        },
+        "CL": {
+          "batched": 0.5361115367534595,
+          "delta": 1.986188991054405e-13,
+          "reference": 0.5361115367532608
+        },
+        "CL_gamma": {
+          "batched": 0.5411492998789299,
+          "delta": 1.8540724511240114e-13,
+          "reference": 0.5411492998787445
+        },
+        "CM_y": {
+          "batched": -0.13600408339578632,
+          "delta": -1.0222378499236129e-13,
+          "reference": -0.1360040833956841
+        },
+        "constrained_rank": {
+          "batched": 354.0,
+          "delta": 0.0,
+          "reference": 354.0
+        },
+        "jump_rms": {
+          "batched": 7.046540011552582e-16,
+          "delta": -2.4560486722947613e-17,
+          "reference": 7.292144878782058e-16
+        },
+        "pressure_kutta_rms": {
+          "batched": 1.6280411018211222e-06,
+          "delta": 2.4574013986623355e-16,
+          "reference": 1.628041101575382e-06
+        },
+        "signed_kutta_rms": {
+          "batched": 0.04782263959925384,
+          "delta": -6.627337567621794e-14,
+          "reference": 0.047822639599320114
+        },
+        "wall_rms": {
+          "batched": 0.0011758758781630577,
+          "delta": -2.1120258320017626e-16,
+          "reference": 0.001175875878163269
+        }
+      },
+      "seconds": {
+        "batched_A": 0.08066239999607205,
+        "batched_W": 0.06944980000844225,
+        "reference_A": 0.6456687000463717,
+        "reference_W": 0.6864001000067219,
+        "reference_W_note": "per-wake-triangle reference loop",
+        "speedup_A": 8.004580821768423,
+        "speedup_W": 9.88339923114658,
+        "whole_fixture": 17.87408039998263
+      },
+      "singular_values": {
+        "condition": 82.32610720978246,
+        "max_abs": 5.551115123125783e-15,
+        "sigma_max": 1.4518025925777882,
+        "sigma_min": 0.017634777615299132
+      },
+      "state": {
+        "cp": {
+          "max_abs": 2.3312018981869187e-11,
+          "max_elementwise_relative": 5.205489941060464e-10,
+          "max_rel_to_reference_scale": 7.512237795687708e-12,
+          "reference_max_abs": 3.103205677974027,
+          "shape": [
+            792
+          ]
+        },
+        "gamma": {
+          "max_abs": 7.816525204873415e-13,
+          "max_elementwise_relative": 2.6655288333763697e-12,
+          "max_rel_to_reference_scale": 2.3813018017120484e-12,
+          "reference_max_abs": 0.3282458863153627,
+          "shape": [
+            44
+          ]
+        },
+        "mu": {
+          "max_abs": 4.39648317751562e-13,
+          "max_elementwise_relative": 1.958968688529488e-12,
+          "max_rel_to_reference_scale": 1.7138779951272138e-13,
+          "reference_max_abs": 2.565225290257191,
+          "shape": [
+            497
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "g1_wingbody_cad_3x": {
+      "A": {
+        "max_abs": 7.414858657628365e-16,
+        "max_elementwise_relative": 743.5651145051291,
+        "max_rel_to_reference_scale": 2.0085292558868533e-15,
+        "reference_max_abs": 0.3691685662977501,
+        "shape": [
+          2410,
+          1308
+        ]
+      },
+      "A_matches_assembled": {
+        "max_abs": 7.414858657628365e-16,
+        "max_elementwise_relative": 743.5651145051291,
+        "max_rel_to_reference_scale": 2.0085292558868533e-15,
+        "reference_max_abs": 0.3691685662977501,
+        "shape": [
+          2410,
+          1308
+        ]
+      },
+      "W": {
+        "max_abs": 8.877176337768189e-16,
+        "max_elementwise_relative": 2.202335620271552e-11,
+        "max_rel_to_reference_scale": 5.003229361278635e-15,
+        "reference_max_abs": 0.1774289303318991,
+        "shape": [
+          2410,
+          44
+        ]
+      },
+      "W_matches_assembled": {
+        "max_abs": 8.877176337768189e-16,
+        "max_elementwise_relative": 2.202335620271552e-11,
+        "max_rel_to_reference_scale": 5.003229361278635e-15,
+        "reference_max_abs": 0.1774289303318991,
+        "shape": [
+          2410,
+          44
+        ]
+      },
+      "assembly_backend": {
+        "A": {
+          "max_abs": 7.414858657628365e-16,
+          "max_elementwise_relative": 743.5651145051291,
+          "max_rel_to_reference_scale": 2.0085292558868533e-15,
+          "reference_max_abs": 0.3691685662977501,
+          "shape": [
+            2410,
+            1308
+          ]
+        },
+        "W": {
+          "max_abs": 8.877176337768189e-16,
+          "max_elementwise_relative": 2.202335620271552e-11,
+          "max_rel_to_reference_scale": 5.003229361278635e-15,
+          "reference_max_abs": 0.1774289303318991,
+          "shape": [
+            2410,
+            44
+          ]
+        },
+        "numpy": 8.678895500022918,
+        "speedup": 7.720956434981463,
+        "torch": 1.1240700000198558
+      },
+      "kind": "wing",
+      "loads": {
+        "CD_pressure": {
+          "batched": 0.013536902441141202,
+          "delta": -8.3995310706797e-15,
+          "reference": 0.013536902441149601
+        },
+        "CL": {
+          "batched": 0.5535718574684163,
+          "delta": -9.992007221626409e-14,
+          "reference": 0.5535718574685162
+        },
+        "CL_gamma": {
+          "batched": 0.5642029040821206,
+          "delta": -1.0436096431476471e-13,
+          "reference": 0.564202904082225
+        },
+        "CM_y": {
+          "batched": -0.14928221625758625,
+          "delta": 5.753730825119874e-14,
+          "reference": -0.1492822162576438
+        },
+        "constrained_rank": {
+          "batched": 1163.0,
+          "delta": 0.0,
+          "reference": 1163.0
+        },
+        "jump_rms": {
+          "batched": 6.469664569959874e-16,
+          "delta": 2.8410294565692085e-17,
+          "reference": 6.185561624302953e-16
+        },
+        "pressure_kutta_rms": {
+          "batched": 1.503471403808663e-07,
+          "delta": 1.4551163119013865e-16,
+          "reference": 1.5034714023535466e-07
+        },
+        "signed_kutta_rms": {
+          "batched": 0.042049132170508846,
+          "delta": 2.4466539905176887e-14,
+          "reference": 0.04204913217048438
+        },
+        "wall_rms": {
+          "batched": 0.0005093399582370114,
+          "delta": -7.914675859144182e-18,
+          "reference": 0.0005093399582370193
+        }
+      },
+      "seconds": {
+        "batched_A": 0.6810679999762215,
+        "batched_W": 0.4098035999923013,
+        "reference_A": 4.670537500001956,
+        "reference_W": 3.2055433000205085,
+        "reference_W_note": "per-wake-triangle reference loop",
+        "speedup_A": 6.857666929242045,
+        "speedup_W": 7.82214529125837,
+        "whole_fixture": 107.42003730003489
+      },
+      "state": {
+        "cp": {
+          "max_abs": 1.4339640586058522e-12,
+          "max_elementwise_relative": 3.5960049801216318e-09,
+          "max_rel_to_reference_scale": 3.610953477776714e-13,
+          "reference_max_abs": 3.9711507429576542,
+          "shape": [
+            2410
+          ]
+        },
+        "gamma": {
+          "max_abs": 1.8990364836213303e-13,
+          "max_elementwise_relative": 5.758214266138891e-13,
+          "max_rel_to_reference_scale": 5.653593683455048e-13,
+          "reference_max_abs": 0.33589900335051726,
+          "shape": [
+            44
+          ]
+        },
+        "mu": {
+          "max_abs": 1.1257661469699087e-13,
+          "max_elementwise_relative": 7.270469534706174e-12,
+          "max_rel_to_reference_scale": 4.3537252467759144e-14,
+          "reference_max_abs": 2.585753769840157,
+          "shape": [
+            1308
+          ]
+        }
+      },
+      "status": "ok"
+    },
+    "g2_conventional": {
+      "A": {
+        "max_abs": 1.7331513828267031e-15,
+        "max_elementwise_relative": 45.83309216320665,
+        "max_rel_to_reference_scale": 4.920921712052935e-15,
+        "reference_max_abs": 0.3522005600255035,
+        "shape": [
+          192,
+          108
+        ]
+      },
+      "A_matches_assembled": {
+        "max_abs": 1.7331513828267031e-15,
+        "max_elementwise_relative": 45.83309216320665,
+        "max_rel_to_reference_scale": 4.920921712052935e-15,
+        "reference_max_abs": 0.3522005600255035,
+        "shape": [
+          192,
+          108
+        ]
+      },
+      "W": {
+        "max_abs": 1.6653345369377348e-16,
+        "max_elementwise_relative": 3.075081437739764e-14,
+        "max_rel_to_reference_scale": 7.737892749088659e-16,
+        "reference_max_abs": 0.21521809502126685,
+        "shape": [
+          192,
+          8
+        ]
+      },
+      "W_matches_assembled": {
+        "max_abs": 1.6653345369377348e-16,
+        "max_elementwise_relative": 3.075081437739764e-14,
+        "max_rel_to_reference_scale": 7.737892749088659e-16,
+        "reference_max_abs": 0.21521809502126685,
+        "shape": [
+          192,
+          8
+        ]
+      },
+      "assembly_backend": {
+        "A": {
+          "max_abs": 1.7331513828267031e-15,
+          "max_elementwise_relative": 45.83309216320665,
+          "max_rel_to_reference_scale": 4.920921712052935e-15,
+          "reference_max_abs": 0.3522005600255035,
+          "shape": [
+            192,
+            108
+          ]
+        },
+        "W": {
+          "max_abs": 1.6653345369377348e-16,
+          "max_elementwise_relative": 3.075081437739764e-14,
+          "max_rel_to_reference_scale": 7.737892749088659e-16,
+          "reference_max_abs": 0.21521809502126685,
+          "shape": [
+            192,
+            8
+          ]
+        },
+        "numpy": 0.052443600026890635,
+        "speedup": 6.1542686284068076,
+        "torch": 0.008521499985363334
+      },
+      "kind": "multi",
+      "loads": {
+        "CD_pressure": {
+          "delta": 6.255412854372366e-15,
+          "reference": -0.017593346735200358,
+          "torch": -0.017593346735194103
+        },
+        "CL": {
+          "delta": 9.203748874142548e-14,
+          "reference": 0.3654723302039162,
+          "torch": 0.3654723302040082
+        },
+        "CL_gamma": {
+          "delta": 8.743006318923108e-14,
+          "reference": 0.34233313568958107,
+          "torch": 0.3423331356896685
+        },
+        "CM_y": {
+          "delta": -1.4224732503009818e-13,
+          "reference": -0.11257278167355603,
+          "torch": -0.11257278167369827
+        },
+        "constrained_rank": {
+          "delta": null,
+          "reference": null,
+          "torch": null
+        },
+        "jump_rms": {
+          "delta": 1.137916457041676e-16,
+          "reference": 7.850462293418875e-17,
+          "torch": 1.9229626863835636e-16
+        },
+        "pressure_kutta_rms": {
+          "delta": 1.7844548714226956e-15,
+          "reference": 1.6760907509220812e-07,
+          "torch": 1.67609076876663e-07
+        },
+        "signed_kutta_rms": {
+          "delta": 1.2836953722228372e-15,
+          "reference": 0.016867759453107343,
+          "torch": 0.016867759453108627
+        },
+        "wall_rms": {
+          "delta": 3.0357660829594124e-18,
+          "reference": 0.0019177823458160234,
+          "torch": 0.0019177823458160265
+        }
+      },
+      "seconds": {
+        "batched_A": 0.005032600020058453,
+        "batched_W": 0.003569799999240786,
+        "reference_A": 0.04207259998656809,
+        "reference_W": 0.008516700007021427,
+        "speedup_A": 8.360012681095094,
+        "speedup_W": 2.3857639108164976,
+        "whole_fixture": 0.7381889000535011
+      },
+      "status": "ok"
+    },
+    "g2_tail_low": {
+      "A": {
+        "max_abs": 1.749778639581305e-15,
+        "max_elementwise_relative": 45.83309216320665,
+        "max_rel_to_reference_scale": 4.968131338163122e-15,
+        "reference_max_abs": 0.3522005600255034,
+        "shape": [
+          192,
+          108
+        ]
+      },
+      "A_matches_assembled": {
+        "max_abs": 1.749778639581305e-15,
+        "max_elementwise_relative": 45.83309216320665,
+        "max_rel_to_reference_scale": 4.968131338163122e-15,
+        "reference_max_abs": 0.3522005600255034,
+        "shape": [
+          192,
+          108
+        ]
+      },
+      "W": {
+        "max_abs": 1.6653345369377348e-16,
+        "max_elementwise_relative": 2.7765851246515e-14,
+        "max_rel_to_reference_scale": 6.180927441661964e-16,
+        "reference_max_abs": 0.2694311739873701,
+        "shape": [
+          192,
+          8
+        ]
+      },
+      "W_matches_assembled": {
+        "max_abs": 1.6653345369377348e-16,
+        "max_elementwise_relative": 2.7765851246515e-14,
+        "max_rel_to_reference_scale": 6.180927441661964e-16,
+        "reference_max_abs": 0.2694311739873701,
+        "shape": [
+          192,
+          8
+        ]
+      },
+      "assembly_backend": {
+        "A": {
+          "max_abs": 1.749778639581305e-15,
+          "max_elementwise_relative": 45.83309216320665,
+          "max_rel_to_reference_scale": 4.968131338163122e-15,
+          "reference_max_abs": 0.3522005600255034,
+          "shape": [
+            192,
+            108
+          ]
+        },
+        "W": {
+          "max_abs": 1.6653345369377348e-16,
+          "max_elementwise_relative": 2.7765851246515e-14,
+          "max_rel_to_reference_scale": 6.180927441661964e-16,
+          "reference_max_abs": 0.2694311739873701,
+          "shape": [
+            192,
+            8
+          ]
+        },
+        "numpy": 0.05195390002336353,
+        "speedup": 6.1698572768279245,
+        "torch": 0.008420599973760545
+      },
+      "kind": "multi",
+      "loads": {
+        "CD_pressure": {
+          "delta": -7.920747391310101e-15,
+          "reference": -0.017749943753945112,
+          "torch": -0.017749943753953033
+        },
+        "CL": {
+          "delta": -1.1052270210143433e-13,
+          "reference": 0.3628331801624354,
+          "torch": 0.36283318016232485
+        },
+        "CL_gamma": {
+          "delta": -1.0075273948473296e-13,
+          "reference": 0.34093083993870726,
+          "torch": 0.3409308399386065
+        },
+        "CM_y": {
+          "delta": 1.6661672042062037e-13,
+          "reference": -0.10785366039367245,
+          "torch": -0.10785366039350583
+        },
+        "constrained_rank": {
+          "delta": null,
+          "reference": null,
+          "torch": null
+        },
+        "jump_rms": {
+          "delta": 0.0,
+          "reference": 1.7554167342883504e-16,
+          "torch": 1.7554167342883504e-16
+        },
+        "pressure_kutta_rms": {
+          "delta": 7.606303456180006e-16,
+          "reference": 1.7155103468140226e-07,
+          "torch": 1.715510354420326e-07
+        },
+        "signed_kutta_rms": {
+          "delta": 7.389922007661198e-16,
+          "reference": 0.01679697507490231,
+          "torch": 0.016796975074903048
+        },
+        "wall_rms": {
+          "delta": -7.806255641895632e-18,
+          "reference": 0.0019218623450907228,
+          "torch": 0.001921862345090715
+        }
+      },
+      "seconds": {
+        "batched_A": 0.003731300006620586,
+        "batched_W": 0.003498599980957806,
+        "reference_A": 0.042124500032514334,
+        "reference_W": 0.008503400022163987,
+        "speedup_A": 11.289496946847278,
+        "speedup_W": 2.430515082732043,
+        "whole_fixture": 0.7209488999797031
+      },
+      "status": "ok"
+    }
+  },
+  "repeat": 3,
+  "status": "ok",
+  "torch_threads": 8,
+  "versions": {
+    "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "numpy": "2.4.6",
+    "python": "3.11.17",
+    "torch": "2.15.0+cpu",
+    "torch_cuda": false
+  }
+}
