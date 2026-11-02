@@ -1,3 +1,6 @@
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
+
 ﻿# Issue #49 路 Phase 0 鈥?frozen reference cases and error budget baseline
 
 Status: research baseline. `physical_accuracy_accepted = false`. No production

@@ -1,4 +1,6 @@
 # Issue #71: chordwise divergence of the P1 lifting chain (c=4..32)
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Date: 2026-10-29. Status: **negative result**, `physical_accuracy_accepted=false`,
 production defaults unchanged. This note records what the local runs show and which

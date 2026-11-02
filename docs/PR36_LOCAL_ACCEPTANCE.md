@@ -1,4 +1,6 @@
 # PR36 本地验收：真实冻结模板上的制造势恢复误差分解
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 PR https://github.com/Stevenkerman27/Dpanel/pull/36 本地只读重放，不重跑 CAD / LU / PR29 / PR32 / Gamma。
 

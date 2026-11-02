@@ -1,4 +1,6 @@
 # Issue #69 — P1 Dirichlet rank audit and pressure-Kutta selection
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Scope: independent opt-in research from master; **does not** modify
 \`p1_lifting_g2.solve_multi\`, old G1/G2 defaults, PR #68, or GRASS.

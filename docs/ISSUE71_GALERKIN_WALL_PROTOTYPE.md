@@ -1,4 +1,6 @@
 # Issue #71 — first P1 Galerkin wall-operator prototype
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Status: opt-in research only. The existing P1 collocation solver is unchanged.
 This first step assembles the weak wall operator; it does not yet solve the

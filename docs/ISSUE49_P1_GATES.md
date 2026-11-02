@@ -1,4 +1,6 @@
 # Issue #49 优先级 d：P1 偶极子三门槛实测
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 状态：三门槛的核级与几何级检查已实测（`panel/p1_gate_checks.py` + 13 条测试）。
 **这不是连续 P1 wall solve，也不是物理精度声明**（`physical_accuracy_accepted=false`）。

@@ -1,4 +1,6 @@
 # Issue #56, part C: rank and gauge, measured on four topologies
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Research only. `physical_accuracy_accepted=false`; no production default, rank gate or
 `panel/kernel.py` line is touched. Data: `docs/issue49_vspaero/p1/rank_gauge.json`, produced by

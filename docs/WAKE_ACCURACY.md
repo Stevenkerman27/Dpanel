@@ -1,4 +1,6 @@
 # 尾迹实现与准确性研究
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 日期：2026-10-26。用户已恢复本地目标，要求在保留几何鲁棒性和可解释性的基础上提升准确性。本节记录的研究**已在 15:00 之后同步到云端**（`local/panel-jax-20261025`，commit `45bf2e6`），并在 issue #25 与 PR #26 回帖；云端协同与 GitHub 监听同日恢复。
 

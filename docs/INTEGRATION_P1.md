@@ -1,4 +1,6 @@
 # Master integration: P1 research solver (branch `research/master-integration-p1`)
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Status: **prepared, not merged.** `physical_accuracy_accepted=false`. This document is the
 audit trail requested in issue #62; it does not claim physical validation.

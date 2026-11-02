@@ -1,4 +1,6 @@
 # 真实冻结模板的已知势验证（Issue #35）
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 ## 结论与范围
 

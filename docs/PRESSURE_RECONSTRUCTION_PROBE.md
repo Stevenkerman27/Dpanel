@@ -1,4 +1,6 @@
 # 面元压力梯度重构独立诊断（Stage 1）
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 状态：**研究诊断，尚未运行实际保存字段，未通过物理精度验收**。基于 `local/panel-jax-20261025` 的已保存字段格式；本次 PR 不改变 `panel/solve.py`。
 

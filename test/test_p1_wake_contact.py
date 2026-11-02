@@ -207,7 +207,7 @@ def test_contact_adapter_rejects_changed_mirrored_geometry():
 
 def test_cad_sweep_exports_trace_audit_and_contact_jump_for_any_backend():
     from types import SimpleNamespace
-    from tools.issue71.galerkin_cad_sweep import trace_audit_summary, contact_jump_diagnostics
+    from panel.p1_contact_report import trace_audit_summary, contact_jump_diagnostics
     audit=dict(split_nodes=3,contact_jump_rows=2,unsplit_zero_gamma_tips=[9],
                contact_edges=2,trailing_edges=4,wall_potential_dofs=13,
                contact_constraints_are_not_kutta=True)

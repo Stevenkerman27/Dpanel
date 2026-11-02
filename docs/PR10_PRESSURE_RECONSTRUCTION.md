@@ -1,4 +1,6 @@
 # PR #10 / issue #9 本地实测：保存场上的 Cp 梯度重构对照
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 日期 2026-10-25，head `148b2213fe4f5609c3a462868338a7de9695097e`（`research/panel-pressure-reconstruction-probe`），
 在隔离工作树 `runs/pr10_work` 执行；纯 NumPy，无 JAX/Gmsh，不改 `panel/solve.py`。

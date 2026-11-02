@@ -86,18 +86,10 @@ def test_loader_rejects_unmapped_independent_station_inboard_of_te(tmp_path):
         from_dpanel_half_surface(path)
 
 
-def test_cad_sweep_does_not_report_implausible_solution_as_success():
-    from tools.issue71.galerkin_cad_sweep import status
-    state={"nonlinear":None,"solution_status":"implausible_solution"}
-    assert status(state,80)=="implausible_solution"
-    assert status({"nonlinear":{"success":False,"nfev":80}},80)=="iteration_limit_not_converged"
-    assert status({"nonlinear":None,"solution_status":"solver_success","CL":0.4,
-                   "CD_pressure":0.01,"mu":np.ones(3),"gamma":np.ones(2)},80)=="solver_success"
-
 
 def test_component_pressure_load_split_sums_to_total_pressure_force(tmp_path):
     from types import SimpleNamespace
-    from tools.issue71.galerkin_cad_sweep import component_pressure_loads
+    from panel.p1_contact_report import component_pressure_loads
     raw={"component_ids":[20,30],"provenance":{"CAD_passes":[{"component_classification":[
         {"physical_tag":20,"selected_role":"body"},
         {"physical_tag":30,"selected_role":"wing"}]}]}}

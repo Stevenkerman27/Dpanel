@@ -1,4 +1,6 @@
 # Issue #49 priority d - G0 sphere: continuous P1 doublet Dirichlet solve
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Research-only result. The production solver (`panel/kernel.py`, `panel/half_native.py`,
 `panel/solve.py`) is untouched, no default is changed and

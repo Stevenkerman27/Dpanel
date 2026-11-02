@@ -1,4 +1,6 @@
 # Issue #71: derivation of P1 Galerkin boundary integrals and TE-cut review
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Date: 2026-10-29. Source baseline: `master` and latest local #70/#71 review.
 This is a **read-only mathematical/topological audit**, not a new solver,

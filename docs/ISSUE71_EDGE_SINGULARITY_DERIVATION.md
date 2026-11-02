@@ -1,4 +1,6 @@
 # Issue #71 — derive the edge singularity before enriching the basis
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Status: analytical oracle and tests only. No production solver change.
 

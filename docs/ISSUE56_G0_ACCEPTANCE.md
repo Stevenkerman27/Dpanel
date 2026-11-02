@@ -1,4 +1,6 @@
 # Issue #56, part D: a well-posed small G0 discretisation and its acceptance gates
+> **Archived (S12).** The code behind this note was removed from `panel/`; it remains at git tag `research-p1-line-archive`. See `docs/RETIRED_RESEARCH.md` for the list and for how to re-run the measurement.
+
 
 Research only. `physical_accuracy_accepted=false`. Nothing here is imported by the production
 solver, no default or rank gate changes, and `panel/kernel.py` is untouched. Evidence:
