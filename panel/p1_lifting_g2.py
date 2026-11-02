@@ -19,6 +19,7 @@ from scipy.optimize import least_squares
 from .p1_closed_body import Mesh
 from .p1_lifting_g1 import Wing, make_wing, _doublet_matrix, _gradient_map, _interpolation_basis
 from .p1_pressure_kutta_reduced import solve_structured_pressure
+from .p1_backend import resolve_backend
 
 
 @dataclass(frozen=True)
@@ -266,15 +267,14 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
                 max_nfev=80,operators=None,pressure_solver='reference',
-                backend='numpy', device='cpu'):
+                backend=None, device='cpu'):
     """Solve wall P1 mu and ALL independent wake Gamma simultaneously.
 
     backend='torch' runs the same equations through torch.linalg and the
     structured pressure-Kutta solver, so a torch or CUDA process never
     re-enters NumPy/SciPy LAPACK. The SciPy reference stays the NumPy default.
     """
-    if backend not in ('numpy','torch'):
-        raise ValueError("backend must be 'numpy' or 'torch'")
+    backend,backend_source=resolve_backend(backend)
     if backend=='torch':
         if kutta=='pressure' and pressure_solver not in (None,'structured'):
             raise ValueError("backend='torch' supports pressure_solver='structured' only")
@@ -284,6 +284,7 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
         for key in ('mu','cp','gamma'):
             value=out.get(key)
             if hasattr(value,'detach'):out[key]=value.detach().cpu().numpy()
+        out['backend']=backend;out['backend_source']=backend_source
         return out
     ops=assemble_multi(mesh) if operators is None else operators
     A,W,J,K,grad=ops['A'],ops['W'],ops['J'],ops['K'],ops['grad'];ms=ops['mesh']

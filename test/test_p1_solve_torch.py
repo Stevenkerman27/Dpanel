@@ -59,12 +59,12 @@ def test_torch_modules_have_no_numpy_or_scipy(relative):
                 assert chain[0] not in banned + ("np", "sp"), "%s calls %s" % (relative, ".".join(reversed(chain)))
 
 
-def test_coupled_solve_defaults_are_numpy():
-    """Defaults must stay NumPy: the torch backend is opt-in."""
+def test_coupled_solve_defaults_resolve_to_torch_when_available():
+    """S9 option A: the default is 'resolve', recorded per call as backend_source."""
     import inspect
     from panel.p1_coupled_material_wake import solve_coupled_material_wake
     params = inspect.signature(solve_coupled_material_wake).parameters
-    assert params["solve_backend"].default == "numpy"
+    assert params["solve_backend"].default is None
     assert params["solve_device"].default == "cpu"
     assert params["pressure_solver"].default is None
     assert params["gate_mode"].default == "audit"

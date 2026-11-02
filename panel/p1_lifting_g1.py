@@ -19,6 +19,7 @@ from scipy.linalg import lstsq, null_space
 from scipy.optimize import least_squares
 from .p1_closed_body import Mesh, influence_block
 from .p1_pressure_kutta_reduced import solve_structured_pressure
+from .p1_backend import resolve_backend
 
 
 @dataclass(frozen=True)
@@ -460,16 +461,18 @@ def assemble(wing):
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
-          pressure_solver='reference', backend='numpy', device='cpu'):
-    if backend not in ('numpy','torch'):
-        raise ValueError("backend must be 'numpy' or 'torch'")
+          pressure_solver='reference', backend=None, device='cpu'):
+    """Solve one wing. backend=None resolves to torch when it is importable (S9, option A)."""
+    backend,backend_source=resolve_backend(backend)
     if backend=='torch':
         if kutta=='pressure' and pressure_solver not in (None,'structured'):
             raise ValueError("backend='torch' supports pressure_solver='structured' only")
         from .p1_solve_torch import solve_single_torch
-        return solve_single_torch(wing,alpha_deg,kutta=kutta,wall_weight=wall_weight,
-                                  jump_weight=jump_weight,kutta_weight=kutta_weight,
-                                  max_nfev=max_nfev,device=device)
+        out=solve_single_torch(wing,alpha_deg,kutta=kutta,wall_weight=wall_weight,
+                               jump_weight=jump_weight,kutta_weight=kutta_weight,
+                               max_nfev=max_nfev,device=device)
+        out['backend']=backend;out['backend_source']=backend_source
+        return out
     ops=assemble(wing);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(K)
     alpha=np.deg2rad(alpha_deg);U=np.array([np.cos(alpha),0,np.sin(alpha)])
     rhs=-ops['mesh'].centers@U
@@ -544,6 +547,7 @@ def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
                            -(cp*ops['mesh'].areas)[:,None]*ops['mesh'].normals),axis=0)
     CM_y=float(moment[1]/(wing.reference_area*wing.chord))
     return dict(CL=CL,CD_pressure=CD,CL_gamma=CLg,CM_y=CM_y,force=force,cp=cp,mu=mu,gamma=gamma,
+                backend=backend,backend_source=backend_source,
                 constrained_rank=int(rank),singular=sv,
                 pressure_kutta_rms=float(np.sqrt(np.mean(pressure_residual(mu_gamma)**2))) if kutta=='pressure' else None,
                 signed_kutta_rms=float(np.sqrt(np.mean((K@mu)**2))),jump_rms=float(np.sqrt(np.mean((J@mu_gamma)**2))),

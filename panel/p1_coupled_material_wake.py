@@ -17,6 +17,7 @@ from __future__ import annotations
 from .p1_geometry_contact import (classify_new_triangle, classify_swept_wall,
                                   declared_contact_pairs,
                                  swept_hull)
+from .p1_backend import resolve_backend
 from .wake_velocity_methods import (ACCEPTED_METHODS, AREA_QUADRATURES,
                                     ARCHITECTURE_DOC, DEFAULT_METHOD, describe,
                                     wiring_error)
@@ -904,7 +905,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 adaptive_budget=2e-4, adaptive_max_escalations=2,
                                 gate_mode="audit", truncation_policy="advance",
                                  analytic_backend="loop", analytic_device="cpu",
-                                 analytic_chunk=64, solve_backend="numpy",
+                                 analytic_chunk=64, solve_backend=None,
                                  solve_device="cpu", pressure_solver=None,
                                  rm_backend="numpy", rm_device="cpu",
                                  save_callback=None):
@@ -914,6 +915,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     not a pressure-continuous, mesh/epsilon-converged physical free wake.
     The complete accepted geometry is re-solved before a state is returned.
     """
+    # Argument errors are reported before environment errors: a bad device or an
+    # impossible solver pairing is the caller's mistake even where torch is missing.
+    if solve_backend not in (None, "numpy", "torch"):
+        raise ValueError("solve_backend must be None, 'numpy' or 'torch'")
     from .p1_lifting_g2 import assemble_multi, solve_multi
     from .p1_steady_free_wake import (prepare_wake_material, reassemble_wake_only,
                                      with_wake_xyz)
@@ -967,14 +972,20 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         raise ValueError("rm_device='cuda' requires rm_backend='torch'")
     if rm_backend != "numpy" and velocity_method != "rm_regularized_p1":
         raise ValueError("rm_backend applies only to velocity_method='rm_regularized_p1'")
-    if solve_backend not in ("numpy", "torch"):
-        raise ValueError("solve_backend must be 'numpy' or 'torch'")
     if solve_device not in ("cpu", "cuda"):
         raise ValueError("solve_device must be 'cpu' or 'cuda'")
-    if solve_backend != "torch" and solve_device != "cpu":
+    if solve_backend is not None and solve_backend != "torch" and solve_device != "cpu":
         raise ValueError("solve_device='cuda' requires solve_backend='torch'")
     if pressure_solver not in (None, "reference", "structured"):
         raise ValueError("pressure_solver must be None, 'reference' or 'structured'")
+    if solve_backend == "torch" and pressure_solver == "reference":
+        raise ValueError("the torch backend implements only pressure_solver='structured'")
+    try:
+        solve_backend, solve_backend_source = resolve_backend(solve_backend)
+    except ValueError as error:
+        raise ValueError("solve_backend must be None, 'numpy' or 'torch'") from error
+    if solve_backend != "torch" and solve_device != "cpu":
+        raise ValueError("solve_device='cuda' requires solve_backend='torch'")
     if solve_backend == "torch" and pressure_solver == "reference":
         raise ValueError("the torch backend implements only pressure_solver='structured'")
     gates = GeometryGates() if gates is None else gates
@@ -1064,7 +1075,9 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
         record.update(iteration=iteration, velocity_method=velocity_method,
-                      solve_backend=solve_backend, solve_device=solve_device,
+                      solve_backend=solve_backend,
+                      solve_backend_source=solve_backend_source,
+                      solve_device=solve_device,
                       pressure_solver=(None if kutta != "pressure" else
                                        (pressure_solver or
                                         ("structured" if solve_backend == "torch"

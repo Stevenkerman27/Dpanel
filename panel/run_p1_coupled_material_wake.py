@@ -112,9 +112,10 @@ def main(argv=None):
                     help='device for --analytic-backend torch (no silent fallback)')
     parser.add_argument('--analytic-chunk', type=int, default=64,
                     help='targets per batched evaluation call (64 was fastest in the G2 bench)')
-    parser.add_argument('--solve-backend', choices=('numpy', 'torch'), default='numpy',
-                    help="potential solve backend: 'numpy' is production, 'torch' is the "
-                         "ported torch.linalg chain (opt-in, parity-gated)")
+    parser.add_argument('--solve-backend', choices=('auto', 'numpy', 'torch'), default='auto',
+                    help="potential solve backend: 'auto' resolves to torch when it is "
+                         "importable, otherwise numpy; the choice and its source are "
+                         "recorded in the iteration record")
     parser.add_argument('--solve-device', choices=('cpu', 'cuda'), default='cpu',
                     help='device for --solve-backend torch (no silent fallback)')
     parser.add_argument('--rm-backend', choices=('numpy', 'torch'), default='numpy',

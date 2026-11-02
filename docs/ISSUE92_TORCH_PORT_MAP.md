@@ -1212,4 +1212,154 @@ python -m tools.issue92.cad_conditioning_probe --probe branch
   shows it is not, on this fixture, and changing it is a defaults change that needs its own
   A/B evidence.
 
+## 18. S9: the default moves to torch, NumPy becomes the evidence generator (2026-11-02)
+
+### 18.1 The decision, and what it does not change
+
+Two options were on the table. Option B was "switch the default, delete the NumPy
+solver in the same commit, tag the pre-deletion tree". Option A, which the user chose,
+is "switch the default now, keep the NumPy chain reachable as the explicit evidence
+generator, and delete nothing yet":
+
+| property | after S9 |
+| --- | --- |
+| production default | torch, resolved per call |
+| NumPy/SciPy chain | reachable as `backend='numpy'`, unchanged |
+| frozen bundles in `docs/issue92/references/` | still the oracle for the 8 fixtures |
+| deletion of `panel/p1_rank_aware.py`, `panel/p1_pressure_kutta_reduced.py`, the NumPy solve branches | deferred to the slice that has one environment where both paths run |
+
+The resolution is explicit rather than assumed. `panel/p1_backend.py`:
+
+    resolve_backend(None)        -> ('torch', 'default')      # torch importable
+    resolve_backend(None)        -> ('numpy', 'default')      # torch missing
+    resolve_backend('numpy')     -> ('numpy', 'explicit')
+    resolve_backend('torch')     -> ('torch', 'explicit')     # raises if torch is missing
+    PANEL_P1_BACKEND=numpy       -> ('numpy', 'environment')
+
+`backend='torch'` in an interpreter without torch raises
+`ValueError: backend='torch' requested but torch is not importable`; it never degrades
+to NumPy. An unknown value raises `backend must be None, 'numpy' or 'torch'`. Every
+result from `g1.solve`, `g2.solve_multi` and the coupled loop now carries `backend`
+and `backend_source`, so no run has to be guessed at from its timestamp.
+
+The recorded test suite pins the oracle in `test/conftest.py` with
+`os.environ.setdefault("PANEL_P1_BACKEND", "numpy")`. Its numeric baselines were
+measured on the NumPy path and are about the algorithm, not about which linear algebra
+library ran, so the suite keeps running on the path that produced them; the tests that
+exercise torch ask for `backend='torch'` explicitly, and
+`test/test_backend_dispatch.py` clears the pin when the default itself is under test.
+
+### 18.2 What still calls LAPACK
+
+`tools/issue92/retirement_inventory.py` scans every module under `panel/` for
+`np.linalg.svd|svdvals|qr|solve|lstsq|eig|eigh|pinv|matrix_rank|cholesky`,
+`scipy.linalg` and `scipy.optimize.least_squares`:
+
+    python -m tools.issue92.retirement_inventory --out docs/issue92/s9_inventory.json
+
+33 modules, 69 call sites. Of those, `tools/issue92/port_inventory.py` reaches 19
+modules from the three production entry points, and only these still hold a LAPACK
+call on that surface:
+
+| module | site | why it is not a port defect | disposition |
+| --- | --- | --- | --- |
+| `panel/p1_coupled_material_wake.py` | :1091 `np.linalg.svd(constraint)` | already switches to `torch.linalg.svdvals` when `solve_backend='torch'` (:1085) | stays |
+| `panel/p1_geometry_contact.py` | :145 `np.linalg.svd(centred)` | only reached for point sets larger than a triangle; the gate passes triangles and takes a cross product | stays |
+| `panel/p1_closed_body.py` | :208-213 `qr`/`svd`/`solve` | closed-body Dirichlet demo (`panel/run_p1_closed.py`), not on the coupled path | separate slice |
+| `panel/p1_lifting_g1.py`, `panel/p1_lifting_g2.py` | the NumPy branch | the oracle itself | delete with the oracle |
+| `panel/p1_rank_aware.py`, `panel/p1_pressure_kutta_reduced.py` | 5 sites | duplicated by `p1_rank_aware_torch` and `p1_pressure_kutta_torch(_driver)` | delete with the oracle |
+
+Everything else on the reachable surface is `np.linalg.norm`, which is elementwise
+and cannot poison a torch process.
+
+### 18.3 Can the frozen bundles serve as the oracle after deletion? Yes, to about 1e-6
+
+`tools/issue92/s7_reference_export.py` now takes `--backend {numpy,torch}` and
+`--device`, and takes the constraint spectrum in the same library it solves in (a
+NumPy LAPACK call after a torch kernel is the 0xC0000005 crash of section 6f). Under
+`--backend torch` only `constrained_rank` is compared against the bundle: the bundle
+records the status, `nfev` and message of the SciPy trust-region-reflective solver,
+and section 10.5 showed which stopping rule fires is roundoff, not a property of the
+problem.
+
+    python -m tools.issue92.s7_reference_export verify --backend torch --device cpu
+
+| fixture | loads | state | rank | margin |
+| --- | --- | --- | --- | --- |
+| g1_wing_rect | 1.0e-13 | 1.4e-13 | 5 | 1.000e+11 |
+| g1_wing_camber | 5.5e-14 | 9.3e-14 | 5 | 1.000e+11 |
+| g1_swept30 | 6.4e-14 | 3.9e-13 | 63 | 5.785e+10 |
+| g1_elliptic | 8.7e-07 | 1.5e-06 | 83 | 6.092e+10 |
+| g2_conventional | 1.6e-08 | 2.3e-07 | 8 | 1.000e+11 |
+| g2_tail_low | 1.6e-08 | 2.1e-07 | 8 | 1.000e+11 |
+| g1_wingbody_cad | 1.4e-09 | 4.4e-08 | 99 | 4.778e+10 |
+| g1_wingbody_cad_3x | **CD_pressure 1.013e-06** | 1.6e-08 | 99 | 4.527e+10 |
+
+Declared before the run: loads 1e-6, state 1e-6, cp 1e-4 relative. Seven of eight pass.
+The outlier is one load component of one fixture, 1.3% over the bound. It is an
+**algorithm difference, not a port difference**: the bundle was produced by the SciPy
+reference solver, the torch path implements the structured solver, and the structured
+solution already differs from the reference at 2.9e-7 on that fixture in S3. The port
+difference on the same quantity (torch vs NumPy, both structured) is 3.1e-12, measured
+in S6.
+
+The honest statement is therefore: after deletion the frozen bundles certify the torch
+path to about 1e-6 relative on loads, and `g1_wingbody_cad_3x` `CD_pressure` sits at
+1.013e-6, just outside. Nothing here is a claim of better accuracy.
+
+A tolerance bug was also fixed in this slice: the spectrum margin check compared two
+numbers of magnitude 1e10 with an absolute tolerance of 1e-12, so it only ever passed
+because the NumPy path reproduced the recorded spectrum bit for bit. It is now
+relative; the NumPy and torch spectra agree to 6.7e-16 on `g1_swept30`.
+
+### 18.4 Why the NumPy code is not deleted in this slice
+
+| | `.conda_env` (project) | `myml` (conda base) |
+| --- | --- | --- |
+| python | 3.11.17 | 3.13.14 |
+| numpy / scipy | 2.4.6 / 1.17.1 | 2.5.2 / 1.18.0 |
+| jax | 0.10.2 | missing (only the `jaxstub` on `PYTHONPATH`) |
+| torch | missing | 2.13.0+cu132 |
+| full suite | 858 passed, 52 skipped | cannot collect `test/conftest.py` (imports jax); the 7 `test_torch_*` modules need real `jax.numpy` |
+
+Deleting the NumPy solver would leave no single interpreter that can run the whole
+suite, which is the one thing that makes a default switch reviewable. Installing JAX
+into `myml` would fix that, and was attempted: `pip install --target` fails in this
+sandbox because pip unpacks wheels through `tempfile.mkdtemp`, and directory creation
+under the session temp root is denied:
+
+    PermissionError: [Errno 13] Permission denied:
+    '...\pip-unpack-...\jax-0.12.0.1-py3-none-any.whl.metadata'
+
+The same denial appears as `PytestCacheWarning: could not create cache path`. Direct
+wheel downloads through the proxy also fail, so JAX cannot be installed here by either
+route. The deletion slice is therefore blocked on an environment with torch and a real
+JAX, not on code.
+
+### 18.5 Tests
+
+`test/test_backend_dispatch.py` (8 tests) now pins what the default means:
+resolution and its recorded source, the environment pin, the raise when an explicit
+torch is unavailable, the fallback when torch is missing, both parity tests against an
+explicit NumPy run, and the default itself resolving to torch with
+`backend_source='default'`. `test/test_p1_solve_torch.py` asserts that the coupled
+loop's `solve_backend` default is `None` (resolve) rather than a hard-coded library.
+
+    # torch available
+    python -m pytest test/test_backend_dispatch.py -q
+    # the full suite, in the environment that has no torch
+    python -m pytest test -q --ignore=test/test_torch_half_checkpoint.py \
+      --ignore=test/test_torch_half_core_cpu.py --ignore=test/test_torch_half_lifting.py \
+      --ignore=test/test_torch_panel_kernels.py --ignore=test/test_torch_panel_nonlifting.py \
+      --ignore=test/test_torch_panel_symmetry.py --ignore=test/test_torch_panel_validation.py
+
+### 18.6 Not claimed
+
+- Not claimed: the NumPy chain is removable today. It is still the oracle, still the
+  only path that runs in `.conda_env`, and still the producer of the frozen bundles.
+- Not claimed: the torch path is more accurate. Section 18.3 measures agreement with
+  the reference solver at 1e-6 on loads, with one outlier just outside.
+- Not claimed: `analytic_backend` and `rm_backend` defaults changed. They did not;
+  this slice changes which **solver** runs, not which **induction evaluator** runs.
+
 

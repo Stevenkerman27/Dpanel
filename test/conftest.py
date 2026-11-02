@@ -7,6 +7,7 @@ source-strength identity are only meaningful in double precision.
 temp directory (``PermissionError: [WinError 5]`` while listing
 ``pytest-of-*``), so pytest cannot create its own base temporary directory.
 """
+import os
 import pathlib
 import shutil
 import uuid
@@ -15,6 +16,11 @@ import jax
 import pytest
 
 jax.config.update("jax_enable_x64", True)
+
+# Route B option A makes torch the production default. The recorded baselines in this
+# suite were measured on the NumPy/SciPy oracle, so the suite pins it; tests that
+# exercise the torch path pass backend='torch' explicitly.
+os.environ.setdefault("PANEL_P1_BACKEND", "numpy")
 
 _ROOT = pathlib.Path(__file__).resolve().parent
 

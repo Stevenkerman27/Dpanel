@@ -47,10 +47,22 @@ LOADS = ("CL", "CL_gamma", "CD_pressure", "CM_y")
 RESIDUALS = ("wall_rms", "jump_rms", "signed_kutta_rms", "pressure_kutta_rms")
 
 
-def _spectrum(system):
-    """Singular values of the constraint matrix and the margin over the rcond cut."""
+def _spectrum(system, backend="numpy", device="cpu"):
+    """Singular values of the constraint matrix and the margin over the rcond cut.
+
+    The torch backend takes the spectrum in torch as well: a NumPy LAPACK call after
+    a torch kernel kills the process (0xC0000005), and this function runs after the
+    solve on every case of the verify loop.
+    """
     constraint = system["kutta"]
-    singular = np.linalg.svd(constraint, compute_uv=False)
+    if backend == "torch":
+        import torch
+
+        singular = torch.linalg.svdvals(
+            torch.as_tensor(np.asarray(constraint, float), dtype=torch.float64,
+                            device=device)).detach().cpu().numpy()
+    else:
+        singular = np.linalg.svd(constraint, compute_uv=False)
     threshold = singular[0] * RCOND
     kept = singular >= threshold
     kept_values = singular[kept]
@@ -63,17 +75,21 @@ def _spectrum(system):
                 largest_discarded=float(discarded[0]) if discarded.size else None)
 
 
-def _solve(system, pressure_solver="reference"):
+def _solve(system, pressure_solver="reference", backend="numpy", device="cpu"):
     import panel.p1_lifting_g1 as g1
     import panel.p1_lifting_g2 as g2
 
+    if backend == "torch":
+        # the torch path implements the structured solver only
+        pressure_solver = None
     if system["kind"] == "g2":
         out = g2.solve_multi(system["mesh"], system["alpha_deg"], kutta="pressure",
-                             operators=system["ops"], pressure_solver=pressure_solver)
+                             operators=system["ops"], pressure_solver=pressure_solver,
+                             backend=backend, device=device)
         rank = out.get("linear_constrained_rank")
     else:
         out = g1.solve(system["wing"], system["alpha_deg"], kutta="pressure",
-                       pressure_solver=pressure_solver)
+                       pressure_solver=pressure_solver, backend=backend, device=device)
         rank = out.get("constrained_rank")
     return out, rank
 
@@ -126,7 +142,7 @@ def stage_export(cases, force):
     print("wrote %s" % INDEX)
 
 
-def stage_verify(cases, tolerances):
+def stage_verify(cases, tolerances, backend="numpy", device="cpu"):
     index = json.loads(INDEX.read_text(encoding="utf-8"))
     manifest = _manifest()["fixtures"]
     failures = []
@@ -139,10 +155,16 @@ def stage_verify(cases, tolerances):
             continue
         bundle = np.load(path, allow_pickle=False)
         system = _build(name, manifest[name])
-        spectrum = _spectrum(system)
-        out, rank = _solve(system)
+        spectrum = _spectrum(system, backend, device)
+        out, rank = _solve(system, backend=backend, device=device)
         problems = []
-        for key in ("pressure_status", "pressure_nfev", "pressure_message", "constrained_rank"):
+        # status/nfev/message belong to the algorithm that produced the bundle (SciPy
+        # trust-region-reflective). The torch backend implements the structured solver,
+        # so only the decision that both algorithms agree on - acceptance - is compared.
+        # S3 section 10.5 shows the stopping rule that fires is roundoff, not a property.
+        keys = ("constrained_rank",) if backend != "numpy" else (
+            "pressure_status", "pressure_nfev", "pressure_message", "constrained_rank")
+        for key in keys:
             recorded = bundle[key].item() if bundle[key].ndim == 0 else bundle[key].tolist()
             live = {"pressure_status": out.get("pressure_status"),
                     "pressure_nfev": out.get("pressure_nfev"),
@@ -155,12 +177,14 @@ def stage_verify(cases, tolerances):
         if recorded_success != (None if live_success is None else bool(live_success)):
             problems.append("pressure_success")
         load_error = 0.0
+        load_limit = (tolerances["loads_relative"] if backend == "numpy"
+                      else tolerances["torch_loads_relative"])
         for key in LOADS:
             recorded = float(bundle[key])
-            live = float(out[key])
+            live = float(np.asarray(out[key]))
             error = abs(live - recorded) / max(abs(recorded), 1e-30)
             load_error = max(load_error, error)
-            if error > tolerances["loads_relative"]:
+            if error > load_limit:
                 problems.append("%s %.3e" % (key, error))
         state_error = 0.0
         for key in ("mu", "gamma", "cp"):
@@ -171,12 +195,18 @@ def stage_verify(cases, tolerances):
             state_error = max(state_error, error)
             limit = (tolerances["cp_relative"] if key == "cp"
                      else tolerances["state_relative"])
+            if backend != "numpy":
+                limit = (tolerances["torch_cp_relative"] if key == "cp"
+                         else tolerances["torch_state_relative"])
             if error > limit:
                 problems.append("%s %.3e" % (key, error))
-        if abs(spectrum["margin_over_threshold"]
-               - record["spectrum"]["margin_over_threshold"]) > 1e-12:
-            problems.append("spectrum margin %.3e"
-                            % spectrum["margin_over_threshold"])
+        # relative: the margin is ~1e10, so an absolute 1e-12 tolerance would fail on
+        # the last-bit difference between two SVD implementations.
+        recorded_margin = record["spectrum"]["margin_over_threshold"]
+        if abs(spectrum["margin_over_threshold"] - recorded_margin) > (
+                1e-12*max(abs(recorded_margin), 1e-30)):
+            problems.append("spectrum margin %.6e != %.6e"
+                            % (spectrum["margin_over_threshold"], recorded_margin))
         if problems:
             failures.append((name, "; ".join(problems)))
             print("%-22s FAIL %s" % (name, "; ".join(problems)))
@@ -184,7 +214,8 @@ def stage_verify(cases, tolerances):
             print("%-22s pass  loads=%.1e state=%.1e rank=%d margin=%.3e"
                   % (name, load_error, state_error, spectrum["rank"],
                      spectrum["margin_over_threshold"]))
-    print("failures: %r" % [name for name, _ in failures])
+    print("backend=%s device=%s failures: %r"
+          % (backend, device, [name for name, _ in failures]))
     return 0 if not failures else 1
 
 
@@ -197,6 +228,11 @@ def main(argv=None):
     parser.add_argument("--loads-relative", type=float, default=1e-9)
     parser.add_argument("--state-relative", type=float, default=1e-9)
     parser.add_argument("--cp-relative", type=float, default=1e-9)
+    parser.add_argument("--backend", choices=("numpy", "torch"), default="numpy")
+    parser.add_argument("--device", default="cpu")
+    parser.add_argument("--torch-loads-relative", type=float, default=1e-6)
+    parser.add_argument("--torch-state-relative", type=float, default=1e-6)
+    parser.add_argument("--torch-cp-relative", type=float, default=1e-4)
     parser.add_argument("--index", default=str(INDEX))
     args = parser.parse_args(argv)
     INDEX = Path(args.index)
@@ -206,7 +242,11 @@ def main(argv=None):
         return 0
     return stage_verify(cases, dict(loads_relative=args.loads_relative,
                                     state_relative=args.state_relative,
-                                    cp_relative=args.cp_relative))
+                                    cp_relative=args.cp_relative,
+                                    torch_loads_relative=args.torch_loads_relative,
+                                    torch_state_relative=args.torch_state_relative,
+                                    torch_cp_relative=args.torch_cp_relative),
+                        backend=args.backend, device=args.device)
 
 
 if __name__ == "__main__":
