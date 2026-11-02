@@ -30,7 +30,13 @@ def load(work, name="g1_elliptic"):
 
 def numpy_stage(work, out_path):
     from scipy.linalg import null_space
+    try:
     from panel.p1_pressure_kutta_reduced import StructuredPressureKutta
+except ImportError as error:  # pragma: no cover - historical evidence tool
+    raise SystemExit(
+        "this evidence tool re-runs the retired NumPy chain; check out tag "
+        "numpy-path-frozen-s8 to use it (its recorded answers are docs/issue92/references/)"
+    ) from error
 
     system = load(work)
     grad, pairs = system["grad"], system["pairs"]

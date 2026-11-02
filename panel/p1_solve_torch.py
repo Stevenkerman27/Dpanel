@@ -86,7 +86,16 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
     J = _t(operators["J"], device)
     K = _t(operators["K"], device)
     grad = _t(operators["grad"], device)
-    slices = operators["slices"]
+    slices = operators.get("slices")
+    if slices is None:
+        # A hand-built operator set may omit the per-group slices; the mapping is a
+        # property of the mesh, so derive it rather than require the caller to repeat it.
+        slices = {}
+        offset = 0
+        for group in mesh.groups:
+            width = group.gamma_hat.shape[1]
+            slices[group.name] = slice(offset, offset + width)
+            offset += width
     ms = operators["mesh"]
     nm, ng = int(A.shape[1]), int(W.shape[1])
     alpha = math.radians(float(alpha_deg))

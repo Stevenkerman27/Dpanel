@@ -79,9 +79,9 @@ def _mesh():
 @pytest.mark.parametrize("kwargs, message", [
     (dict(solve_backend="quantum"), "solve_backend must be"),
     (dict(solve_backend="torch", solve_device="gpu"), "solve_device must be"),
-    (dict(solve_backend="numpy", solve_device="cuda"), "requires solve_backend"),
-    (dict(pressure_solver="magic"), "pressure_solver must be"),
-    (dict(solve_backend="torch", pressure_solver="reference"), "implements only"),
+    (dict(solve_backend="numpy"), "solve_backend must be"),
+    (dict(pressure_solver="magic"), "was retired"),
+    (dict(pressure_solver="reference"), "was retired"),
 ])
 def test_bad_backend_arguments_fail_closed(kwargs, message):
     """Every unsupported combination raises before any work starts."""

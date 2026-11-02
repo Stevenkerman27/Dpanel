@@ -23,7 +23,13 @@ from tools.issue92.s1_problem import N_FREE, N_PRESSURE, build, pressure_numpy
 
 
 def run_numpy(out, scenario="base", quadratic=None):
+    try:
     from panel.p1_pressure_kutta_reduced import solve_structured_pressure
+except ImportError as error:  # pragma: no cover - historical evidence tool
+    raise SystemExit(
+        "this evidence tool re-runs the retired NumPy chain; check out tag "
+        "numpy-path-frozen-s8 to use it (its recorded answers are docs/issue92/references/)"
+    ) from error
 
     problem = build(scenario=scenario, quadratic=quadratic)
     pressure, jacobian = pressure_numpy(problem)

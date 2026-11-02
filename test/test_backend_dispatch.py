@@ -1,9 +1,14 @@
-"""Backend dispatch on the public G1/G2 entry points (issue #92, slice S6, revised in S9).
+"""Backend dispatch after the NumPy chain was retired (issue #92, slices S6, S9, S10).
 
-Route B option A (user's decision): torch is the production default, the NumPy/SciPy
-chain stays reachable as the explicit evidence generator. The two paths run the same
-algorithm with different roundoff, so decisions must match and state/loads are compared
-with a declared bound.
+S6 wired backend='numpy'|'torch' into the public G1/G2 entry points so the two
+implementations could be compared. S9 made torch the default and kept the NumPy path as
+the explicit evidence generator. S10 retires that path: its code is tag
+numpy-path-frozen-s8 and its recorded answers are docs/issue92/references/, replayed by
+test/test_frozen_bundle_parity.py.
+
+What is left to test here is the contract of the surviving path: the retired names must
+fail closed with a message that says where the answers live, the resolution must report
+where the choice came from, and a default call must reach torch.
 """
 import numpy as np
 import pytest
@@ -13,8 +18,6 @@ import panel.p1_lifting_g1 as g1
 import panel.p1_lifting_g2 as g2
 
 pytest.importorskip("torch")
-
-THRESHOLDS = dict(loads_relative=1e-9, cp_absolute=1e-10)
 
 
 def _wing():
@@ -27,87 +30,62 @@ def _mesh():
     return g2.combine_wings([wing], origins=[(0., 0., 0.)], names=["main_wing"])
 
 
+def test_the_numpy_backend_is_retired():
+    message = "was retired with the NumPy solve chain"
+    with pytest.raises(ValueError, match=message):
+        backend_module.resolve_backend("numpy")
+    with pytest.raises(ValueError, match=message):
+        g1.solve(_wing(), 3., kutta="signed_speed", backend="numpy")
+    with pytest.raises(ValueError, match=message):
+        g2.solve_multi(_mesh(), 3., kutta="signed_speed", backend="numpy")
+
+
 def test_unknown_backend_is_rejected():
-    wing = _wing()
     with pytest.raises(ValueError, match="backend must be"):
-        g1.solve(wing, 3., kutta="signed_speed", backend="quantum")
+        g1.solve(_wing(), 3., kutta="signed_speed", backend="quantum")
     with pytest.raises(ValueError, match="backend must be"):
         g2.solve_multi(_mesh(), 3., kutta="signed_speed", backend="quantum")
 
 
-def test_torch_backend_refuses_the_scipy_reference_solver():
-    wing = _wing()
-    with pytest.raises(ValueError, match="structured"):
-        g1.solve(wing, 3., kutta="pressure", pressure_solver="reference",
-                 backend="torch")
-    with pytest.raises(ValueError, match="structured"):
-        g2.solve_multi(_mesh(), 3., kutta="pressure", pressure_solver="reference",
-                       backend="torch")
+def test_the_scipy_reference_solver_is_retired():
+    message = "was retired with the NumPy chain"
+    with pytest.raises(ValueError, match=message):
+        g1.solve(_wing(), 3., kutta="pressure", pressure_solver="reference")
+    with pytest.raises(ValueError, match=message):
+        g2.solve_multi(_mesh(), 3., kutta="pressure", pressure_solver="reference")
 
 
 def test_resolve_backend_reports_where_the_choice_came_from(monkeypatch):
-    assert backend_module.resolve_backend("numpy") == ("numpy", "explicit")
+    monkeypatch.delenv("PANEL_P1_BACKEND", raising=False)
     assert backend_module.resolve_backend("torch") == ("torch", "explicit")
-    monkeypatch.setenv("PANEL_P1_BACKEND", "numpy")
-    assert backend_module.resolve_backend() == ("numpy", "environment")
-    monkeypatch.delenv("PANEL_P1_BACKEND")
     assert backend_module.resolve_backend() == ("torch", "default")
+    monkeypatch.setenv("PANEL_P1_BACKEND", "torch")
+    assert backend_module.resolve_backend() == ("torch", "environment")
 
 
-def test_resolve_backend_falls_back_only_when_torch_is_missing(monkeypatch):
+def test_a_program_without_torch_is_told_where_the_answers_are(monkeypatch):
     monkeypatch.delenv("PANEL_P1_BACKEND", raising=False)
     monkeypatch.setattr(backend_module, "torch_available", lambda: False)
-    assert backend_module.resolve_backend() == ("numpy", "default")
+    with pytest.raises(ValueError, match="requires torch"):
+        backend_module.resolve_backend()
     with pytest.raises(ValueError, match="not importable"):
         backend_module.resolve_backend("torch")
 
 
-def test_single_wing_backend_parity_signed_kutta():
-    wing = _wing()
-    base = g1.solve(wing, 4., kutta="signed_speed", backend="numpy")
-    other = g1.solve(wing, 4., kutta="signed_speed", backend="torch")
-    for key in ("CL", "CL_gamma", "CD_pressure", "CM_y"):
-        assert abs(other[key] - base[key]) <= THRESHOLDS["loads_relative"] * max(
-            abs(base[key]), 1e-12), key
-    assert other["constrained_rank"] == base["constrained_rank"]
-    assert np.max(np.abs(np.asarray(other["cp"]) - base["cp"])) <= THRESHOLDS["cp_absolute"]
-    assert other["backend"] == "torch" and base["backend"] == "numpy"
-
-
-def test_single_wing_backend_parity_pressure_kutta():
-    wing = _wing()
-    base = g1.solve(wing, 4., kutta="pressure", pressure_solver="structured",
-                    backend="numpy")
-    other = g1.solve(wing, 4., kutta="pressure", pressure_solver="structured",
-                     backend="torch")
-    for key in ("pressure_status", "pressure_nfev", "pressure_message"):
-        assert other[key] == base[key], key
-    assert other["pressure_success"] == base["pressure_success"]
-    for key in ("CL", "CL_gamma", "CD_pressure", "CM_y"):
-        assert abs(other[key] - base[key]) <= THRESHOLDS["loads_relative"] * max(
-            abs(base[key]), 1e-12), key
-    assert other["nonlinear"] is not None
-    assert other["nonlinear"]["status"] == base["pressure_status"]
-
-
-def test_multi_backend_parity_pressure_kutta():
-    mesh = _mesh()
-    base = g2.solve_multi(mesh, 4., kutta="pressure", pressure_solver="structured",
-                          backend="numpy")
-    other = g2.solve_multi(mesh, 4., kutta="pressure", pressure_solver="structured",
-                           backend="torch")
-    for key in ("pressure_status", "pressure_nfev", "pressure_message"):
-        assert other[key] == base[key], key
-    assert other["linear_constrained_rank"] == base["linear_constrained_rank"]
-    for key in ("CL", "CL_gamma", "CD_pressure", "CM_y"):
-        assert abs(other[key] - base[key]) <= THRESHOLDS["loads_relative"] * max(
-            abs(base[key]), 1e-12), key
-    assert np.max(np.abs(np.asarray(other["mu"]) - base["mu"])) <= 1e-9
-
-
-def test_the_default_backend_is_torch_and_says_so(monkeypatch):
+def test_the_default_call_reaches_torch_and_says_so(monkeypatch):
     monkeypatch.delenv("PANEL_P1_BACKEND", raising=False)
     out = g1.solve(_wing(), 4., kutta="signed_speed")
     assert out["backend"] == "torch" and out["backend_source"] == "default"
-    explicit = g1.solve(_wing(), 4., kutta="signed_speed", backend="numpy")
-    assert explicit["backend"] == "numpy" and explicit["backend_source"] == "explicit"
+    for key in ("CL", "CL_gamma", "CD_pressure", "CM_y"):
+        assert np.isfinite(out[key]), key
+    assert out["constrained_rank"] > 0
+
+
+def test_the_pressure_branch_also_reaches_torch():
+    out = g1.solve(_wing(), 4., kutta="pressure", pressure_solver="structured")
+    assert out["backend"] == "torch"
+    assert out["pressure_status"] is not None
+    assert out["nonlinear"] is not None
+    multi = g2.solve_multi(_mesh(), 4., kutta="pressure", pressure_solver="structured")
+    assert multi["backend"] == "torch"
+    assert np.isfinite(multi["CL"]) and multi["linear_constrained_rank"] > 0

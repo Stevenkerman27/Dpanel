@@ -112,9 +112,9 @@ def main(argv=None):
                     help='device for --analytic-backend torch (no silent fallback)')
     parser.add_argument('--analytic-chunk', type=int, default=64,
                     help='targets per batched evaluation call (64 was fastest in the G2 bench)')
-    parser.add_argument('--solve-backend', choices=('auto', 'numpy', 'torch'), default='auto',
-                    help="potential solve backend: 'auto' resolves to torch when it is "
-                         "importable, otherwise numpy; the choice and its source are "
+    parser.add_argument('--solve-backend', choices=('auto', 'torch'), default='auto',
+                    help="potential solve backend: 'auto' resolves to torch; the retired "
+                         "NumPy chain is tag numpy-path-frozen-s8. The choice and its source are "
                          "recorded in the iteration record")
     parser.add_argument('--solve-device', choices=('cpu', 'cuda'), default='cpu',
                     help='device for --solve-backend torch (no silent fallback)')
@@ -250,7 +250,8 @@ def main(argv=None):
                    analytic_chunk=args.analytic_chunk,
                    rm_backend=args.rm_backend,
                    rm_device=args.rm_device,
-                   solve_backend=args.solve_backend,
+                   solve_backend=(None if args.solve_backend == 'auto'
+                                  else args.solve_backend),
                    solve_device=args.solve_device,
                    save_callback=save)
         report = {k: v for k, v in result.items() if k not in ('mesh', 'state')}

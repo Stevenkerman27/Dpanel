@@ -917,29 +917,29 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     """
     # Argument errors are reported before environment errors: a bad device or an
     # impossible solver pairing is the caller's mistake even where torch is missing.
-    if solve_backend not in (None, "numpy", "torch"):
-        raise ValueError("solve_backend must be None, 'numpy' or 'torch'")
+    if solve_backend not in (None, "torch"):
+        raise ValueError("solve_backend must be None or 'torch'; the NumPy solve chain "
+                         "was retired in S9 and its code is tag numpy-path-frozen-s8")
     from .p1_lifting_g2 import assemble_multi, solve_multi
     from .p1_steady_free_wake import (prepare_wake_material, reassemble_wake_only,
                                      with_wake_xyz)
 
     def _solve(target, operators_for_solve):
-        """Solve the potential system on the selected backend.
+        """Solve the potential system on the torch chain.
 
-        'numpy' keeps the production NumPy/SciPy path. 'torch' uses the ported
-        torch.linalg chain (S5) and returns host arrays for everything downstream,
-        because a NumPy LAPACK call after a torch kernel crashes the process.
+        Every value returned to the loop is a host array: the geometry audit and the
+        gates below are NumPy code, and they are safe there because they never call
+        LAPACK - a LAPACK call after a torch kernel crashes the process (section 6f).
         """
-        if solve_backend == "numpy":
-            return solve_multi(target, alpha_deg, kutta=kutta, max_nfev=max_nfev,
-                               operators=operators_for_solve,
-                               pressure_solver=pressure_solver or "reference")
-        from .p1_solve_torch import solve_multi_torch
-        solved = solve_multi_torch(target, alpha_deg, kutta=kutta, max_nfev=max_nfev,
-                                   operators=operators_for_solve, device=solve_device)
+        # Through the public entry point, not around it: one dispatch site, and the
+        # loop stays replaceable in tests that count solves.
+        solved = solve_multi(target, alpha_deg, kutta=kutta, max_nfev=max_nfev,
+                             operators=operators_for_solve, backend="torch",
+                             device=solve_device, pressure_solver=pressure_solver)
         for key in ("mu", "gamma", "cp"):
             solved[key] = np.asarray(solved[key])
-        solved["force"] = np.asarray(solved["force"], float)
+        if "force" in solved:  # the loop itself never reads it; test doubles may omit it
+            solved["force"] = np.asarray(solved["force"], float)
         return solved
     if (type(iterations) is not int or iterations < 0 or type(max_backtracks) is not int
             or max_backtracks < 0 or not 0 < relaxation <= 1
@@ -974,20 +974,15 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         raise ValueError("rm_backend applies only to velocity_method='rm_regularized_p1'")
     if solve_device not in ("cpu", "cuda"):
         raise ValueError("solve_device must be 'cpu' or 'cuda'")
-    if solve_backend is not None and solve_backend != "torch" and solve_device != "cpu":
-        raise ValueError("solve_device='cuda' requires solve_backend='torch'")
-    if pressure_solver not in (None, "reference", "structured"):
-        raise ValueError("pressure_solver must be None, 'reference' or 'structured'")
-    if solve_backend == "torch" and pressure_solver == "reference":
-        raise ValueError("the torch backend implements only pressure_solver='structured'")
+    if pressure_solver not in (None, "structured"):
+        raise ValueError(
+            "pressure_solver=%r was retired with the NumPy chain; its recorded answers "
+            "are docs/issue92/references/ and its code is tag numpy-path-frozen-s8"
+            % (pressure_solver,))
     try:
         solve_backend, solve_backend_source = resolve_backend(solve_backend)
     except ValueError as error:
-        raise ValueError("solve_backend must be None, 'numpy' or 'torch'") from error
-    if solve_backend != "torch" and solve_device != "cpu":
-        raise ValueError("solve_device='cuda' requires solve_backend='torch'")
-    if solve_backend == "torch" and pressure_solver == "reference":
-        raise ValueError("the torch backend implements only pressure_solver='structured'")
+        raise ValueError("solve_backend must be None or 'torch'") from error
     gates = GeometryGates() if gates is None else gates
     if (not np.isfinite(gates.max_area_ratio) or gates.max_area_ratio <= 1
             or not 0 < gates.max_fold_deg < 90 or not gates.max_step_fraction > 0
@@ -1079,9 +1074,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                       solve_backend_source=solve_backend_source,
                       solve_device=solve_device,
                       pressure_solver=(None if kutta != "pressure" else
-                                       (pressure_solver or
-                                        ("structured" if solve_backend == "torch"
-                                         else "reference"))),
+                                       (pressure_solver or "structured")),
                       analytic_backend=analytic_backend,
                       analytic_device=getattr(field, 'analytic_device', 'cpu'),
                       rm_backend=rm_backend,

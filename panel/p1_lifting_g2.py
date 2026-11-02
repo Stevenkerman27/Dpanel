@@ -13,12 +13,10 @@ from dataclasses import dataclass
 from typing import Sequence
 import time
 import numpy as np
-from scipy.linalg import lstsq, null_space
-from scipy.optimize import least_squares
 
 from .p1_closed_body import Mesh
-from .p1_lifting_g1 import Wing, make_wing, _doublet_matrix, _gradient_map, _interpolation_basis
-from .p1_pressure_kutta_reduced import solve_structured_pressure
+from .p1_lifting_g1 import (Wing, make_wing, _doublet_matrix, _gradient_map,
+                            _interpolation_basis, _torch_lstsq, _torch_null_space)
 from .p1_backend import resolve_backend
 
 
@@ -240,7 +238,7 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
     jf_norm=float(np.linalg.norm(jf));r_norm=float(np.linalg.norm(residual))
     gradient_absolute=float(np.linalg.norm(jf.T@residual,np.inf))
     gradient_relative=gradient_absolute/(jf_norm*r_norm+1e-300)
-    z_floor,_,_,_=lstsq(wall_operator,wall_rhs,lapack_driver='gelsd')
+    z_floor=_torch_lstsq(wall_operator,wall_rhs)
     wall_floor=float(np.linalg.norm(wall_operator@z_floor-wall_rhs)/np.sqrt(rows))
     wall_rms=float(np.linalg.norm(residual[:rows])/np.sqrt(rows))
     pressure_rms=float(np.linalg.norm(pressure_residual)/np.sqrt(len(pressure_residual)))
@@ -266,113 +264,29 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 
 
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
-                max_nfev=80,operators=None,pressure_solver='reference',
+                max_nfev=80,operators=None,pressure_solver=None,
                 backend=None, device='cpu'):
-    """Solve wall P1 mu and ALL independent wake Gamma simultaneously.
+    """Solve wall P1 mu and ALL independent wake Gamma simultaneously, on torch.
 
-    backend='torch' runs the same equations through torch.linalg and the
-    structured pressure-Kutta solver, so a torch or CUDA process never
-    re-enters NumPy/SciPy LAPACK. The SciPy reference stays the NumPy default.
+    The NumPy/SciPy implementation of this equation set was retired in S9; it is
+    preserved at tag numpy-path-frozen-s8 and its answers for the frozen fixtures are
+    docs/issue92/references/. pressure_solver='reference' named the SciPy
+    trust-region solver and is rejected here on purpose.
     """
     backend,backend_source=resolve_backend(backend)
-    if backend=='torch':
-        if kutta=='pressure' and pressure_solver not in (None,'structured'):
-            raise ValueError("backend='torch' supports pressure_solver='structured' only")
-        from .p1_solve_torch import solve_multi_torch
-        out=solve_multi_torch(mesh,alpha_deg,kutta=kutta,kut_weight=kut_weight,
-                              max_nfev=max_nfev,operators=operators,device=device)
-        for key in ('mu','cp','gamma'):
-            value=out.get(key)
-            if hasattr(value,'detach'):out[key]=value.detach().cpu().numpy()
-        out['backend']=backend;out['backend_source']=backend_source
-        return out
-    ops=assemble_multi(mesh) if operators is None else operators
-    A,W,J,K,grad=ops['A'],ops['W'],ops['J'],ops['K'],ops['grad'];ms=ops['mesh']
-    nm=A.shape[1];ng=W.shape[1];alpha=np.deg2rad(alpha_deg)
-    U=np.array([np.cos(alpha),0.,np.sin(alpha)])
-    rhs=-ms.centers@U
-    weights=np.sqrt(ms.areas/ms.areas.mean())
-    B=weights[:,None]*np.column_stack((A,W))
-    bw=weights*rhs
-    def constrained(cons):
-        N=null_space(cons,rcond=1e-11)
-        if not len(N.T):raise ValueError('All independent mu/Gamma DOFs consumed by constraints')
-        z,_,rank,sv=lstsq(B@N,bw,lapack_driver='gelsd')
-        return N@z,N,int(rank),sv
-    x,Nall,rank,sv=constrained(np.vstack((J,K)))
-    pairs=[p for g in ops['te_face_pairs'] for p in g]
-    def pressure(vec):
-        v=np.einsum('fij,j->fi',grad,vec[:nm])
-        return np.array([np.mean(np.sum(v[top]**2,axis=1))-
-                         np.mean(np.sum(v[bot]**2,axis=1)) for top,bot in pairs])
-    def jac(vec):
-        v=np.einsum('fij,j->fi',grad,vec[:nm])
-        d=np.array([2*np.mean(np.einsum('fi,fij->fj',v[t],grad[t]),axis=0)-
-                    2*np.mean(np.einsum('fi,fij->fj',v[b],grad[b]),axis=0) for t,b in pairs])
-        return np.column_stack((d,np.zeros((len(d),ng))))
-    if kutta=='pressure':
-        Nj=null_space(J,rcond=1e-11)
-        def fun(z):
-            state=Nj@z
-            return np.r_[B@state-bw,kut_weight*pressure(state)]
-        def d_fun(z):
-            state=Nj@z
-            return np.vstack((B,kut_weight*jac(state)))@Nj
-        t_pressure=time.perf_counter()
-        if pressure_solver=='reference':
-            rr=least_squares(fun,Nj.T@x,jac=d_fun,max_nfev=max_nfev,
-                             xtol=1e-11,ftol=1e-11,gtol=1e-11)
-        elif pressure_solver=='structured':
-            rr=solve_structured_pressure(wall_operator=B,reduction=Nj,wall_rhs=bw,
-                                         pressure=pressure,pressure_jacobian=jac,
-                                         x0=Nj.T@x,weight=kut_weight,max_nfev=max_nfev)
-        else:
-            raise ValueError("pressure_solver must be 'reference' or 'structured'")
-        pressure_seconds=time.perf_counter()-t_pressure
-        x=Nj@rr.x
-        nonlinear=pressure_kutta_acceptance(
-            result=rr,fun=fun,jac=d_fun,z=rr.x,
-            wall_operator=B@Nj,wall_rhs=bw,pressure_residual=pressure(x))
-    elif kutta!='signed_speed':
-        raise ValueError('kutta=pressure or signed_speed')
-    else:
-        nonlinear=None
-    mu=x[:nm];gamma=x[nm:];v=np.einsum('fij,j->fi',grad,mu)
-    cp=1-np.sum(v**2,axis=1)
-    faceforces=-(cp*ms.areas)[:,None]*ms.normals
-    net=faceforces.sum(axis=0)
-    moment=np.cross(ms.centers-mesh.reference_point,faceforces).sum(axis=0)
-    lift=np.array([-np.sin(alpha),0.,np.cos(alpha)])
-    totalCL=float(net@lift/mesh.reference_area)
-    per=[]
-    for gi,g in enumerate(mesh.groups):
-        c=faceforces[g.face_ids].sum(axis=0)
-        G=gamma[ops['slices'][g.name]]
-        Gfull=np.r_[0.,G,0.]
-        per.append(dict(name=g.name,CL_pressure=float(c@lift/mesh.reference_area),
-                        CL_gamma=float(2*np.trapezoid(Gfull,g.gamma_y)/mesh.reference_area),
-                        gamma=G.tolist(),gamma_y=g.gamma_y.tolist(),
-                        Gamma_integral=float(np.trapezoid(Gfull,g.gamma_y)),
-                        wall_faces=len(g.face_ids),wake_triangles=len(g.wake_faces)))
-    return dict(alpha_deg=float(alpha_deg),kutta=kutta,CL=totalCL,
-                CL_gamma=float(sum(x['CL_gamma'] for x in per)),
-                CD_pressure=float(net@U/mesh.reference_area),
-                CM_y=float(moment[1]/(mesh.reference_area*mesh.reference_chord)),
-                force=net.tolist(),mu=mu,cp=cp,gamma=gamma,
-                group_results=per,
-                jump_rms=float(np.linalg.norm(J@x)/np.sqrt(J.shape[0])),
-                signed_kutta_rms=float(np.linalg.norm(K@x)/np.sqrt(len(K))),
-                pressure_kutta_rms=float(np.linalg.norm(pressure(x))/np.sqrt(len(K))),
-                wall_rms=float(np.linalg.norm(A@mu+W@gamma-rhs)/np.sqrt(len(rhs))),
-                linear_constrained_rank=rank,linear_singular_min=float(sv[-1]),
-                nonlinear=nonlinear,physical_accuracy_accepted=False,
-                pressure_solver=pressure_solver if kutta=='pressure' else None,
-                pressure_status=rr.status if kutta=='pressure' else None,
-                pressure_success=bool(rr.success) if kutta=='pressure' else None,
-                pressure_message=rr.message if kutta=='pressure' else None,
-                pressure_nfev=getattr(rr,'nfev',None) if kutta=='pressure' else None,
-                pressure_seconds=pressure_seconds if kutta=='pressure' else None,
-                pressure_history=getattr(rr,'history',None) if kutta=='pressure' else None)
+    if kutta=='pressure' and pressure_solver not in (None,'structured'):
+        raise ValueError(
+            "pressure_solver=%r was retired with the NumPy chain; its recorded answers "
+            "are docs/issue92/references/ and its code is tag numpy-path-frozen-s8"
+            % (pressure_solver,))
+    from .p1_solve_torch import solve_multi_torch
+    out=solve_multi_torch(mesh,alpha_deg,kutta=kutta,kut_weight=kut_weight,
+                          max_nfev=max_nfev,operators=operators,device=device)
+    for key in ('mu','cp','gamma'):
+        value=out.get(key)
+        if hasattr(value,'detach'):out[key]=value.detach().cpu().numpy()
+    out['backend']=backend;out['backend_source']=backend_source
+    return out
 
 
 def alpha_sensitivity_multi(mesh,alpha_deg=5.,*,operators=None):
@@ -388,10 +302,10 @@ def alpha_sensitivity_multi(mesh,alpha_deg=5.,*,operators=None):
     U=np.array([np.cos(theta),0.,np.sin(theta)])
     dU=np.array([-np.sin(theta),0.,np.cos(theta)])
     weights=np.sqrt(ms.areas/ms.areas.mean())
-    N=null_space(np.vstack((J,K)),rcond=1e-11)
+    N=_torch_null_space(np.vstack((J,K)),rcond=1e-11)
     B=(weights[:,None]*np.column_stack((A,W)))@N
     RHS=-weights[:,None]*ms.centers
-    coeff,_,_,_=lstsq(B,np.column_stack((RHS@U,RHS@dU)),lapack_driver='gelsd')
+    coeff=_torch_lstsq(B,np.column_stack((RHS@U,RHS@dU)))
     X=N@coeff;mu,dmu=X[:nm,0],X[:nm,1]
     dg=X[nm:,1]
     grad=ops['grad']

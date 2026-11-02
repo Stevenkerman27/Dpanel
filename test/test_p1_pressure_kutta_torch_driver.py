@@ -118,50 +118,6 @@ def test_pressure_jacobian_matches_finite_differences():
     np.testing.assert_allclose(analytic, numeric, rtol=0, atol=1e-7)
 
 
-def test_solver_matches_the_numpy_structured_backend():
-    # Order matters: the NumPy/SciPy reference runs first, before any torch op has
-    # executed in this process. A LAPACK call after torch has run dies with
-    # 0xC0000005 (section 6f), so the comparison cannot be interleaved.
-    from panel.p1_pressure_kutta_reduced import StructuredPressureKutta
-    from scipy.linalg import null_space
-
-    rng = np.random.default_rng(23)
-    n_wall, n_gamma, n_rows, n_kutta = 14, 3, 40, 4
-    n_unknown = n_wall + n_gamma
-    B = rng.normal(size=(n_rows, n_unknown))
-    bw = rng.normal(size=n_rows)
-    kutta = rng.normal(size=(n_kutta, n_unknown))
-    grad, pairs, _ = _ragged_problem(seed=5, n_faces=9, n_wall=n_wall, n_gamma=n_gamma)
-    state0 = rng.normal(size=n_unknown)
-    weight = 5.0
-
-    reduction = null_space(kutta, rcond=1e-11)
-
-    def pressure(state):
-        return _reference_model(grad, pairs, state, n_unknown)[0]
-
-    def jacobian(state):
-        return _reference_model(grad, pairs, state, n_unknown)[1]
-
-    structured = StructuredPressureKutta(wall_operator=B, reduction=reduction, wall_rhs=bw,
-                                         pressure=pressure, pressure_jacobian=jacobian,
-                                         weight=weight)
-    expected = structured.solve(reduction.T @ state0, max_nfev=60)
-
-    torch = _torch()
-    from panel.p1_pressure_kutta_torch_driver import solve_pressure_kutta_torch
-
-    out = solve_pressure_kutta_torch(wall_operator=B, wall_rhs=bw, kutta_operator=kutta,
-                                     grad=grad, te_face_pairs=pairs, x0=state0,
-                                     weight=weight, max_nfev=60)
-    assert int(out.result.status) == int(expected.status)
-    assert int(out.result.nfev) == int(expected.nfev)
-    assert str(out.result.message) == str(expected.message)
-    got = out.state.numpy()
-    want = reduction @ expected.x
-    np.testing.assert_allclose(got, want, rtol=0, atol=1e-10 * max(1.0, np.abs(want).max()))
-
-
 @pytest.mark.skipif(os.environ.get("PANEL_TORCH_PARITY") != "1",
                     reason="torch run leaves LAPACK unusable; set PANEL_TORCH_PARITY=1")
 def test_frozen_case_matches_the_numpy_structured_result():

@@ -113,7 +113,8 @@ not a runtime boundary: the shipped torch path never calls SciPy.
 ## 6. Vertical slices
 
 Each slice ends with the full suite plus a clean-master baseline, and may only set
-`backend='torch'` for its own entry point after its parity gate passes. Default stays NumPy.
+`backend='torch'` for its own entry point after its parity gate passes. The default stayed
+NumPy through S8; S9 moved it to torch and S10 deleted the NumPy solver (§18, §19).
 
 | slice | content | parity gate |
 | --- | --- | --- |
@@ -126,6 +127,8 @@ Each slice ends with the full suite plus a clean-master baseline, and may only s
 | S7 | retire the NumPy reference: freeze the production default solve of all 8 fixtures as re-runnable bundles, then move the last per-target evaluator (RM-P1 regularized sheet) onto torch with `rm_backend='numpy'|'torch'` - **delivered, §16** | bundles: 8/8 re-run bitwise identical (`loads=0.0`, `state=0.0`, same rank and margin). RM field: ≤ 1.9e-15 relative on both quadratures, CPU and CUDA; coupled iteration 0 bitwise identical, iteration 1 ≤ 4.9e-14 with the solver held fixed, decisions identical |
 | S8 | implicit adjoint/VJP for the whole chain (no differentiation through the pivots): linear level, and the pressure level with the **exact** Hessian of the quartic objective, plus the diagnostics that decide whether a derivative is certifiable at all - **delivered, §17** | 4 fixtures: linear `dL/dalpha` 2.2e-8 … 2.1e-7 against finite differences; pressure level 6.9e-9 … 1.5e-6 on 3 fixtures, with the Gauss-Newton operator 2-3 orders worse. `g1_wingbody_cad` pressure is declared **not certifiable** (FD stability 0.63, `cond = 2.7e+11`, forward residual floor 1e-4) rather than passed |
 
+| S9 | the default moves to torch; the NumPy chain stays reachable as the explicit evidence generator - **delivered, §18** | 8/8 decisions equal, loads ≤ 6.4e-9 relative, state ≤ 1.8e-8, plus the frozen-bundle replay at 1.0e-13 … 1.0e-6 |
+| S10 | retire the NumPy chain: delete the NumPy solver, the SciPy trust-region path and the structured NumPy pressure-Kutta; the frozen bundles become the only oracle - **delivered, §19** | 9/9 bundle replays inside per-quantity bounds (CL/CL_gamma 5e-7, CD_pressure 2e-6, CM_y 1.5e-6, state 1e-5, cp 1e-3), which are 2x the worse of two NumPy builds; every retired name fails closed |
 | B2 | whole-chain device selection, device=cpu or cuda in one process, no silent fallback — **delivered, §13**: cold/warm solve, one coupled iteration, uploaded bytes, peak VRAM, plus a profile that attributes the iteration | identical loads to 1e-5 relative against the S5 NumPy records on both devices, identical status and acceptance; **no speedup claimed** — measured 11.4x and 4.3x slower solves on CUDA, and the iteration is 86% a Python geometry gate |
 | B3 | VSPAERO cross-check on four geometries (rectangular, swept tapered, elliptic, wing-body), several angles of attack, two mesh levels | compares only CL(alpha) intercept and slope, induced drag, spanwise circulation, and a Cp definition that can be aligned; thick-sheet and VLM results reported separately |
 
@@ -1393,3 +1396,107 @@ loop's `solve_backend` default is `None` (resolve) rather than a hard-coded libr
   this slice changes which **solver** runs, not which **induction evaluator** runs.
 
 
+
+## 19. S10: the NumPy chain is retired (2026-11-02)
+
+S9 left deletion open; the user answered with option 1, retire. The NumPy solver is gone
+from `panel/`, the eight frozen bundles are the only oracle, and parity is now a replay
+of those bundles at bounds that survive a change of NumPy build.
+
+### 19.1 What was removed, and what a caller sees
+
+| removed | replaced by | caller-visible contract |
+| --- | --- | --- |
+| NumPy branch of `panel/p1_lifting_g1.py::solve` | `panel/p1_solve_torch.py::solve_single_torch` | `backend`, `backend_source` on every result |
+| NumPy branch of `panel/p1_lifting_g2.py::solve_multi` | `panel/p1_solve_torch.py::solve_multi_torch` | same; `mu`, `gamma`, `cp` still arrays |
+| `panel/p1_pressure_kutta_reduced.py` (structured NumPy/QR pressure-Kutta) | `panel/p1_pressure_kutta_torch.py` | `pressure_solver` in `{None, 'structured'}` |
+| SciPy trust-region branch (`least_squares`, `pressure_solver='reference'`) | structured torch solver | `ValueError` naming tag and bundles |
+| NumPy branch of the coupled loop (`_solve`) | `solve_multi_torch` | `solve_backend` in `{None, 'torch'}` |
+
+Both retired names fail closed instead of falling back:
+
+    solve(..., backend='numpy')
+    ValueError: backend='numpy' was retired with the NumPy solve chain; its code is tag
+    numpy-path-frozen-s8 and its recorded answers are docs/issue92/references/
+
+    solve(..., pressure_solver='reference')
+    ValueError: pressure_solver='reference' was retired with the NumPy chain; its recorded
+    answers are docs/issue92/references/ and its code is tag numpy-path-frozen-s8
+
+`PANEL_P1_BACKEND` survives as a process pin, but only `torch` is a live value; pinning
+`numpy` raises the same retirement error, which is what a stale CI job will see.
+
+`alpha_sensitivity` and `alpha_sensitivity_multi` used `scipy.linalg.null_space` and
+`lstsq(..., lapack_driver='gelsd')`; they now use `_torch_null_space` and `_torch_lstsq`
+(module-level helpers in `panel/p1_lifting_g1.py` delegating to
+`panel/p1_rank_aware_torch.py`), with the rest elementwise NumPy. The reason is not
+purity: a SciPy LAPACK call after a torch kernel in one interpreter dies with
+`0xC0000005` (section 6f), so on the torch production path those calls had to go even
+though the sensitivity is a linear-system derivative unrelated to the deleted solver.
+
+### 19.2 The oracle that remains, and why its bound is per quantity
+
+`test/test_frozen_bundle_parity.py` replays all eight bundles through the torch path.
+The bundle is a SciPy trust-region-reflective product while the torch path runs the
+structured solver, so the comparison already contains an algorithm difference (2.9e-7 on
+`g1_wingbody_cad_3x`, section 10); the port difference on the same algorithm is 3.1e-12
+(section 15). What defeats a single 1e-6 bound is that the stopping rule fires on a
+residual floor, so the last bit of the input decides which rule fires. Identical torch
+code, two NumPy builds:
+
+| fixture | quantity | numpy 2.5.2 | numpy 2.5.4 |
+| --- | --- | --- | --- |
+| `g1_elliptic` | forward stop | status 2, nfev 21 | status 5, nfev 22 |
+| `g1_elliptic` | CL | 2.17e-07 | 4.02e-07 |
+| `g1_elliptic` | CD_pressure | 8.72e-07 | 1.62e-06 |
+| `g1_elliptic` | CM_y | 5.69e-07 | 1.06e-06 |
+| `g1_elliptic` | gamma state | 1.5e-06 | 6.72e-06 |
+| all others | worst CL | 3.6e-14 | unchanged |
+
+Bounds in force: CL and CL_gamma 5e-7, CD_pressure 2e-6, CM_y 1.5e-6, state 1e-5, cp
+1e-3. Each is about twice the worse of the two runs, so a regression larger than the
+build-to-build spread still fails. Evidence: `runs/issue92/probe_bundle_252.json` and
+`runs/issue92/probe_bundle_254.json`.
+
+The state bound is the one honest revision: declared 2e-6 from the 2.5.2 replay before
+the 2.5.4 replay existed, measured 6.72e-06 there, now 1e-5. State is not a delivered
+quantity; it is where that fixture's flat valley shows up (section 17).
+
+### 19.3 Evidence tools that now need the tag
+
+`tools/issue92/s1_parity.py` and `tools/issue92/branch_probe.py` imported the deleted
+module; they are historical evidence tools, so they now stop with a message rather than
+a traceback:
+
+    SystemExit: this evidence tool re-runs the retired NumPy chain; check out tag
+    numpy-path-frozen-s8 to use it (its recorded answers are docs/issue92/references/)
+
+The same holds for `tools/issue92/s3_pressure_parity.py capture`, which builds the
+reference state through `g1.solve(..., pressure_solver='reference')`; its output is
+already committed as `docs/issue92/s3_parity.json`.
+
+### 19.4 Tests
+
+`test/test_pressure_kutta_reduced.py` is deleted with the module it tested.
+`test/test_p1_pressure_kutta_torch_driver.py` loses its NumPy comparison and keeps the
+three checks that do not need it (static no-NumPy guard, model against a plain
+transcription of its definition, Jacobian against central differences); the frozen
+`s3_reference_g1_wing_rect.npz` end-to-end case stays because it is a bundle, not a
+second implementation. `test/test_backend_dispatch.py` was rewritten to assert the two
+retirement errors, the resolution record, the missing-torch message, and that a default
+call reaches torch with `backend_source='default'`. `test/conftest.py` no longer pins
+`PANEL_P1_BACKEND`, because there is no second path to pin the suite to.
+
+    # torch available (myml), jax injected for conftest
+    python -m pytest test -q
+
+### 19.5 Not claimed
+
+- Not claimed: retirement makes the torch path more accurate. The bundles bound it at
+  the numbers in 19.2, dominated by the algorithm difference, not the port.
+- Not claimed: `.conda_env` can run the suite any more. It has no torch, so it fails at
+  import of the P1 entry points by design; torch is now a hard requirement of the P1
+  chain, and that is the trade the user accepted.
+- Not claimed: the two jax-0.12 jaxpr-inspection failures (section 18.4) are fixed.
+- Not claimed: `panel/p1_closed_body.py` or `panel/p1_geometry_contact.py` were ported;
+  they are off the coupled path (section 18.2) and keep their LAPACK calls.
