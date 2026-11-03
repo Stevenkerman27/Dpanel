@@ -10,7 +10,7 @@ JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾
 
 - 分支 `research/issue92-phase1-wake-evaluator`，提交 `ce91e0a`（master + 27 个提交）；根目录现在是唯一工作树。
 - torch 移植（issue #92）当前默认是 S9–S11；架构判断与当前默认见 [docs/ISSUE92_TORCH_PORT_MAP.md](docs/ISSUE92_TORCH_PORT_MAP.md)，S1–S8 的交付记录在 [docs/archive/issue/ISSUE92_DELIVERY_LOG.md](docs/archive/issue/ISSUE92_DELIVERY_LOG.md)。
-- B3 的 DPanel/VSPAERO 对照（48 项判定，4 项失败）连同共同参考点力矩、剖面 Cp、固定→自由尾迹见 [docs/ISSUE92_B3_VSPAERO_PROTOCOL.md](docs/ISSUE92_B3_VSPAERO_PROTOCOL.md)。自由尾迹只有 rect 跑完，其余三个算例在 `combine_wings` 后原生崩溃（0xC0000005），属未解决阻塞。
+- B3 的 DPanel/VSPAERO 对照（48 项判定，4 项失败）连同共同参考点力矩、剖面 Cp、固定→自由尾迹见 [docs/ISSUE92_B3_VSPAERO_PROTOCOL.md](docs/ISSUE92_B3_VSPAERO_PROTOCOL.md)。自由尾迹的原生崩溃（`combine_wings` 后 0xC0000005，根因是 torch 环境 numpy 2.5.2 的大 dgemm 缺陷）已修，四个算例都能跑完 60 次迭代；但只有 rect 收敛，三个 CAD 翼的载荷在松弛中塌陷约四分之三，属未解决缺陷（见协议 §13）。
 - 已退役的研究代码（P1 配点/Galerkin 变体等）见 [docs/RETIRED_RESEARCH.md](docs/RETIRED_RESEARCH.md)；它们的结果仍作为文档与 JSON 保留。
 
 ## 文档入口

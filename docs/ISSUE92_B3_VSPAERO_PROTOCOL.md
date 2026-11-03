@@ -242,9 +242,12 @@ panels across a 4:1 rectangle is a coarse mesh, not a code difference.
 * No claim about the bwb thick-panel strip loads at the mirror plane.
 * No claim that the section Cp agrees: it is reported, not gated, because the
   sample layouts differ and the 20-strip average smooths the suction peak.
-* No free-wake claim beyond the rect planform. Three of the four cases are
-  blocked by a native crash in the DPanel `combine_wings` + free-wake path, and
-  the one that runs is geometry-stable but not flow-tangency-converged.
+* No free-wake claim beyond the rect planform. The native crash that used to
+  block the other three is fixed (section 13.1), but DPanel's steady free wake
+  does not converge on the three CAD-derived planforms: the load collapses by
+  about three quarters and the wake geometry oscillates instead of settling
+  (section 13.2). Only the synthetic rect wing is geometry-stable, and even
+  there it is not flow-tangency-converged.
 * No claim about viscous drag, compressibility, or separated flow.
 
 ## 8. Reproduce
@@ -488,28 +491,25 @@ configuration unchanged, panel mode, fine mesh):
 | bwb | 0.22935 | 0.22649 | -0.01208 | -0.00864 |
 
 **DPanel side** marches `panel/p1_steady_free_wake.py` at a 0.3 relaxation for 60
-iterations. It produces the rect answer and then dies with a native access
-violation on the other three planforms:
+iterations. The first attempt died with a native access violation on three
+planforms; that crash is fixed (13.1) and all four cases now run to 60
+iterations. Only the synthetic rect wing converges:
 
-| case | outcome |
-| --- | --- |
-| rect | 60 iterations, 2.5 s, wake geometry change 1.5e-10 |
-| swept30 | process exit 3221225477 (`0xC0000005`), no Python traceback |
-| elliptic | same |
-| bwb | same |
+| case | CL fixed | CL free, 60 iterations | change | wake geometry stable | normal slip |
+| --- | ---: | ---: | ---: | --- | ---: |
+| rect | 0.25746 | 0.25671 | -0.29 % | yes, 1.5e-10 | 0.0130 |
+| swept30 | 0.40990 | 0.09427 | -77.0 % | no | 7.57 |
+| elliptic | 0.27996 | 0.06557 | -76.6 % | no | 9.74 |
+| bwb | 0.33827 | 0.07027 | -79.2 % | no | 2.71 |
 
-The crash is not in the solver itself: `solve(wing)` on swept30 returns
-`CL = 0.4098970463282688` in the same interpreter, and the bundled two-component
-fixture (`python -m panel.run_p1_steady_wake --alpha 5 --iterations 3
---wake-panels 6`) also runs, so the failure sits in the `combine_wings` +
-free-wake path for these CAD-derived full-span wings. Raising or lowering the
-BLAS/OpenMP thread counts does not change it, and `faulthandler` prints nothing.
-It is recorded as a blocker, not worked around: each case runs in its own child
-process so the report survives, and the exit code is kept in
-`docs/issue92/b3_free_wake.json` together with the reproduction command.
+VSPAERO moves by about -1.2 % on all four (0.27180 -> 0.26874, 0.28916 ->
+0.28573, 0.29513 -> 0.29172, 0.22935 -> 0.22649). For the three CAD-derived
+planforms the DPanel free wake is therefore not a refinement of the fixed wake:
+it walks the load off the wing. bwb is reported only, because its fixed-wake
+strip loads already failed the gamma gate.
 
-For the one case that runs, the free wake agrees with VSPAERO inside the same
-budgets as the fixed wake:
+For the one case that converges, the free wake agrees with VSPAERO inside the
+same budgets as the fixed wake:
 
 | quantity | value |
 | --- | --- |
@@ -525,8 +525,75 @@ DPanel's free-wake CM_y (+0.02446) is where its fixed wake already was
 (+0.02415), so relaxing the wake changes the moment by 0.0003 while the gap to
 VSPAERO stays at 0.0189.
 
-Two honesty notes. The geometry is converged (1.5e-10) but the normal-flow gate
-is not (0.013 against 0.01), so this is a geometry-stable wake and not a
-flow-tangency-converged one; the module documents that the two are distinct. And
-one case out of four is not a free-wake validation: three quarters of the block
-is blocked by the crash above.
+One honesty note: rect is geometry-stable but not flow-tangency-converged (0.013
+against 0.01), and the module documents those as distinct criteria.
+
+### 13.1 The native crash: a numpy dgemm fault, not a DPanel bug
+
+`faulthandler` put the fault at `panel/p1_lifting_g2.py:179`,
+`Wg = coefficients @ np.asarray(group.gamma_hat, float)`, a 2764 x 1928 by
+1928 x 15 float64 product inside `assemble_multi`. The product itself is not
+special: in the torch interpreter (`myml`, numpy 2.5.2)
+
+```powershell
+& C:\Users\zyx20\anaconda3\envs\myml\python.exe -c "import numpy as np; print(np.random.rand(2764,1928) @ np.random.rand(1928,15).sum())"
+```
+
+exits with 3221225477 (`0xC0000005`) and no traceback. Only that environment
+fails; the repository `.conda_env` (numpy 2.4.6) computes the same product. The
+fault depends on the row count (1000 fine, 1500 and 2764 die), disappears for
+`k = 1` (gemv), `float32` and `np.einsum`, and survives every thread and
+instruction-set override tried (BLAS/OMP/MKL thread counts,
+`MKL_ENABLE_INSTRUCTIONS`, `OPENBLAS_CORETYPE`, `NPY_DISABLE_CPU_FEATURES`).
+Row-blocking avoids it, so the fix is a FLOP-equivalent block multiply,
+`_blocked_matmul(left, right, *, rows=512)` in `panel/p1_lifting_g2.py`, now
+used for the wake influence product. Verification: the merged swept30 mesh
+assembles in 5.7 s and solves to CL = 0.40989704632820095, against
+0.4098970463282688 from the single-wing path (7e-14 apart), so `combine_wings`
+on one wing is physically a no-op and the block multiply is numerically
+transparent. The trap is recorded in `docs/TEST_STATUS.md` because it will bite
+any other large product in that environment.
+
+### 13.2 The remaining failure: the load leaves the wing
+
+Three checks rule out the obvious causes.
+
+* Not the velocity evaluation. At iteration 0, on the fixed-wake solution, the
+  wake velocities are sane on all four cases: maximum 1.00-1.09, minimum axial
+  0.75-0.99, mean normal slip 0.04-0.05.
+* Not the step size. swept30 at relaxation 0.1 still collapses (0.4035 ->
+  0.1882 at iteration 1 -> 0.1189 at iteration 5).
+* Not a failed inner solve. Through the collapse the wall residual stays at
+  3.2e-4, the jump residual at 7e-16 and the pressure Kutta residual at
+  2.4e-7 - 2.7e-7. The low-lift states are converged solutions of the displaced
+  wake, not unconverged ones.
+
+What is left is the sensitivity of the fixed-wake solution to wake position. On
+swept30, shrinking the relaxation makes the effect measurable: at relaxation
+1e-2 the first step moves the wake by 3.6e-2 chord and CL falls 5.3 % per
+iteration (0.4035 -> 0.3505 -> 0.3086); at 1e-3 it falls 1.2 %; at 1e-6 it does
+not move. That is about 1.4 % of CL per 0.001 chord of node motion, and at
+relaxation 0.3 the near trailing-edge row moves only 0.085 chord while the load
+loses three quarters. The fixed-wake solution is therefore not a small
+perturbation away from the free-wake one on these planforms: the wake-doublet
+system is ill-conditioned in the wake position, and the relaxation walks the
+load away instead of onto the stream surface.
+
+The geometric difference to rect is wake length and resolution: the CAD wakes
+run 30 chords downstream with 0.045-0.073 chord node spacing (1110-1528 faces),
+and the unrelaxed target displacement reaches 3.62 chords (freestream drift
+tan 4 deg x 30 chords, plus roll-up), whereas rect's 5-chord, 24-face wake moves
+0.12 and settles. Refining the rect wake to 96 faces does not change its
+convergence, so resolution alone is not the trigger.
+
+Consequence for this gate: the free-wake block is judged for rect only
+(CL -4.68 %, CM 0.0189, both inside budget). For swept30, elliptic and bwb the
+numbers in `docs/issue92/b3_free_wake.json` are a defect report, not a
+comparison. Fixing this is separate work; the candidates are freezing the first
+few wake rows, a wake-position gate (the module already has `slip_gate` and
+`max_step_chord` hooks, both off by default), or a wake-doublet basis that stays
+consistent as the sheet moves off the wing plane. Nothing here claims the free
+wake is validated.
+
+Reproduce with `python -m tools.issue92.b3_free_wake --iterations 60`; each case
+runs in its own child process so one crash cannot take the report with it.

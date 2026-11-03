@@ -147,6 +147,27 @@ def _mesh(mesh):
                 normal,norm/2,grad,dict(diameter=float(np.linalg.norm(np.ptp(mesh.xyz,axis=0)))))
 
 
+def _blocked_matmul(left, right, *, rows=512):
+    """left @ right, cut into row blocks of `rows`.
+
+    One large float64 dgemm faults with some BLAS builds: on this workstation the
+    numpy 2.5.2 wheel in the torch environment raises an access violation
+    (0xC0000005) for a 2764 x 1928 @ 1928 x 15 product, at every thread count and
+    every instruction-set override, while the same product in 512-row blocks is
+    fine (float32 and einsum are also fine, so it is the dgemm kernel, not the
+    data). Blocking is FLOP-equivalent and changes only how the BLAS call is cut,
+    so the assembled matrix is unchanged; it keeps the free-wake assembly from
+    taking the whole interpreter down.
+    """
+    left = np.asarray(left)
+    right = np.asarray(right)
+    out = np.empty((left.shape[0], right.shape[1]), dtype=np.result_type(left, right))
+    for start in range(0, left.shape[0], rows):
+        stop = min(left.shape[0], start + rows)
+        out[start:stop] = left[start:stop] @ right
+    return out
+
+
 def assemble_multi(mesh: MultiLiftingMesh, *, backend='numpy'):
     """Assemble all wall/wake interactions in ONE coupled potential system.
 
@@ -176,7 +197,7 @@ def assemble_multi(mesh: MultiLiftingMesh, *, backend='numpy'):
         coefficients=_doublet_matrix(wake_tris,ms.centers,
             face_dofs=np.asarray(group.wake_faces,int),
             ndof=len(group.wake_xyz))
-        Wg=coefficients@np.asarray(group.gamma_hat,float)
+        Wg=_blocked_matmul(coefficients,np.asarray(group.gamma_hat,float))
         W_parts.append(Wg)
         slices[group.name]=slice(offset,offset+ng)
         offset+=ng

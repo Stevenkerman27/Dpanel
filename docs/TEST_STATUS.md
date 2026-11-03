@@ -7,7 +7,29 @@
 ## 1. 环境
 
 Python 3.11.17（`.conda_env`）、pytest 9.1.1。
-可用：numpy、scipy、jax、meshio；**不可用：torch、gmsh、numba、vsp（OpenVSP）**。
+默认解释器可用：numpy、scipy、jax、meshio；**不可用（默认 sys.path 上）：torch、gmsh、numba、vsp（OpenVSP）**。
+
+少数能力在别的解释器/目录里，跑测试前先确认：
+
+| 能力 | 位置 | 说明 |
+| --- | --- | --- |
+| torch 2.13.0+cu132 | `C:/Users/zyx20/anaconda3/envs/myml/python.exe` | CUDA 可用（RTX 5060）。p1 求解链的**唯一**生产后端，`.conda_env` 没有 torch，所以 16 个 p1 用例在此环境必然失败 |
+| Gmsh 4.15.2 | `audit/runtime/python` | 不在默认 sys.path，需要 `sys.path.insert(0, "audit/runtime/python")`（`tools/geom_robust/make_cases.py:22-23` 的用法） |
+| OpenVSP 3.55 + vspaero.exe | `D:/3D/Projects/OpenVSP-3.55.0-win64/` | Python 绑定用 `PYTHONPATH=<该目录>/python/openvsp`；外部进程 `vspaero.exe` 直接调用 |
+| jax | 只有 `.conda_env` | `myml`（torch 环境）没有 jax，而 `test/conftest.py:15` 直接 `import jax`，所以**没有任何一个解释器能跑完整套 pytest**：torch 环境跑不了 conftest，`.conda_env` 跑不了 p1 链。torch 侧的行为靠直接调用求解器与 `tools/issue92/*` 验证 |
+
+**已知环境缺陷（torch 环境）**：`myml` 里的 numpy 2.5.2 对大尺寸 `float64` dgemm 会直接
+访问违例（`0xC0000005`，进程退出码 3221225477，无 traceback）。最小复现：
+
+```powershell
+& C:\Users\zyx20\anaconda3\envs\myml\python.exe -c "import numpy as np; print(np.random.rand(2764,1928) @ np.random.rand(1928,15).sum())"
+```
+
+m=1000 正常、m>=1500 崩；k=1（gemv）、float32、`np.einsum` 正常。线程数、MKL 指令集、
+OPENBLAS_CORETYPE、NPY_DISABLE_CPU_FEATURES 都不改变结果；按行分块可绕开。
+`.conda_env` 的 numpy 2.4.6 同一形状正常。代码里的绕法是
+`panel/p1_lifting_g2.py` 的 `_blocked_matmul()`（按 512 行分块，FLOP 等价），
+只覆盖自由尾迹装配的那一处乘积；其他新增的大矩阵乘法若在该环境崩溃，先怀疑这个缺陷。
 
 ## 2. 实测
 
