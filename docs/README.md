@@ -56,7 +56,9 @@ PR 报告、过程分析一律进 `archive/`。目标是：新人打开这一页
 
 ## 5. 仓库与目录约定
 
-- 真正的 git 仓库就在根目录 `D:/3D/Projects/panel`（远程 `Stevenkerman27/Dpanel`，分支 `work/root-2026-11-03`）；
-  `runs/pushrepo`、`runs/fix_master` 已降为只读备份，见 `runs/BACKUP_2026-11-03.md`。
+- 真正的 git 仓库就在根目录 `D:/3D/Projects/panel`（远程 `Stevenkerman27/Dpanel`，分支 `work/root-2026-11-03`）。
+  旧检出 `runs/pushrepo`、`runs/fix_master` 已于 2026-11-03 删除；它们检出的分支
+  （`research/issue49-vspaero-evidence`、`research/issue92-phase1-wake-evaluator`）都在本仓库历史里，
+  `git checkout <branch>` 即可取回，不需要另存一份工作树。
 - 不回仓库的大件：`runs/`、`audit/`、`lifting3d/results/*.npz`（2026-11-03 清理）、`.conda_env/`。
 - 模块入口文档：`panel/README.md`、`torch_panel/README.md`、`monitor/README.md`、`test/README.md`、`lifting3d/README.md`、`potential/README.md`、`vspapi/`（见 `VSPAPI.md`）。
