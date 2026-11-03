@@ -23,6 +23,12 @@ JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾
 | 验收口径（代数 vs 物理） | [docs/WORKFLOW.md](docs/WORKFLOW.md) |
 | 测试现状与已知失败 | [docs/TEST_STATUS.md](docs/TEST_STATUS.md) |
 
+## 本轮文档清理（PR #99）
+
+- 交付分支 `work/root-2026-11-03`，PR：https://github.com/Stevenkerman27/Dpanel/pull/99 （base 为 `research/issue92-phase1-wake-evaluator`，所以 PR 只含一个提交）。
+- 内容：废弃证据与旧状态文档移入 `docs/archive/`（顶层保留 17 篇）；ISSUE92 只留当前默认 S9–S11 相关章节；新增本文件与测试基线文档。
+- 未包含：`.github/workflows/galerkin-cad-validation.yml` 里的文档路径过滤——更新它需要带 workflow 权限的 token。
+
 ## 旧状态文档的处理
 
 2026-10-26 的 `README`、`DEVELOPMENT`、`PAUSE_HANDOFF`、`SOLVER_ROUTE`、`WBCAERO_STUDY`、`cloud_agent_prompt`

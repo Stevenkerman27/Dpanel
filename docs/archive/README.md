@@ -7,8 +7,9 @@
   （`docs/issueNN/`），本层只放结论文字。
 - `notes/`：一次性分析、阶段总结、历史交接（`PAUSE_HANDOFF_*`、`CLEANUP_*`、`STAGE1_*` 等）。
 - `evidence/`：已退役 PR/研究线的原始证据目录（pr26–pr36、wake_*_20261026、mesh_*_verify、
-  issue28/issue49_phase0、wingbody、shed_groups_cad），以及 `p1_receipts/`、
-  `issue49_vspaero_raw.tar.gz`（VSPAERO 原始日志）与 `_moved_2026-11-03.tar.gz`（搬迁前备份）。
+  issue28/issue49_phase0、wingbody、shed_groups_cad），以及 `p1_receipts/`。
+  `issue49_vspaero_raw.tar.gz`（VSPAERO 原始日志）与 `_moved_2026-11-03.tar.gz`（搬迁前备份）
+  只在作者本机留存，不入库；被移除的文件可从 `ce91e0a` 及更早提交取回。
 
 ## 怎么用
 

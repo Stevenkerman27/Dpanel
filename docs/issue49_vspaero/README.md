@@ -174,14 +174,16 @@ VSP 3.55 档：V = 100 m/s、rho = 0.002377、Re = 1e7；DPanel：V = 20 m/s、r
 
 ## 8. 原始数据的存放（2026-11-03 归档）
 
-为缩小工作树，`raw/` 与 `ladders/` 已打包到
-`docs/archive/evidence/issue49_vspaero_raw.tar.gz`（解包后即恢复本节各表引用的
+为缩小工作树，`raw/` 与 `ladders/` 已于 2026-11-03 从工作树移除；它们的完整内容仍保存在
+本分支基线提交 `ce91e0a` 里，需要时按路径从历史检出（检出后即恢复本节各表引用的
 `raw/l1`–`raw/l4`、`ladders/api_panel_*`、`ladders/api_vlm_*` 路径）：
 
 ```bash
-tar xzf docs/archive/evidence/issue49_vspaero_raw.tar.gz -C docs/issue49_vspaero
-python docs/issue49_vspaero/verify_sha.py   # 解包后仍是 135/135
+git checkout ce91e0a -- docs/issue49_vspaero/raw docs/issue49_vspaero/ladders
+python docs/issue49_vspaero/verify_sha.py   # 检出后仍是 135/135
 ```
+
+作者本机另存有打包件 `docs/archive/evidence/issue49_vspaero_raw.tar.gz`（1.9 MB），未纳入版本库。
 
 `levels.json`、`sections.json`、`dpanel/`、`figs/`、`gamma/`、`p1/`、`wakesweep/` 与
 `sha256.json` 保留在原处；`sha256.json` 的路径就是解包后的路径。

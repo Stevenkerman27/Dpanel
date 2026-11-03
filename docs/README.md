@@ -32,7 +32,7 @@ PR 报告、过程分析一律进 `archive/`。目标是：新人打开这一页
 | `issue92/` | torch 移植（S1–S12）与 VSPAERO 四几何：parity、bench、bundle 索引 |
 | `issue84/` | RM-P1 尾迹求值器：节点拒绝、投影扇区、门槛 A/B、G2 ledger |
 | `issue77/`、`issue71/` | Γ 支撑修正；P1 Galerkin 收敛测量 |
-| `issue49_vspaero/` | VSPAERO 外部对照的汇总表、polar、截面与 SHA-256；`raw/`、`ladders/` 原始日志打包在 `archive/evidence/issue49_vspaero_raw.tar.gz` |
+| `issue49_vspaero/` | VSPAERO 外部对照的汇总表、polar、截面与 SHA-256；`raw/`、`ladders/` 原始日志已从工作树移除，需要时按该目录 README 第 8 节从 `ce91e0a` 检出 |
 | `geometry_robustness/`、`panel_robustness_evidence_v2/` | 几何鲁棒性矩阵与当前面板鲁棒性证据 |
 
 ## 3. 归档（`archive/`，只读）
@@ -41,8 +41,9 @@ PR 报告、过程分析一律进 `archive/`。目标是：新人打开这一页
 - `archive/issue/`（54 篇）：单文件 issue 报告。
 - `archive/notes/`（35 篇）：一次性分析、阶段总结、历史交接。
 - `archive/evidence/`：已退役 PR/研究线的证据目录（pr26–pr36、wake_*_20261026、mesh_*_verify、
-  issue28/issue49_phase0、wingbody、shed_groups_cad 等），以及 `p1_receipts/` 与
-  `_moved_2026-11-03.tar.gz`（搬迁前原样备份）。
+  issue28/issue49_phase0、wingbody、shed_groups_cad 等），以及 `p1_receipts/`。
+  两个打包件（`_moved_2026-11-03.tar.gz`、`issue49_vspaero_raw.tar.gz`）只在作者本机，不入库；
+  被移除的内容在 `ce91e0a` 之前的提交里都能取回。
 
 归档不等于失效：这些文件保留了当时的读数与判断，路径改过但内容没改；用 `git log --follow` 仍可追溯。
 
