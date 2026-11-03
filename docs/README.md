@@ -3,7 +3,7 @@
 `docs/` 只放两样东西：**能长期引用的结论**（本层）和**当时的证据**（子目录）。一次性的验收报告、
 PR 报告、过程分析一律进 `archive/`。目标是：新人打开这一页，十分钟内知道该读哪一篇，不需要浏览 500 个文件。
 
-## 1. 按问题查（现役文档，17 篇）
+## 1. 按问题查（现役文档，18 篇）
 
 | 你想知道 | 读这篇 |
 | --- | --- |
@@ -20,6 +20,7 @@ PR 报告、过程分析一律进 `archive/`。目标是：新人打开这一页
 | 测试基线、已知失败、环境矩阵 | [TEST_STATUS.md](TEST_STATUS.md)（历史 PR 口径见 [archive/notes/TEST_HEALTH_2026-10-30.md](archive/notes/TEST_HEALTH_2026-10-30.md)） |
 | 某个模块被删了，代码去哪找 | [RETIRED_RESEARCH.md](RETIRED_RESEARCH.md)（含归档 tag 与 checkout 方法） |
 | VSPAERO 对照工具怎么用、有哪些坑 | [VSPAPI.md](VSPAPI.md) |
+| VSPAERO 四几何对照协议、32 项判定、CUDA 复跑 | [ISSUE92_B3_VSPAERO_PROTOCOL.md](ISSUE92_B3_VSPAERO_PROTOCOL.md) |
 | 协作与验收流程（回执、先声明阈值） | [WORKFLOW.md](WORKFLOW.md) |
 
 ## 2. 证据包（原始数据，按 issue 编号）
@@ -38,7 +39,7 @@ PR 报告、过程分析一律进 `archive/`。目标是：新人打开这一页
 ## 3. 归档（`archive/`，只读）
 
 - `archive/pr/`（19 篇）：PR 报告，PR 合并即归档。
-- `archive/issue/`（54 篇）：单文件 issue 报告。
+- `archive/issue/`（53 篇）：单文件 issue 报告；B3 对照协议仍在用，已提到本层。
 - `archive/notes/`（35 篇）：一次性分析、阶段总结、历史交接。
 - `archive/evidence/`：已退役 PR/研究线的证据目录（pr26–pr36、wake_*_20261026、mesh_*_verify、
   issue28/issue49_phase0、wingbody、shed_groups_cad 等），以及 `p1_receipts/`。

@@ -3,7 +3,7 @@
 Issue #92, Route B, third gate. This document records the protocol, the raw
 numbers and the attribution for a cross-code comparison of the inviscid lift
 and induced drag of four wings. It replaces no solver behaviour: nothing in
-`panel/` changes, the defaults stay NumPy, and
+`panel/` changes, the solve chain and its defaults are untouched, and
 `physical_accuracy_accepted` stays false.
 
 ## 1. What this gate is, and what it is not
@@ -238,8 +238,10 @@ panels across a 4:1 rectangle is a coarse mesh, not a code difference.
 ```
 # once: station tables and geometry hashes
 python -m tools.issue92.b3_cases
-# DPanel side (NumPy reference environment)
-python -m tools.issue92.b3_dpanel --out runs/issue92/b3/dpanel.json
+# DPanel side: torch chain (an interpreter that has torch; .conda_env does not)
+python -m tools.issue92.b3_dpanel --out runs/benchmarks/b3_vspaero/b3/dpanel.json
+# the same sixteen solves on the CUDA device (section 10)
+python -m tools.issue92.b3_dpanel --device cuda --out runs/benchmarks/b3_vspaero/b3/dpanel_cuda.json
 # VSPAERO side (vsppytools environment, OpenVSP 3.55)
 python -m tools.issue92.b3_vspaero --out runs/benchmarks/b3_vspaero/b3/vspaero.json
 # gate
@@ -251,10 +253,12 @@ python -m tools.issue92.b3_tables
 VSPAERO needs `PYTHONPATH=D:/3D/Projects/OpenVSP-3.55.0-win64/python/openvsp` (2026-11-03: the in-repo binding copies `runs/envs/vsp_py*` were byte-identical duplicates and are no longer needed),
 `VSP_ROOT` and `VSPAERO_EXE` pointing at
 `D:/3D/Projects/OpenVSP-3.55.0-win64`, and the `vsppytools` Python
-(3.13). The DPanel side needs the repository `.conda_env` (3.11, NumPy
-2.4.6, SciPy 1.17.1). Raw output is `runs/issue92/b3/dpanel.json` and
-`runs/issue92/b3/vspaero.json`; the gate report is
-`docs/issue92/b3_matrix.json`.
+(3.13). The DPanel side needs torch: the repository `.conda_env` (3.11) has
+no torch, so both passes recorded here ran on Python 3.13 + torch 2.13. Raw
+output is `runs/benchmarks/b3_vspaero/b3/{dpanel,vspaero}.json`; the gate
+report is `docs/issue92/b3_matrix.json`. Both raw files went missing from
+the working tree during the 2026-11-03 `runs/` reorganisation; section 10
+records what that costs and how the DPanel side was regenerated.
 
 ## 9. Deliverables
 
@@ -267,3 +271,78 @@ VSPAERO needs `PYTHONPATH=D:/3D/Projects/OpenVSP-3.55.0-win64/python/openvsp` (2
 * `tools/issue92/b3_tables.py` the tables in section 4.
 * `docs/issue92/b3_cases.json` the manifest, `docs/issue92/b3_matrix.json`
   the gate report.
+
+## 10. CUDA rerun (2026-11-03)
+
+The gate above ran on the torch **CPU** backend. The Route B decision placed B3
+after CPU parity and said it need not wait for CUDA, so the CUDA column the
+Phase 1 plan also asked for was never produced. This section produces it: the
+same sixteen solves on the CUDA device, with the protocol, the thresholds and
+the verdict left alone.
+
+```
+python -m tools.issue92.b3_dpanel --device cuda --backend torch \
+    --out runs/benchmarks/b3_vspaero/b3/dpanel_cuda.json
+```
+
+`--device` and `--backend` were added to the driver for this rerun; they are
+opt-in and the default is still `--device cpu`, so nothing about the delivered
+protocol changes. The output file now carries a `provenance` block: Python
+3.13.14, torch 2.13.0+cu132, CUDA runtime 13.2, `NVIDIA GeForce RTX 5060`
+(compute capability 12.0), context initialisation 0.371 s.
+
+**Parity.** The CPU side was rerun in the same interpreter and torch build
+rather than compared against a saved baseline, and that rerun reproduces the
+numbers already published in `docs/issue92/b3_matrix.json` to 2.8e-15..1.8e-10
+relative — so the pair below differs by device, not by code version.
+
+| quantity | worst CPU-vs-CUDA difference | where |
+| --- | --- | --- |
+| CL slope over alpha | 1.1e-13 relative | elliptic |
+| CL_gamma slope over alpha | 5.8e-14 relative | elliptic |
+| per-alpha CL and CM_y | 9.9e-13 of the case peak | elliptic |
+| per-alpha CD_pressure | 1.5e-12 of the case peak | elliptic, alpha = 0 |
+| spanwise circulation shape | 5.1e-10 relative | elliptic |
+| constrained rank | identical on all 16 solves | — |
+| wall_rms / kutta_rms | 4.2e-15 / 3.3e-14 absolute | elliptic / bwb |
+
+One relative outlier needs its scale stated: the rectangular wing at alpha = 0
+differs by 2.8e-2 in circulation *shape*, on stations whose absolute value is
+of order 1e-15. That is round-off on a zero, not a device difference.
+
+Since the gate compares DPanel fits against VSPAERO, and every fit moves by at
+most 1.1e-13 relative, the verdict is unchanged: 28 of 32 comparisons pass and
+the same four fail with the same attribution. The gate itself was not re-run,
+because the VSPAERO raw output is missing (see the end of this section).
+
+**Speed.** Fifteen warm solves, the first solve of each process excluded because
+it carries backend warm-up:
+
+| case | wall faces | unknowns | CPU | CUDA | CUDA/CPU |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| rect | 112 | 58 | 0.104 s | 0.141 s | 1.36x |
+| swept30 | 2764 | 1336 | 27.189 s | 36.862 s | 1.36x |
+| elliptic | 3220 | 1562 | 39.208 s | 51.534 s | 1.31x |
+| bwb | 2454 | 1197 | 23.165 s | 28.779 s | 1.24x |
+| total | — | — | 89.67 s | 117.32 s | 1.31x |
+
+First solve: 0.948 s on CPU against 15.073 s on CUDA — the device needs about
+15 s before it answers anything, which is context and kernel initialisation, not
+arithmetic.
+
+**Non-claims.** This does not show CUDA is faster. At these sizes it is 1.24-1.36
+times slower, the same direction as B2 (section 13 of the port map): the coupled
+solve spends most of its time in per-iteration Python geometry work, and FP64
+throughput on this consumer part is low. It is also not a validation: a GPU
+agreeing with a CPU is a reproducibility statement, and
+`physical_accuracy_accepted` stays false.
+
+**Data-loss finding.** `runs/benchmarks/b3_vspaero/b3/` holds only
+`vsp_smoke.json`: both raw outputs of the original gate (`dpanel.json` and
+`vspaero.json`) were removed during the 2026-11-03 `runs/` reorganisation and
+are not in git. The analysed numbers survive in the committed
+`docs/issue92/b3_matrix.json`, and this rerun restores the DPanel side as
+`dpanel_cpu.json` and `dpanel_cuda.json`. The VSPAERO side has to be
+regenerated (`vsppytools` + OpenVSP 3.55, command in section 8) before the gate
+can be re-run end to end.
+

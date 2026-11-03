@@ -5,6 +5,10 @@ rectangular wing, the frozen CAD surface otherwise), runs the steady fixed-wake
 signed-speed Kutta, and records CL, circulation lift, pressure drag, the
 Trefftz-plane induced drag and the spanwise circulation at the declared
 stations. Nothing here is new physics: it calls panel.p1_lifting_g1.
+
+`--device cpu|cuda` selects the torch device (section 10 of the protocol is the
+CUDA rerun); the output JSON records the device, the torch build and the GPU
+name, so a rerun cannot be mistaken for the other device.
 """
 from __future__ import annotations
 
@@ -40,12 +44,13 @@ def _trefftz(wing, gamma, spec):
     return float(cd)
 
 
-def run_case(name, spec, *, alphas, out_dir):
+def run_case(name, spec, *, alphas, out_dir, device="cpu", backend=None):
     wing = _wing(spec)
     rows = []
     for alpha in alphas:
         t0 = time.perf_counter()
-        res = solve(wing, alpha_deg=float(alpha), kutta="signed_speed")
+        res = solve(wing, alpha_deg=float(alpha), kutta="signed_speed",
+                    backend=backend, device=device)
         seconds = time.perf_counter() - t0
         gamma = np.asarray(res["gamma"], float)
         row = dict(
@@ -60,6 +65,9 @@ def run_case(name, spec, *, alphas, out_dir):
             wall_rms=float(res["wall_rms"]),
             kutta_rms=float(res["signed_kutta_rms"]),
             seconds=float(seconds),
+            backend=res.get("backend"),
+            backend_source=res.get("backend_source"),
+            device=device,
             stations=[float(v) for v in np.asarray(wing.gamma_y, float)],
             gamma_stations=[float(v) for v in gamma],
         )
@@ -76,16 +84,34 @@ def main(argv=None):
     parser.add_argument("--cases", type=Path, default=ROOT / "docs/issue92/b3_cases.json")
     parser.add_argument("--out", type=Path, default=ROOT / "runs/benchmarks/b3_vspaero/b3/dpanel.json")
     parser.add_argument("--only", nargs="*", default=None)
+    parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu",
+                        help="torch device for the solve (B2 device argument)")
+    parser.add_argument("--backend", default=None,
+                        help="torch is the only live chain; pass it explicitly to record intent")
     args = parser.parse_args(argv)
     doc = json.loads(args.cases.read_text(encoding="utf-8"))
     alphas = doc.get("alphas_deg", [0.0, 2.0, 4.0, 6.0])
+    provenance = dict(device=args.device, python=sys.version.split()[0],
+                      platform=os.name, started=time.strftime("%Y-%m-%dT%H:%M:%S"))
+    if args.device == "cuda":
+        import torch
+        t0 = time.perf_counter()
+        torch.zeros(1, device="cuda")
+        torch.cuda.synchronize()
+        provenance.update(torch=torch.__version__,
+                          cuda_runtime=torch.version.cuda,
+                          cuda_device=torch.cuda.get_device_name(0),
+                          cuda_capability="%d.%d" % torch.cuda.get_device_capability(0),
+                          cuda_context_init_s=float(time.perf_counter() - t0))
     results = []
     for name, spec in doc["cases"].items():
         if args.only and name not in args.only:
             continue
-        results.append(run_case(name, spec, alphas=alphas, out_dir=args.out.parent))
+        results.append(run_case(name, spec, alphas=alphas, out_dir=args.out.parent,
+                                device=args.device, backend=args.backend))
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(dict(cases=results), indent=2), encoding="utf-8")
+    args.out.write_text(json.dumps(dict(provenance=provenance, cases=results), indent=2),
+                        encoding="utf-8")
     print("wrote", args.out)
     return results
 
