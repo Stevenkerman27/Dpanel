@@ -7,7 +7,7 @@ formulas are a line-by-line transcription of `panel/p1_lifting_g1.py::_doublet_m
 changes are batching over source triangles and scattering into DOF columns with
 `scatter_add_` instead of item assignment. No NumPy/NumPy-LAPACK/SciPy call is allowed in
 this module: a torch process that calls into LAPACK afterwards dies with 0xC0000005
-(see docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md 6f).
+(see docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md 6f).
 
 The self-face correction is kept as in production: for a target that is the centroid of the
 source triangle itself the row is replaced by -B/2 with B = 1/3 + (X - centroid) . G^T,

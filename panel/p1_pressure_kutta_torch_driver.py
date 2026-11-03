@@ -11,7 +11,7 @@ solver is scipy.optimize.least_squares (trust-region-reflective, ftol=xtol=gtol=
 max_nfev=80, analytic Jacobian); the numpy "structured" alternative is
 panel/p1_pressure_kutta_reduced.py. This slice ports the *structured* algorithm to
 torch, because a torch process cannot call into NumPy/SciPy LAPACK at all (0xC0000005,
-docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f) and because the structured step is
+docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f) and because the structured step is
 the one with a documented convergence path.
 
 Two pieces live here:

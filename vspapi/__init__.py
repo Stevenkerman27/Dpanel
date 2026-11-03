@@ -17,7 +17,7 @@ Two adaptations for the DPanel project:
    *empty* in third-party models, which silently degrades panel mode to VLM.
 2. **`LECluster` guard.**  Panel-mode `CLi` is wrong by orders of magnitude
    when the chordwise leading-edge clustering is too tight
-   (see `docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md`).  `health` re-jects such
+   (see `docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md`).  `health` re-jects such
    cluster settings before meshing and flags implausible polar rows after.
 
 Import layers

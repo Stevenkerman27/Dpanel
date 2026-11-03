@@ -57,7 +57,7 @@ Two traps, both of which cost real time here:
 
 In panel mode `CLi` (trailing-edge Kutta-Joukowski) is wrong by up to 200x when
 the chordwise leading-edge clustering is tight; see
-`docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` section 4.3. Measured with everything
+`docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` section 4.3. Measured with everything
 else identical: `LECluster 0.25 -> CLi 125.45`, `0.50 -> 5.50`,
 `0.80 -> 0.635` (`CLwtot` stays 0.65-0.67 throughout). `add_wing` refuses
 `LECluster < 0.5` unless `allow_risky_cluster=True`, and

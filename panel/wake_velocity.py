@@ -7,7 +7,7 @@ The experimental P1 steady free wake moved wake nodes with
     dy/dx = Vy/Vx,  dz/dx = Vz/Vx
 
 where the velocity came from a two-sided "probe" offset whose floor was tuned by
-hand (docs/P1_FREE_WAKE_PROBE_FIX.md).  That is a sampling heuristic, not a
+hand (docs/archive/notes/P1_FREE_WAKE_PROBE_FIX.md).  That is a sampling heuristic, not a
 definition of the velocity of the sheet: it has no limit statement, no jump
 condition, and it cannot represent recirculation (Vx <= 0).
 

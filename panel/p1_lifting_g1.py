@@ -24,7 +24,7 @@ def _torch_null_space(matrix,rcond=1e-11):
 
     The NumPy/SciPy solver was retired in S9 and, separately, a SciPy LAPACK call after
     a torch kernel in the same interpreter dies with 0xC0000005
-    (docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f), so the derivative path uses the
+    (docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f), so the derivative path uses the
     ported rank-aware helpers.
     """
     import torch

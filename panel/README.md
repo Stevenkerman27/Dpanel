@@ -2,7 +2,7 @@
 
 Status on 2026-10-25: local work paused at the user's request. Geometry and
 discrete derivative matrices pass in the declared scope; general robustness and
-physical accuracy remain unaccepted. See [handoff](../PAUSE_HANDOFF.md) and
+physical accuracy remain unaccepted. See [handoff](../docs/archive/root/PAUSE_HANDOFF.md) and
 [method and evidence](../docs/PANEL_ROBUSTNESS.md).
 
 From the repository root, using a Python environment with JAX, NumPy, SciPy and

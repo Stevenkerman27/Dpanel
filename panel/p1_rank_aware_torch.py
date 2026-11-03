@@ -26,7 +26,7 @@ Two facts shape the parity claim:
 
 No NumPy or SciPy import here: a NumPy LAPACK call after torch has executed in the
 same interpreter dies with 0xC0000005
-(docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f).
+(docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f).
 """
 from __future__ import annotations
 

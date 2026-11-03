@@ -1,42 +1,41 @@
-# Continuous P1 G2 — coupled main wing and elevated horizontal tail
+# 连续 P1 G2 —— 耦合主翼与上置平尾
 
-Research implementation based on P1 G1 (`research/p1-g1-te-pairing-fix@4051ee8`).
-**This is an actual second independent lifting surface and wake**, not a sum of
-separately computed wing loads. Old `panel/kernel.py`, P0 production solver,
-existing G1 source and all CAD inputs are unchanged.
+基于 P1 G1（`research/p1-g1-te-pairing-fix@4051ee8`）的研究实现。
+**这是真正的第二个独立升力面与尾迹**，而不是分别计算的
+机翼载荷之和。旧的 `panel/kernel.py`、P0 生产求解器、
+现有 G1 源码与所有 CAD 输入均未改变。
 
-## Method / implementation
+**状态（2026-11-03）**：这条研究线的演示代码保留，`panel/p1_lifting_g2.py` 现在是它的验收判据；基座 P1 G1 已退役（见 [RETIRED_RESEARCH.md](RETIRED_RESEARCH.md)），文中 `research/p1-g1-te-pairing-fix@4051ee8` 在浅克隆里可能检不出，可用归档 tag `research-p1-line-archive` 取回。
 
-`panel/p1_lifting_g2.py` builds one shared P1 doublet boundary-integral
-system for every wetted triangle of all lifting components:
+## 方法 / 实现
+
+`panel/p1_lifting_g2.py` 为所有升力部件的每个湿面三角形构建
+一个共享的 P1 偶极子边界积分系统：
 
     [D_wall  W_main  W_tail] [mu; gamma_main; gamma_tail] = -phi_inf
 
-There is one continuous wall doublet potential field on each connected lifting
-component, plus independent TE trace DOF splits for each declared physical
-wake. Coupling is real because `D_wall` includes cross-component influences and
-both `W_main` and `W_tail` act on the walls of every component.
+每个连通的升力部件上有一个连续的壁面偶极子势场，此外对每个声明的物理
+尾迹有独立的 TE 迹自由度分裂。耦合是真实的，因为 `D_wall` 包含跨部件影响，
+且 `W_main` 与 `W_tail` 都作用于每个部件的壁面。
 
-Each lifting group has its own span stations, P1 Gamma hat basis, triangulated
-physical wake, TE trace jumps, tip Gamma=0, and an independent Kutta condition:
+每个升力组有自己的展向站位、P1 Gamma hat 基、三角化
+物理尾迹、TE 迹跳变、翼尖 Gamma=0，以及独立的 Kutta 条件：
 
     Jump_g: mu_up_g - mu_down_g = H_g gamma_g
     Kutta_g: signed downstream tangential velocity equality (linear), OR
              Cp_upper - Cp_lower = 0 (nonlinear, analytic Jacobian)
 
-The TE jump constraint is **enforced exactly** by null-space parameterisation;
-it is not a penalty residual. The linear Kutta mode is also a null-space exact
-constraint. In the pressure Kutta mode the Kutta condition is a nonlinear
-least-squares residual, with an explicit independent loss from the wall BIE.
+TE 跳变约束由零空间参数化**精确强制**；它不是惩罚残差。
+线性 Kutta 模式也是零空间精确约束。在压力 Kutta 模式下，
+Kutta 条件是带显式独立于壁面 BIE 的损失项的非线性最小二乘残差。
 
-Reference conventions: velocity magnitude 1, inviscid, uniform alpha rotation
-about y, no beta, force coefficients from triangle face Cp and normals.
-`Sref` defaults to the **sum of main and tail reference planforms for the
-self-contained demonstration only**. For a real aircraft's published
-main-wing Sref use `--reference-area 4.0` (or the correct actual value) so
-that CL/CM comparisons have common normalization.
+参考约定：速度量级 1、无粘、绕 y 轴均匀 alpha 旋转，
+无 beta，力系数由三角形面 Cp 与法向给出。
+`Sref` 默认为**主翼与平尾参考平面形面积之和，仅用于
+自包含演示**。对于真实飞机公布的主翼 Sref，使用 `--reference-area 4.0`
+（或正确的实际值），以便 CL/CM 比较具有共同归一化。
 
-## Run directly (no CAD/Gmsh needed)
+## 直接运行（无需 CAD/Gmsh）
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m panel.run_p1_lifting_g2 \
       --alpha 0 5 --kutta pressure --out runs/g2_generated_new
@@ -44,9 +43,8 @@ that CL/CM comparisons have common normalization.
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m panel.run_p1_lifting_g2 \
       --alpha 5 --kutta signed_speed --out runs/g2_linear_new
 
-**Optional actual DPanel half wing/body CAD:** in a worktree based on the
-corrected G1 `research/p1-g1-te-pairing-fix` branch, whose adapter uses
-`upper_te_faces`/`lower_te_faces` and not the TE edge polyline as face banks:
+**可选的实际 DPanel 半翼/机身 CAD：**在以修正后的 G1 `research/p1-g1-te-pairing-fix` 分支为基础的工作树中，该分支的适配器使用
+`upper_te_faces`/`lower_te_faces` 而不是 TE 边折线作为面元组：
 
     python -m panel.run_p1_lifting_g2 \
       --main-half-surface runs/half_cad_wingbody_v1/surface.json \
@@ -54,54 +52,53 @@ corrected G1 `research/p1-g1-te-pairing-fix` branch, whose adapter uses
       --reference-area 4.0 --alpha 0 5 --kutta pressure \
       --out runs/g2_real_wingbody_new
 
-The CAD input remains byte-for-byte unchanged; it is mirrored to a full
-physical wall, and a generated **independent tail** is added at the specified
-position. This is research geometry, not a certified aircraft CAD assembly.
-There is no need for new Gmsh/OCC mesh generation for the original main wing.
+CAD 输入保持逐字节不变；它被镜像为完整物理壁面，并在指定
+位置加入一个生成的**独立平尾**。这是研究几何，不是经认证的
+飞机 CAD 装配。原始主翼无需重新生成 Gmsh/OCC 网格。
 
-`report.json` contains per-group CL_p, CL_gamma, Gamma arrays, solve and Kutta
-residuals. `mesh.npz` and each `alpha_*.npz` contain all actual coordinates,
-faces, wet-wall P1 nodal solution, per-group wake geometry, Gamma, and Cp.
+`report.json` 包含逐组 CL_p、CL_gamma、Gamma 数组、求解与 Kutta
+残差。`mesh.npz` 与每个 `alpha_*.npz` 包含全部实际坐标、
+面、湿壁 P1 节点解、逐组尾迹几何、Gamma 与 Cp。
 
-## Actual sandbox computations
+## 实际沙箱计算
 
-Machine: Python 3.13.5, NumPy 2.3.5, SciPy 1.17 CPU x64.
-Fixture: cambered main (span 4, chord 1, 4x6 chord-span panels),
-symmetric raised tail (span 1.8, chord 0.55, 4x4 panels) at
-`(x,y,z)=(1.6,0,0.35)`, 2-streamwise-panel wake per group.
-192 true wet-wall triangular panels; combined P1 doublet influence matrix
-192x108, two wake blocks with 5 and 3 independent gamma DOFs (8 total).
-The two wake sheets lie at different z, so they are not geometrically one sheet.
-The demonstration common Sref is 4.99 (=4 + 0.99).
+机器：Python 3.13.5、NumPy 2.3.5、SciPy 1.17 CPU x64。
+固定样例：弯度主翼（展长 4、弦长 1、4x6 弦向-展向面元），
+对称上置平尾（展长 1.8、弦长 0.55、4x4 面元）位于
+`(x,y,z)=(1.6,0,0.35)`，每组 2 个顺流向面元的尾迹。
+192 个真实湿壁三角面元；组合 P1 偶极子影响矩阵
+192x108，两个尾迹块分别有 5 与 3 个独立 gamma 自由度（共 8 个）。
+两个尾迹面片位于不同 z，因此几何上不是同一个面片。
+演示用共同 Sref 为 4.99（=4 + 0.99）。
 
-|alpha|Kutta|CL_p total|CL_gamma total|CL_p main|CL_p tail|wall RMS|jump RMS|
+|alpha|Kutta|CL_p 总量|CL_gamma 总量|CL_p 主翼|CL_p 平尾|壁面 RMS|跳变 RMS|
 |---:|---|---:|---:|---:|---:|---:|---:|
 |0°|pressure|0.083623|0.092742|0.098794|-0.015171|0.001734|7.9e-17|
 |5°|pressure|0.365472|0.342333|0.360551|+0.004921|0.001918|1.4e-16|
 |5°|signed speed|0.373501|0.350698|0.3698|+0.0037|—|<1e-12|
 
-**Measured interference, not superposition:** solve the two wings separately
-at 5°, normalise them with the same total Sref: 
-main CL_p=0.360955, tail CL_p=0.056555, sum 0.417510.
-The **coupled** CL_p is 0.365472; actual body/wake influence reduces the
-tail load to 0.004921. The components have separate Gamma vectors and the
-other component sees nonzero influence from each wake block. This is an
-example of coupled downwash, not a validated real-aircraft prediction.
+**实测干扰，而非叠加：** 在 5° 下分别求解两副机翼，
+用相同的总 Sref 归一化：
+主翼 CL_p=0.360955，平尾 CL_p=0.056555，和为 0.417510。
+**耦合** CL_p 为 0.365472；真实的机体/尾迹影响将
+平尾载荷降至 0.004921。各部件有独立的 Gamma 向量，
+另一部件从每个尾迹块都看到非零影响。这是
+耦合下洗的一个例子，不是经过验证的真实飞机预测。
 
-Four focused research tests, including single-group G1 reproduction (to
-machine precision), G2 off-diagonal wake coupling, actual nonlinear Kutta
-solve and fixed-geometry alpha sensitivity vs finite difference, passed.
+四项聚焦研究测试通过，包括单组 G1 复现（到
+机器精度）、G2 非对角尾迹耦合、实际非线性 Kutta
+求解，以及固定几何 alpha 敏感性对有限差分。
 
-## Known numerical/physics limits (not work blockers)
+## 已知数值/物理限制（不是工作阻塞项）
 
-- Both pressure CL and Gamma CL remain different (G2 5°: 0.36547 vs 0.34233).
-- Coarse near-field pressure CD can be negative; cannot represent real total CD.
-- All present wakes are fixed planar; tail wake only samples prescribed
-  placement and not free wake roll-up.
-- Need eventual JAX geometry VJP, scalable solve, and generalized independent
-  G2 real CAD shed group input. This implementation is NumPy/SciPy CPU.
-- The real 396-half-wing CAD was unavailable in the sandbox. The corrected
-  `from_dpanel_half_surface` adapter is wired, but this particular full CAD
-  + generated tail scenario was **not run** in the sandbox.
-- VSPAERO is not a truth oracle. Actual physical acceptance remains false;
-  research experiments should continue rather than waiting for a gate sweep.
+- 压力 CL 与 Gamma CL 仍然不同（G2 5°：0.36547 对 0.34233）。
+- 粗糙近场压力 CD 可为负；无法表示真实总 CD。
+- 目前所有尾迹都是固定平面；平尾尾迹只采样规定的
+  位置，而不是自由尾迹卷起。
+- 最终需要 JAX 几何 VJP、可扩展求解，以及广义独立
+  G2 真实 CAD 脱落组输入。本实现是 NumPy/SciPy CPU。
+- 真实 396 半翼 CAD 在沙箱中不可用。修正后的
+  `from_dpanel_half_surface` 适配器已接线，但这个特定的完整 CAD
+  + 生成平尾场景**未在**沙箱中**运行**。
+- VSPAERO 不是真值 oracle。实际物理验收仍为 false；
+  研究实验应继续，而不是等待门禁扫描。

@@ -5,7 +5,7 @@ the candidate geometry before accepting it.  The sheet is attached to the
 wall: its root nodes are wall vertices, so wake triangles share vertices and
 edges with wall triangles by construction.  A boolean convex-hull SAT test
 cannot tell that declared contact apart from a transverse penetration, and it
-rejected every candidate update on the CAD case (docs/ISSUE84_T4_G2_UPDATE.md).
+rejected every candidate update on the CAD case (docs/archive/issue/ISSUE84_T4_G2_UPDATE.md).
 
 This module separates the two questions:
 

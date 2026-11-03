@@ -16,4 +16,4 @@
 运行需要隔离 torch 环境（见 `runs/torch_site`）与 `TMP/TEMP/TMPDIR` 指向可写目录
 （`core/triangle_kernel.py` 的 `@njit(cache=True)` 在沙箱默认临时目录上会阻塞）。
 
-验收记录：[`docs/TORCH_PANEL_EXTRACTION.md`](../docs/TORCH_PANEL_EXTRACTION.md)（PR #7）。
+验收记录：[`docs/archive/notes/TORCH_PANEL_EXTRACTION.md`](../docs/archive/notes/TORCH_PANEL_EXTRACTION.md)（PR #7）。

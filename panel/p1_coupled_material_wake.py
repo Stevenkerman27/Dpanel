@@ -657,7 +657,7 @@ def wake_step_scale(wake_xyz, wake_faces, material, *, truncation_ratio=4.):
     'scale' is the SHORTEST incident triangle edge: a step cap only bounds strain
     when it is expressed in the mesh's own resolution.  Using the reference link
     as the cap (0.25 * a 26-chord truncation link = 6.5 chord, see
-    docs/ISSUE84_STREAMLINE_STEP_UNIT.md) accepts a displacement that deforms the
+    docs/archive/issue/ISSUE84_STREAMLINE_STEP_UNIT.md) accepts a displacement that deforms the
     sheet far beyond the area/fold gate, so the link is reported for diagnostics
     ('link', 'truncation') and never used as the cap.
 

@@ -9,7 +9,7 @@ When the target p is much closer to the triangle than the triangle is large, the
 integrable peak sits in a corner of the parametric square, and when the triangle is
 a sliver the collapse direction is nearly parallel to the long edge, so the peak is
 smeared along the other direction: the error stops decreasing with order (measured in
-docs/ISSUE84_RM_BENCH.md, main-wing wake triangles reach aspect 1405.7).
+docs/archive/issue/ISSUE84_RM_BENCH.md, main-wing wake triangles reach aspect 1405.7).
 
 This module keeps the kernel identical and changes only the domain decomposition:
 

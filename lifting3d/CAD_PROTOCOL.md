@@ -4,7 +4,7 @@ Status on 2026-10-24: development is paused at the user's request. Nine CAD
 configurations completed the full pipeline; the repaired two-body mesh has
 not completed independent audit or flow solution. Evidence and limitations
 are recorded in [CAD_ROBUSTNESS_RESULTS.md](CAD_ROBUSTNESS_RESULTS.md);
-the restart checklist is [PAUSE_HANDOFF.md](../PAUSE_HANDOFF.md).
+the restart checklist is [PAUSE_HANDOFF.md](../docs/archive/root/PAUSE_HANDOFF.md).
 
 This branch imports closed wing and optional body CAD solids, plus an explicit
 trailing-edge polyline. It builds the full fluid volume; it does not reflect

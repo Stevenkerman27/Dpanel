@@ -14,7 +14,7 @@
 - `results/cad_invariance_v1/`：同拓扑原尺度及 0.001/1000 倍缩放和平移通过；最不利原始 Cp 差 1.14e-9。
 - `results/cad_input_checks_v1/`：四种无效后缘均在建网格前明确拒绝。
 
-CAD 阶段共 9 个配置跑通 mesh/audit/solve/loads/export，另 1 个只完成修复后建网格。后缘仍限归一化 z=0、y 严格单调、x(y) 分段线性；固定平面尾迹，无任意 CAD 认证。Jacobian 自适应交叉检查尚未实现，当前是有限点抽查。详细结果、审计修正和失败见 [CAD_ROBUSTNESS_RESULTS.md](CAD_ROBUSTNESS_RESULTS.md)，恢复起点见 [PAUSE_HANDOFF.md](../PAUSE_HANDOFF.md)。
+CAD 阶段共 9 个配置跑通 mesh/audit/solve/loads/export，另 1 个只完成修复后建网格。后缘仍限归一化 z=0、y 严格单调、x(y) 分段线性；固定平面尾迹，无任意 CAD 认证。Jacobian 自适应交叉检查尚未实现，当前是有限点抽查。详细结果、审计修正和失败见 [CAD_ROBUSTNESS_RESULTS.md](CAD_ROBUSTNESS_RESULTS.md)，恢复起点见 [PAUSE_HANDOFF.md](../docs/archive/root/PAUSE_HANDOFF.md)。
 
 ## 前阶段参数化结果
 

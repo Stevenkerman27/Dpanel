@@ -47,4 +47,4 @@ python -m panel.cad_half --wing-cad <ORIGINAL.step> --trailing-edge <ORIGINAL_TE
 
 ## 范围与诚实限制
 
-本云端环境有 NumPy/pytest，**没有 Gmsh**。已完成纯数学策略检查，但不能在这里声称新尺寸回调真实 CAD 网格通过。实际生成的网格元素密度、不同 OpenCascade 曲线参数化、稳定性与资源预算只能由本地 Gmsh 回归验收。此PR不实现 CAD 曲率驱动或后验自适应 `PostView`；等第一轮实际结果后，在独立PR接入。保留 `physical_accuracy_accepted=false`；不合并、不开启训练。
+本仓库环境有 NumPy/pytest，**没有 Gmsh**（2026-11-03 复核：本机仍无 Gmsh）。已完成纯数学策略检查，但不能在这里声称新尺寸回调真实 CAD 网格通过。实际生成的网格元素密度、不同 OpenCascade 曲线参数化、稳定性与资源预算只能由本地 Gmsh 回归验收。此PR不实现 CAD 曲率驱动或后验自适应 `PostView`；等第一轮实际结果后，在独立PR接入。保留 `physical_accuracy_accepted=false`；不合并、不开启训练。

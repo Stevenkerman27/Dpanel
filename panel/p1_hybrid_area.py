@@ -4,7 +4,7 @@ The projection fan is the only quadrature that resolves the (|r|**2 + core**2)**
 peak, and it costs one fan per triangle: 0.38 ms per face on the CAD wake, 292 ms for
 the whole sheet at 48x1. Almost all of that work is wasted, because only the faces
 within a few core radii of the target carry a peak: the median real sampler target has
-six such faces out of 770 (docs/ISSUE92_PHASE1_WAKE_EVALUATOR.md, section 6b).
+six such faces out of 770 (docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md, section 6b).
 
 This module is that split, as a callable evaluator rather than a probe:
 

@@ -171,3 +171,17 @@ VSP 3.55 档：V = 100 m/s、rho = 0.002377、Re = 1e7；DPanel：V = 20 m/s、r
 
 `sections.json` 与 `raw/lX/trap.tec.dat` 都是 3.52 的 VLM 薄壳；**3.55 厚 panel 的上/下表面 Cp 截面尚未入库**。
 要评价前缘吸力与压力恢复，需补 `ladders/api_panel_*` 的 tecplot 输出（y/b = 0.25 / 0.5 / 0.75），这是下一步。
+
+## 8. 原始数据的存放（2026-11-03 归档）
+
+为缩小工作树，`raw/` 与 `ladders/` 已打包到
+`docs/archive/evidence/issue49_vspaero_raw.tar.gz`（解包后即恢复本节各表引用的
+`raw/l1`–`raw/l4`、`ladders/api_panel_*`、`ladders/api_vlm_*` 路径）：
+
+```bash
+tar xzf docs/archive/evidence/issue49_vspaero_raw.tar.gz -C docs/issue49_vspaero
+python docs/issue49_vspaero/verify_sha.py   # 解包后仍是 135/135
+```
+
+`levels.json`、`sections.json`、`dpanel/`、`figs/`、`gamma/`、`p1/`、`wakesweep/` 与
+`sha256.json` 保留在原处；`sha256.json` 的路径就是解包后的路径。

@@ -6,11 +6,11 @@
 
 当前路线为保守全势主线、独立低速面元参考。用户最近确定的优先级是几何鲁棒性，其次才是局部压力精度；保持方法可解释，不用压力裁剪、SVD 截断、隐含正则化或指定根部升力换取稳定。
 
-- 总体能力与历史验收：[DEVELOPMENT.md](DEVELOPMENT.md)。
-- 几何状态总览：[lifting3d/GEOMETRY_STATUS.md](lifting3d/GEOMETRY_STATUS.md)。
-- 最新 CAD 结果与失败：[lifting3d/CAD_ROBUSTNESS_RESULTS.md](lifting3d/CAD_ROBUSTNESS_RESULTS.md)。
-- CAD 方法契约：[lifting3d/CAD_PROTOCOL.md](lifting3d/CAD_PROTOCOL.md)；验收范围：[CAD_ROBUSTNESS_PROTOCOL.md](lifting3d/CAD_ROBUSTNESS_PROTOCOL.md)。
-- 路线选择和 WBCAero 研究边界：[SOLVER_ROUTE.md](SOLVER_ROUTE.md)、[WBCAERO_STUDY.md](WBCAERO_STUDY.md)。
+- 总体能力与历史验收：[DEVELOPMENT.md](../root/DEVELOPMENT.md)。
+- 几何状态总览：[lifting3d/GEOMETRY_STATUS.md](../../../lifting3d/GEOMETRY_STATUS.md)。
+- 最新 CAD 结果与失败：[lifting3d/CAD_ROBUSTNESS_RESULTS.md](../../../lifting3d/CAD_ROBUSTNESS_RESULTS.md)。
+- CAD 方法契约：[lifting3d/CAD_PROTOCOL.md](../../../lifting3d/CAD_PROTOCOL.md)；验收范围：[CAD_ROBUSTNESS_PROTOCOL.md](../../../lifting3d/CAD_ROBUSTNESS_PROTOCOL.md)。
+- 路线选择和 WBCAero 研究边界：[SOLVER_ROUTE.md](../root/SOLVER_ROUTE.md)、[WBCAERO_STUDY.md](../root/WBCAERO_STUDY.md)。
 
 ## 已完成
 

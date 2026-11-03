@@ -1,7 +1,7 @@
 """Right-half multi-shed-group (v2) assembly, validation and dense reference solve.
 
 This module implements Step B of the v2 contract in
-`docs/ISSUE39_SHED_GROUPS_V2.md`: several independent lifting trailing edges,
+`docs/archive/issue/ISSUE39_SHED_GROUPS_V2.md`: several independent lifting trailing edges,
 each with its own finite horizontal wake, its own circulation stations and its
 own weak Kutta/mass rows, coupled only through the wall doublet intensity.
 

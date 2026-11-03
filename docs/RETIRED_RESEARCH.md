@@ -1,68 +1,68 @@
-# Retired research code (S12)
+# 已退役的研究代码（S12）
 
-`research-p1-line-archive` is the last commit where the modules in the table below live in
-`panel/`. S12 removes them from the live tree. Nothing here was refuted: every result they
-produced is still in this repository as a document plus, where a measurement was made, a JSON
-artifact next to it. What is removed is the code that would let you re-run those measurements
-without checking out the tag.
+`research-p1-line-archive` 是下表所列模块仍位于
+`panel/` 下的最后一个提交。S12 把它们从活动树中移除。这里没有任何结论被推翻：它们
+产出的每个结果都仍以文档形式留在本仓库中，并且在做过测量的地方，
+旁边还有 JSON 产物。被移除的是让你无需检出该 tag
+就能重新运行那些测量的代码。
 
-## Why remove working code
+## 为什么要移除可用的代码
 
-Three reasons, in order of weight.
+三条理由，按权重排序。
 
-1. **It is not reachable.** No production entry point imports any of these modules; the
-   reachability walk in `test/test_live_path_has_no_numpy_lapack.py` starts at twelve live
-   entries and never arrives here. They are alive only because their own tests import them.
-2. **They duplicate the same discretization.** Six of the modules solve the same P1 potential
-   problem with a different Kutta closure, gauge, or quadrature. S10 removed exactly this kind of
-   duplication from the NumPy chain because two live implementations drift apart silently; a
-   variant solver that no one calls has the same failure mode with a slower feedback loop, since
-   nothing forces it to track changes to the geometry or wake data structures.
-3. **Their measurements are already frozen.** The Galerkin convergence table, the edge exponent
-   study, the sphere acceptance gates and the recovery comparisons are recorded as committed JSON
-   or tables; re-deriving them is a tag checkout away.
+1. **它不可达。** 没有任何生产入口导入这些模块；
+   `test/test_live_path_has_no_numpy_lapack.py` 中的可达性遍历从十二个活动
+   入口出发，永远不会到达这里。它们之所以还活着，只是因为它们自己的测试导入了它们。
+2. **它们重复了同一种离散化。** 六个模块用不同的 Kutta 闭合、规范（gauge）或积分
+   求解同一个 P1 势问题。S10 正是从 NumPy 链路中移除了这类
+   重复，因为两个活动实现会悄然漂移；一个无人调用的变体求解器
+   具有同样的失效模式，只是反馈回路更慢，因为
+   没有任何东西迫使它跟踪几何或尾迹数据结构的变化。
+3. **它们的测量结果已经冻结。** Galerkin 收敛表、边缘指数
+   研究、球体验收门禁与恢复对比都已记录为已提交的 JSON
+   或表格；重新推导它们只差一次 tag 检出。
 
-## What was removed
+## 移除了什么
 
-| Module | What it did | Where its result lives |
+| 模块 | 它的作用 | 其结果所在位置 |
 | --- | --- | --- |
-| `panel/p1_g1.py` | the first P1 collocation lifting solve (Dirichlet potentials, least squares) | docs/archive/notes/INTEGRATION_P1.md, docs/archive/notes/P1_G1_END_TO_END.md, docs/archive/issue/ISSUE49_P1_G1_DESIGN.md |
-| `panel/p1_dirichlet.py` | the Dirichlet-collocation wall operator that p1_g1 and the G0 work built on | docs/archive/issue/ISSUE49_P1_G0_SPHERE.md |
-| `panel/p1_galerkin_wall.py` | P1 Galerkin mass/weak-form wall operator | docs/archive/issue/ISSUE71_GALERKIN_WALL_PROTOTYPE.md |
-| `panel/p1_galerkin_solver.py` | the weak-form Galerkin solve behind the issue 71 convergence result | docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md |
-| `panel/p1_rank_aware_kutta.py` | the rank-aware Kutta variant and its rank-gap diagnostics | docs/archive/issue/ISSUE69_P1_DIRICHLET_RANK_KUTTA.md |
-| `panel/p1_rank_gauge.py` | percentage-rank gauge experiment | docs/archive/issue/ISSUE56_RANK_GAUGE.md |
-| `panel/p1_gate_checks.py` | the G0/G1 acceptance gate suite | docs/archive/issue/ISSUE49_P1_GATES.md |
-| `panel/p1_doublet_moment.py` | doublet moment bookkeeping used by the gate work | docs/archive/issue/ISSUE49_P1_G0_SPHERE.md |
-| `panel/p1_g0_acceptance.py` | G0 sphere acceptance harness | docs/archive/issue/ISSUE56_G0_ACCEPTANCE.md |
-| `panel/p1_solution_status.py` | a status enum the Galerkin tools shared | docs/archive/issue/ISSUE77_CONTACT_TRACE_FIX.md |
-| `panel/p1_te_jump_integral.py` | trailing-edge jump integral audit | docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md |
-| `panel/p1_te_trace_audit.py` | TE trace audit for the collocation line | docs/archive/issue/ISSUE71_P1_GALERKIN_TE_TRACE_AUDIT.md |
-| `panel/p1_solid_angle.py` | an early solid-angle helper predating panel/p1_analytic_sheet_velocity.py | docs/archive/issue/ISSUE56_SOLID_ANGLE_FREE_TERMS.md |
-| `panel/p1_wake.py` | an early wake-sheet helper predating panel/wake_velocity.py | docs/archive/notes/INTEGRATION_P1.md |
-| `panel/p1_edge_singularity.py` | the wedge exponent study (PR 74) | docs/archive/issue/ISSUE71_EDGE_SINGULARITY_DERIVATION.md, docs/archive/issue/ISSUE71_EDGE_EXPONENT_MEASUREMENT.md |
-| `panel/probe_pressure_reconstruction.py` | the first pressure-reconstruction probe | docs/archive/pr/PRESSURE_RECONSTRUCTION_PROBE.md |
-| `panel/affine_consistent_recovery.py` | affine-consistent pressure recovery variant | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
-| `panel/manufactured_surface_recovery.py` | manufactured-surface recovery oracle | docs/archive/notes/MANUFACTURED_SURFACE_RECOVERY.md |
-| `panel/relax_wake.py` | an early wake relaxation driver | docs/archive/notes/WAKE_ACCURACY.md |
-| `panel/analytic_sphere.py` | analytic sphere reference solution | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
-| `panel/audit_reference.py` | the sphere reference audit | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
-| `panel/run_p1_rank_aware_kutta.py` | CLI driver for the rank-aware variant | docs/archive/issue/ISSUE69_P1_DIRICHLET_RANK_KUTTA.md |
+| `panel/p1_g1.py` | 首个 P1 配点升力求解（Dirichlet 势、最小二乘） | docs/archive/notes/INTEGRATION_P1.md, docs/archive/notes/P1_G1_END_TO_END.md, docs/archive/issue/ISSUE49_P1_G1_DESIGN.md |
+| `panel/p1_dirichlet.py` | p1_g1 与 G0 工作所基于的 Dirichlet 配点壁面算子 | docs/archive/issue/ISSUE49_P1_G0_SPHERE.md |
+| `panel/p1_galerkin_wall.py` | P1 Galerkin 质量/弱形式壁面算子 | docs/archive/issue/ISSUE71_GALERKIN_WALL_PROTOTYPE.md |
+| `panel/p1_galerkin_solver.py` | issue 71 收敛结果背后的弱形式 Galerkin 求解 | docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md |
+| `panel/p1_rank_aware_kutta.py` | 秩感知 Kutta 变体及其秩间隙诊断 | docs/archive/issue/ISSUE69_P1_DIRICHLET_RANK_KUTTA.md |
+| `panel/p1_rank_gauge.py` | 百分比秩规范实验 | docs/archive/issue/ISSUE56_RANK_GAUGE.md |
+| `panel/p1_gate_checks.py` | G0/G1 验收门禁套件 | docs/archive/issue/ISSUE49_P1_GATES.md |
+| `panel/p1_doublet_moment.py` | 门禁工作使用的偶极子矩记账 | docs/archive/issue/ISSUE49_P1_G0_SPHERE.md |
+| `panel/p1_g0_acceptance.py` | G0 球体验收装置 | docs/archive/issue/ISSUE56_G0_ACCEPTANCE.md |
+| `panel/p1_solution_status.py` | Galerkin 工具共用的状态枚举 | docs/archive/issue/ISSUE77_CONTACT_TRACE_FIX.md |
+| `panel/p1_te_jump_integral.py` | 后缘跳跃积分审计 | docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md |
+| `panel/p1_te_trace_audit.py` | 配点线的 TE 迹审计 | docs/archive/issue/ISSUE71_P1_GALERKIN_TE_TRACE_AUDIT.md |
+| `panel/p1_solid_angle.py` | 早于 panel/p1_analytic_sheet_velocity.py 的早期立体角辅助模块 | docs/archive/issue/ISSUE56_SOLID_ANGLE_FREE_TERMS.md |
+| `panel/p1_wake.py` | 早于 panel/wake_velocity.py 的早期尾迹面辅助模块 | docs/archive/notes/INTEGRATION_P1.md |
+| `panel/p1_edge_singularity.py` | 楔形指数研究（PR 74） | docs/archive/issue/ISSUE71_EDGE_SINGULARITY_DERIVATION.md, docs/archive/issue/ISSUE71_EDGE_EXPONENT_MEASUREMENT.md |
+| `panel/probe_pressure_reconstruction.py` | 首个压力重构探针 | docs/archive/pr/PRESSURE_RECONSTRUCTION_PROBE.md |
+| `panel/affine_consistent_recovery.py` | 仿射一致的压力恢复变体 | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
+| `panel/manufactured_surface_recovery.py` | 制造曲面恢复基准（oracle） | docs/archive/notes/MANUFACTURED_SURFACE_RECOVERY.md |
+| `panel/relax_wake.py` | 早期尾迹松弛驱动脚本 | docs/archive/notes/WAKE_ACCURACY.md |
+| `panel/analytic_sphere.py` | 解析球体参考解 | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
+| `panel/audit_reference.py` | 球体参考审计 | docs/archive/issue/ISSUE49_PHASE0_BASELINE.md |
+| `panel/run_p1_rank_aware_kutta.py` | 秩感知变体的 CLI 驱动脚本 | docs/archive/issue/ISSUE69_P1_DIRICHLET_RANK_KUTTA.md |
 
-Also removed: 19 test modules that existed to test the modules above, and 13 tools that drove
-them (`tools/issue71/*.py`, four `_galerkin_*` helpers plus `_bridge_diagnose.py` under
-`tools/grass_fan_convergence/`, and all five scripts in `tools/vsp_evidence/p1/`).
+同时移除：19 个为测试上述模块而存在的测试模块，以及驱动它们的 13 个工具
+（`tools/issue71/*.py`、`tools/grass_fan_convergence/` 下的四个 `_galerkin_*` 辅助脚本
+外加 `_bridge_diagnose.py`，以及 `tools/vsp_evidence/p1/` 中的全部五个脚本）。
 
-## What was deliberately kept
+## 刻意保留的内容
 
-| Kept | Why |
+| 保留项 | 原因 |
 | --- | --- |
-| `panel/p1_cp_diagnostics.py` | `test/test_p1_wake_contact.py` uses its surface gradient in a live-code assertion |
-| `panel/p1_closed_jax.py`, `run_p1_closed.py` | the closed-body line is a separate demo still used by its own tests |
-| `panel/pressure_stencil.py`, `panel/pressure_recovery_ab.py`, `compare_pressure_recovery.py` | imported by the half-model and recovery comparison modules that stay |
-| `panel/solve.py`, `matrix_free.py`, `iterative.py`, `half_native*.py`, `kernel.py` | the VLM and half-model lines; they back issue 16, the half-model scaling note and the VSPAERO comparisons, and are a separate decision |
+| `panel/p1_cp_diagnostics.py` | `test/test_p1_wake_contact.py` 在活动代码断言中使用了它的表面梯度 |
+| `panel/p1_closed_jax.py`, `run_p1_closed.py` | 闭合体这条线是独立示例，仍被其自身测试使用 |
+| `panel/pressure_stencil.py`, `panel/pressure_recovery_ab.py`, `compare_pressure_recovery.py` | 被保留的半模型与恢复对比模块导入 |
+| `panel/solve.py`, `matrix_free.py`, `iterative.py`, `half_native*.py`, `kernel.py` | VLM 与半模型这条线；它们支撑 issue 16、半模型缩放说明与 VSPAERO 对比，属于另一项单独决策 |
 
-## How to run the retired measurements again
+## 如何重新运行已退役的测量
 
 ```
 git checkout research-p1-line-archive
@@ -70,33 +70,26 @@ python -m pytest test/test_p1_galerkin_solver.py -q        # issue 71 convergenc
 python -m tools.issue71.galerkin_ab --help                 # the A/B driver
 ```
 
-The frozen outputs are still in the live tree, for example `docs/issue71/galerkin_ab/*.json` and
-`docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md`.
+冻结输出仍在活动树中，例如 `docs/issue71/galerkin_ab/*.json` 与
+`docs/archive/issue/ISSUE71_GALERKIN_CONVERGENCE_MEASUREMENT.md`。
 
-## Test baseline
+## 测试基线
 
-| Tree | Result |
+| 树 | 结果 |
 | --- | --- |
-| before S12 (commit `aedadd5`) | 1000 passed, 21 skipped, 2 failed |
-| after S12 | 827 passed, 21 skipped, 2 failed |
+| S12 之前（提交 `aedadd5`） | 1000 passed, 21 skipped, 2 failed |
+| S12 之后 | 827 passed, 21 skipped, 2 failed |
 
-The two failures are the pre-existing jax 0.12 jaxpr recursion failures in
-`test/test_half_native_panel.py` and `test/test_iterative_panel.py`; they fail on clean master too.
+这两个失败是既有的 jax 0.12 jaxpr 递归失败，位于
+`test/test_half_native_panel.py` 与 `test/test_iterative_panel.py`；它们在干净的 master 上同样失败。
 
-## What this does not claim
+## 回执辅助函数去了哪里
 
-- It does not claim the retired solvers are wrong. It claims nothing in the live tree depends on
-  them and their answers are recorded.
-- It does not remove the documents that cite them. Each of those documents now carries a one-line
-  archive note pointing at the tag; the numbers in them are unchanged.
-
-## Where the receipt helpers went
-
-`tools/issue71/galerkin_cad_sweep.py` was not pure solver code: three of its functions turn a
-solved state into a receipt, and three live tests asserted them. They moved to
-`panel/p1_contact_report.py` as `trace_audit_summary`, `contact_jump_diagnostics` and
-`component_pressure_loads`; `test/test_p1_wake_contact.py` and `test/test_p1_galerkin_cad.py` now
-import them from there. The fourth helper, `status(state, cap)`, mapped a state to a status string
-and depended on the retired `panel/p1_solution_status.py`; its single test was dropped rather than
-reimplemented, because the live acceptance predicate lives in `panel/p1_lifting_g2.py` and is
-covered by its own tests.
+`tools/issue71/galerkin_cad_sweep.py` 并非纯求解器代码：它的三个函数把一个
+已求解状态变成回执，且有三个活动测试对它们做了断言。它们被移到
+`panel/p1_contact_report.py`，命名为 `trace_audit_summary`、`contact_jump_diagnostics` 与
+`component_pressure_loads`；`test/test_p1_wake_contact.py` 与 `test/test_p1_galerkin_cad.py` 现在
+从那里导入它们。第四个辅助函数 `status(state, cap)` 把状态映射为状态字符串，
+并依赖已退役的 `panel/p1_solution_status.py`；它的唯一测试被删除而不是
+重新实现，因为活动验收谓词位于 `panel/p1_lifting_g2.py`，并
+由其自身测试覆盖。
