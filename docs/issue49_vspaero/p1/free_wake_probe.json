@@ -1,6 +1,6 @@
 {
   "schema": "dpanel.p1.free_wake_probe.v1",
-  "source_half_surface": "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json",
+  "source_half_surface": "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json",
   "alpha_deg": 5.0,
   "physical_accuracy_accepted": false,
   "note": "initial (undeformed) wake field only; no relaxation",

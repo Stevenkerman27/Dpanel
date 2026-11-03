@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--backend", type=Path, default=Path("runs/backend_probes/src/VortexAD"))
+parser.add_argument("--backend", type=Path, default=Path("runs/benchmarks/backend_probes/src/VortexAD"))
 args = parser.parse_args()
 path = args.backend / "VortexAD/core/pm/post_processor.py"
 source = path.read_text(encoding="utf-8")

@@ -148,9 +148,9 @@ def main(argv=None):
     parser.add_argument("--alpha", type=float, default=5.0)
     parser.add_argument("--core-radius", type=float, default=0.01)
     parser.add_argument("--quad-csv", type=Path,
-                        default=Path("runs/issue84/projection_gate_quad.csv"))
+                        default=Path("runs/studies/rm_bench/projection_gate_quad.csv"))
     parser.add_argument("--eps-csv", type=Path,
-                        default=Path("runs/issue84/projection_gate_eps.csv"))
+                        default=Path("runs/studies/rm_bench/projection_gate_eps.csv"))
     parser.add_argument("--production", default="28:8")
     parser.add_argument("--refinement", default="48:8")
     parser.add_argument("--reference", default="48:64")

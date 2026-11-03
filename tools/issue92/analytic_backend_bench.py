@@ -31,7 +31,7 @@ relative error is dominated by targets where |V| nearly cancels:
 Usage (a Python that has torch):
 
     python -m tools.issue92.analytic_backend_bench \
-        --surface runs/half_cad_wingbody_v1/surface.json \
+        --surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json \
         --out docs/issue92/analytic_batch_bench.json
 """
 from __future__ import annotations
@@ -76,10 +76,10 @@ CONFIGS = (("loop", "loop", "cpu", None),
 def default_surface():
     """The CAD fixture lives in the main checkout, not in the worktree."""
     for base in (ROOT, ROOT.parents[1]):
-        candidate = base/'runs/half_cad_wingbody_v1/surface.json'
+        candidate = base/'runs/cases/wingbody/half_cad_wingbody_v1/surface.json'
         if candidate.is_file():
             return candidate
-    return ROOT/'runs/half_cad_wingbody_v1/surface.json'
+    return ROOT/'runs/cases/wingbody/half_cad_wingbody_v1/surface.json'
 
 
 def g2_mesh(surface):

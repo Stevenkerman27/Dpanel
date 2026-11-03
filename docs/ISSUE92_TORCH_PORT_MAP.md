@@ -386,8 +386,8 @@ NumPy 构建变化的界限下对这些数据包的重放。
 
 生效的界限：CL 和 CL_gamma 5e-7，CD_pressure 2e-6，CM_y 1.5e-6，状态 1e-5，cp
 1e-3。每个都约为两次运行中较差者的两倍，因此大于构建间散布的
-回归仍会失败。证据：`runs/issue92/probe_bundle_252.json` 和
-`runs/issue92/probe_bundle_254.json`。
+回归仍会失败。证据：`runs/scratch/issue92_loose/probe_bundle_252.json` 和
+`runs/scratch/issue92_loose/probe_bundle_254.json`。
 
 状态界是唯一诚实的修订：在 2.5.4 重放存在之前根据 2.5.2 重放声明为
 2e-6，在那里测得 6.72e-06，现在为 1e-5。状态不是交付量；
@@ -487,6 +487,6 @@ NumPy 构建变化的界限下对这些数据包的重放。
 
 ```
 python -m pytest test/test_live_path_has_no_numpy_lapack.py -q
-python runs/issue92/audit_fingerprint.py            # prints pairs_tested and detail_sha
+python runs/scratch/issue92_loose/audit_fingerprint.py            # prints pairs_tested and detail_sha
 python -m pytest test -q                            # full suite
 ```

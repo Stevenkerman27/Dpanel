@@ -1,7 +1,7 @@
 """Export the *actual* VortexAD dense AIC and RHS for isolated solver comparisons.
 
 Run in the verified isolated VortexAD/CSDL-alpha/JAX environment:
-  python test/export_vortexad_aic.py --out runs/backend_probes/vortexad_aic.npz
+  python test/export_vortexad_aic.py --out runs/benchmarks/backend_probes/vortexad_aic.npz
 
 This measures compilation+assembly, NOT raw-Cp, gradients, total aircraft
 performance, or a matrix-free boundary-element operator.

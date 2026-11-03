@@ -110,7 +110,7 @@ def run(*, targets_limit=None, fan_targets=24, repeat=1, out=None):
 
     from tools.issue92 import fixtures
 
-    source = fixtures._first_existing("runs/half_cad_wingbody_v1/surface.json")
+    source = fixtures._first_existing("runs/cases/wingbody/half_cad_wingbody_v1/surface.json")
     if source is None:
         raise SystemExit("half_cad_wingbody_v1/surface.json not found")
 

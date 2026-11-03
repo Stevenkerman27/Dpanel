@@ -13,9 +13,9 @@ from tools.issue84.wake_node_rejection import build_case
 from panel.p1_lifting_g2 import assemble_multi, solve_multi
 from panel.p1_coupled_material_wake import TotalVelocity
 
-mesh, alpha = build_case([str(ROOT / "runs/half_cad_wingbody_v1/surface.json")])
+mesh, alpha = build_case([str(ROOT / "runs/cases/wingbody/half_cad_wingbody_v1/surface.json")])
 ops = assemble_multi(mesh); state = solve_multi(mesh, alpha, kutta="pressure", operators=ops)
-snap = np.load(str(ROOT / "runs/issue84/g2_ref/iteration_000.npz"))
+snap = np.load(str(ROOT / "runs/studies/rm_bench/g2_ref/iteration_000.npz"))
 state["mu"] = snap["mu"]; state["gamma"] = snap["gamma"]
 core = 0.01
 rm = TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=core)
@@ -43,4 +43,4 @@ for D in (0.5, 1.0, 3.0):
     out["bands"]["d>%.1f" % D] = row
     print("d>%.1f | rm48 %.2e  rm96 %.2e  (U=%.4f, an %.2fs, rm48 %.1fs)"
           % (D, row["48"]["max"], row["96"]["max"], U, ta, row["48"]["seconds"]))
-json.dump(out, open(str(ROOT / "runs/issue84/rm_far_check.json"), "w"), indent=2)
+json.dump(out, open(str(ROOT / "runs/studies/rm_bench/rm_far_check.json"), "w"), indent=2)

@@ -1,4 +1,4 @@
-"""Render docs/archive/notes/MESH_REFINEMENT_STUDY.md from runs/mesh_study/results.json."""
+"""Render docs/archive/notes/MESH_REFINEMENT_STUDY.md from runs/studies/mesh_study/results.json."""
 from __future__ import annotations
 
 import json
@@ -175,7 +175,7 @@ def main():
     text = [
         "# 网格三向独立加密研究（issue #42）",
         "",
-        "由 `runs/mesh_study/report.py` 从 `runs/mesh_study/cases/*/case.json` 生成，全部数字为本地实测。",
+        "由 `runs/studies/mesh_study/report.py` 从 `runs/studies/mesh_study/cases/*/case.json` 生成，全部数字为本地实测。",
         "`physical_accuracy_accepted=false`：这里报告**离散敏感性**，不是物理精度验收。",
         "",
         "## 1. 设计：一次只动一个旋钮",
@@ -185,7 +185,7 @@ def main():
         "- **方向 C（聚拢强度）**：`--size` 固定 0.100、LE+TE 都开，`target_ratio` 0.500 / 0.250 / 0.125。",
         "- 另有第二个几何（后掠翼 swept30）只做方向 A，用来检查结论不是椭圆翼独有。",
         "",
-        "特征声明来自 `runs/mesh_study/features.py`，坐标由生成 CAD 的同一截面公式导出（`chord(y)=tip+(root-tip)*sqrt(1-(y/L)^2)`、`le=0.25*(root-chord)`，21 站），不是从网格反推。",
+        "特征声明来自 `runs/studies/mesh_study/features.py`，坐标由生成 CAD 的同一截面公式导出（`chord(y)=tip+(root-tip)*sqrt(1-(y/L)^2)`、`le=0.25*(root-chord)`，21 站），不是从网格反推。",
         "",
         "## 2. 方向 A：全局壁面尺寸（椭圆翼，AR 5.04，alpha=5deg）",
         "",

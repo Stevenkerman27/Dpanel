@@ -13,9 +13,9 @@ and because the structured step is the one with a documented convergence path.
 
 Three stages, run by different interpreters (0xC0000005 hazard, section 6f):
 
-  python -m tools.issue92.s3_pressure_parity capture --work runs/issue92/s3
-  <torch python> -m tools.issue92.s3_pressure_parity torch --work runs/issue92/s3
-  python -m tools.issue92.s3_pressure_parity judge --work runs/issue92/s3 --out ...
+  python -m tools.issue92.s3_pressure_parity capture --work runs/scratch/issue92_loose/s3
+  <torch python> -m tools.issue92.s3_pressure_parity torch --work runs/scratch/issue92_loose/s3
+  python -m tools.issue92.s3_pressure_parity judge --work runs/scratch/issue92_loose/s3 --out ...
 
 What is compared, and why:
 
@@ -382,7 +382,7 @@ def bundle(name, out_path):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("stage", choices=("capture", "torch", "judge", "bundle"))
-    parser.add_argument("--work", type=Path, default=ROOT / "runs/issue92/s3")
+    parser.add_argument("--work", type=Path, default=ROOT / "runs/scratch/issue92_loose/s3")
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--only", nargs="*", default=())
     parser.add_argument("--device", default="cpu")

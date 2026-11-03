@@ -19,13 +19,13 @@ next to the sampling gate's epsilon_tol (1e-3) and quadrature_tol (1e-2).
 Geometry is dumped once in the numpy-only environment (the G2 solve needs jax, torch
 does not), then replayed:
 
-    python -m tools.issue92.backend_parity --dump runs/issue92/parity_g2.npz \
-        --main-half-surface runs/half_cad_wingbody_v1/surface.json \
-        --csv eps:runs/issue84/projection_gate_eps.csv \
-        --csv quad:runs/issue84/projection_gate_quad.csv
+    python -m tools.issue92.backend_parity --dump runs/scratch/issue92_loose/parity_g2.npz \
+        --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json \
+        --csv eps:runs/studies/rm_bench/projection_gate_eps.csv \
+        --csv quad:runs/studies/rm_bench/projection_gate_quad.csv
 
     <python-with-torch> -m tools.issue92.backend_parity \
-        --geometry runs/issue92/parity_g2.npz --out docs/issue92/backend_parity.json
+        --geometry runs/scratch/issue92_loose/parity_g2.npz --out docs/issue92/backend_parity.json
 """
 from __future__ import annotations
 

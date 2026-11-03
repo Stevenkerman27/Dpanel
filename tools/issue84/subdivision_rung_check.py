@@ -7,7 +7,7 @@ panel.p1_coupled_material_wake.limits() on the special targets with the rung off
 (levels 0) and on (levels 2), recording the gate value, the diagnostics and the cost.
 
     python -m tools.issue84.subdivision_rung_check \
-        --main-half-surface D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json \
+        --main-half-surface D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json \
         --sets trailing_edge high_aspect sliver tip root \
         --out docs/issue84/subdivision_rung_gate.json
 """

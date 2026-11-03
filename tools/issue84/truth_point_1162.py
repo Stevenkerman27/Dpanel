@@ -14,7 +14,7 @@ from panel.p1_lifting_g2 import assemble_multi, solve_multi
 
 CORE = 0.01
 TARGET_XYZ = np.array([1.1413036132966763, -0.2, 0.0])
-SURFACE = ["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"]
+SURFACE = ["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"]
 
 mesh, alpha = build_case(SURFACE, case="g2", alpha_deg=5.0)
 ops = assemble_multi(mesh)

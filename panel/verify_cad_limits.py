@@ -17,7 +17,7 @@ sys.path.insert(0, str(runtime))
 import gmsh
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--out", default="runs/panel_cad_limits_v1")
+parser.add_argument("--out", default="runs/studies/cad_limits/panel_cad_limits_v1")
 parser.add_argument("--radius", type=float, default=5.)
 parser.add_argument("--size", default=".3")
 parser.add_argument("--far-size", default="1.5")

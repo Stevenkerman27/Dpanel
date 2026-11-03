@@ -3,7 +3,7 @@ from panel.p1_coupled_material_wake import GeometryGates, geometry_audit, declar
 from panel.p1_steady_free_wake import prepare_wake_material
 from tools.issue84.wake_node_rejection import build_case
 
-SURFACE = ["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"]
+SURFACE = ["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"]
 mesh, alpha = build_case(SURFACE, case="g2")
 materials = {g.name: prepare_wake_material(g) for g in mesh.groups}
 declared = declared_contact_pairs([g.wake_faces for g in mesh.groups], mesh.faces,

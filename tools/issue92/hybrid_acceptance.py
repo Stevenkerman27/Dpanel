@@ -23,9 +23,9 @@ hidden.
 Usage (from the repository root, after a warm run):
 
     python -m tools.issue92.hybrid_acceptance \
-        --main-half-surface runs/half_cad_wingbody_v1/surface.json \
-        --csv eps:runs/issue84/projection_gate_eps.csv \
-        --csv quad:runs/issue84/projection_gate_quad.csv \
+        --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json \
+        --csv eps:runs/studies/rm_bench/projection_gate_eps.csv \
+        --csv quad:runs/studies/rm_bench/projection_gate_quad.csv \
         --out docs/issue92/hybrid_acceptance_g2.json
 """
 from __future__ import annotations

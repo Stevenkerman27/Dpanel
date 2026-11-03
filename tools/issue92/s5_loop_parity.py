@@ -54,10 +54,10 @@ def _entry(name):
 
 def _cad_surface():
     for base in (ROOT, ROOT.parents[1], ROOT.parents[2]):
-        candidate = base/"runs/half_cad_wingbody_v1/surface.json"
+        candidate = base/"runs/cases/wingbody/half_cad_wingbody_v1/surface.json"
         if candidate.is_file():
             return candidate
-    raise FileNotFoundError("runs/half_cad_wingbody_v1/surface.json")
+    raise FileNotFoundError("runs/cases/wingbody/half_cad_wingbody_v1/surface.json")
 
 
 def _cad_mesh():
@@ -239,7 +239,7 @@ def bundle(out_path, case="g2_conventional"):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=("numpy", "torch", "judge", "bundle"))
-    parser.add_argument("--work", type=Path, default=ROOT/"runs/issue92/s5")
+    parser.add_argument("--work", type=Path, default=ROOT/"runs/scratch/issue92_loose/s5")
     parser.add_argument("--out", type=Path, default=ROOT/"docs/issue92/s5_loop_parity.json")
     parser.add_argument("--case", default=None)
     parser.add_argument("--iterations", type=int, default=ITERATIONS)

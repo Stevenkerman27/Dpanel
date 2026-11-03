@@ -61,4 +61,7 @@ PR 报告、过程分析一律进 `archive/`。目标是：新人打开这一页
   （`research/issue49-vspaero-evidence`、`research/issue92-phase1-wake-evaluator`）都在本仓库历史里，
   `git checkout <branch>` 即可取回，不需要另存一份工作树。
 - 不回仓库的大件：`runs/`、`audit/`、`lifting3d/results/*.npz`（2026-11-03 清理）、`.conda_env/`。
+- `runs/` 与 `audit/` 已按功能分层（`cases/`、`benchmarks/`、`studies/`、`verification/`、`scratch/`），
+  不再按 issue/PR 命名；目录说明与旧路径映射见 [../runs/README.md](../runs/README.md)、
+  [../runs/MIGRATION.md](../runs/MIGRATION.md)。
 - 模块入口文档：`panel/README.md`、`torch_panel/README.md`、`monitor/README.md`、`test/README.md`、`lifting3d/README.md`、`potential/README.md`、`vspapi/`（见 `VSPAPI.md`）。

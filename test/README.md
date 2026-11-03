@@ -13,9 +13,9 @@
 
 运行环境：
 
-- VortexAD 相关：`PYTHONPATH` 需包含 `runs/backend_probes/src/VortexAD`，`JAX_PLATFORM_NAME=cpu`；
-- numba 相关：必须 `TMP=TEMP=TMPDIR=runs/pipwork`（沙箱默认临时目录会让 `njit(cache=True)` 无限阻塞）；
+- VortexAD 相关：`PYTHONPATH` 需包含 `runs/benchmarks/backend_probes/src/VortexAD`，`JAX_PLATFORM_NAME=cpu`；
+- numba 相关：必须 `TMP=TEMP=TMPDIR=runs/scratch/pipwork`（沙箱默认临时目录会让 `njit(cache=True)` 无限阻塞）；
 - torch 相关：`PYTHONPATH=runs/torch_site;<repo>`（torch 2.14.1+cpu）。
 
-结果与报告：`runs/backend_probes/`、[`docs/PR5`](../docs/archive/notes/STAGE1_SOLVER_EFFICIENCY.md)、
+结果与报告：`runs/benchmarks/backend_probes/`、[`docs/PR5`](../docs/archive/notes/STAGE1_SOLVER_EFFICIENCY.md)、
 [`docs/PR7`](../docs/archive/notes/TORCH_PANEL_EXTRACTION.md)。

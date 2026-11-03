@@ -38,7 +38,7 @@ def main():
     out = ["# issue #49 优先级 b：固定网格的 Gamma 单轴细化", "",
            "只改环量试验/测试空间（16 → 32 → 64 个自由 Gamma 自由度）：壁面坐标、压力模板、尾迹形状与长度、",
            "TE 声明、freestream 与参考量全部冻结。求解器为 `panel.run_gamma_refinement`（PR #34 的嵌套空间，",
-           "模块未改动）；5° 档由只旋转 freestream、其余字节不变的副本给出（`runs/gamma_ref/make_alpha.py`）。",
+           "模块未改动）；5° 档由只旋转 freestream、其余字节不变的副本给出（`runs/studies/gamma_reference/gamma_ref/make_alpha.py`）。",
            "`physical_accuracy_accepted = false`。", ""]
     summary = {}
     prof_stats = None

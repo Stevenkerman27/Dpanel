@@ -72,7 +72,7 @@ DPanel 的 `CL_Γ` 用物理展向积分（PR #51 修正后的 `dy`，不是尾�
 | --- | --- |
 | OpenVSP/VSPAERO 具体版本 | 第 1 节；`raw/lX/run.txt` 与 `ladders/*/stdout.log` 的 banner |
 | 厚体 panel 还是薄 VLM、GeomSet/ThinGeomSet | 第 1 节；每档 stdout 的 `Model type:` 行 |
-| CAD/TE/翼型/后缘厚度 SHA | `docs/archive/notes/VSP_TRAPEZOID_CONVERGENCE.md` §2；`cases/vsp/trap.vspgeom`、`runs/vsp_conv/cad_trap/{wing.step,trailing_edge.json}` |
+| CAD/TE/翼型/后缘厚度 SHA | `docs/archive/notes/VSP_TRAPEZOID_CONVERGENCE.md` §2；`cases/vsp/trap.vspgeom`、`runs/benchmarks/vsp_convergence/cad_trap/{wing.step,trailing_edge.json}` |
 | 网格与 wake 长/迭代/松弛 | 每档 `trap.vspaero`（`WakeIters`、`NumWakeNodes`、`WakeRelax`、`FarDist`）；`raw/lX/trap.vspgeom` |
 | α/β/Mach/Re | `trap.vspaero`（`AoA`、`Beta`、`Mach`、`ReCref = 1e7`）与 polar 行 |
 | Sref/bref/cref/参考点 | `Sref = 0.30`、`Bref = 2.0`、`Cref = 0.15`（3.52 档）/ `0.20`（3.55 档）；`X_cg = Y_cg = Z_cg = 0`；DPanel 的 `reference_chord` 是 MAC `0.15555556`，`moment_reference = [0.0388889, 0, 0]` |
@@ -100,7 +100,7 @@ DPanel 的 `CL_Γ` 用物理展向积分（PR #51 修正后的 `dy`，不是尾�
 ## 5. 复现
 
 ```powershell
-# 0) 所有脚本都在 tools/vsp_evidence/（已入库）；数据目录 runs/vsp_conv 不入库
+# 0) 所有脚本都在 tools/vsp_evidence/（已入库）；数据目录 runs/benchmarks/vsp_convergence 不入库
 Invoke-Expression (Get-Content tools/vsp_evidence/evidence_rerun.ps1.txt -Raw)
 # 1) 重建数值表
 .conda_env/python.exe tools/vsp_evidence/evidence_build.py

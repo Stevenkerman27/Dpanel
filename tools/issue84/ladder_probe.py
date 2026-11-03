@@ -13,7 +13,7 @@ ap.add_argument('--nodes', type=int, nargs='+', required=True)
 ap.add_argument('--group', default='main_wing')
 ap.add_argument('--order', type=int, default=48)
 ap.add_argument('--eps-fraction', type=float, default=.05)
-ap.add_argument('--out', default='runs/issue84/ladder_probe.json')
+ap.add_argument('--out', default='runs/studies/rm_bench/ladder_probe.json')
 a = ap.parse_args()
 
 rows = {int(r['node']): r for r in csv.DictReader(open(a.csv))

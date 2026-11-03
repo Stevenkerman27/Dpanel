@@ -217,8 +217,8 @@ def attach_lod(vspaero_doc):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="B3 judge")
     parser.add_argument("--cases", type=Path, default=ROOT / "docs/issue92/b3_cases.json")
-    parser.add_argument("--dpanel", type=Path, default=ROOT / "runs/issue92/b3/dpanel.json")
-    parser.add_argument("--vspaero", type=Path, default=ROOT / "runs/issue92/b3/vspaero.json")
+    parser.add_argument("--dpanel", type=Path, default=ROOT / "runs/benchmarks/b3_vspaero/b3/dpanel.json")
+    parser.add_argument("--vspaero", type=Path, default=ROOT / "runs/benchmarks/b3_vspaero/b3/vspaero.json")
     parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/b3_matrix.json")
     args = parser.parse_args(argv)
     cases = json.loads(args.cases.read_text(encoding="utf-8"))

@@ -22,11 +22,11 @@ independent audit uses a separate environment with NumPy, Numba and threadpoolct
 The report script additionally uses Matplotlib.
 
 ```powershell
-python panel/verify.py --out runs/NEW_MATRIX --audit-python C:/Users/zyx20/anaconda3/python.exe
-python panel/verify_topology.py --out runs/NEW_TOPOLOGY
+python panel/verify.py --out runs/scratch/NEW_MATRIX --audit-python C:/Users/zyx20/anaconda3/python.exe
+python panel/verify_topology.py --out runs/scratch/NEW_TOPOLOGY
 python panel/verify_kernel.py --out runs/NEW_KERNEL
 python panel/audit.py runs/NEW_AFT --off-surface
-python panel/report.py --matrix runs/NEW_MATRIX --topology runs/NEW_TOPOLOGY --out docs/NEW_EVIDENCE
+python panel/report.py --matrix runs/scratch/NEW_MATRIX --topology runs/scratch/NEW_TOPOLOGY --out docs/NEW_EVIDENCE
 ```
 
 All experiment directories must be new. Direct solver output contains

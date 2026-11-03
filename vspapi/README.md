@@ -1,8 +1,8 @@
 # vspapi — OpenVSP / VSPAERO client (project copy)
 
 One small, tested client for the external VSPAERO comparisons. It replaces the
-ad-hoc scripts under `runs/vsp_conv/` and the verbatim DEP-OPT copy in
-`runs/vsp_conv/depopt/`.
+ad-hoc scripts under `runs/benchmarks/vsp_convergence/` and the verbatim DEP-OPT copy in
+`runs/benchmarks/vsp_convergence/depopt/`.
 
 ## Why a copy exists at all
 
@@ -80,7 +80,7 @@ else identical: `LECluster 0.25 -> CLi 125.45`, `0.50 -> 5.50`,
 ```powershell
 $env:VSP_ROOT = 'D:/3D/Projects/OpenVSP-3.55.0-win64'
 & C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi version
-& C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi inspect runs/vsp_conv/pth_52x120/trap.vspgeom --polar runs/vsp_conv/pth_52x120/trap.polar
+& C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi inspect runs/benchmarks/vsp_convergence/pth_52x120/trap.vspgeom --polar runs/benchmarks/vsp_convergence/pth_52x120/trap.polar
 ```
 
 ```python

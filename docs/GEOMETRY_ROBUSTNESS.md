@@ -1,6 +1,6 @@
 # 多几何鲁棒性矩阵（后掠翼 / 椭圆翼 / BWB / 常规布局）
 
-本文件由 `tools/geom_robust/report.py` 从 `runs/geom_robust/{mesh,solve,peaks}` 与 `runs/geom_robust/alpha_<case>.json` 的落盘产物程序化生成，全部数字来自本机实际运行（Windows 10，Python 3.11.17，JAX 0.10.2 CPU，稠密 LU，迎角 5 度除非另注）。
+本文件由 `tools/geom_robust/report.py` 从 `runs/studies/geometry_robustness/{mesh,solve,peaks}` 与 `runs/studies/geometry_robustness/alpha_<case>.json` 的落盘产物程序化生成，全部数字来自本机实际运行（Windows 10，Python 3.11.17，JAX 0.10.2 CPU，稠密 LU，迎角 5 度除非另注）。
 
 判定口径沿用项目既有约定：`physical_accuracy_accepted=false`。近场压力阻力 CD_p 与俯仰力矩 CM_y 不作为物理精度声明，只有积分升力 CL 与网格细化趋势可比较。
 

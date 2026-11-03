@@ -12,7 +12,7 @@ Declared acceptance before the measurement:
   * torch CUDA vs numpy: max relative error <= 1e-10
 
     <python-with-torch> -m tools.issue92.analytic_bench \
-        --geometry runs/issue92/parity_g2.npz --out docs/issue92/analytic_torch_bench.json
+        --geometry runs/scratch/issue92_loose/parity_g2.npz --out docs/issue92/analytic_torch_bench.json
 """
 from __future__ import annotations
 

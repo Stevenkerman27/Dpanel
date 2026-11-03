@@ -203,9 +203,9 @@ def render(payload):
     lines.append("")
     lines.append(FENCE + "powershell")
     lines.append("$env:PYTHONPATH='<worktree>;<repo>/runs'")
-    lines.append("$env:TMP=$env:TEMP=$env:TMPDIR=$env:DSH_TMP_ROOT='<repo>/runs/pipwork'")
+    lines.append("$env:TMP=$env:TEMP=$env:TMPDIR=$env:DSH_TMP_ROOT='<repo>/runs/scratch/pipwork'")
     lines.append("& '<repo>/.conda_env/python.exe' -u -m tools.issue84.adaptive_area_acceptance " +
-                 "--main-half-surface <repo>/runs/half_cad_wingbody_v1/surface.json --out " +
+                 "--main-half-surface <repo>/runs/cases/wingbody/half_cad_wingbody_v1/surface.json --out " +
                  "docs/issue84/adaptive_area_acceptance.json")
     lines.append(FENCE)
     lines.append("")

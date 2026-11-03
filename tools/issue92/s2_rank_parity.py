@@ -3,9 +3,9 @@
 Three stages, run by different interpreters (a NumPy LAPACK call after torch has
 executed in the same process dies with 0xC0000005, section 6f of the phase-1 doc):
 
-  python -m tools.issue92.s2_rank_parity capture --out runs/issue92/s2   (.conda_env)
-  python -m tools.issue92.s2_rank_parity torch   --work runs/issue92/s2  (torch env)
-  python -m tools.issue92.s2_rank_parity compare --work runs/issue92/s2  (.conda_env)
+  python -m tools.issue92.s2_rank_parity capture --out runs/scratch/issue92_loose/s2   (.conda_env)
+  python -m tools.issue92.s2_rank_parity torch   --work runs/scratch/issue92_loose/s2  (torch env)
+  python -m tools.issue92.s2_rank_parity compare --work runs/scratch/issue92_loose/s2  (.conda_env)
 
 The captured object is the *initial constrained solve* of each fixture, rebuilt from
 the operators the production solve actually returned:
@@ -267,16 +267,16 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="stage", required=True)
     cap = sub.add_parser("capture")
-    cap.add_argument("--work", type=Path, default=ROOT / "runs/issue92/s2")
+    cap.add_argument("--work", type=Path, default=ROOT / "runs/scratch/issue92_loose/s2")
     cap.add_argument("--only", nargs="*", default=None)
     tor = sub.add_parser("torch")
-    tor.add_argument("--work", type=Path, default=ROOT / "runs/issue92/s2")
+    tor.add_argument("--work", type=Path, default=ROOT / "runs/scratch/issue92_loose/s2")
     tor.add_argument("--device", default="cpu")
     loa = sub.add_parser("loads")
-    loa.add_argument("--work", type=Path, default=ROOT / "runs/issue92/s2")
-    loa.add_argument("--out", type=Path, default=ROOT / "runs/issue92/s2/s2_loads.json")
+    loa.add_argument("--work", type=Path, default=ROOT / "runs/scratch/issue92_loose/s2")
+    loa.add_argument("--out", type=Path, default=ROOT / "runs/scratch/issue92_loose/s2/s2_loads.json")
     com = sub.add_parser("compare")
-    com.add_argument("--work", type=Path, default=ROOT / "runs/issue92/s2")
+    com.add_argument("--work", type=Path, default=ROOT / "runs/scratch/issue92_loose/s2")
     com.add_argument("--out", type=Path, default=ROOT / "docs/issue92/s2_rank_parity.json")
     args = parser.parse_args(argv)
     if args.stage == "capture":

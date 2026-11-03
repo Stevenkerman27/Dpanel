@@ -5,7 +5,7 @@ Direction B: which geometric feature lines are clustered at a fixed wall size.
 Direction C: how strong the clustering is (target_ratio) at a fixed wall size.
 
 Every case is one mesh + one solve, run in its own process through
-runs/peak_wrap.py so the peak working set is measured per case. Nothing here
+runs/scratch/peak_wrap.py so the peak working set is measured per case. Nothing here
 touches panel/ defaults, the v1 CLI or any production file.
 """
 from __future__ import annotations

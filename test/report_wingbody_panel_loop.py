@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--base", type=Path, default=Path("runs/wingbody_panel_final"))
+parser.add_argument("--base", type=Path, default=Path("runs/cases/wingbody/wingbody_panel_final"))
 parser.add_argument("--out", type=Path, default=Path("docs/wingbody_panel_evidence"))
 args = parser.parse_args()
 args.out = args.out.resolve()
@@ -18,9 +18,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-run_paths = [args.base, Path("runs/wingbody_panel_alpha0"), Path("runs/wingbody_panel_alpha_minus5"),
-             Path("runs/wingbody_panel_thick_wide"), Path("runs/wingbody_panel_thin_narrow"),
-             Path("runs/wingbody_panel_refined")]
+run_paths = [args.base, Path("runs/cases/wingbody/wingbody_panel_alpha0"), Path("runs/cases/wingbody/wingbody_panel_alpha_minus5"),
+             Path("runs/cases/wingbody/wingbody_panel_thick_wide"), Path("runs/cases/wingbody/wingbody_panel_thin_narrow"),
+             Path("runs/cases/wingbody/wingbody_panel_refined")]
 records = []
 for path in run_paths:
     result = json.loads((path / "result.json").read_text(encoding="utf-8"))
@@ -33,9 +33,9 @@ assert base["derivatives_passed"] and audit["stencil_reports"][-1]["rank_deficie
 assert all(record["result"]["raw_cp_equal_used_cp"] for record in records)
 assert all(max(record["result"]["load_closure"].values()) < 1e-10 for record in records)
 fields = np.load(args.base / "fields.npz")
-failed = np.load("runs/wingbody_panel_upstream/fields.npz")
+failed = np.load("runs/cases/wingbody/wingbody_panel_upstream/fields.npz")
 failure_comparison = dict(
-    run="runs/wingbody_panel_upstream",
+    run="runs/cases/wingbody/wingbody_panel_upstream",
     nonfinite_cp_panels=int(np.count_nonzero(~np.isfinite(failed["Cp_raw"]))),
     unchanged_global_fields_max_abs={
         name: float(np.max(abs(fields[name] - failed[name])))

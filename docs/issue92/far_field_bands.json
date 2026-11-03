@@ -1,5 +1,5 @@
 {
-  "case": "runs/half_cad_wingbody_v1/surface.json",
+  "case": "runs/cases/wingbody/half_cad_wingbody_v1/surface.json",
   "core_radius": 0.01,
   "near_share": [
     {

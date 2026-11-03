@@ -6,7 +6,7 @@
     },
     "fan_targets": 16,
     "repeat": 1,
-    "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json",
+    "source": "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json",
     "wake_triangles": 794,
     "wall_faces": 872
   },

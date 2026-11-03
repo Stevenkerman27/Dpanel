@@ -2,13 +2,13 @@
 
 issue #49 的「梯形翼 DPanel vs VSPAERO 同几何对比」实验脚本。**产物已入库**在
 `docs/issue49_vspaero/`（原始 polar / lod / history / Cp / 日志 + 逐文件 SHA-256）；
-工作数据在 `runs/vsp_conv/`，该目录被 `.gitignore` 忽略，需按下表重跑生成。
+工作数据在 `runs/benchmarks/vsp_convergence/`，该目录被 `.gitignore` 忽略，需按下表重跑生成。
 
 ## 脚本
 
 | 脚本 | 作用 |
 | --- | --- |
-| `evidence_build.py` | 读 `runs/vsp_conv/{vlm_lX,evidence/lX,dp_s0XX}`，写 `docs/issue49_vspaero/{levels,sections,dpanel}.json` |
+| `evidence_build.py` | 读 `runs/benchmarks/vsp_convergence/{vlm_lX,evidence/lX,dp_s0XX}`，写 `docs/issue49_vspaero/{levels,sections,dpanel}.json` |
 | `evidence_stage.py` | 把原始文件拷进 `docs/issue49_vspaero/{raw,ladders,dpanel,figs}/`，写 `sha256.json` |
 | `evidence_readme.py` | 从 staged JSON 生成 `docs/issue49_vspaero/README.md`（表由数据生成，不会漂移） |
 | `verify_sha.py` | 校验 `sha256.json`；全部命中才 exit 0 |
@@ -36,13 +36,13 @@ Invoke-Expression (Get-Content tools/vsp_evidence/evidence_rerun.ps1.txt -Raw)  
 ## 数据前置条件（不入库）
 
 - `cases/vsp/trap.vspgeom`：用户给的 6249 面板厚网格（入 `docs/issue49_vspaero` 的 SHA 清单）；
-- `runs/vsp_conv/vlm_l{1..4}/`：DEP-OPT 路径的 VLM 阶梯（`trap.polar`），由 `dep_vsp.py` 生成；
-- `runs/vsp_conv/evidence/l{1..4}/`：3.52 exe 的单迎角 5° 重跑（`-omp 8`）；
-- `runs/vsp_conv/dp_s0{20,14,10,07,05}/`：DPanel 五档（`case.json` + `mesh/surface.json`）；
-- `runs/vsp_conv/api_{panel,vlm}_*/`：OpenVSP 3.55 阶梯（`ladder.json`），由 `api_ladder.py` 生成。
+- `runs/benchmarks/vsp_convergence/vlm_l{1..4}/`：DEP-OPT 路径的 VLM 阶梯（`trap.polar`），由 `dep_vsp.py` 生成；
+- `runs/benchmarks/vsp_convergence/evidence/l{1..4}/`：3.52 exe 的单迎角 5° 重跑（`-omp 8`）；
+- `runs/benchmarks/vsp_convergence/dp_s0{20,14,10,07,05}/`：DPanel 五档（`case.json` + `mesh/surface.json`）；
+- `runs/benchmarks/vsp_convergence/api_{panel,vlm}_*/`：OpenVSP 3.55 阶梯（`ladder.json`），由 `api_ladder.py` 生成。
 
 DPanel 侧运行环境：`.conda_env`（Py3.11 / JAX 0.10.2 CPU），worktree `runs/pr49_git`（commit `535f907`），
-`TMP/TEMP/TMPDIR=runs/pipwork`。VSP 侧运行环境：`C:\Users\zyx20\anaconda3\envs\vsppytools`（OpenVSP 3.55.0）。
+`TMP/TEMP/TMPDIR=runs/scratch/pipwork`。VSP 侧运行环境：`C:\Users\zyx20\anaconda3\envs\vsppytools`（OpenVSP 3.55.0）。
 
 ## 相关文档
 

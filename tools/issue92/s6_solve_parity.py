@@ -23,7 +23,7 @@ import pickle
 import numpy as np
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-OUT = ROOT / "runs/issue92/s6"
+OUT = ROOT / "runs/scratch/issue92_loose/s6"
 
 # Declared before any number was read: the two backends implement the same
 # equations, so decisions must match exactly and state/loads only by roundoff.

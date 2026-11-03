@@ -47,7 +47,7 @@ Kutta 条件是带显式独立于壁面 BIE 的损失项的非线性最小二乘
 `upper_te_faces`/`lower_te_faces` 而不是 TE 边折线作为面元组：
 
     python -m panel.run_p1_lifting_g2 \
-      --main-half-surface runs/half_cad_wingbody_v1/surface.json \
+      --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json \
       --tail-span 1.8 --tail-chord .55 --tail-x 1.6 --tail-z .35 \
       --reference-area 4.0 --alpha 0 5 --kutta pressure \
       --out runs/g2_real_wingbody_new

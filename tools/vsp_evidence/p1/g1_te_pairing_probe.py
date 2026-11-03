@@ -71,7 +71,7 @@ def from_half_fixed(path):
                   "half CAD mirrored (fixed TE pairing)", ref_area, rp)
 
 if __name__ == "__main__":
-    path = r"D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"
+    path = r"D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"
     wing = from_half_fixed(path)
     print("faces", len(wing.faces), "dofs", wing.ndof_mu, "te rows", len(wing.te_pairs), "gamma", wing.gamma_hat.shape[1])
     print("te y range %.3f..%.3f" % (wing.te_pair_y.min(), wing.te_pair_y.max()))

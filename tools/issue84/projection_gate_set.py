@@ -73,7 +73,7 @@ def main(argv=None):
     parser.add_argument("--fan-orders", type=int, nargs="+", default=(16, 32))
     parser.add_argument("--strips", type=int, default=8)
     parser.add_argument("--limit", type=int, default=0)
-    parser.add_argument("--out", type=Path, default=Path("runs/issue84/projection_gate_set.json"))
+    parser.add_argument("--out", type=Path, default=Path("runs/studies/rm_bench/projection_gate_set.json"))
     args = parser.parse_args(argv)
 
     started = time.perf_counter()

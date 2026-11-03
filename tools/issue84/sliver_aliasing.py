@@ -87,10 +87,10 @@ def bisected_contribution(tri, point, tol, sub_order=8, core=CORE):
 
 
 def main():
-    mesh, alpha = build_case([str(ROOT / "runs/half_cad_wingbody_v1/surface.json")])
+    mesh, alpha = build_case([str(ROOT / "runs/cases/wingbody/half_cad_wingbody_v1/surface.json")])
     operators = assemble_multi(mesh)
     state = dict(solve_multi(mesh, alpha, kutta="pressure", operators=operators))
-    snap = np.load(str(ROOT / "runs/issue84/g2_ref/iteration_000.npz"))
+    snap = np.load(str(ROOT / "runs/studies/rm_bench/g2_ref/iteration_000.npz"))
     state["mu"] = snap["mu"]
     state["gamma"] = snap["gamma"]
     field = TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=CORE)

@@ -99,7 +99,7 @@ def torch_stage(work, out_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("stage", choices=("numpy", "torch"))
-    parser.add_argument("--work", default=str(ROOT / "runs/issue92/s3"))
+    parser.add_argument("--work", default=str(ROOT / "runs/scratch/issue92_loose/s3"))
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
     if args.stage == "numpy":

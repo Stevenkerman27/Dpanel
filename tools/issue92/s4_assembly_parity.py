@@ -13,9 +13,9 @@ fixtures:
 
 Stages, run by different interpreters (0xC0000005 hazard, ISSUE92_PHASE1_WAKE_EVALUATOR 6f):
 
-  python -m tools.issue92.s4_assembly_parity capture --work runs/issue92/s4
-  <torch python> -m tools.issue92.s4_assembly_parity torch --work runs/issue92/s4
-  python -m tools.issue92.s4_assembly_parity judge --work runs/issue92/s4 --out ...
+  python -m tools.issue92.s4_assembly_parity capture --work runs/scratch/issue92_loose/s4
+  <torch python> -m tools.issue92.s4_assembly_parity torch --work runs/scratch/issue92_loose/s4
+  python -m tools.issue92.s4_assembly_parity judge --work runs/scratch/issue92_loose/s4 --out ...
 
 Thresholds are declared before the measurement: the two operators are algebraically
 identical transcriptions, so the comparison is floating-point reassociation only. A is
@@ -202,7 +202,7 @@ def judge(work: Path, out: Path):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=("capture", "torch", "judge"))
-    parser.add_argument("--work", default=str(ROOT / "runs/issue92/s4"))
+    parser.add_argument("--work", default=str(ROOT / "runs/scratch/issue92_loose/s4"))
     parser.add_argument("--out", default=str(ROOT / "docs/issue92/s4_assembly_parity.json"))
     args = parser.parse_args(argv)
     work, out = Path(args.work), Path(args.out)

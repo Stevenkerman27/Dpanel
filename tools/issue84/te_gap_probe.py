@@ -2,7 +2,7 @@
 import numpy as np
 from tools.issue84.wake_node_rejection import build_case
 from panel.p1_geometry_contact import declared_contact_pairs
-mesh, alpha = build_case(['D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json'], case='g2', alpha_deg=5.0)
+mesh, alpha = build_case(['D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json'], case='g2', alpha_deg=5.0)
 g = mesh.groups[0]
 decl = declared_contact_pairs([gg.wake_faces for gg in mesh.groups], mesh.faces,
                               group_labels=[gg.name for gg in mesh.groups])

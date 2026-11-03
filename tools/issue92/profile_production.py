@@ -196,7 +196,7 @@ def profile_wake(iterations=1):
     from tools.issue84.wake_node_rejection import build_case
     from panel import velocity_profile
 
-    source = fixtures._first_existing("runs/half_cad_wingbody_v1/surface.json")
+    source = fixtures._first_existing("runs/cases/wingbody/half_cad_wingbody_v1/surface.json")
     mesh, alpha = build_case([str(source)])
     t0 = time.perf_counter()
     ops = assemble_multi(mesh)

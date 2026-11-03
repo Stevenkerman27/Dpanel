@@ -1,7 +1,7 @@
 """Decompose the VortexAD full-aircraft AIC mirror discrepancy by term.
 
 Usage (isolated, pinned VortexAD/CSDL/JAX environment):
- python test/probe_vortexad_aic_symmetry.py --out runs/backend_probes/aic_symmetry.json
+ python test/probe_vortexad_aic_symmetry.py --out runs/benchmarks/backend_probes/aic_symmetry.json
 
 Diagnostic only. Do NOT symmetrize matrices for the production solver. It
 compares:

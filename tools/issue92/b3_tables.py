@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 
 MATRIX = ROOT / "docs/issue92/b3_matrix.json"
 CASES = ROOT / "docs/issue92/b3_cases.json"
-OUT = ROOT / "runs/issue92/b3_tables.md"
+OUT = ROOT / "runs/benchmarks/b3_vspaero/b3_tables.md"
 
 CASE_ORDER = ("rect", "swept30", "elliptic", "bwb")
 

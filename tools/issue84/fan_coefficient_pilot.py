@@ -9,7 +9,7 @@ import numpy as np
 from tools.issue84.wake_node_rejection import build_case
 from panel.p1_coupled_material_wake import solve_coupled_material_wake
 
-SURFACE = ["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"]
+SURFACE = ["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"]
 mesh, alpha = build_case(SURFACE, case="g2", alpha_deg=5.0)
 print("faces", len(mesh.faces), "wake faces",
       sum(len(g.wake_faces) for g in mesh.groups), flush=True)

@@ -1,6 +1,6 @@
 """Trefftz-plane induced drag for a full-span station layout.
 
-The repository helper runs/trefftz_drag.py assumes half-wing stations (0..b/2)
+The repository helper runs/scratch/trefftz_drag.py assumes half-wing stations (0..b/2)
 and mirrors them internally. DPanel's Wing.gamma_y actually spans the whole
 wing (-b/2..b/2), so feeding it to that helper double-covers the planform and
 returns a drag that is wrong by an O(1) factor. This function takes the full

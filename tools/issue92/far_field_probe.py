@@ -144,7 +144,7 @@ def near_share(case, *, core, ratios=(1.0, 3.0, 10.0, 30.0)):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--case", default="runs/half_cad_wingbody_v1/surface.json")
+    parser.add_argument("--case", default="runs/cases/wingbody/half_cad_wingbody_v1/surface.json")
     parser.add_argument("--core", type=float, default=0.01)
     parser.add_argument("--bands", type=float, nargs="+",
                         default=(3.0, 10.0, 30.0, 100.0, 300.0))

@@ -1,6 +1,6 @@
 """Acceptance rule for the floored G2 pressure-Kutta least-squares stop.
 
-Measured on runs/half_cad_wingbody_v1 (872 wall rows, 487 null(J) DOFs, 5 deg):
+Measured on runs/cases/wingbody/half_cad_wingbody_v1 (872 wall rows, 487 null(J) DOFs, 5 deg):
 least_squares stops with status 0 / success False / nfev 80 while the residual is
 already stationary (relative projected gradient 5e-7), the Kutta rows are satisfied
 to 9.0e-7 and the wall residual sits at its linear floor (1.2888e-3 vs 1.2688e-3).
@@ -114,7 +114,7 @@ def test_synthetic_fixture_still_converges_normally():
     assert result['pressure_kutta_rms'] < 1e-3
 
 
-CAD = 'runs/half_cad_wingbody_v1/surface.json'
+CAD = 'runs/cases/wingbody/half_cad_wingbody_v1/surface.json'
 
 
 def test_cad_fixture_floor_stop_is_accepted():

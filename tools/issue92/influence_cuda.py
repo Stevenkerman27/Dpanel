@@ -134,7 +134,7 @@ def _run(name, arrays, reference, torch, repeat):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="CUDA parity for the batched influence kernel")
     parser.add_argument("--fixtures", default="g1_elliptic,g1_wingbody_cad")
-    parser.add_argument("--reference", type=Path, default=ROOT / "runs/issue92/reference")
+    parser.add_argument("--reference", type=Path, default=ROOT / "runs/scratch/issue92_loose/reference")
     parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/influence_cuda.json")
     parser.add_argument("--repeat", type=int, default=3)
     args = parser.parse_args(argv)

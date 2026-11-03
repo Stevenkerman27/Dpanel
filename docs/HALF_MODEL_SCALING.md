@@ -10,9 +10,9 @@ trailing_edge.json），`python -m panel.cad_half` 只改 `--size`：
 
 | 目录 | size | 壁面 | 尾迹 | γ | 未知量 | 生成时间 |
 |---|---|---|---|---|---|---|
-| `runs/half_cad_wingbody_v1` | 0.30 | 396 | 385 | 22 | 418 | 2.39 s |
-| `runs/half_cad_wingbody_2x` | 0.17 | 805 | 561 | 22 | 827 | 2.34 s |
-| `runs/half_cad_wingbody_3x` | 0.13 | 1205 | 733 | 22 | 1227 | 2.37 s |
+| `runs/cases/wingbody/half_cad_wingbody_v1` | 0.30 | 396 | 385 | 22 | 418 | 2.39 s |
+| `runs/cases/wingbody/half_cad_wingbody_2x` | 0.17 | 805 | 561 | 22 | 827 | 2.34 s |
+| `runs/cases/wingbody/half_cad_wingbody_3x` | 0.13 | 1205 | 733 | 22 | 1227 | 2.37 s |
 
 三档都是 `geometry_is_from_OCC_half_domain=true`、`full_aircraft_mesh_generated=false`、
 min y = 0（只有正半域），γ 自由度恒为 22（站位表不变）。
@@ -20,7 +20,7 @@ min y = 0（只有正半域），γ 自由度恒为 22（站位表不变）。
 ## 环境
 
 `.conda_env` Python 3.11.17 / NumPy 2.4.6 / SciPy 1.17.1 / JAX 0.10.2 **CPU**（x64 开）/ 32 核；
-每个模式独立进程，峰值 RSS 用 `runs/peak_wrap.py`（K32GetProcessMemoryInfo，20 ms 采样）；
+每个模式独立进程，峰值 RSS 用 `runs/scratch/peak_wrap.py`（K32GetProcessMemoryInfo，20 ms 采样）；
 预热计时均为第二次调用（同一进程内）。
 
 ## 结果

@@ -19,7 +19,7 @@ stopping rule that fires on a residual floor is decided by the last bit of the i
 Replaying the identical torch code with numpy 2.5.2 and numpy 2.5.4 moves g1_elliptic
 from status 2 / nfev 21 to status 5 / nfev 22 and its CD_pressure from 8.72e-07 to
 1.62e-06, while CL stays at 2.2e-07 and 4.0e-07. The bounds above are roughly twice the
-worst of those two runs (runs/issue92/probe_bundle_252.json and probe_bundle_254.json),
+worst of those two runs (runs/scratch/issue92_loose/probe_bundle_252.json and probe_bundle_254.json),
 so they still fail on a regression larger than the build-to-build spread.
 
 The state bound carries one honest revision. It was declared at 2e-6 from the numpy

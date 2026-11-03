@@ -241,14 +241,14 @@ python -m tools.issue92.b3_cases
 # DPanel side (NumPy reference environment)
 python -m tools.issue92.b3_dpanel --out runs/issue92/b3/dpanel.json
 # VSPAERO side (vsppytools environment, OpenVSP 3.55)
-python -m tools.issue92.b3_vspaero --out runs/issue92/b3/vspaero.json
+python -m tools.issue92.b3_vspaero --out runs/benchmarks/b3_vspaero/b3/vspaero.json
 # gate
 python -m tools.issue92.b3_judge
 # markdown tables for this document
 python -m tools.issue92.b3_tables
 ```
 
-VSPAERO needs `PYTHONPATH=<repo>/runs/issue92/vsp_py355`,
+VSPAERO needs `PYTHONPATH=D:/3D/Projects/OpenVSP-3.55.0-win64/python/openvsp` (2026-11-03: the in-repo binding copies `runs/envs/vsp_py*` were byte-identical duplicates and are no longer needed),
 `VSP_ROOT` and `VSPAERO_EXE` pointing at
 `D:/3D/Projects/OpenVSP-3.55.0-win64`, and the `vsppytools` Python
 (3.13). The DPanel side needs the repository `.conda_env` (3.11, NumPy

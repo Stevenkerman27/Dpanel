@@ -40,10 +40,10 @@ def peak_rss_mb():
 
 
 t0 = time.time()
-mesh, alpha = build_case([str(ROOT / "runs/half_cad_wingbody_v1/surface.json")])
+mesh, alpha = build_case([str(ROOT / "runs/cases/wingbody/half_cad_wingbody_v1/surface.json")])
 ops = assemble_multi(mesh)
 fresh = solve_multi(mesh, alpha, kutta="pressure", operators=ops)
-snap = np.load(str(ROOT / "runs/issue84/g2_ref/iteration_000.npz"))
+snap = np.load(str(ROOT / "runs/studies/rm_bench/g2_ref/iteration_000.npz"))
 state = dict(fresh)
 frozen_ok = (len(snap["mu"]) == len(fresh["mu"]) and len(snap["gamma"]) == len(fresh["gamma"])
              and np.allclose(snap["mu"], fresh["mu"], rtol=0, atol=0)
@@ -137,5 +137,5 @@ for band in (1e-2, 1e-3, 1e-4):
     rel = np.max(np.linalg.norm(v48-v96, axis=1)/np.linalg.norm(v96, axis=1))
     res.setdefault("near_band_order_check", {})["h=%.0e" % band] = float(rel)
     print("band h=%.0e: order48 vs order96 max rel %.3e" % (band, rel))
-json.dump(res, open(str(ROOT / "runs/issue84/rm_bench.json"), "w"), indent=2)
+json.dump(res, open(str(ROOT / "runs/studies/rm_bench/rm_bench.json"), "w"), indent=2)
 print("peak RSS %.1f MB, total %.1f s" % (res["peak_rss_mb"], time.time()-t0))

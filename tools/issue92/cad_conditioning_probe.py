@@ -76,7 +76,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--probe", choices=("stationarity", "branch"), default="stationarity")
     parser.add_argument("--artifact", type=Path,
-                        default=ROOT/"runs/issue92/s8/g1_wingbody_cad.pkl")
+                        default=ROOT/"runs/scratch/issue92_loose/s8/g1_wingbody_cad.pkl")
     args = parser.parse_args(argv)
     record, model, problem, torch = _load(args.artifact)
     if args.probe == "stationarity":

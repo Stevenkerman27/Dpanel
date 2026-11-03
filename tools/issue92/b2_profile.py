@@ -4,8 +4,8 @@ import io
 import pstats
 import sys
 
-sys.path.insert(0, r"D:\3D\Projects\panel\runs\fix_master")
-sys.path.insert(0, r"D:\3D\Projects\panel\runs")
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from panel.p1_coupled_material_wake import solve_coupled_material_wake
 from tools.issue92.s5_loop_parity import _mesh

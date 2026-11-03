@@ -6,7 +6,7 @@ from panel.p1_lifting_g1 import from_dpanel_half_surface, make_wing
 from panel.p1_lifting_g2 import combine_wings, solve_multi
 from panel.p1_steady_free_wake import mean_wake_velocity
 
-SURFACE = r"D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"
+SURFACE = r"D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"
 OUT = str(pathlib.Path(__file__).resolve().parents[3] / "docs" / "issue49_vspaero" / "p1" / "free_wake_probe.json")
 
 

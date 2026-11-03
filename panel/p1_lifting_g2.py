@@ -233,7 +233,7 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 
     The weighted wall block is a genuine least-squares problem: collocation rows
     outnumber mu+Gamma DOFs on CAD meshes (e.g. 872 rows vs 487 DOFs on
-    runs/half_cad_wingbody_v1), so its residual has an irreducible floor. The
+    runs/cases/wingbody/half_cad_wingbody_v1), so its residual has an irreducible floor. The
     Kutta rows are satisfied to ~1e-6 while ftol/gtol=1e-11 stay unreachable,
     and least_squares returns status 0 with success=False after spending its
     whole budget on roundoff-sized reductions. Accept such a stop only when the

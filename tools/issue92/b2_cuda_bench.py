@@ -5,7 +5,7 @@ iteration on the same process with an explicit device, and for timings that
 separate cold start (context, upload of the operator set) from warm repeats,
 with H2D volume and peak device memory reported.
 
-References are the S5 NumPy records in runs/issue92/s5/<case>_numpy.json, which
+References are the S5 NumPy records in runs/scratch/issue92_loose/s5/<case>_numpy.json, which
 the S5 gate already tied to the torch CPU backend at 1e-5 relative. The gate
 here is inherited, not re-derived: loads to 1e-5 relative against the same
 iteration index, plus the requirement that status and acceptance decisions
@@ -58,7 +58,7 @@ def _uploaded_bytes(operators):
 
 
 def _reference(case):
-    path = ROOT/("runs/issue92/s5/%s_numpy.json" % case)
+    path = ROOT/("runs/scratch/issue92_loose/s5/%s_numpy.json" % case)
     data = json.loads(path.read_text(encoding="utf-8"))
     return {row["index"]: row["loads"] for row in data["rows"]}, data["status"]
 

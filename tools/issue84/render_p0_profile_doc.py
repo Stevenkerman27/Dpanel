@@ -95,7 +95,7 @@ def main():
     add("")
     counters = analytic.get("counters", {}) if analytic else {}
     if analytic:
-        add("Measured on the frozen G2 CAD case (runs/half_cad_wingbody_v1/surface.json, "
+        add("Measured on the frozen G2 CAD case (runs/cases/wingbody/half_cad_wingbody_v1/surface.json, "
             "alpha 5 deg, --kutta pressure, analytic edges, two iterations requested):")
         add("")
         lines.extend(table(
@@ -427,13 +427,13 @@ def main():
     add("")
     add("```")
     add("python -m pytest test/test_velocity_profile.py -q")
-    add("python -m tools.issue84.velocity_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --csv quad:runs/issue84/projection_gate_quad.csv --csv eps:runs/issue84/projection_gate_eps.csv --case g2 --alpha 5 --core-radius 0.01 --configs legacy_duffy 16:8 24:8 28:8 48:8 --out docs/issue84/velocity_profile_109.json")
-    add("python -m panel.run_p1_coupled_material_wake --case g2 --main-half-surface runs/half_cad_wingbody_v1/surface.json --alpha 5 --kutta pressure --iterations 2 --profile-json docs/issue84/profile_g2_analytic.json --out runs/issue84/g2_analytic_prof")
-    add("python -m panel.run_p1_coupled_material_wake --case g2 --main-half-surface runs/half_cad_wingbody_v1/surface.json --alpha 5 --kutta signed_speed --iterations 2 --profile-json docs/issue84/profile_g2_signed_speed.json --out runs/issue84/g2_signed_speed_prof")
-    add("python -m tools.issue84.b2_target_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --method rm_regularized_p1 --core-radius 0.01 --area-quadrature projection_fan --fan-order 28 --fan-strips 8 --quadrature-order 48 --max-points 6 --out docs/issue84/b2_target_profile_prod.json")
-    add("python -m tools.issue84.b2_target_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --method rm_regularized_p1 --core-radius 0.01 --area-quadrature projection_fan --fan-order 28 --fan-strips 8 --quadrature-order 28 --max-points 6 --out docs/issue84/b2_target_profile_aligned.json")
-    add("python -m tools.issue84.fan_order_semantics --main-half-surface runs/half_cad_wingbody_v1/surface.json --case g2 --core-radius 0.01 --fan-strips 8 --points 4 --out docs/issue84/fan_order_semantics.json")
-    add("python -m tools.issue84.velocity_profile --main-half-surface runs/half_cad_wingbody_v1/surface.json --csv quad:runs/issue84/projection_gate_quad.csv --csv eps:runs/issue84/projection_gate_eps.csv --case g2 --alpha 5 --core-radius 0.01 --configs legacy_duffy 16:8 24:8 28:8 48:8 --out docs/issue84/velocity_profile_109_p1.json")
+    add("python -m tools.issue84.velocity_profile --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json --csv quad:runs/studies/rm_bench/projection_gate_quad.csv --csv eps:runs/studies/rm_bench/projection_gate_eps.csv --case g2 --alpha 5 --core-radius 0.01 --configs legacy_duffy 16:8 24:8 28:8 48:8 --out docs/issue84/velocity_profile_109.json")
+    add("python -m panel.run_p1_coupled_material_wake --case g2 --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json --alpha 5 --kutta pressure --iterations 2 --profile-json docs/issue84/profile_g2_analytic.json --out runs/studies/rm_bench/g2_analytic_prof")
+    add("python -m panel.run_p1_coupled_material_wake --case g2 --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json --alpha 5 --kutta signed_speed --iterations 2 --profile-json docs/issue84/profile_g2_signed_speed.json --out runs/studies/rm_bench/g2_signed_speed_prof")
+    add("python -m tools.issue84.b2_target_profile --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json --method rm_regularized_p1 --core-radius 0.01 --area-quadrature projection_fan --fan-order 28 --fan-strips 8 --quadrature-order 48 --max-points 6 --out docs/issue84/b2_target_profile_prod.json")
+    add("python -m tools.issue84.b2_target_profile --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json --method rm_regularized_p1 --core-radius 0.01 --area-quadrature projection_fan --fan-order 28 --fan-strips 8 --quadrature-order 28 --max-points 6 --out docs/issue84/b2_target_profile_aligned.json")
+    add("python -m tools.issue84.fan_order_semantics --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json --case g2 --core-radius 0.01 --fan-strips 8 --points 4 --out docs/issue84/fan_order_semantics.json")
+    add("python -m tools.issue84.velocity_profile --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json --csv quad:runs/studies/rm_bench/projection_gate_quad.csv --csv eps:runs/studies/rm_bench/projection_gate_eps.csv --case g2 --alpha 5 --core-radius 0.01 --configs legacy_duffy 16:8 24:8 28:8 48:8 --out docs/issue84/velocity_profile_109_p1.json")
     add("python -m pytest test/test_p1_readonly_caches.py -q")
     add("python -m tools.issue84.fan_kernel_bench --main-half-surface <surface.json> --csv quad:<quad.csv> --csv eps:<eps.csv> --case g2 --alpha 5 --core-radius 0.01 --config 28:8 --config 48:8 --limit 0 --out docs/issue84/fan_kernel_bench.json")
     add("python -m tools.issue84.far_field_split --main-half-surface <surface.json> --csv quad:<quad.csv> --csv eps:<eps.csv> --case g2 --alpha 5 --core-radius 0.01 --fan-order 28 --fan-strips 8 --reference-order 48 --reference-strips 32 --ratios 2 3 4 --far-orders 6 8 10 --limit 12 --out docs/issue84/far_field_split.json")

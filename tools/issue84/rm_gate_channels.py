@@ -23,9 +23,9 @@ from panel.p1_coupled_material_wake import TotalVelocity, limits
 REJ = [56, 546, 626, 407, 452, 422, 543, 544, 545, 542, 759, 3]
 OK = [59, 3, 12, 21, 33, 40, 61, 77, 91, 104, 118, 131]
 
-mesh, alpha = build_case([str(ROOT / "runs/half_cad_wingbody_v1/surface.json")])
+mesh, alpha = build_case([str(ROOT / "runs/cases/wingbody/half_cad_wingbody_v1/surface.json")])
 ops = assemble_multi(mesh); state = solve_multi(mesh, alpha, kutta="pressure", operators=ops)
-snap = np.load(str(ROOT / "runs/issue84/g2_ref/iteration_000.npz"))
+snap = np.load(str(ROOT / "runs/studies/rm_bench/g2_ref/iteration_000.npz"))
 state["mu"] = snap["mu"]; state["gamma"] = snap["gamma"]
 
 g = [gg for gg in mesh.groups if gg.name == "main_wing"][0]
@@ -59,4 +59,4 @@ for label, ids in (("analytic_rejected", REJ), ("analytic_eligible", OK)):
         print("%-18s order %3d | eps max %.3e fail %2d/%d | quad max %.3e fail %2d/%d | %.1fs"
               % (label, order, row["eps_max"], row["eps_fail"], len(ids),
                  row["quad_max"], row["quad_fail"], len(ids), row["seconds"]), flush=True)
-json.dump(out, open(str(ROOT / "runs/issue84/rm_gate_channels.json"), "w"), indent=2)
+json.dump(out, open(str(ROOT / "runs/studies/rm_bench/rm_gate_channels.json"), "w"), indent=2)
