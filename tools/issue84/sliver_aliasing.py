@@ -19,8 +19,8 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(os.environ.get("PANEL_ROOT", Path.cwd()))
-sys.path.insert(0, str(ROOT / "runs/pr85_git"))
+ROOT = Path(os.environ.get("PANEL_ROOT", Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(ROOT))
 
 import numpy as np
 

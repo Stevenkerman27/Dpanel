@@ -41,7 +41,7 @@ Invoke-Expression (Get-Content tools/vsp_evidence/evidence_rerun.ps1.txt -Raw)  
 - `runs/benchmarks/vsp_convergence/dp_s0{20,14,10,07,05}/`：DPanel 五档（`case.json` + `mesh/surface.json`）；
 - `runs/benchmarks/vsp_convergence/api_{panel,vlm}_*/`：OpenVSP 3.55 阶梯（`ladder.json`），由 `api_ladder.py` 生成。
 
-DPanel 侧运行环境：`.conda_env`（Py3.11 / JAX 0.10.2 CPU），worktree `runs/pr49_git`（commit `535f907`），
+DPanel 侧运行环境：`.conda_env`（Py3.11 / JAX 0.10.2 CPU），当时的 worktree `runs/pr49_git`（commit `535f907`，2026-11-03 已删除，等价于分支 `research/issue49-vspaero-evidence`），
 `TMP/TEMP/TMPDIR=runs/scratch/pipwork`。VSP 侧运行环境：`C:\Users\zyx20\anaconda3\envs\vsppytools`（OpenVSP 3.55.0）。
 
 ## 相关文档

@@ -12,7 +12,7 @@ potential trace is duplicated at each shared TE node. See docs/archive/issue/ISS
 """Probe: corrected DPanel half-surface adapter for PR59 G1 (TE pairs from upper/lower faces)."""
 import json, sys, numpy as np
 from pathlib import Path
-sys.path.insert(0, r"D:/3D/Projects/panel/runs/pr59_git")
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import panel.p1_lifting_g1 as M
 
 def from_half_fixed(path):
