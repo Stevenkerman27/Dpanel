@@ -221,6 +221,15 @@ panels across a 4:1 rectangle is a coarse mesh, not a code difference.
   does not carry.
 * The spanwise circulation shape agrees within 15 per cent on every case except
   the bwb thick-panel strip reconstruction at the symmetry plane.
+* With both codes integrating the moment about the manifest's reference point,
+  eight gated CM_y comparisons pass, the largest being the rect 0.0189 against a
+  0.02 budget (section 11).
+* Section Cp is comparable and reported on seven strips: 6-7 per cent on the
+  elliptic wing, 21-44 per cent elsewhere, where the comparison method dominates
+  (section 12).
+* On the rect planform the free wake changes CL by -0.29 per cent on the DPanel
+  side and -1.13 per cent on the VSPAERO side, and the free-wake pair still
+  agrees inside the fixed-wake budgets (section 13).
 
 ## 7. Non-claims
 
@@ -231,6 +240,11 @@ panels across a 4:1 rectangle is a coarse mesh, not a code difference.
   usable induced drag at low incidence, and the VLM `k` is 1.8-2.9 times
   DPanel's.
 * No claim about the bwb thick-panel strip loads at the mirror plane.
+* No claim that the section Cp agrees: it is reported, not gated, because the
+  sample layouts differ and the 20-strip average smooths the suction peak.
+* No free-wake claim beyond the rect planform. Three of the four cases are
+  blocked by a native crash in the DPanel `combine_wings` + free-wake path, and
+  the one that runs is geometry-stable but not flow-tangency-converged.
 * No claim about viscous drag, compressibility, or separated flow.
 
 ## 8. Reproduce
@@ -248,6 +262,16 @@ python -m tools.issue92.b3_vspaero --out runs/benchmarks/b3_vspaero/b3/vspaero.j
 python -m tools.issue92.b3_judge
 # markdown tables for this document
 python -m tools.issue92.b3_tables
+# section Cp: one single-angle tecplot run, then the section integrals (section 12)
+python -m tools.issue92.b3_vspaero --modes panel --levels fine --alphas 4.0 \
+    --tecplot --out-dir runs/benchmarks/b3_vspaero/b3/vsp_cp \
+    --out runs/benchmarks/b3_vspaero/b3/vspaero_cp_tecplot.json
+python -m tools.issue92.b3_cp
+# free wake: VSPAERO with WakeIters > 1, then the DPanel march (section 13)
+python -m tools.issue92.b3_vspaero --modes panel --levels fine --alphas 4.0 \
+    --wake-iters 5 --out-dir runs/benchmarks/b3_vspaero/b3/vsp_freewake \
+    --out runs/benchmarks/b3_vspaero/b3/vspaero_freewake.json
+python -m tools.issue92.b3_free_wake
 ```
 
 VSPAERO needs `PYTHONPATH=D:/3D/Projects/OpenVSP-3.55.0-win64/python/openvsp` (2026-11-03: the in-repo binding copies `runs/envs/vsp_py*` were byte-identical duplicates and are no longer needed),
@@ -269,8 +293,13 @@ records what that costs and how the DPanel side was regenerated.
 * `tools/issue92/trefftz_full.py` full-span Trefftz drag with self-test.
 * `tools/issue92/b3_judge.py` thresholds, revisions, comparisons, findings.
 * `tools/issue92/b3_tables.py` the tables in section 4.
+* `tools/issue92/b3_cp.py` section Cp from the VSPAERO tecplot wall and the
+  DPanel panel solution.
+* `tools/issue92/b3_free_wake.py` the fixed-to-free comparison, one child
+  process per case so a native crash cannot take the report with it.
 * `docs/issue92/b3_cases.json` the manifest, `docs/issue92/b3_matrix.json`
-  the gate report.
+  the gate report, `docs/issue92/b3_cp.json` and
+  `docs/issue92/b3_free_wake.json` the two new records.
 
 ## 10. CUDA rerun (2026-11-03)
 
@@ -342,7 +371,162 @@ agreeing with a CPU is a reproducibility statement, and
 `vspaero.json`) were removed during the 2026-11-03 `runs/` reorganisation and
 are not in git. The analysed numbers survive in the committed
 `docs/issue92/b3_matrix.json`, and this rerun restores the DPanel side as
-`dpanel_cpu.json` and `dpanel_cuda.json`. The VSPAERO side has to be
-regenerated (`vsppytools` + OpenVSP 3.55, command in section 8) before the gate
-can be re-run end to end.
+`dpanel_cpu.json` and `dpanel_cuda.json`. The VSPAERO side was regenerated on
+2026-11-03 as `vspaero.json` (sixteen rows, `vsppytools` + OpenVSP 3.55,
+command in section 8), which is what let the moment and section-Cp blocks of
+sections 11 and 12 run at all; the gate was then re-run against the regenerated
+pair and returned the same 48 comparisons and the same four failures.
 
+## 11. Common moment reference (2026-11-03)
+
+The first pass compared lift only, because the two codes were not integrating the
+moment about the same point. DPanel's `make_wing` left `reference_point` at the
+origin, while the VSPAERO sweep was handed `X_cg = 0.25 * cref`, so the two CM
+columns differed by roughly `0.25 * CL` before any physics was involved: the old
+rect polar at `X_cg = 0` reads `CMiy = -0.06268` at alpha = 4, the same case
+re-run with `X_cg = 0.25` reads `CMytot = +0.00528`, and the difference
+`0.0679` is `0.25 * 0.2718 = CL`.
+
+Both sides now use the manifest's `moment_reference`:
+
+* `tools/issue92/b3_dpanel.py` replaces the wing's `reference_point` with the
+  case reference (the dataclass is frozen, so it is `dataclasses.replace`), which
+  also re-scales every CM_y it reports;
+* `tools/issue92/b3_vspaero.py` passes the full `X_cg, Y_cg, Z_cg` triple
+  instead of only the x component.
+
+The moment gate is `|dCM_y| <= 0.02` at the matching angle, plus a 15 per cent
+relative check on the CM_y(alpha) slope wherever DPanel's own slope is at least
+0.01 per degree (below that the relative number divides by noise). Sixteen CM
+comparisons were added; eight are gated and all eight pass:
+
+| case | pair | DPanel CM_y | VSPAERO CM_y | difference |
+| --- | --- | ---: | ---: | ---: |
+| rect | panel/coarse | +0.02415 | +0.00657 | -0.01758 |
+| rect | panel/fine | +0.02415 | +0.00528 | -0.01888 |
+| rect | vlm/coarse | +0.02415 | +0.01173 | -0.01242 |
+| rect | vlm/fine | +0.02415 | +0.00885 | -0.01530 |
+| elliptic | panel/coarse | +0.00879 | +0.00581 | -0.00298 |
+| elliptic | panel/fine | +0.00879 | +0.00619 | -0.00260 |
+| elliptic | vlm/coarse | +0.00879 | +0.01031 | +0.00152 |
+| elliptic | vlm/fine | +0.00879 | +0.01123 | +0.00244 |
+
+The two cambered planforms are reported and not gated, for the same reason the
+intercept is not gated: the VSPAERO rebuild carries `Camber = 0`, so the moment
+there is not about the same geometry (swept30 differs by +0.0906..+0.1053, bwb by
++0.0337..+0.0411).
+
+One number has to be read with its margin stated: rect passes at 0.0189 against a
+0.02 budget, 94 per cent of the allowance. The residual is not noise, and it is
+not a reference-point error either, because it survives the alignment. It says
+DPanel puts the rect load centre about `0.0189 / 0.2718 = 0.070` chord aft of
+where VSPAERO puts it, consistently across both mesh levels and both VSPAERO
+modes. A 0.02 budget that passes at 0.0189 is a weak pass; if this comparison is
+tightened later, that offset is the thing to explain first.
+
+The verdict of the gate is unchanged: 48 comparisons, the same four failures with
+the same attribution.
+
+## 12. Section Cp (reported, not gated)
+
+Section pressure is the one item of the B3 list that needs a data source the
+first pass did not have. Three were tried:
+
+* `<case>.case.<n>.quad.<m>.dat` looks like a surface file, but it is the
+  **flow-field cut plane**: every node sits at `y = 0`, the plane spans
+  `x = -20..21`, `z = -20..20`, and the first four points are the far field.
+  Its Cp is not a wall Cp.
+* OpenVSP's `AddCpSlice` did not add a plane VSPAERO writes: after the call the
+  `.vsp3` still holds only mass and pressure slices, and the run still emits a
+  single cut (`quad.1`).
+* `vspaero.exe -writetecplot` does write the wall: `<case>.tec.dat` is ASCII
+  with `ZONE N=..., E=..., T="wall", VARLOCATION=([1-3]=NODAL,[4]=CELLCENTERED),
+  ZONETYPE=FETRIANGLE`, followed by the node coordinates, one cell-centred Cp per
+  triangle and the connectivity. It holds exactly one solution, so the comparison
+  runs at alpha = 4 degrees alone.
+
+`tools/issue92/b3_cp.py` bins both sides into 20 chordwise strips at 40 and 75
+per cent semi-span and integrates `cn = \int (Cp_lower - Cp_upper) d(x/c)`.
+Seven sections survive the minimum-bin filter (the rect inboard strip yields only
+eight DPanel panels):
+
+| case | station | y | DPanel cn | VSPAERO cn | relative |
+| --- | --- | ---: | ---: | ---: | ---: |
+| rect | outboard | 1.500 | +0.2329 | +0.1837 | 0.2113 |
+| swept30 | inboard | 0.800 | +0.4180 | +0.2492 | 0.4038 |
+| swept30 | outboard | 1.500 | +0.4306 | +0.2425 | 0.4368 |
+| elliptic | inboard | 0.800 | +0.2516 | +0.2364 | 0.0604 |
+| elliptic | outboard | 1.500 | +0.2437 | +0.2269 | 0.0691 |
+| bwb | inboard | 0.400 | +0.3354 | +0.1933 | 0.4236 |
+| bwb | outboard | 0.750 | +0.3727 | +0.2191 | 0.4123 |
+
+**This is reported, not gated.** On the thin, untwisted, constant-chord elliptic
+wing the two sections agree to 6-7 per cent, which is what a real agreement looks
+like; everywhere else DPanel is 21-44 per cent higher. Most of that spread is in
+the comparison method rather than in the codes: VSPAERO samples cell-centred
+triangles while DPanel has quad panels, and a 20-strip average smooths the
+leading-edge suction peak that carries a large share of the section force and
+sits in a single strip on one side only. Turning this into a gate would first
+need a chordwise density convergence study on both sides; until then the numbers
+are recorded in `docs/issue92/b3_cp.json` and the gate note in that file says the
+same thing.
+
+## 13. Fixed wake to free wake (2026-11-03)
+
+Rule 4 asked for the free wake only after the fixed wake, so it runs last, at the
+same angle, and only where the fixed-wake gate did not fail on that mode/level
+pair.
+
+**VSPAERO side** ran all four cases with `WakeIters = 5` (the rest of the sweep
+configuration unchanged, panel mode, fine mesh):
+
+| case | CL fixed | CL free | CM_y fixed | CM_y free |
+| --- | ---: | ---: | ---: | ---: |
+| rect | 0.27180 | 0.26874 | +0.00528 | +0.00556 |
+| swept30 | 0.28916 | 0.28573 | -0.14296 | -0.14248 |
+| elliptic | 0.29513 | 0.29172 | +0.00619 | +0.00658 |
+| bwb | 0.22935 | 0.22649 | -0.01208 | -0.00864 |
+
+**DPanel side** marches `panel/p1_steady_free_wake.py` at a 0.3 relaxation for 60
+iterations. It produces the rect answer and then dies with a native access
+violation on the other three planforms:
+
+| case | outcome |
+| --- | --- |
+| rect | 60 iterations, 2.5 s, wake geometry change 1.5e-10 |
+| swept30 | process exit 3221225477 (`0xC0000005`), no Python traceback |
+| elliptic | same |
+| bwb | same |
+
+The crash is not in the solver itself: `solve(wing)` on swept30 returns
+`CL = 0.4098970463282688` in the same interpreter, and the bundled two-component
+fixture (`python -m panel.run_p1_steady_wake --alpha 5 --iterations 3
+--wake-panels 6`) also runs, so the failure sits in the `combine_wings` +
+free-wake path for these CAD-derived full-span wings. Raising or lowering the
+BLAS/OpenMP thread counts does not change it, and `faulthandler` prints nothing.
+It is recorded as a blocker, not worked around: each case runs in its own child
+process so the report survives, and the exit code is kept in
+`docs/issue92/b3_free_wake.json` together with the reproduction command.
+
+For the one case that runs, the free wake agrees with VSPAERO inside the same
+budgets as the fixed wake:
+
+| quantity | value |
+| --- | --- |
+| DPanel CL, fixed to free | 0.25746 -> 0.25671 (-0.29 %) |
+| VSPAERO CL, fixed to free | 0.27180 -> 0.26874 (-1.13 %) |
+| DPanel free CL against VSPAERO free | 0.25671 vs 0.26874, -4.68 % (pass, 15 %) |
+| DPanel free CM_y against VSPAERO free | +0.02446 vs +0.00556, 0.0189 (pass, 0.02) |
+| wake geometry change, last iteration | 1.5e-10 |
+| normal-flow residual, last iteration | 0.0130 against a 0.01 tolerance (not converged) |
+
+The moment difference is the fixed-wake offset carried over, not a new one:
+DPanel's free-wake CM_y (+0.02446) is where its fixed wake already was
+(+0.02415), so relaxing the wake changes the moment by 0.0003 while the gap to
+VSPAERO stays at 0.0189.
+
+Two honesty notes. The geometry is converged (1.5e-10) but the normal-flow gate
+is not (0.013 against 0.01), so this is a geometry-stable wake and not a
+flow-tangency-converged one; the module documents that the two are distinct. And
+one case out of four is not a free-wake validation: three quarters of the block
+is blocked by the crash above.

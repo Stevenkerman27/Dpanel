@@ -33,12 +33,22 @@ THRESHOLDS = {
     "intercept_absolute": 0.02,
     "cd_relative": 0.30,
     "gamma_shape_rms_relative": 0.15,
+    # CM_y about the shared reference point: absolute difference at alpha=4 and,
+    # where DPanel's own slope is measurable, 15% relative on the slope.  Both
+    # numbers are the CL criteria, reused rather than newly invented.
+    "cm_absolute": 0.02,
+    "cm_slope_relative": 0.15,
+    "cm_slope_floor_per_deg": 0.01,
 }
 REVISIONS = [
     "intercept is gated only for uncambered cases (DPanel CL at alpha=0 <= 0.02);"
     " the VSPAERO rebuild omits camber, so the camber offset is reported",
     "induced drag is gated only for VLM runs; thick-panel CDi goes negative at"
     " zero incidence and is reported without a threshold",
+    "CM_y reuses the CL numbers (0.02 absolute at alpha=4, 15% relative slope"
+    " above 0.01/deg) because no independent pitching-moment criterion was"
+    " pre-registered; the reference point is the case moment_reference, which"
+    " is also handed to VSPAERO as X_cg/Y_cg/Z_cg",
 ]
 
 
@@ -107,7 +117,7 @@ def judge(cases_doc, dpanel_doc, vspaero_doc, out_path):
         entry = dict(geometry_sha256=spec["geometry_sha256"],
                      camber_omitted=True, dpanel={}, vspaero={}, comparisons={},
                      cd_report={})
-        for key in ("CL", "CL_gamma", "CD_pressure", "CD_trefftz"):
+        for key in ("CL", "CL_gamma", "CD_pressure", "CD_trefftz", "CM_y"):
             values = [row.get(key) for row in dp_rows]
             if any(v is None for v in values):
                 continue
@@ -126,7 +136,8 @@ def judge(cases_doc, dpanel_doc, vspaero_doc, out_path):
             block = dict(exit=row["exit"], panels=row["mesh"]["panels"],
                          panel_types=row["mesh"]["panel_types"],
                          area=row["mesh"]["area"], alphas=[r["AoA"] for r in polar])
-            for key in ("CLi", "CLtot", "CLwtot", "CDi", "CDtot", "CDwtot", "CLo"):
+            for key in ("CLi", "CLtot", "CLwtot", "CDi", "CDtot", "CDwtot", "CLo",
+                        "CMytot", "CMoy", "CMiy"):
                 if polar and key in polar[0]:
                     block[key] = dict(
                         fit=_fit([r["AoA"] for r in polar], [r[key] for r in polar]),
@@ -169,6 +180,43 @@ def judge(cases_doc, dpanel_doc, vspaero_doc, out_path):
                     k_relative=(abs(k_vsp - k_dp) / abs(k_dp)) if (k_vsp and k_dp) else None,
                     cdi_at_zero=float(min(row["polar"], key=lambda r: abs(r["AoA"]))["CDi"]),
                     gated=False)
+            # pitching moment about the shared reference point (CM_y, pitch axis)
+            if "CM_y" in entry["dpanel"] and "CMytot" in block:
+                dp_cm, vsp_cm = entry["dpanel"]["CM_y"], block["CMytot"]
+                difference = vsp_cm["at_4deg"] - dp_cm["at_4deg"]
+                slope_dp = dp_cm["fit"]["slope_per_deg"]
+                ok_abs = abs(difference) <= THRESHOLDS["cm_absolute"]
+                slope_rel = None
+                ok_slope = True
+                if abs(slope_dp) >= THRESHOLDS["cm_slope_floor_per_deg"]:
+                    slope_rel = abs(vsp_cm["fit"]["slope_per_deg"] - slope_dp) / abs(slope_dp)
+                    ok_slope = slope_rel <= THRESHOLDS["cm_slope_relative"]
+                # Same rule as the lift intercept: where the two inputs do not
+                # carry the same camber, a moment offset is an input difference,
+                # so the row is reported without a verdict.
+                gated = not cambered
+                comp = dict(gated=bool(gated),
+                            cm_dpanel_at_4deg=dp_cm["at_4deg"],
+                            cm_vspaero_at_4deg=vsp_cm["at_4deg"],
+                            cm_difference=float(difference),
+                            cm_absolute_ok=bool(ok_abs),
+                            cm_slope_relative=None if slope_rel is None else float(slope_rel),
+                            cm_slope_ok=bool(ok_slope),
+                            dpanel_slope_per_deg=slope_dp,
+                            vspaero_slope_per_deg=vsp_cm["fit"]["slope_per_deg"],
+                            passed=bool((ok_abs and ok_slope) if gated else True))
+                if "CMoy" in block and "CMiy" in block:
+                    comp["vspaero_components_at_4deg"] = dict(
+                        CMoy=block["CMoy"]["at_4deg"], CMiy=block["CMiy"]["at_4deg"])
+                if not gated:
+                    comp["note"] = ("VSPAERO rebuilds this section with Camber=0, so the "
+                                    "moment is reported and not gated")
+                entry["comparisons"]["%s:cm_y" % tag] = comp
+                if gated and not comp["passed"]:
+                    report["findings"].append(dict(
+                        case=name, kind="cm_y", pair=tag,
+                        cm_difference=float(difference),
+                        classification=("discretization" if ok_slope else "model_form")))
             # spanwise circulation shape (both modes; the strips come from the .lod)
             if True:
                 dp_row4 = min(dp_rows, key=lambda r: abs(r["alpha_deg"] - 4.0))
@@ -232,6 +280,9 @@ def main(argv=None):
             if "slope_relative" in comp:
                 print("   %-34s slope_rel %.4f  camber_offset %+.4f  pass %s" % (
                     pair, comp["slope_relative"], comp["camber_lift_offset"], comp["passed"]))
+            elif "cm_difference" in comp:
+                print("   %-34s dCM %+.4f  pass %s" % (
+                    pair, comp["cm_difference"], comp["passed"]))
             elif "cd_relative" in comp:
                 print("   %-34s cd_rel %s  pass %s" % (
                     pair, "%.3f" % comp["cd_relative"] if comp["cd_relative"] is not None else "n/a",

@@ -20,7 +20,7 @@ PR 报告、过程分析一律进 `archive/`。目标是：新人打开这一页
 | 测试基线、已知失败、环境矩阵 | [TEST_STATUS.md](TEST_STATUS.md)（历史 PR 口径见 [archive/notes/TEST_HEALTH_2026-10-30.md](archive/notes/TEST_HEALTH_2026-10-30.md)） |
 | 某个模块被删了，代码去哪找 | [RETIRED_RESEARCH.md](RETIRED_RESEARCH.md)（含归档 tag 与 checkout 方法） |
 | VSPAERO 对照工具怎么用、有哪些坑 | [VSPAPI.md](VSPAPI.md) |
-| VSPAERO 四几何对照协议、32 项判定、CUDA 复跑 | [ISSUE92_B3_VSPAERO_PROTOCOL.md](ISSUE92_B3_VSPAERO_PROTOCOL.md) |
+| VSPAERO 四几何对照协议、48 项判定、CUDA 复跑、共同参考点力矩、剖面 Cp、固定与自由尾迹 | [ISSUE92_B3_VSPAERO_PROTOCOL.md](ISSUE92_B3_VSPAERO_PROTOCOL.md) |
 | 协作与验收流程（回执、先声明阈值） | [WORKFLOW.md](WORKFLOW.md) |
 
 ## 2. 证据包（原始数据，按 issue 编号）

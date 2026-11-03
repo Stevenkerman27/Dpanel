@@ -76,16 +76,42 @@ def _geometry(vsp, mode):
     return Path(vsp.GetStringResults(result, "VSPGeomFileName")[0])
 
 
-def _sweep_config(spec):
+# Span fractions where the Cp comparison wants a cut plane.  VSPAERO only
+# writes surface Cp onto CpSlice planes, so the stations have to be part of the
+# model; the slice data lands in <case>.case.<n>.quad.<m>.dat with m counting
+# the slices in the order they were added.
+CP_STATIONS = (0.40, 0.75)
+
+
+def _add_cp_slices(vsp, spec):
+    half = float(spec["half_span"])
+    return [dict(index=i, cut="y", location=float(frac * half))
+            for i, frac in enumerate(CP_STATIONS, start=1)]
+
+
+def _apply_cp_slices(vsp, spec):
+    out = []
+    for item in _add_cp_slices(vsp, spec):
+        sid = vsp.AddCpSlice(1, item["location"])   # 1 == cut normal to y
+        out.append(dict(item, id=str(sid)))
+    return out
+
+
+def _sweep_config(spec, wake_iters=1, wake_nodes=16):
     from vspapi.config import SweepConfig
+    # The moment reference is a vector; passing only x_cg would put VSPAERO's
+    # moment about a different axis line than the one DPanel integrates.
+    ref = [float(v) for v in spec["moment_reference"]]
     return SweepConfig(sref=float(spec["sref"]), cref=float(spec["cref"]),
-                       bref=float(2.0 * spec["half_span"]), x_cg=float(spec["moment_reference"][0]),
+                       bref=float(2.0 * spec["half_span"]),
+                       x_cg=ref[0], y_cg=ref[1], z_cg=ref[2],
                        mach=0.0, alpha=list(spec["alphas_deg"]), beta=0.0,
-                       symmetry=int(spec["symmetry"]), wake_iters=1, wake_nodes=16,
-                       wake_relax=1.0, tecplot=0)
+                       symmetry=int(spec["symmetry"]), wake_iters=int(wake_iters),
+                       wake_nodes=int(wake_nodes), wake_relax=1.0, tecplot=0)
 
 
-def run_case(name, spec, *, alphas, levels, modes, out_dir, exe, ncpu=8):
+def run_case(name, spec, *, alphas, levels, modes, out_dir, exe, ncpu=8,
+             cp_slices=False, tecplot=False, wake_iters=1, wake_nodes=16):
     vsp = _openvsp()
     rows = []
     for mode in modes:
@@ -97,17 +123,24 @@ def run_case(name, spec, *, alphas, levels, modes, out_dir, exe, ncpu=8):
             base = dict(spec, name=name, alphas_deg=list(alphas))
             _geometry.symmetry = int(base["symmetry"])
             _build_wing(vsp, base, level)
+            slices = _apply_cp_slices(vsp, base) if cp_slices else []
             vsp.Update()
             vsp.WriteVSPFile(str(work / (name + ".vsp3")), int(getattr(vsp, "SET_ALL", 0)))
             geom_path = _geometry(vsp, mode)
             geom_local = work / (name + ".vspgeom")
             geom_local.write_bytes(Path(geom_path).read_bytes())
-            cfg = _sweep_config(base)
+            cfg = _sweep_config(base, wake_iters=wake_iters, wake_nodes=wake_nodes)
             cfg.write(work / (name + ".vspaero"))
-            proc = subprocess.run([exe, "-omp", str(ncpu), name], cwd=work,
-                                  capture_output=True, text=True)
+            cmd = [exe, "-omp", str(ncpu)]
+            if tecplot:
+                # Only this flag makes VSPAERO write surface Cp; the .dat
+                # files are cut planes through the field, not the wall.
+                cmd.append("-writetecplot")
+            cmd.append(name)
+            proc = subprocess.run(cmd, cwd=work, capture_output=True, text=True)
             row = dict(case=name, mode=mode, level=level, exit=int(proc.returncode),
-                       workdir=str(work))
+                       workdir=str(work), cp_slices=slices,
+                       wake_iters=int(wake_iters), wake_nodes=int(wake_nodes))
             polar = work / (name + ".polar")
             if polar.exists():
                 from vspapi.results import read_polar
@@ -132,6 +165,16 @@ def main(argv=None):
     parser.add_argument("--levels", nargs="*", default=["coarse", "fine"])
     parser.add_argument("--modes", nargs="*", default=["panel", "vlm"])
     parser.add_argument("--ncpu", type=int, default=8)
+    parser.add_argument("--cp-slices", action="store_true",
+                        help="model Cp cut planes so surface Cp is written")
+    parser.add_argument("--tecplot", action="store_true",
+                        help="pass -writetecplot so surface Cp lands in <case>.tec.dat")
+    parser.add_argument("--alphas", nargs="*", type=float, default=None,
+                        help="override the angle list (Tecplot carries one solution)")
+    parser.add_argument("--wake-iters", type=int, default=1,
+                        help="wake iterations; >1 relaxes a free wake")
+    parser.add_argument("--wake-nodes", type=int, default=16,
+                        help="streamwise wake nodes")
     args = parser.parse_args(argv)
     doc = json.loads(args.cases.read_text(encoding="utf-8"))
     exe = os.environ.get("VSPAERO_EXE") or str(Path(
@@ -140,9 +183,12 @@ def main(argv=None):
     for name, spec in doc["cases"].items():
         if args.only and name not in args.only:
             continue
-        rows.extend(run_case(name, spec, alphas=doc.get("alphas_deg", [0., 2., 4., 6.]),
+        alphas = args.alphas if args.alphas else doc.get("alphas_deg", [0., 2., 4., 6.])
+        rows.extend(run_case(name, spec, alphas=alphas,
                              levels=args.levels, modes=args.modes,
-                             out_dir=args.out_dir, exe=exe, ncpu=args.ncpu))
+                             out_dir=args.out_dir, exe=exe, ncpu=args.ncpu,
+                             cp_slices=args.cp_slices, tecplot=args.tecplot,
+                             wake_iters=args.wake_iters, wake_nodes=args.wake_nodes))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(dict(rows=rows), indent=2), encoding="utf-8")
     print("wrote", args.out, "rows", len(rows))

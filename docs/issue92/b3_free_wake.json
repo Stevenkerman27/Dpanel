@@ -1,0 +1,586 @@
+{
+  "schema": "dpanel.issue92.b3.free_wake.v1",
+  "alpha_deg": 4.0,
+  "thresholds": {
+    "cl_relative": 0.15,
+    "cm_absolute": 0.02
+  },
+  "cm_note": "CM_y stays report-only for the cambered planforms: VSPAERO rebuilds those sections with Camber=0, so the two moment references do not describe the same geometry there.",
+  "method": "DPanel steady free wake (panel/p1_steady_free_wake.py) against VSPAERO WakeIters>1, panel mode, fine mesh, one angle; free wake is gated only for cases whose fixed-wake gate in b3_matrix.json did not fail",
+  "iterations": 60,
+  "relaxation": 0.3,
+  "cases": {
+    "rect": {
+      "cambered": false,
+      "fixed_wake_eligible": true,
+      "blocked_by": null,
+      "dpanel": {
+        "iterations": 60,
+        "seconds": 2.540550599922426,
+        "geometry_stable": true,
+        "converged": false,
+        "wake_geometry_change": 1.4530773347712196e-10,
+        "normal_slip_rms": {
+          "lifting_0": 0.013016943699199956
+        },
+        "history": [
+          {
+            "iteration": 0,
+            "CL": 0.25614445085049137,
+            "CL_gamma": 0.2256437249928625,
+            "CM_y": 0.02458163852709922,
+            "CD_pressure": -0.019765451682762555,
+            "wake_geometry_change": 0.12047431080966611
+          },
+          {
+            "iteration": 1,
+            "CL": 0.25630746093739737,
+            "CL_gamma": 0.22571102625672676,
+            "CM_y": 0.024544867506089238,
+            "CD_pressure": -0.019737643217559823,
+            "wake_geometry_change": 0.0843169933804882
+          },
+          {
+            "iteration": 2,
+            "CL": 0.2564256196583061,
+            "CL_gamma": 0.22576202020226188,
+            "CM_y": 0.024518888039232842,
+            "CD_pressure": -0.019718047597063304,
+            "wake_geometry_change": 0.058991709628997614
+          },
+          {
+            "iteration": 3,
+            "CL": 0.25651036091080287,
+            "CL_gamma": 0.22579965988139789,
+            "CM_y": 0.02450052596119505,
+            "CD_pressure": -0.01970426741292335,
+            "wake_geometry_change": 0.04126842806090158
+          },
+          {
+            "iteration": 4,
+            "CL": 0.2565707011003136,
+            "CL_gamma": 0.22582698344708194,
+            "CM_y": 0.024487546544837098,
+            "CD_pressure": -0.01969458961304295,
+            "wake_geometry_change": 0.028871096900344433
+          },
+          {
+            "iteration": 5,
+            "CL": 0.25661345505665123,
+            "CL_gamma": 0.22584660147717467,
+            "CM_y": 0.024478372497119434,
+            "CD_pressure": -0.019687798979514504,
+            "wake_geometry_change": 0.020201062995242516
+          },
+          {
+            "iteration": 6,
+            "CL": 0.256643644004657,
+            "CL_gamma": 0.2258605824940268,
+            "CM_y": 0.024471889118519417,
+            "CD_pressure": -0.01968303717601679,
+            "wake_geometry_change": 0.01413786860803372
+          },
+          {
+            "iteration": 7,
+            "CL": 0.25666490841944367,
+            "CL_gamma": 0.22587049493744069,
+            "CM_y": 0.024467308161972658,
+            "CD_pressure": -0.01967969957820163,
+            "wake_geometry_change": 0.00989728178889476
+          },
+          {
+            "iteration": 8,
+            "CL": 0.25667985993396053,
+            "CL_gamma": 0.22587749717747957,
+            "CM_y": 0.024464072109479512,
+            "CD_pressure": -0.019677361029531625,
+            "wake_geometry_change": 0.006930856306695452
+          },
+          {
+            "iteration": 9,
+            "CL": 0.25669035881404295,
+            "CL_gamma": 0.22588243058873886,
+            "CM_y": 0.024461786637441602,
+            "CD_pressure": -0.01967572292607642,
+            "wake_geometry_change": 0.004855217439278232
+          },
+          {
+            "iteration": 10,
+            "CL": 0.2566977236650563,
+            "CL_gamma": 0.2258858996332641,
+            "CM_y": 0.024460172883320315,
+            "CD_pressure": -0.019674575720898587,
+            "wake_geometry_change": 0.0034024340741569746
+          },
+          {
+            "iteration": 11,
+            "CL": 0.2567028859590216,
+            "CL_gamma": 0.2258883353591677,
+            "CM_y": 0.024459033677061738,
+            "CD_pressure": -0.019673772451363404,
+            "wake_geometry_change": 0.0023852611338556983
+          },
+          {
+            "iteration": 12,
+            "CL": 0.2567065020940963,
+            "CL_gamma": 0.22589004357566278,
+            "CM_y": 0.02445822964237935,
+            "CD_pressure": -0.019673210093318495,
+            "wake_geometry_change": 0.0016728286514339364
+          },
+          {
+            "iteration": 13,
+            "CL": 0.25670903380995286,
+            "CL_gamma": 0.22589124045358827,
+            "CM_y": 0.024457662281507163,
+            "CD_pressure": -0.019672816449152954,
+            "wake_geometry_change": 0.001173651412598486
+          },
+          {
+            "iteration": 14,
+            "CL": 0.25671080548884284,
+            "CL_gamma": 0.2258920783992744,
+            "CM_y": 0.024457262003776396,
+            "CD_pressure": -0.019672540937654026,
+            "wake_geometry_change": 0.0008237601939659966
+          },
+          {
+            "iteration": 15,
+            "CL": 0.2567120447888774,
+            "CL_gamma": 0.2258926646548386,
+            "CM_y": 0.02445697965461848,
+            "CD_pressure": -0.01967234812973494,
+            "wake_geometry_change": 0.0005784124659753802
+          },
+          {
+            "iteration": 16,
+            "CL": 0.256712911360042,
+            "CL_gamma": 0.22589307457083968,
+            "CM_y": 0.024456780522974432,
+            "CD_pressure": -0.019672213214063605,
+            "wake_geometry_change": 0.00040630323381622496
+          },
+          {
+            "iteration": 17,
+            "CL": 0.2567135170893087,
+            "CL_gamma": 0.225893361029085,
+            "CM_y": 0.02445664010311455,
+            "CD_pressure": -0.01967211881780632,
+            "wake_geometry_change": 0.0002855215731703407
+          },
+          {
+            "iteration": 18,
+            "CL": 0.25671394034845796,
+            "CL_gamma": 0.22589356110791156,
+            "CM_y": 0.024456541098142433,
+            "CD_pressure": -0.019672052778284144,
+            "wake_geometry_change": 0.00020072593982591033
+          },
+          {
+            "iteration": 19,
+            "CL": 0.25671423600818605,
+            "CL_gamma": 0.22589370078465015,
+            "CM_y": 0.024456471302015725,
+            "CD_pressure": -0.019672006581535843,
+            "wake_geometry_change": 0.00014117040359139216
+          },
+          {
+            "iteration": 20,
+            "CL": 0.2567144424696411,
+            "CL_gamma": 0.22589379824695038,
+            "CM_y": 0.024456422102918655,
+            "CD_pressure": -0.0196719742684406,
+            "wake_geometry_change": 9.932506452199593e-05
+          },
+          {
+            "iteration": 21,
+            "CL": 0.256714586597676,
+            "CL_gamma": 0.22589386622091717,
+            "CM_y": 0.02445638742605122,
+            "CD_pressure": -0.019671951668541108,
+            "wake_geometry_change": 6.991146274945871e-05
+          },
+          {
+            "iteration": 22,
+            "CL": 0.2567146871799704,
+            "CL_gamma": 0.22589391360627314,
+            "CM_y": 0.02445636298696652,
+            "CD_pressure": -0.019671935863475612,
+            "wake_geometry_change": 4.922791043422536e-05
+          },
+          {
+            "iteration": 23,
+            "CL": 0.256714757351092,
+            "CL_gamma": 0.22589394662360307,
+            "CM_y": 0.024456345764409755,
+            "CD_pressure": -0.019671924811272896,
+            "wake_geometry_change": 3.4677430632619726e-05
+          },
+          {
+            "iteration": 24,
+            "CL": 0.25671480629051185,
+            "CL_gamma": 0.22589396961872205,
+            "CM_y": 0.024456333628198858,
+            "CD_pressure": -0.019671917083308618,
+            "wake_geometry_change": 2.4437333924872396e-05
+          },
+          {
+            "iteration": 25,
+            "CL": 0.25671484041153675,
+            "CL_gamma": 0.22589398562624435,
+            "CM_y": 0.024456325076620537,
+            "CD_pressure": -0.019671911680173695,
+            "wake_geometry_change": 1.722784416160864e-05
+          },
+          {
+            "iteration": 26,
+            "CL": 0.25671486419350087,
+            "CL_gamma": 0.22589399676422767,
+            "CM_y": 0.024456319051126232,
+            "CD_pressure": -0.01967190790278215,
+            "wake_geometry_change": 1.2150018677555532e-05
+          },
+          {
+            "iteration": 27,
+            "CL": 0.25671488076392324,
+            "CL_gamma": 0.22589400451025182,
+            "CM_y": 0.02445631480565247,
+            "CD_pressure": -0.019671905262172204,
+            "wake_geometry_change": 8.572163875920031e-06
+          },
+          {
+            "iteration": 28,
+            "CL": 0.25671489230586975,
+            "CL_gamma": 0.2258940098946813,
+            "CM_y": 0.024456311814405968,
+            "CD_pressure": -0.019671903416376885,
+            "wake_geometry_change": 6.050203990635889e-06
+          },
+          {
+            "iteration": 29,
+            "CL": 0.2567149003426637,
+            "CL_gamma": 0.22589401363567424,
+            "CM_y": 0.024456309706866707,
+            "CD_pressure": -0.019671902126254644,
+            "wake_geometry_change": 4.2718307132379276e-06
+          },
+          {
+            "iteration": 30,
+            "CL": 0.2567149059369206,
+            "CL_gamma": 0.2258940162335277,
+            "CM_y": 0.024456308221955863,
+            "CD_pressure": -0.019671901224586532,
+            "wake_geometry_change": 3.017316556175489e-06
+          },
+          {
+            "iteration": 31,
+            "CL": 0.25671490982965905,
+            "CL_gamma": 0.2258940180366258,
+            "CM_y": 0.02445630717571674,
+            "CD_pressure": -0.019671900594454013,
+            "wake_geometry_change": 2.132008021569082e-06
+          },
+          {
+            "iteration": 32,
+            "CL": 0.256714912537493,
+            "CL_gamma": 0.2258940192874619,
+            "CM_y": 0.02445630643853759,
+            "CD_pressure": -0.01967190015411379,
+            "wake_geometry_change": 1.5070099332433181e-06
+          },
+          {
+            "iteration": 33,
+            "CL": 0.2567149144204402,
+            "CL_gamma": 0.22589402015472287,
+            "CM_y": 0.024456305919104634,
+            "CD_pressure": -0.019671899846422057,
+            "wake_geometry_change": 1.0656163311583874e-06
+          },
+          {
+            "iteration": 34,
+            "CL": 0.2567149157293103,
+            "CL_gamma": 0.22589402075569429,
+            "CM_y": 0.02445630555308663,
+            "CD_pressure": -0.01967189963143401,
+            "wake_geometry_change": 7.537740083122352e-07
+          },
+          {
+            "iteration": 35,
+            "CL": 0.2567149166388316,
+            "CL_gamma": 0.22589402117193264,
+            "CM_y": 0.024456305295154065,
+            "CD_pressure": -0.019671899481227304,
+            "wake_geometry_change": 5.333779030494131e-07
+          },
+          {
+            "iteration": 36,
+            "CL": 0.25671491727059814,
+            "CL_gamma": 0.22589402146003873,
+            "CM_y": 0.024456305113381774,
+            "CD_pressure": -0.0196718993762885,
+            "wake_geometry_change": 3.7755518929608054e-07
+          },
+          {
+            "iteration": 37,
+            "CL": 0.2567149177092765,
+            "CL_gamma": 0.22589402165934683,
+            "CM_y": 0.02445630498527071,
+            "CD_pressure": -0.019671899302979867,
+            "wake_geometry_change": 2.6734695952234473e-07
+          },
+          {
+            "iteration": 38,
+            "CL": 0.2567149180137708,
+            "CL_gamma": 0.22589402179714813,
+            "CM_y": 0.02445630489497115,
+            "CD_pressure": -0.01967189925176929,
+            "wake_geometry_change": 1.8937270288413674e-07
+          },
+          {
+            "iteration": 39,
+            "CL": 0.2567149182250252,
+            "CL_gamma": 0.22589402189234697,
+            "CM_y": 0.024456304831322356,
+            "CD_pressure": -0.019671899215998816,
+            "wake_geometry_change": 1.3418518033576015e-07
+          },
+          {
+            "iteration": 40,
+            "CL": 0.2567149183715562,
+            "CL_gamma": 0.22589402195809366,
+            "CM_y": 0.02445630478644786,
+            "CD_pressure": -0.01967189919101305,
+            "wake_geometry_change": 9.511184298529541e-08
+          },
+          {
+            "iteration": 41,
+            "CL": 0.25671491847313943,
+            "CL_gamma": 0.22589402200345868,
+            "CM_y": 0.02445630475481044,
+            "CD_pressure": -0.019671899173562196,
+            "wake_geometry_change": 6.743810099811958e-08
+          },
+          {
+            "iteration": 42,
+            "CL": 0.25671491854354267,
+            "CL_gamma": 0.22589402203474807,
+            "CM_y": 0.024456304732500534,
+            "CD_pressure": -0.01967189916137355,
+            "wake_geometry_change": 4.783151678357726e-08
+          },
+          {
+            "iteration": 43,
+            "CL": 0.2567149185923037,
+            "CL_gamma": 0.2258940220563022,
+            "CM_y": 0.02445630471676877,
+            "CD_pressure": -0.019671899152861726,
+            "wake_geometry_change": 3.393589642089693e-08
+          },
+          {
+            "iteration": 44,
+            "CL": 0.2567149186260679,
+            "CL_gamma": 0.22589402207114528,
+            "CM_y": 0.024456304705673476,
+            "CD_pressure": -0.019671899146917343,
+            "wake_geometry_change": 2.4084521846222763e-08
+          },
+          {
+            "iteration": 45,
+            "CL": 0.25671491864943213,
+            "CL_gamma": 0.22589402208135678,
+            "CM_y": 0.024456304697846595,
+            "CD_pressure": -0.0196718991427663,
+            "wake_geometry_change": 1.7098060113265032e-08
+          },
+          {
+            "iteration": 46,
+            "CL": 0.25671491866560714,
+            "CL_gamma": 0.22589402208838816,
+            "CM_y": 0.024456304692322135,
+            "CD_pressure": -0.019671899139867045,
+            "wake_geometry_change": 1.2141862990256295e-08
+          },
+          {
+            "iteration": 47,
+            "CL": 0.25671491867678964,
+            "CL_gamma": 0.2258940220932168,
+            "CM_y": 0.024456304688424642,
+            "CD_pressure": -0.019671899137842525,
+            "wake_geometry_change": 8.624843746360134e-09
+          },
+          {
+            "iteration": 48,
+            "CL": 0.2567149186845131,
+            "CL_gamma": 0.22589402209652687,
+            "CM_y": 0.02445630468567514,
+            "CD_pressure": -0.01967189913642898,
+            "wake_geometry_change": 6.128289121942664e-09
+          },
+          {
+            "iteration": 49,
+            "CL": 0.2567149186898553,
+            "CL_gamma": 0.22589402209880236,
+            "CM_y": 0.024456304683733165,
+            "CD_pressure": -0.01967189913544174,
+            "wake_geometry_change": 4.355635617889725e-09
+          },
+          {
+            "iteration": 50,
+            "CL": 0.2567149186935347,
+            "CL_gamma": 0.225894022100355,
+            "CM_y": 0.024456304682363803,
+            "CD_pressure": -0.01967189913475309,
+            "wake_geometry_change": 3.096550241959958e-09
+          },
+          {
+            "iteration": 51,
+            "CL": 0.2567149186960783,
+            "CL_gamma": 0.22589402210142112,
+            "CM_y": 0.02445630468139643,
+            "CD_pressure": -0.019671899134271875,
+            "wake_geometry_change": 2.202065321777381e-09
+          },
+          {
+            "iteration": 52,
+            "CL": 0.2567149186978274,
+            "CL_gamma": 0.22589402210214513,
+            "CM_y": 0.0244563046807136,
+            "CD_pressure": -0.01967189913393603,
+            "wake_geometry_change": 1.5663529410828234e-09
+          },
+          {
+            "iteration": 53,
+            "CL": 0.256714918699045,
+            "CL_gamma": 0.22589402210265136,
+            "CM_y": 0.024456304680229267,
+            "CD_pressure": -0.019671899133700915,
+            "wake_geometry_change": 1.1144325621641976e-09
+          },
+          {
+            "iteration": 54,
+            "CL": 0.2567149186998736,
+            "CL_gamma": 0.22589402210298654,
+            "CM_y": 0.02445630467988874,
+            "CD_pressure": -0.019671899133537455,
+            "wake_geometry_change": 7.931200700835124e-10
+          },
+          {
+            "iteration": 55,
+            "CL": 0.25671491870044805,
+            "CL_gamma": 0.22589402210321974,
+            "CM_y": 0.024456304679647812,
+            "CD_pressure": -0.019671899133422845,
+            "wake_geometry_change": 5.645693039618445e-10
+          },
+          {
+            "iteration": 56,
+            "CL": 0.25671491870084034,
+            "CL_gamma": 0.22589402210337542,
+            "CM_y": 0.02445630467947812,
+            "CD_pressure": -0.019671899133343138,
+            "wake_geometry_change": 4.019945287583255e-10
+          },
+          {
+            "iteration": 57,
+            "CL": 0.25671491870111324,
+            "CL_gamma": 0.2258940221034833,
+            "CM_y": 0.02445630467935711,
+            "CD_pressure": -0.019671899133287093,
+            "wake_geometry_change": 2.862842780990908e-10
+          },
+          {
+            "iteration": 58,
+            "CL": 0.2567149187012979,
+            "CL_gamma": 0.22589402210355508,
+            "CM_y": 0.024456304679272324,
+            "CD_pressure": -0.01967189913324856,
+            "wake_geometry_change": 2.0395028276679058e-10
+          },
+          {
+            "iteration": 59,
+            "CL": 0.2567149187014294,
+            "CL_gamma": 0.2258940221036071,
+            "CM_y": 0.0244563046792114,
+            "CD_pressure": -0.019671899133221052,
+            "wake_geometry_change": 1.4530773347712196e-10
+          },
+          {
+            "iteration": 60,
+            "CL": 0.25671491870151447,
+            "CL_gamma": 0.22589402210363785,
+            "CM_y": 0.02445630467916946,
+            "CD_pressure": -0.019671899133202508,
+            "wake_geometry_change": 1.4530773347712196e-10
+          }
+        ],
+        "CL": 0.25671491870151447,
+        "CL_gamma": 0.22589402210363785,
+        "CM_y": 0.02445630467916946,
+        "n_wall_faces": 112,
+        "wake_faces": [
+          24
+        ]
+      },
+      "vspaero": {
+        "CL": 0.268737728174,
+        "CM_y": 0.005555997905,
+        "CL_fixed": 0.271803720417,
+        "CM_y_fixed": 0.005275238578
+      },
+      "comparison": {
+        "cl_relative": 0.04683331040244133,
+        "cl_difference": -0.012022809472485518,
+        "cm_absolute": 0.018900306774169456,
+        "cm_difference": 0.018900306774169456,
+        "cl_gated": true,
+        "cm_gated": true,
+        "cl_passed": true,
+        "cm_passed": true
+      },
+      "fixed_to_free": {
+        "dpanel_CL_relative": -0.0028919716358333874,
+        "vspaero_CL_relative": -0.011280170257773496
+      },
+      "passed": true
+    },
+    "swept30": {
+      "cambered": false,
+      "fixed_wake_eligible": true,
+      "blocked_by": null,
+      "dpanel": null,
+      "dpanel_blocked": {
+        "exit": 3221225477,
+        "stderr_tail": [],
+        "repro": "tools.issue92.b3_free_wake --worker swept30 --cases D:\\3D\\Projects\\panel\\docs\\issue92\\b3_cases.json --out D:\\3D\\Projects\\panel\\docs\\issue92\\_fw_swept30.json --iterations 60 --relaxation 0.3"
+      },
+      "passed": null
+    },
+    "elliptic": {
+      "cambered": false,
+      "fixed_wake_eligible": true,
+      "blocked_by": null,
+      "dpanel": null,
+      "dpanel_blocked": {
+        "exit": 3221225477,
+        "stderr_tail": [],
+        "repro": "tools.issue92.b3_free_wake --worker elliptic --cases D:\\3D\\Projects\\panel\\docs\\issue92\\b3_cases.json --out D:\\3D\\Projects\\panel\\docs\\issue92\\_fw_elliptic.json --iterations 60 --relaxation 0.3"
+      },
+      "passed": null
+    },
+    "bwb": {
+      "cambered": false,
+      "fixed_wake_eligible": false,
+      "blocked_by": "gamma_shape:panel/fine discretization",
+      "dpanel": null,
+      "dpanel_blocked": {
+        "exit": 3221225477,
+        "stderr_tail": [],
+        "repro": "tools.issue92.b3_free_wake --worker bwb --cases D:\\3D\\Projects\\panel\\docs\\issue92\\b3_cases.json --out D:\\3D\\Projects\\panel\\docs\\issue92\\_fw_bwb.json --iterations 60 --relaxation 0.3"
+      },
+      "passed": null
+    }
+  },
+  "n_failed": 0,
+  "n_gated": 1,
+  "passed": true
+}

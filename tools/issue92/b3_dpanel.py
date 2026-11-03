@@ -13,6 +13,7 @@ name, so a rerun cannot be mistaken for the other device.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import os
 import sys
@@ -29,10 +30,17 @@ from tools.issue92.trefftz_full import trefftz_cd_full  # noqa: E402
 
 
 def _wing(spec):
+    """Build the case geometry and put its moment reference where the manifest says.
+
+    make_wing hard-codes the origin, and a CAD surface carries whatever reference
+    point its writer chose, so without this override CM_y would be integrated
+    about a different point than the one handed to VSPAERO as X_cg/Y_cg/Z_cg.
+    """
     if spec["kind"] == "rect":
-        return make_wing(**spec["make_wing"])
-    path = ROOT / spec["surface"]
-    return from_dpanel_half_surface(path)
+        wing = make_wing(**spec["make_wing"])
+    else:
+        wing = from_dpanel_half_surface(ROOT / spec["surface"])
+    return dataclasses.replace(wing, reference_point=np.asarray(spec["moment_reference"], float))
 
 
 def _trefftz(wing, gamma, spec):
