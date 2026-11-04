@@ -103,6 +103,91 @@ def prepare_wake_material(g: LiftingGroup) -> WakeMaterial:
                                                     ref[f[:,2]]-ref[f[:,0]]),axis=1)/2)
 
 
+def wake_material_graph_audit(material: WakeMaterial) -> dict:
+    """Audit predecessor links and rooted paths without changing the graph.
+
+    Reports direct topological edge lengths separately from cumulative path
+    arclength. A long direct link is not silently reclassified as a boundary:
+    the audit preserves its node IDs, coordinates, path tail and x-monotonicity
+    evidence so the mesh/graph construction can be corrected at its source.
+    """
+    xyz = np.asarray(material.reference_xyz, float)
+    used = np.asarray(material.used, int)
+    pred = np.asarray(material.predecessor, int)
+    valid = used[pred[used] >= 0]
+    direct = np.linalg.norm(xyz[valid] - xyz[pred[valid]], axis=1)
+    positive = direct[direct > 0.]
+    median = float(np.median(positive)) if len(positive) else 0.
+    order = np.argsort(direct)[::-1] if len(direct) else np.empty(0, int)
+    longest = []
+    for index in order[:20]:
+        node = int(valid[index])
+        parent = int(pred[node])
+        longest.append(dict(node=node, predecessor=parent,
+                            length=float(direct[index]),
+                            dx=float(xyz[node, 0]-xyz[parent, 0]),
+                            dy=float(xyz[node, 1]-xyz[parent, 1]),
+                            dz=float(xyz[node, 2]-xyz[parent, 2]),
+                            node_xyz=xyz[node].tolist(),
+                            predecessor_xyz=xyz[parent].tolist(),
+                            ratio_to_median=(float(direct[index]/median) if median else None)))
+    path_records = []
+    cycle_nodes = []
+    nonmonotone_edges = {}
+    max_path_length = -1.
+    max_path = []
+    for start in used:
+        node = int(start)
+        seen = {}
+        chain = []
+        length = 0.
+        while node >= 0:
+            if node in seen:
+                cycle_nodes.append(dict(start=int(start), cycle=chain[seen[node]:] + [node]))
+                break
+            seen[node] = len(chain)
+            chain.append(node)
+            parent = int(pred[node])
+            if parent < 0:
+                break
+            dx = float(xyz[node, 0]-xyz[parent, 0])
+            if dx <= 0.:
+                nonmonotone_edges[(node, parent)] = dict(node=node, predecessor=parent, dx=dx)
+            length += float(np.linalg.norm(xyz[node]-xyz[parent]))
+            node = parent
+        else:
+            pass
+        if node >= 0 and int(pred[node]) >= 0 and node in seen:
+            continue
+        if length > max_path_length:
+            max_path_length, max_path = length, chain
+    bins = np.array([0., .5, 1., 2., 4., 8., 16., 32., 64., np.inf])
+    hist, _ = np.histogram(direct, bins=bins)
+    return dict(
+        used_nodes=int(len(used)), predecessor_edges=int(len(valid)),
+        root_nodes=int(np.count_nonzero(pred[used] < 0)),
+        direct_link_median=float(median),
+        direct_link_max=float(direct.max()) if len(direct) else 0.,
+        direct_link_p95=float(np.percentile(direct, 95)) if len(direct) else 0.,
+        direct_link_histogram=[dict(lower=float(a), upper=(None if not np.isfinite(b) else float(b)),
+                                    count=int(n)) for a, b, n in zip(bins[:-1], bins[1:], hist)],
+        longest_direct_links=longest,
+        max_root_to_tail_path_length=float(max_path_length),
+        max_root_to_tail_path_nodes=[int(v) for v in max_path],
+        max_path_root_xyz=(xyz[max_path[-1]].tolist() if max_path else None),
+        max_path_tail_xyz=(xyz[max_path[0]].tolist() if max_path else None),
+        predecessor_cycle_count=int(len(cycle_nodes)),
+        predecessor_cycles=cycle_nodes[:20],
+        nonmonotone_x_edge_count=int(len(nonmonotone_edges)),
+        nonmonotone_x_edges=list(nonmonotone_edges.values())[:20],
+        chain_x_span=(float(xyz[max_path[0], 0]-xyz[max_path[-1], 0])
+                      if max_path else 0.),
+        path_to_x_span_ratio=(float(max_path_length /
+            max(abs(xyz[max_path[0], 0]-xyz[max_path[-1], 0]), 1e-30))
+            if max_path else None),
+    )
+
+
 def _shortest_edges(mesh: Mesh) -> np.ndarray:
     """Shortest triangle edge per face; the length scale that bounds a near-sheet probe."""
     p=mesh.triangles

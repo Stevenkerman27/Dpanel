@@ -4,6 +4,7 @@ from types import SimpleNamespace as NS
 import numpy as np
 import pytest
 
+from panel.p1_steady_free_wake import wake_material_graph_audit
 from panel.p1_coupled_material_wake import (
     TotalVelocity, GeometryGates, triangle_data, limits, material_paths,
     streamline_target, area_diagnostics, convex_overlap, geometry_failure,
@@ -107,6 +108,31 @@ def path_fixture():
              predecessor=np.array([-1, 0, 1, -1, 3, 4]), order=np.array([0, 3, 1, 4, 2, 5]),
              panel_area=triangle_data(xyz, faces)[2])
     return xyz, faces, mat
+
+
+def test_material_graph_audit_distinguishes_long_direct_link_from_path_length():
+    xyz = np.array([[0., 0., 0.], [26., 0., 0.], [27., 0., 0.], [28., 0., 0.]])
+    material = NS(reference_xyz=xyz, used=np.arange(4),
+                  predecessor=np.array([-1, 0, 1, 2]))
+    audit = wake_material_graph_audit(material)
+    assert audit["predecessor_cycle_count"] == 0
+    assert audit["nonmonotone_x_edge_count"] == 0
+    assert audit["direct_link_max"] == pytest.approx(26.)
+    assert audit["direct_link_median"] == pytest.approx(1.)
+    assert audit["max_root_to_tail_path_length"] == pytest.approx(28.)
+    assert audit["max_path_root_xyz"] == [0., 0., 0.]
+    assert audit["max_path_tail_xyz"] == [28., 0., 0.]
+    assert audit["longest_direct_links"][0]["node"] == 1
+    assert audit["longest_direct_links"][0]["predecessor"] == 0
+
+
+def test_material_graph_audit_reports_cycles_and_x_backfolds():
+    xyz = np.array([[0., 0., 0.], [1., 0., 0.]])
+    material = NS(reference_xyz=xyz, used=np.arange(2),
+                  predecessor=np.array([1, 0]))
+    audit = wake_material_graph_audit(material)
+    assert audit["predecessor_cycle_count"] == 2
+    assert audit["nonmonotone_x_edge_count"] == 1
 
 
 def test_aligned_uniform_wake_is_fixed_point_not_permanent_convection():
@@ -317,6 +343,7 @@ def mock_coupling(monkeypatch, field):
         result.groups = (group,)
         return result
     old.with_wake_xyz = with_xyz
+    old.wake_material_graph_audit = wake_material_graph_audit
     monkeypatch.setitem(sys.modules, 'panel.p1_lifting_g2', g2)
     monkeypatch.setitem(sys.modules, 'panel.p1_steady_free_wake', old)
     monkeypatch.setattr(b2, 'TotalVelocity', lambda model, state, **kw: field)
