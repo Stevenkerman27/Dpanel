@@ -499,25 +499,44 @@ def assemble(wing, *, backend='numpy'):
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
           pressure_solver=None, backend=None, device='cpu'):
-    """Solve one wing on the torch chain.
+    """Solve one lifting surface as the single group of the G2 solver.
 
-    The NumPy/SciPy solver that produced the S1-S8 baselines was retired in S9. Its code
-    is preserved at tag numpy-path-frozen-s8 and its answers for the eight frozen
-    fixtures are docs/issue92/references/; test/test_frozen_bundle_parity.py replays them
-    against this path. pressure_solver='reference' named the SciPy trust-region solver
-    and is rejected here on purpose.
+    One wing is not a separate equation set: it is solve_multi with exactly one
+    LiftingGroup, so this entry point is a thin adapter over
+    panel.p1_lifting_g2.solve_multi(combine_wings([wing])) that renames the coupled
+    diagnostics back to the single-wing names the frozen fixtures and the issue92
+    tools read. The torch single-wing kernel
+    (p1_solve_torch.solve_single_torch) was a second implementation of the same
+    equations and has been deleted; the retired NumPy/SciPy chain is preserved at tag
+    numpy-path-frozen-s8 with its recorded answers in docs/issue92/references/.
+
+    wall_weight and jump_weight belonged to that retired single-wing weighting. The
+    merged kernel weighs every wall row by sqrt(area/mean_area) and every Kutta row by
+    kutta_weight, so any other value is rejected rather than silently ignored. seed is
+    unused because the pressure solve is deterministic.
     """
-    backend,backend_source=resolve_backend(backend)
-    if kutta=='pressure' and pressure_solver not in (None,'structured'):
+    if float(wall_weight)!=1. or float(jump_weight)!=6.:
         raise ValueError(
-            "pressure_solver=%r was retired with the NumPy chain; its recorded answers "
-            "are docs/issue92/references/ and its code is tag numpy-path-frozen-s8"
-            % (pressure_solver,))
-    from .p1_solve_torch import solve_single_torch
-    out=solve_single_torch(wing,alpha_deg,kutta=kutta,wall_weight=wall_weight,
-                           jump_weight=jump_weight,kutta_weight=kutta_weight,
-                           max_nfev=max_nfev,device=device)
-    out['backend']=backend;out['backend_source']=backend_source
+            "wall_weight/jump_weight belonged to the retired single-wing weighting; "
+            "the one-group solve uses uniform wall weighting and kutta_weight")
+    from .p1_lifting_g2 import combine_wings, solve_multi
+    out=solve_multi(combine_wings([wing]),alpha_deg,kutta=kutta,
+                    kut_weight=kutta_weight,max_nfev=max_nfev,
+                    pressure_solver=pressure_solver,backend=backend,device=device)
+    out['constrained_rank']=int(out['linear_constrained_rank'])
+    # The multi kernel reports only the smallest singular value of the constrained
+    # least-squares operator; keep a one-element spectrum under the legacy name.
+    out['singular']=np.asarray([out['linear_singular_min']],float)
+    out['method']=kutta
+    out['diagnostics']=dict(
+        n_wall_faces=int(len(wing.faces)),n_wall_dofs=int(np.size(out['mu'])),
+        n_gamma_dofs=int(np.size(out['gamma'])),
+        n_kutta_rows=int(len(wing.te_pairs)
+                         +(0 if getattr(wing,'contact_pairs',None) is None
+                           else len(wing.contact_pairs))),
+        cp_min=float(np.min(out['cp'])),cp_max=float(np.max(out['cp'])),
+        reference_area=float(wing.reference_area),source=wing.section,
+        physical_accuracy_accepted=False)
     return out
 
 

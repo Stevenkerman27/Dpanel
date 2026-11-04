@@ -13,6 +13,7 @@ JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾
 - B3 的 DPanel/VSPAERO 对照（48 项判定，4 项失败）连同共同参考点力矩、剖面 Cp、固定→自由尾迹见 [docs/ISSUE92_B3_VSPAERO_PROTOCOL.md](docs/ISSUE92_B3_VSPAERO_PROTOCOL.md)。自由尾迹的原生崩溃（`combine_wings` 后 0xC0000005，根因是 torch 环境 numpy 2.5.2 的大 dgemm 缺陷）已修，四个算例都能跑完 60 次迭代；但只有 rect 收敛，三个 CAD 翼的载荷在松弛中塌陷约四分之三，属未解决缺陷（见协议 §13）。
 - 已退役的研究代码（P1 配点/Galerkin 变体等）见 [docs/RETIRED_RESEARCH.md](docs/RETIRED_RESEARCH.md)；它们的结果仍作为文档与 JSON 保留。
 - 浏览器工作台（改参数→建体→网格→求解，`python -m tools.web.server --port 8811`）见 [tools/web/README.md](tools/web/README.md)。它只包装现有求解器；自由尾迹塌陷缺陷在工作台里以黄色警告呈现。
+- P1 单翼与多组已合并成一个内核（2026-11-04）：`p1_lifting_g1.solve` 现在是 `solve_multi(combine_wings([wing]))` 的适配器，旧的单翼 torch 核 `p1_solve_torch.solve_single_torch` 已删除。合并前实测单组与旧路径 CL 差 3e-14、Γ 差 5e-14；合并后两者走同一实现，差值为 0。
 
 ## 文档入口
 
