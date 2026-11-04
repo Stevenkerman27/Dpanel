@@ -301,7 +301,7 @@ metadata = dict(
     dense_jacobian_samples_per_element=len(barycentric),
     size=args.size, far_radius=args.radius, far_size=args.far_size,
     coordinate_reconciliation=dict(
-        operation="Set wake z=0 and CAD strip knot y within declared normalized CAD tolerance",
+        operation="Reconcile material-station y only; preserve declared 3-D wake coordinates",
         maximum_normalized_shift=float(np.max(abs(points[:len(original_coordinates)]-original_coordinates))),
         original_coordinates_saved=True),
     component_tagging="CAD source face ownership, trimmed interior samples; body precedence on coincident surfaces",
