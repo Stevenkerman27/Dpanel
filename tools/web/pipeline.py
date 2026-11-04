@@ -73,22 +73,51 @@ def _plain(value):
     return number if number == number and abs(number) != float("inf") else None
 
 
-def build(job, raw, count=41):
+def split_parts(payload):
+    """Split the request into one lifting wing and any number of fuselages.
+
+    Backwards compatible: a bare parameter dictionary (the original API) is one
+    wing part with no bodies.
+    """
+    payload = payload or {}
+    parts = payload.get("parts") if isinstance(payload, dict) else None
+    if not parts:
+        return (payload.get("params") if isinstance(payload, dict) else payload) or {}, []
+    wings = [part for part in parts if str(part.get("kind", "wing")) == "wing"]
+    bodies = [part for part in parts if str(part.get("kind")) == "body"]
+    unknown = [part for part in parts
+               if str(part.get("kind", "wing")) not in ("wing", "body")]
+    if unknown:
+        raise ValueError("未知的部件类型: " + ", ".join(str(p.get("kind")) for p in unknown))
+    if len(wings) != 1:
+        raise ValueError("需要且只需要一个升力面部件（求解器只有一套尾迹系统），"
+                         "现在有 %d 个" % len(wings))
+    return (wings[0].get("params") or wings[0] or {},
+            [body.get("params") or body for body in bodies])
+
+
+def build(job, payload, count=41):
     """Write STEP + TE declaration and return the display mesh payload."""
+    raw, raw_bodies = split_parts(payload)
     params, clamped = params_module.normalise(raw)
+    bodies = []
+    for item in raw_bodies:
+        body, body_clamped = params_module.normalise_body(item)
+        bodies.append(body)
+        clamped.extend(body_clamped)
     if clamped:
         job.say("参数超出范围，已截断: " + ", ".join(clamped))
-    step_path = job.run_dir / "wing.step"
-    te_path = job.run_dir / "trailing_edge.json"
     job.say("构建 OCC 实体 ...")
     # gmsh 只能在主线程 initialize（它装 SIGINT handler），而这里跑在 HTTP 线程，
     # 所以建体走子进程。子进程 stdout 同样落文件（沙箱禁止管道 stdio）。
     params_path = job.run_dir / "params.json"
     params_path.write_text(json.dumps(raw), encoding="utf-8")
+    bodies_path = job.run_dir / "bodies.json"
+    bodies_path.write_text(json.dumps(bodies), encoding="utf-8")
     log_path = job.run_dir / "build.log"
     command = [sys.executable, "-m", "tools.web.step_builder",
-               "--params", str(params_path), "--out", str(job.run_dir),
-               "--count", str(int(count))]
+               "--params", str(params_path), "--bodies", str(bodies_path),
+               "--out", str(job.run_dir), "--count", str(int(count))]
     with open(log_path, "w", encoding="utf-8", errors="replace") as fh:
         job.proc = subprocess.Popen(command, cwd=str(ROOT),
                                     env=dict(ENV, PYTHONIOENCODING="utf-8"),
@@ -104,7 +133,13 @@ def build(job, raw, count=41):
     info = payload["step"]
     job.say("STEP 已写出: 体积 %.4f m^3, %d 个截面" % (info["volume"], info["sections"]))
     mesh = geometry.display_mesh(params, count=count)
-    payload = _plain(dict(payload, mesh=mesh))
+    if bodies:
+        body_mesh = geometry.body_display_mesh(bodies)
+        offset = len(mesh["vertices"])
+        mesh["vertices"].extend(body_mesh["vertices"])
+        mesh["faces"].extend([[index + offset for index in face] for face in body_mesh["faces"]])
+        mesh["bodies"] = len(bodies)
+    payload = _plain(dict(payload, parts=dict(wing=params, bodies=bodies), mesh=mesh))
     (job.run_dir / "build.json").write_text(json.dumps(payload), encoding="utf-8")
     job.build = payload
     job.state = "built"
@@ -148,6 +183,10 @@ def mesh_surface(job, params, size, alpha_deg, ncpu=8):
                "--far-size", "%g" % far_norm, "--radius", "%g" % radius_norm,
                "--wake-length", "30",
                "--alpha-deg", "%g" % float(alpha_deg), "--ncpu", str(int(ncpu))]
+    body_step = job.run_dir / "body.step"
+    if body_step.exists():
+        command[command.index("--alpha-deg"):command.index("--alpha-deg")] = [
+            "--body-cad", str(body_step)]
     job.say("网格划分: size=%g m (%g 弦), alpha=%g, 远场半径=%g 弦"
             % (float(size), size_norm, float(alpha_deg), radius_norm))
     # 子进程的 stdout 必须落到文件: 本机沙箱禁止管道 stdio（spawn 会 EPERM）。
@@ -196,11 +235,23 @@ def _solve_fixed(job, surface):
                          gamma=[[i / max(n - 1, 1), g] for i, g in enumerate(gamma)],
                          gamma_sum=row["gamma_sum"],
                          kutta_residual_rms=row["kutta_residual_rms"]))
+    field = None
+    cp_faces = solve.get("Cp_faces") or []
+    try:
+        data = json.loads(Path(surface).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        data = {}
+    faces = data.get("faces") or []
+    if cp_faces and len(cp_faces) == len(faces):
+        field = dict(vertices=data["coordinates"], faces=faces, cp=cp_faces,
+                     wake_faces=data.get("wake_faces") or [],
+                     chord=data.get("reference_chord"))
     return dict(mode="fixed", CL=solve["CL"], CD=solve["CD_pressure"], CM=solve["CM"],
                 cp=[solve["Cp_min"], solve["Cp_max"]],
                 residual=solve["linear_residual_relative"],
                 seconds=solve["hot_seconds"], unknowns=solve["unknowns"],
-                panels=solve["wall_panels"], group_rows=rows, history=None)
+                panels=solve["wall_panels"], group_rows=rows, history=None,
+                field=field)
 
 
 def _solve_free(job, surface, alpha, iterations, reference):

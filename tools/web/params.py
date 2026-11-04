@@ -31,6 +31,36 @@ SCHEMA = [
 ]
 INT_KEYS = frozenset(["sections"])
 
+# Non-lifting bodies (fuselages) are separate parts; panel/cad_half.py takes
+# them through --body-cad and treats their wall faces as wetted but not lifting,
+# so any number may be declared next to the single lifting surface.
+BODY_SCHEMA = [
+    dict(key="length", label="机身长度", unit="m", default=3.0, min=0.5, max=20.0, step=0.1),
+    dict(key="diameter", label="最大直径", unit="m", default=0.6, min=0.05, max=5.0, step=0.05),
+    dict(key="nose_x", label="机头 x", unit="m", default=-0.8, min=-10.0, max=10.0, step=0.1),
+]
+
+
+def normalise_body(raw):
+    """Fill and clamp one fuselage part; the body is axisymmetric about y=0."""
+    raw = raw or {}
+    out = {}
+    clamped = []
+    for item in BODY_SCHEMA:
+        key = item["key"]
+        try:
+            number = float(raw.get(key, item["default"]))
+        except (TypeError, ValueError):
+            raise ValueError("机身参数 %s 不是数字: %r" % (key, raw.get(key)))
+        if not math.isfinite(number):
+            raise ValueError("机身参数 %s 不是有限数: %r" % (key, raw.get(key)))
+        lo, hi = float(item["min"]), float(item["max"])
+        if number < lo or number > hi:
+            clamped.append(key)
+            number = min(max(number, lo), hi)
+        out[key] = number
+    return out, clamped
+
 
 def normalise(raw):
     """Return the parameter dictionary with defaults filled and values clamped."""

@@ -69,6 +69,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/schema":
             self._send(200, dict(params=params_module.SCHEMA,
+                                 body_params=params_module.BODY_SCHEMA,
+                                 body_defaults=params_module.normalise_body({})[0],
                                  defaults=params_module.normalise({})[0],
                                  reference=params_module.reference(params_module.normalise({})[0]),
                                  runs=str(pipeline.RUNS)))
@@ -95,7 +97,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path == "/api/build":
                 job = pipeline.new_job()
-                payload = pipeline.build(job, body.get("params") or {})
+                payload = pipeline.build(job, body)
                 with LOCK:
                     JOBS[job.run_dir.name] = job
                 self._send(200, dict(job=job.run_dir.name, **payload))

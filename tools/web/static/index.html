@@ -2,56 +2,74 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DPanel 工作台</title>
+<title>DPanel 可微气动工作台</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 <header>
-  <h1>DPanel 工作台</h1>
-  <span class="badge" id="state">未构建</span>
-  <span class="hint" id="job-id"></span>
-  <span class="spacer"></span>
-  <span class="hint">拖动旋转 · 滚轮缩放 · 双击复位</span>
+  <div class="brand">DPanel <span>可微气动工作台</span></div>
+  <div id="server" class="status">连接中…</div>
 </header>
 <main>
-  <section id="view">
-    <canvas id="scene"></canvas>
-    <div id="overlay" class="overlay"></div>
+  <section class="left">
+    <div class="tabs">
+      <button class="tab active" data-tab="geom">几何</button>
+      <button class="tab" data-tab="result">结果</button>
+      <span id="viewHint" class="hint">左键旋转 · 滚轮缩放</span>
+    </div>
+    <div class="viewport">
+      <canvas id="view"></canvas>
+      <div id="legend" class="legend hidden">
+        <div class="legend-bar"></div>
+        <div class="legend-labels"><span id="cpMax">Cp</span><span id="cpMin">Cp</span></div>
+        <div class="legend-note">左=吸力峰（低 Cp）</div>
+      </div>
+      <div id="viewEmpty" class="view-empty">先点「生成几何」</div>
+    </div>
+    <section class="resultbar">
+      <div class="resultbar-head">
+        <span>结果</span>
+        <span id="resultMode" class="badge"></span>
+        <span id="resultTime" class="muted"></span>
+      </div>
+      <div class="resultbar-body">
+        <table id="resultTable"></table>
+        <div class="plotwrap"><canvas id="plot"></canvas></div>
+        <pre id="log"></pre>
+      </div>
+    </section>
   </section>
-  <aside>
-    <div class="card">
-      <h2>参数化几何（GRASS 变量）</h2>
-      <div id="params" class="params"></div>
+  <aside class="right">
+    <section class="card grow">
+      <div class="card-head">部件</div>
+      <ul id="partList" class="partlist"></ul>
+      <div class="row">
+        <button id="addWing">+ 升力面</button>
+        <button id="addBody">+ 机身</button>
+        <button id="delPart" class="danger">删除</button>
+      </div>
+      <p class="note">求解器只有一套尾迹系统：升力面恰好一个，机身可多个（椭球，挂在翼下）。</p>
+    </section>
+    <section class="card">
+      <div class="card-head"><span id="editorTitle">部件参数</span></div>
+      <div id="editor" class="editor"></div>
+    </section>
+    <section class="card">
+      <div class="card-head">求解</div>
+      <div class="grid2">
+        <label>迎角 α<input id="alpha" type="number" value="4" step="0.5"></label>
+        <label>网格尺寸 m<input id="size" type="number" value="0.35" step="0.05" min="0.05"></label>
+        <label>尾迹
+          <select id="wake"><option value="fixed">固定</option><option value="free">自由</option></select>
+        </label>
+        <label>迭代<input id="iterations" type="number" value="4" step="1" min="1"></label>
+      </div>
       <div class="row">
         <button id="build" class="primary">生成几何</button>
-        <button id="reset">默认值</button>
+        <button id="solve" class="primary">求解</button>
+        <button id="cancel" class="danger">取消</button>
       </div>
-    </div>
-    <div class="card">
-      <h2>求解选项</h2>
-      <label>迎角 α<input id="alpha" type="number" value="4" step="0.5" min="-10" max="20"><span>deg</span></label>
-      <label>尾迹<select id="wake">
-        <option value="fixed">固定尾迹（快）</option>
-        <option value="free">自由尾迹（慢）</option>
-      </select></label>
-      <label>设备<select id="device">
-        <option value="cpu">torch CPU</option>
-        <option value="cuda">torch GPU</option>
-      </select></label>
-      <label>网格尺寸<input id="size" type="number" value="0.3" step="0.05" min="0.08" max="2"><span>m</span></label>
-      <label>自由尾迹迭代<input id="iterations" type="number" value="12" step="1" min="1" max="60"><span>次</span></label>
-      <div class="row">
-        <button id="solve" class="primary" disabled>求解</button>
-        <button id="cancel" disabled>取消</button>
-      </div>
-      <pre id="log" class="log"></pre>
-    </div>
-    <div class="card">
-      <h2>结果</h2>
-      <table id="result"><tbody><tr><td class="muted">尚未求解</td></tr></tbody></table>
-      <canvas id="plot" width="360" height="150"></canvas>
-    </div>
+    </section>
   </aside>
 </main>
 <script src="/static/app.js"></script>

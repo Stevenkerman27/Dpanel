@@ -160,3 +160,62 @@ def write_step(path, p, count=41):
                     points_per_section=len(section_loop(stations[0], count)))
     finally:
         gmsh.finalize()
+
+def body_display_mesh(bodies, nu=32, nv=16):
+    """Triangulated ellipsoid fuselages for the viewer (no CAD kernel involved)."""
+    vertices = []
+    faces = []
+    for body in bodies:
+        a = 0.5 * float(body["length"])
+        r = 0.5 * float(body["diameter"])
+        cx = float(body["nose_x"]) + a
+        # 机身挂在机翼下方: 面心 z 取 -0.75 直径, 顶面与机翼留出间隙, 避免实体相交。
+        cz = -0.75 * float(body["diameter"])
+        rows = []
+        for i in range(nv + 1):
+            phi = math.pi * i / nv
+            x = cx - a * math.cos(phi)
+            ring = r * math.sin(phi)
+            row = []
+            for j in range(nu):
+                theta = 2.0 * math.pi * j / nu
+                row.append(len(vertices))
+                vertices.append((x, ring * math.cos(theta), cz + ring * math.sin(theta)))
+            rows.append(row)
+        for i in range(nv):
+            for j in range(nu):
+                k = (j + 1) % nu
+                a0, a1 = rows[i][j], rows[i][k]
+                b0, b1 = rows[i + 1][j], rows[i + 1][k]
+                faces.append([a0, a1, b1])
+                faces.append([a0, b1, b0])
+    return dict(vertices=[[float(c) for c in v] for v in vertices], faces=faces,
+                bodies=len(bodies))
+
+
+def write_body_step(path, bodies):
+    """Write every fuselage as one OCC solid into a single STEP file."""
+    import gmsh
+
+    if not bodies:
+        return None
+    gmsh.initialize()
+    try:
+        gmsh.option.setNumber("General.Terminal", 0)
+        gmsh.model.add("body")
+        occ = gmsh.model.occ
+        for body in bodies:
+            a = 0.5 * float(body["length"])
+            cx = float(body["nose_x"]) + a
+            cz = -0.75 * float(body["diameter"])
+            tag = occ.addSphere(cx, 0.0, cz, 0.5)
+            occ.dilate([(3, tag)], cx, 0.0, cz,
+                       float(body["length"]), float(body["diameter"]), float(body["diameter"]))
+        occ.synchronize()
+        solids = [tag for dim, tag in gmsh.model.getEntities(3)]
+        if len(solids) != len(bodies):
+            raise RuntimeError("机身得到 %d 个实体，期望 %d 个" % (len(solids), len(bodies)))
+        gmsh.write(str(path))
+        return dict(solids=len(solids))
+    finally:
+        gmsh.finalize()

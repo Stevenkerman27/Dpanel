@@ -19,6 +19,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="DPanel wing STEP builder")
     parser.add_argument("--params", required=True, help="JSON file of raw parameters")
     parser.add_argument("--out", required=True, help="run directory")
+    parser.add_argument("--bodies", help="JSON list of fuselage parts (optional)")
     parser.add_argument("--count", type=int, default=41)
     args = parser.parse_args(argv)
 
@@ -26,15 +27,21 @@ def main(argv=None):
     params, clamped = params_module.normalise(raw)
     out = pathlib.Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
+    bodies = []
+    if args.bodies:
+        bodies = json.loads(pathlib.Path(args.bodies).read_text(encoding="utf-8")) or []
     info = geometry.write_step(out / "wing.step", params, args.count)
+    body_info = geometry.write_body_step(out / "body.step", bodies) if bodies else None
     geometry.write_trailing_edge(out / "trailing_edge.json", params)
-    payload = dict(params=params, clamped=clamped,
+    files = dict(step=str(out / "wing.step"),
+                 trailing_edge=str(out / "trailing_edge.json"))
+    if body_info:
+        files["body"] = str(out / "body.step")
+    payload = dict(params=params, bodies=bodies, clamped=clamped,
                    reference=params_module.reference(params),
                    stations=params_module.full_stations(params),
                    trailing_edge=params_module.trailing_edge_points(params),
-                   step=info,
-                   files=dict(step=str(out / "wing.step"),
-                              trailing_edge=str(out / "trailing_edge.json")))
+                   step=info, body=body_info, files=files)
     (out / "build.json").write_text(json.dumps(payload), encoding="utf-8")
     print(json.dumps(dict(volume=info["volume"], sections=info["sections"])))
     return 0
