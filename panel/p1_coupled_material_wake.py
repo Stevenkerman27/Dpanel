@@ -428,7 +428,7 @@ def material_paths(material):
 
 
 def streamline_target(xyz, material, velocity, eligible, *, step_scale=None,
-                     truncation_policy='advance'):
+                     truncation_policy='boundary'):
     """Rooted fixed-arclength Picard map; no division by Vx or uniform drift.
 
     Use the downstream tangent at a TE root (the root is not a free sheet
@@ -443,8 +443,8 @@ def streamline_target(xyz, material, velocity, eligible, *, step_scale=None,
     truncation_policy='freeze' holds them (and reports them), 'advance' keeps
     the legacy behaviour.
     """
-    if truncation_policy not in ('advance', 'freeze'):
-        raise ValueError("truncation_policy must be 'advance' or 'freeze'")
+    if truncation_policy not in ('advance', 'freeze', 'boundary'):
+        raise ValueError("truncation_policy must be 'advance', 'freeze' or 'boundary'")
     if truncation_policy == 'freeze' and step_scale is None:
         raise ValueError("truncation_policy='freeze' requires the per-node step_scale")
     target = np.asarray(xyz, float).copy()
@@ -453,15 +453,26 @@ def streamline_target(xyz, material, velocity, eligible, *, step_scale=None,
         p = int(material.predecessor[node])
         if p < 0 or not eligible[node]:
             continue
+        is_truncation = (step_scale is not None
+                         and bool(np.asarray(step_scale['truncation'], bool)[node]))
+        # A long material link is a truncation boundary, not a physical
+        # streamline interval. Keep that boundary node fixed and restart the
+        # downstream path from its current position.
+        if truncation_policy == 'boundary' and is_truncation:
+            target[node] = np.asarray(xyz, float)[node]
+            continue
         v = velocity[node].copy()
-        if material.predecessor[p] >= 0 and eligible[p]:
+        predecessor_is_boundary = (step_scale is not None
+                                    and bool(np.asarray(step_scale['truncation'], bool)[p]))
+        if (material.predecessor[p] >= 0 and eligible[p]
+                and not predecessor_is_boundary):
             v = (v+velocity[p])/2
         speed = np.linalg.norm(v)
         if not np.isfinite(speed) or speed <= 1e-12:
             raise ValueError("undefined streamline tangent")
         ds = np.linalg.norm(material.reference_xyz[node]-material.reference_xyz[p])
         target[node] = target[p]+ds*v/speed
-    if truncation_policy == 'freeze':
+    if truncation_policy in ('freeze', 'boundary'):
         hold = np.asarray(step_scale['truncation'], bool)
         target[hold] = np.asarray(xyz, float)[hold]
     return target
@@ -815,7 +826,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 fan_refinement_strips=None, near_ratio=2.0,
                                 adaptive_far_order=8, adaptive_far_levels=1,
                                 adaptive_budget=2e-4, adaptive_max_escalations=2,
-                                gate_mode="audit", truncation_policy="advance",
+                                gate_mode="audit", truncation_policy="boundary",
                                  save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
@@ -833,8 +844,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         raise ValueError("invalid iteration or convergence controls")
     if gate_mode not in ("enforce", "audit", "off", "safe"):
         raise ValueError("gate_mode must be 'enforce', 'audit', 'off' or 'safe'")
-    if truncation_policy not in ("advance", "freeze"):
-        raise ValueError("truncation_policy must be 'advance' or 'freeze'")
+    if truncation_policy not in ("advance", "freeze", "boundary"):
+        raise ValueError("truncation_policy must be 'advance', 'freeze' or 'boundary'")
     audit_quadrature = gate_mode != 'off'
     if velocity_method not in ACCEPTED_METHODS:
         raise ValueError(
@@ -984,8 +995,15 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             target = streamline_target(group.wake_xyz, mat, velocity, eligible,
                                        step_scale=group_scale,
                                        truncation_policy=truncation_policy)
-            map_residual = max(map_residual, float(np.max(np.linalg.norm(
-                              target[mat.used]-group.wake_xyz[mat.used], axis=1))/mesh.reference_chord))
+            # Boundary links are explicit attachment/truncation conditions;
+            # they are not interior material intervals and therefore do not
+            # enter the fixed-point residual. Their count and IDs remain in
+            # the per-group ledger and snapshots.
+            interior_nodes = mat.used[~group_scale['truncation'][mat.used]]
+            group_residual = (float(np.max(np.linalg.norm(
+                target[interior_nodes]-group.wake_xyz[interior_nodes], axis=1)))
+                if len(interior_nodes) else 0.)
+            map_residual = max(map_residual, group_residual/mesh.reference_chord)
             targets[group.name] = target
             counts[group.name] = dict(root=len(mat.roots), eligible=int(eligible.sum()),
                                       convergence=int((~finite_limit).sum()),
@@ -994,6 +1012,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                       gate_mode=gate_mode,
                                       truncation_policy=truncation_policy,
                                       truncation_nodes=int(group_scale['truncation'].sum()),
+                                      truncation_boundary_ids=np.flatnonzero(group_scale['truncation']).astype(int).tolist()[:100],
+                                      truncation_treatment=("restart_path_at_current_geometry"
+                                                            if truncation_policy == "boundary" else truncation_policy),
+                                      interior_map_residual_chord=group_residual/mesh.reference_chord,
                                       audit_rejected=int((~finite_limit).sum()),
                                       advanced_despite_audit=int(
                                           np.count_nonzero(admitted & ~finite_limit)),
@@ -1018,7 +1040,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                     reference_xyz=mat.reference_xyz, predecessor=mat.predecessor,
                                     order=mat.order, used=mat.used, panel_area=mat.panel_area,
                                     free_nodes=free_nodes, eligible=eligible,
-                                    material_s=relative_s).items():
+                                    material_s=relative_s,
+                                    truncation_boundary=group_scale['truncation']).items():
                 arrays[prefix+name] = np.asarray(value)
             arrays.update({prefix+'node_'+k: v for k, v in samples.items()})
             arrays.update({prefix+'face_'+k: v for k, v in face_samples.items()})
@@ -1077,6 +1100,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                         geometric_median=float(np.median(s['geometric'][np.isfinite(
                             s['geometric'])])),
                         truncation_nodes=int(s['truncation'].sum()),
+                        truncation_boundary_ids=np.flatnonzero(s['truncation']).astype(int).tolist()[:100],
                         requested_max=float(requested.max()) if len(requested) else None,
                         requested_over_cap_max=(float(np.max(requested[usable]/node_caps[usable]))
                                                 if np.any(usable) else None))
