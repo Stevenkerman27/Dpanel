@@ -17,7 +17,7 @@ assert not args.out.exists(), "Preserve previous checks"
 args.out.mkdir(parents=True)
 original = dict(np.load(args.mesh))
 metadata = json.loads(args.mesh.with_name("mesh.json").read_text(encoding="utf-8"))
-assert metadata["geometry_family"] == "imported_cad_planar_te"
+assert metadata["geometry_family"] in ("imported_cad_planar_te", "imported_cad_3d_te")
 records = []
 for name, scale, shift in [("base", 1., [0., 0., 0.]),
                            ("small_shifted", .001, [100., -200., 50.]),

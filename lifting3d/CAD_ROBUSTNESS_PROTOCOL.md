@@ -34,9 +34,13 @@ splines; unresolved features remain a stated limitation.
 
 ## Negative cases
 
-Reject an unsorted, nonplanar, out-of-solid, or unresolved declared trailing
-edge; missing closed solids; unmatched physical walls; non-manifold cut
-stars; nonpositive sampled geometry; or unsupported circulation rows.
+Reject an unsorted, out-of-solid, unresolved declared trailing edge, or a
+declared trailing edge (planar or 3-D) that does not lie on the CAD boundary
+curve; missing closed solids; unmatched physical walls; non-manifold cut
+stars; nonpositive sampled geometry; or unsupported circulation rows. A
+non-planar declaration is no longer rejected merely for leaving z=0: the
+planarity gate is gone and the geometric lie-on-edge check is what rejects
+bad curves.
 Rejection is recorded at the earliest stage with sufficient evidence.
 It must not trigger pressure clipping, extra diagonal terms, prescribed
 root circulation, or singular-value truncation.

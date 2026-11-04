@@ -1,4 +1,4 @@
-"""Cut a conforming P2 tetrahedral mesh along an internal planar wake."""
+"""Cut a conforming P2 tetrahedral mesh along a piecewise-planar embedded wake."""
 
 import numpy as np
 
@@ -82,29 +82,45 @@ def split_planar_cut(points, tets, wake_tri6, tip_y):
     tolerance = 1.e-10 * coordinate_scale
     diagnostics["coordinate_tolerance"] = tolerance
 
-    first_face = points[wake_tri6[0, :3]]
-    plane_normal = np.cross(first_face[1]-first_face[0], first_face[2]-first_face[0])
-    normal_length = float(np.linalg.norm(plane_normal))
-    if normal_length <= tolerance**2:
-        diagnostics["errors"].append("first wake triangle has degenerate corner geometry")
-        raise CutTopologyError(diagnostics["errors"][-1], diagnostics)
-    plane_normal /= normal_length
-    if plane_normal[2] < -1.e-12:
-        plane_normal *= -1.
-    elif abs(plane_normal[2]) <= 1.e-12:
-        dominant_axis = int(np.argmax(np.abs(plane_normal)))
-        if plane_normal[dominant_axis] < 0.:
-            plane_normal *= -1.
-    plane_origin = first_face[0]
-    wake_coordinates = points[wake_tri6.reshape(-1)]
-    wake_plane_distance = (wake_coordinates-plane_origin) @ plane_normal
-    if np.max(np.abs(wake_plane_distance)) > tolerance:
-        diagnostics["errors"].append(
-            "wake_tri6 nodes do not lie on one planar wake surface within tolerance")
-        raise CutTopologyError(diagnostics["errors"][-1], diagnostics)
-    diagnostics["plane_origin"] = plane_origin.tolist()
-    diagnostics["plane_normal_positive_side"] = plane_normal.tolist()
-    diagnostics["max_wake_plane_distance"] = float(np.max(np.abs(wake_plane_distance)))
+    # Piecewise-planar ruled wake: classify each adjacent tet against its
+    # own Tri6 facet, rather than assuming one global wake plane.
+    wake_normals = np.empty((len(wake_tri6), 3), dtype=float)
+    wake_origins = points[wake_tri6[:, 0]].copy()
+    midside_deviation = 0.
+    edge_faces = {}
+    for face_index, face in enumerate(wake_tri6):
+        corners = points[face[:3]]
+        normal = np.cross(corners[1]-corners[0], corners[2]-corners[0])
+        norm = float(np.linalg.norm(normal))
+        if norm <= tolerance**2:
+            diagnostics["errors"].append(f"wake triangle {face_index} has degenerate local geometry")
+            raise CutTopologyError(diagnostics["errors"][-1], diagnostics)
+        wake_normals[face_index] = normal/norm
+        mids = points[face[3:]]
+        expected = .5*(corners[[0, 1, 2]]+corners[[1, 2, 0]])
+        deviation = float(np.max(np.linalg.norm(mids-expected, axis=1)))
+        shortest = float(min(np.linalg.norm(corners[(i+1) % 3]-corners[i]) for i in range(3)))
+        midside_deviation = max(midside_deviation, deviation)
+        # High-order meshing may legitimately move P2 midside nodes along the
+        # facet (normalized distances of O(0.1) edge length occur in accepted
+        # CAD meshes), so this is not a topology error. Only a gross mismatch,
+        # i.e. wrong node pairing, is rejected.
+        if deviation > .5*shortest:
+            diagnostics["errors"].append(
+                f"wake triangle {face_index} has mismatched P2 midside nodes:"
+                f" deviation {deviation:.3e} of edge {shortest:.3e}")
+            raise CutTopologyError(diagnostics["errors"][-1], diagnostics)
+        for a, b in ((face[0], face[1]), (face[1], face[2]), (face[2], face[0])):
+            edge_faces.setdefault(tuple(sorted((int(a), int(b)))), []).append(face_index)
+    for edge, adjacent in edge_faces.items():
+        if len(adjacent) > 2:
+            diagnostics["errors"].append(f"non-manifold wake edge {edge}")
+            raise CutTopologyError(diagnostics["errors"][-1], diagnostics)
+        if len(adjacent) == 2 and np.dot(wake_normals[adjacent[0]], wake_normals[adjacent[1]]) < -1.e-8:
+            diagnostics["errors"].append(f"inconsistently oriented wake facets at edge {edge}")
+            raise CutTopologyError(diagnostics["errors"][-1], diagnostics)
+    diagnostics["wake_facet_count"] = int(len(wake_tri6))
+    diagnostics["max_wake_midside_deviation"] = midside_deviation
 
     edge_midpoint = {}
     face_records = {}
@@ -191,7 +207,8 @@ def split_planar_cut(points, tets, wake_tri6, tip_y):
             for tet_index, opposite_node in (
                 (first_tet, first_opposite), (second_tet, second_opposite)
             ):
-                signed_distance = float((points[opposite_node]-plane_origin) @ plane_normal)
+                local_face_index = wake_face_records[face_key][0]
+                signed_distance = float((points[opposite_node]-wake_origins[local_face_index]) @ wake_normals[local_face_index])
                 if abs(signed_distance) <= tolerance:
                     diagnostics["errors"].append(
                         f"wake-adjacent tet {tet_index} has an opposite corner on the wake plane")
@@ -290,7 +307,8 @@ def split_planar_cut(points, tets, wake_tri6, tip_y):
     for face_index, face in enumerate(wake_tri6):
         adjacent = wake_face_records[tuple(sorted(int(node) for node in face[:3]))][1]
         for tet_index, opposite_node, _ in adjacent:
-            signed_distance = float((points[opposite_node]-plane_origin) @ plane_normal)
+            local_face_index = face_index
+            signed_distance = float((points[opposite_node]-wake_origins[local_face_index]) @ wake_normals[local_face_index])
             bank = "positive" if signed_distance > 0. else "negative"
             if bank == "positive":
                 wake_upper_tet[face_index] = tet_index

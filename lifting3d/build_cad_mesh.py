@@ -64,6 +64,10 @@ assert np.isfinite([args.size, args.radius, args.far_size]).all()
 assert args.wake_strips >= 4 and args.ncpu > 0 and args.curvature >= 0
 assert np.max(abs(te)) < args.radius-args.size, "TE must be strictly inside the farfield"
 cad_tolerance = 1e-7
+# A declared TE in the normalized z=0 plane keeps the historical planar path
+# (including the exact z reconciliation below); only a genuinely curved TE
+# takes the generalized 3-D wake route.
+planar_te = not bool(np.any(np.abs(te[:, 2]) > cad_tolerance))
 stations = np.unique(np.r_[np.linspace(te[0, 1], te[-1, 1], args.wake_strips+1), te[:, 1]])
 intervals = []
 gmsh.initialize()
@@ -114,9 +118,14 @@ for pass_index in range(2):
     assert len(fluid) == 1, "Require one connected external fluid volume"
     wake_inputs = []
     for left, right in zip(stations[:-1], stations[1:]):
-        vertices = [occ.addPoint(float(x), float(y), 0.) for x, y in [
-            (np.interp(left, te[:, 1], te[:, 0]), left), (args.radius, left),
-            (args.radius, right), (np.interp(right, te[:, 1], te[:, 0]), right)]]
+        # Each ruled strip is planar even when the spanwise TE is curved.
+        left_z = float(np.interp(left, te[:, 1], te[:, 2]))
+        right_z = float(np.interp(right, te[:, 1], te[:, 2]))
+        vertices = [occ.addPoint(float(x), float(y), float(z)) for x, y, z in [
+            (np.interp(left, te[:, 1], te[:, 0]), left, left_z),
+            (args.radius, left, left_z),
+            (args.radius, right, right_z),
+            (np.interp(right, te[:, 1], te[:, 0]), right, right_z)]]
         edges = [occ.addLine(vertices[i], vertices[(i+1) % 4]) for i in range(4)]
         wake_inputs.append((2, occ.addPlaneSurface([occ.addWire(edges)])))
     fragments, ancestry = occ.fragment(fluid, wake_inputs)
@@ -212,11 +221,13 @@ corner_jacobian = np.stack([points[tets[:, i]]-points[tets[:, 0]] for i in [1, 2
 negative = np.linalg.det(corner_jacobian) < 0.
 tets[negative] = tets[negative][:, [0, 2, 1, 3, 6, 5, 4, 7, 9, 8]]
 
-# Only reconcile the declared planar cut, keeping every original coordinate.
+# Reconcile the declared cut: a planar TE keeps z exactly zero, a curved TE
+# preserves the generated 3-D wake.
 original_coordinates = points.copy()
 wake_nodes = np.unique(wake_triangles)
-assert np.max(abs(points[wake_nodes, 2])) < cad_tolerance
-points[wake_nodes, 2] = 0.
+if planar_te:
+    assert np.max(abs(points[wake_nodes, 2])) < cad_tolerance
+    points[wake_nodes, 2] = 0.
 for station in stations:
     on_strip = wake_nodes[abs(points[wake_nodes, 1]-station) < cad_tolerance]
     points[on_strip, 1] = station
@@ -254,8 +265,7 @@ boundary_tags = np.asarray(boundary_tags, dtype=int)
 assert np.any(boundary_tags != 100)
 upper = split["cut_upper_nodes"]
 lower = split["cut_lower_nodes"]
-te_distance = np.linalg.norm(points[upper]-np.column_stack([
-    np.interp(points[upper, 1], te[:, 1], te[:, 0]), points[upper, 1], np.zeros(len(upper))]), axis=1)
+te_distance = cad_contact._te_distance(points[upper], te)
 te_candidates = upper[te_distance < cad_tolerance]
 te_upper, te_lower, te_station_indices = [], [], []
 for index, station in enumerate(stations[1:-1], start=1):
@@ -288,7 +298,8 @@ np.savez_compressed(
     original_node=split["original_node"],
     cad_original_coordinates=original_coordinates*length+origin)
 metadata = dict(
-    geometry_family="imported_cad_planar_te", chord=length, reference_area=area,
+    geometry_family=("imported_cad_planar_te" if planar_te else "imported_cad_3d_te"),
+    chord=length, reference_area=area,
     normalization_origin=origin.tolist(), span=float(native_te[-1, 1]-native_te[0, 1]),
     wall_contact_intervals=(np.asarray(intervals).reshape(-1, 2)*length+origin[1]).tolist(),
     cad_coordinate_tolerance=cad_tolerance, points=len(points), tets=len(tets),
@@ -299,12 +310,12 @@ metadata = dict(
     dense_jacobian_samples_per_element=len(barycentric),
     size=args.size, far_radius=args.radius, far_size=args.far_size,
     coordinate_reconciliation=dict(
-        operation="Set wake z=0 and CAD strip knot y within declared normalized CAD tolerance",
+        operation="Reconcile material-station y only; preserve declared 3-D wake coordinates",
         maximum_normalized_shift=float(np.max(abs(points[:len(original_coordinates)]-original_coordinates))),
         original_coordinates_saved=True),
     component_tagging="CAD source face ownership, trimmed interior samples; body precedence on coincident surfaces",
     geometry="Full imported closed solids; no symmetry reflection",
-    wake="Declared planar piecewise-linear TE, conforming span strips, local node-star bank cut",
+    wake="Declared 3-D piecewise-linear TE, conforming ruled span strips, local-facet node-star bank cut",
     jump_representation="Exactly linear in y in each conforming CAD wake strip; zero at tips",
     source_sha256={name: hashlib.sha256(content).hexdigest() for name, content in sources.items()},
     input_sha256={str(path.resolve()): hashlib.sha256(path.read_bytes()).hexdigest()

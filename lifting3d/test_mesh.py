@@ -7,6 +7,7 @@ import sys
 import numpy as np
 import root_wake
 import cad_basis
+import cad_contact
 
 root = Path(__file__).resolve().parent
 sys.path.insert(0, str(root.parent/"volume"))
@@ -37,7 +38,7 @@ records.append(dict(test="wake_face_coordinate_pairing",
 stations = mesh["gamma_stations"]
 length = float(metadata.get("chord", 1.))
 origin = np.array(metadata.get("normalization_origin", [0., 0., 0.]))
-cad_mesh = metadata.get("geometry_family") == "imported_cad_planar_te"
+cad_mesh = metadata.get("geometry_family") in ("imported_cad_planar_te", "imported_cad_3d_te")
 cad_tolerance = float(metadata.get("cad_coordinate_tolerance", 1.e-10))
 if cad_mesh:
     te_polyline = (np.asarray(mesh["trailing_edge_points"], dtype=float)-origin)/length
@@ -51,9 +52,12 @@ if cad_mesh:
     te_coordinates = (points[mesh["te_upper_nodes"]]-origin)/length
     expected_stations = normalized_stations[te_station_indices]
     expected_te_x = np.interp(expected_stations, te_polyline[:, 1], te_polyline[:, 0])
+    expected_te_z = np.interp(expected_stations, te_polyline[:, 1], te_polyline[:, 2])
     te_x_error = te_coordinates[:, 0]-expected_te_x
+    te_z_error = te_coordinates[:, 2]-expected_te_z
     te_station_error = te_coordinates[:, 1]-expected_stations
     te_x_tolerance = cad_tolerance
+    te_z_tolerance = cad_tolerance
     te_station_tolerance = cad_tolerance
 else:
     te_coordinates = (points[mesh["te_upper_nodes"]]-origin)/length
@@ -65,7 +69,9 @@ else:
     expected_stations = stations[1:-1]
     te_x_error = te_coordinates[:, 0]-expected_te_x
     te_station_error = None
+    te_z_error = np.zeros_like(te_x_error)
     te_x_tolerance = 1.e-10
+    te_z_tolerance = te_x_tolerance
     te_station_tolerance = 1.e-12
 root_support = metadata.get("root_wake_support")
 if cad_mesh:
@@ -94,7 +100,8 @@ if not cad_mesh:
 records.append(dict(test="TE_station_pairing", passed=bool(np.all(np.diff(stations) > 0.)
                     and len(mesh["te_upper_nodes"]) == len(expected_stations)
                     and np.max(abs(te_station_error)) < te_station_tolerance
-                    and np.max(abs(te_x_error)) < te_x_tolerance)))
+                    and np.max(abs(te_x_error)) < te_x_tolerance
+                     and np.max(abs(te_z_error)) < te_z_tolerance)))
 if cad_mesh:
     wake_nodes_upper = np.asarray(mesh["wake_upper"]).reshape(-1)
     wake_nodes_lower = np.asarray(mesh["wake_lower"]).reshape(-1)
@@ -132,9 +139,7 @@ if cad_mesh:
             key = tuple(sorted((int(face[first]), int(face[second]))))
             if key in wake_edge_keys:
                 xyz = (points[face[[first, second, midpoint]]]-origin)/length
-                edge_te_x = np.interp(xyz[:, 1], te_polyline[:, 1], te_polyline[:, 0])
-                on_te = (np.max(abs(xyz[:, 0]-edge_te_x)) <= cad_tolerance
-                         and np.max(abs(xyz[:, 2])) <= cad_tolerance
+                on_te = (np.max(cad_contact._te_distance(xyz, te_polyline)) <= cad_tolerance
                          and xyz[:, 1].min() >= normalized_stations[0]-cad_tolerance
                          and xyz[:, 1].max() <= normalized_stations[-1]+cad_tolerance)
                 if on_te:
