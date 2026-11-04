@@ -16,6 +16,7 @@ from __future__ import annotations
 import math
 
 SCHEMA = [
+    dict(key="origin_x", label="根前缘 x（绝对）", unit="m", default=0.0, min=-50.0, max=50.0, step=0.1),
     dict(key="span", label="全展长 b", unit="m", default=6.0, min=0.5, max=30.0, step=0.1),
     dict(key="root_chord", label="根弦长", unit="m", default=1.0, min=0.1, max=5.0, step=0.05),
     dict(key="tip_chord", label="梢弦长", unit="m", default=0.5, min=0.05, max=5.0, step=0.05),
@@ -37,13 +38,20 @@ INT_KEYS = frozenset(["sections"])
 BODY_SCHEMA = [
     dict(key="length", label="机身长度", unit="m", default=3.0, min=0.5, max=20.0, step=0.1),
     dict(key="diameter", label="最大直径", unit="m", default=0.6, min=0.05, max=5.0, step=0.05),
-    dict(key="nose_x", label="机头 x", unit="m", default=-0.8, min=-10.0, max=10.0, step=0.1),
+    dict(key="center_x", label="中心 x（绝对）", unit="m", default=0.7, min=-50.0, max=50.0, step=0.1),
+    dict(key="center_z", label="中心 z（绝对）", unit="m", default=-0.45, min=-20.0, max=20.0, step=0.1),
 ]
 
 
 def normalise_body(raw):
-    """Fill and clamp one fuselage part; the body is axisymmetric about y=0."""
-    raw = raw or {}
+    """Fill and clamp one fuselage part; the body is axisymmetric about y=0.
+
+    center_x / center_z are absolute coordinates. The old nose_x key is still
+    accepted and converted, so saved payloads keep working.
+    """
+    raw = dict(raw or {})
+    if "center_x" not in raw and "nose_x" in raw:
+        raw["center_x"] = float(raw["nose_x"]) + 0.5 * float(raw.get("length", 3.0))
     out = {}
     clamped = []
     for item in BODY_SCHEMA:
@@ -108,7 +116,7 @@ def half_stations(p):
         f = i / (n - 1.0)
         y = half * f
         chord = _lerp(p["root_chord"], p["tip_chord"], f)
-        le_x = y * sweep
+        le_x = float(p.get("origin_x", 0.0)) + y * sweep
         twist = math.radians(_lerp(p["twist_root_deg"], p["twist_tip_deg"], f))
         out.append(dict(y=y, chord=chord, le_x=le_x, te_x=le_x + chord, twist=twist,
                         tc=_lerp(p["thickness_root"], p["thickness_tip"], f),
@@ -139,4 +147,4 @@ def reference(p):
     mean_chord = 0.5 * (p["root_chord"] + p["tip_chord"])
     return dict(area=float(mean_chord * p["span"]),
                 chord=float(p["root_chord"]),
-                point=[float(0.25 * p["root_chord"]), 0.0, 0.0])
+                point=[float(p.get("origin_x", 0.0) + 0.25 * p["root_chord"]), 0.0, 0.0])

@@ -105,7 +105,57 @@ function updateHint() {
 /* ---------------- viewer ---------------- */
 const view = el('view');
 const ctx = view.getContext('2d');
-const cam = { yaw: -0.85, pitch: 0.32, zoom: 1 };
+const cam = { yaw: -0.9, pitch: 0.35, zoom: 1 };
+/* Fixed world->screen fit, computed once per scene. The old code refitted the
+   projected bounds on every frame, so rotating also rescaled the model. */
+const viewFit = { center: [0, 0, 0], radius: 1, key: '' };
+
+function fitScene(scene) {
+  const vertices = scene.vertices;
+  const lo = [Infinity, Infinity, Infinity];
+  const hi = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < vertices.length; i += 1) {
+    for (let k = 0; k < 3; k += 1) {
+      if (vertices[i][k] < lo[k]) lo[k] = vertices[i][k];
+      if (vertices[i][k] > hi[k]) hi[k] = vertices[i][k];
+    }
+  }
+  const center = [0.5 * (lo[0] + hi[0]), 0.5 * (lo[1] + hi[1]), 0.5 * (lo[2] + hi[2])];
+  let radius = 1e-6;
+  for (let i = 0; i < vertices.length; i += 1) {
+    const d = Math.hypot(vertices[i][0] - center[0], vertices[i][1] - center[1],
+                         vertices[i][2] - center[2]);
+    if (d > radius) radius = d;
+  }
+  viewFit.center = center;
+  viewFit.radius = radius;
+}
+
+function drawAxes(width, height) {
+  const origin = [64, height - 64];
+  const length = 34;
+  const axes = [['X', [1, 0, 0], '#e06c75'], ['Y', [0, 1, 0], '#98c379'], ['Z', [0, 0, 1], '#61afef']];
+  ctx.save();
+  ctx.lineWidth = 1.4;
+  ctx.font = '11px sans-serif';
+  axes.forEach((item) => {
+    const p = viewMatrix(item[1]);
+    const ex = origin[0] + p.sx * length;
+    const ey = origin[1] + p.sy * length;
+    ctx.strokeStyle = item[2];
+    ctx.beginPath();
+    ctx.moveTo(origin[0], origin[1]);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+    ctx.fillStyle = item[2];
+    ctx.fillText(item[0], origin[0] + p.sx * (length + 9) - 3, origin[1] + p.sy * (length + 9) + 4);
+  });
+  ctx.fillStyle = '#3d4756';
+  ctx.beginPath();
+  ctx.arc(origin[0], origin[1], 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
 
 function resize() {
   const ratio = window.devicePixelRatio || 1;
@@ -187,27 +237,22 @@ function draw() {
   ctx.fillRect(0, 0, width, height);
   const scene = state.tab === 'result' ? (sceneField() || sceneGeometry()) : sceneGeometry();
   el('viewEmpty').style.display = scene ? 'none' : 'flex';
-  if (!scene) return;
+  if (!scene) { drawAxes(width, height); return; }
+  const key = state.tab + '|' + (state.build ? state.build.job : '') + '|' + scene.mode + '|' + scene.vertices.length;
+  if (viewFit.key !== key) { fitScene(scene); viewFit.key = key; }
   renderScene(scene, width, height);
+  drawAxes(width, height);
   el('legend').classList.toggle('hidden', !(scene.mode === 'cp'));
 }
 
 function renderScene(scene, width, height) {
   const vertices = scene.vertices;
   const count = vertices.length;
+  const center = viewFit.center;
+  const toLocal = (p) => [p[0] - center[0], p[1] - center[1], p[2] - center[2]];
   const projected = new Array(count);
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (let i = 0; i < count; i += 1) {
-    const p = viewMatrix(vertices[i]);
-    projected[i] = p;
-    if (p.sx < minX) minX = p.sx;
-    if (p.sx > maxX) maxX = p.sx;
-    if (p.sy < minY) minY = p.sy;
-    if (p.sy > maxY) maxY = p.sy;
-  }
-  const spanX = Math.max(maxX - minX, 1e-6), spanY = Math.max(maxY - minY, 1e-6);
-  const scale = 0.88 * Math.min(width / spanX, height / spanY) * cam.zoom;
-  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  for (let i = 0; i < count; i += 1) projected[i] = viewMatrix(toLocal(vertices[i]));
+  const scale = 0.46 * Math.min(width, height) / viewFit.radius * cam.zoom;
 
   const faces = [];
   const push = (vertices2, faces2, offset, mirror) => {
@@ -225,10 +270,7 @@ function renderScene(scene, width, height) {
   if (scene.mirror) {
     mirrored = vertices.map((p) => [p[0], -p[1], p[2]]);
     const offset = count;
-    for (let i = 0; i < count; i += 1) {
-      const p = viewMatrix(mirrored[i]);
-      projected.push(p);
-    }
+    for (let i = 0; i < count; i += 1) projected.push(viewMatrix(toLocal(mirrored[i])));
     push(mirrored, scene.faces, offset, true);
   }
   faces.sort((a, b) => b.depth - a.depth);
@@ -245,7 +287,7 @@ function renderScene(scene, width, height) {
   const cpLo = scene.cp ? Math.min.apply(null, scene.cp) : 0;
   const cpHi = scene.cp ? Math.max.apply(null, scene.cp) : 1;
 
-  const toScreen = (p) => [width / 2 + (p.sx - cx) * scale, height / 2 + (p.sy - cy) * scale];
+  const toScreen = (p) => [width / 2 + p.sx * scale, height / 2 + p.sy * scale];
 
   for (let i = 0; i < faces.length; i += 1) {
     const item = faces[i];
@@ -335,6 +377,12 @@ function renderResult() {
   setResultRow('未知量', result.unknowns === undefined ? '-' : String(result.unknowns));
   setResultRow('残差', result.residual === undefined || result.residual === null ? '-' : Number(result.residual).toExponential(2));
   setResultRow('求解耗时', result.seconds ? Number(result.seconds).toFixed(2) + ' s' : '-');
+  const options = result.options || {};
+  const used = options.device_used;
+  const requested = options.device_requested;
+  const deviceText = !used ? '-' : (requested && requested !== used
+    ? used + '（请求 ' + requested + '，不可用已回退）' : used);
+  setResultRow('设备', deviceText, Boolean(used && requested && requested !== used));
   if (result.warning) setResultRow('', result.warning, true);
   if (result.device_note) setResultRow('', result.device_note, true);
   drawPlot();
@@ -458,6 +506,7 @@ async function doSolve() {
       size: Number(el('size').value),
       wake: el('wake').value,
       iterations: Number(el('iterations').value),
+      device: el('device').value,
     };
     clearLog();
     logLine('求解中：α=' + body.alpha + '°，尾迹=' + (body.wake === 'free' ? '自由' : '固定'));
@@ -550,6 +599,17 @@ async function boot() {
     state.schema = schema.params || [];
     state.bodySchema = schema.body_params || [];
     state.bodyDefaults = schema.body_defaults || {};
+    const devices = schema.devices || [{ id: 'cpu', label: 'torch CPU', available: true }];
+    const select = el('device');
+    select.innerHTML = '';
+    devices.forEach((item) => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.label + (item.available ? '' : '（不可用）');
+      option.disabled = !item.available;
+      select.appendChild(option);
+    });
+    select.value = (devices.filter((item) => item.available)[0] || { id: 'cpu' }).id;
     state.parts = [{ kind: 'wing', name: '主翼', params: wingDefaults() }];
     state.selected = 0;
     renderParts(); renderEditor();

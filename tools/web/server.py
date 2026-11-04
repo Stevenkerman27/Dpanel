@@ -27,6 +27,19 @@ TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=u
          ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml"}
 
 
+def _devices():
+    """Device choices for the solve form; availability is probed, never assumed."""
+    available = False
+    try:
+        import torch
+
+        available = bool(torch.cuda.is_available())
+    except Exception:  # noqa: BLE001 - torch may be missing or CPU-only
+        available = False
+    return [dict(id="cpu", label="torch CPU", available=True),
+            dict(id="cuda", label="torch GPU", available=available)]
+
+
 def _job(job_id):
     with LOCK:
         return JOBS.get(job_id)
@@ -73,7 +86,7 @@ class Handler(BaseHTTPRequestHandler):
                                  body_defaults=params_module.normalise_body({})[0],
                                  defaults=params_module.normalise({})[0],
                                  reference=params_module.reference(params_module.normalise({})[0]),
-                                 runs=str(pipeline.RUNS)))
+                                 runs=str(pipeline.RUNS), devices=_devices()))
             return
         if path == "/api/job":
             job = _job(parse_qs(parsed.query).get("id", [""])[0])

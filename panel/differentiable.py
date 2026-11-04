@@ -42,11 +42,15 @@ def linear_solve(matrix, rhs):
     Differentiation acts on matvec's matrix, NOT on pivots/LU operations.
     This is a dense solver, not a matrix-free acceleration claim.
     """
-    factor = jla.lu_factor(jax.lax.stop_gradient(matrix))
+    matrix = jax.lax.stop_gradient(matrix)
+    # jnp.linalg.solve (XLA's LU) instead of jla.lu_factor/lu_solve: on Windows
+    # with jax 0.12.0.1 in x64 mode the host LAPACK callback aborts the whole
+    # interpreter with an access violation once the system is larger than about
+    # 200 unknowns, while the XLA path is stable and solves the same system.
     return jax.lax.custom_linear_solve(
         lambda x: matrix @ x, rhs,
-        solve=lambda _, b: jla.lu_solve(factor, b),
-        transpose_solve=lambda _, b: jla.lu_solve(factor, b, trans=1),
+        solve=lambda _, b: jnp.linalg.solve(matrix, b),
+        transpose_solve=lambda _, b: jnp.linalg.solve(matrix.T, b),
         symmetric=False,
     )
 

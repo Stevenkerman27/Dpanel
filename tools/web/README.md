@@ -14,7 +14,10 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 - 左侧下半是结果表（CL/CD/CM、面板数、未知量、残差、耗时、黄色警告）、Γ 展向曲线或自由尾迹 CL 迭代曲线、运行日志。
 - 右侧上半是**部件列表**（升力面 + 若干机身，点击选中、删除），下半按选中部件生成参数表单。
 - 右侧最下是求解选项（迎角、网格尺寸、固定/自由尾迹、迭代次数）与「生成几何 / 求解 / 取消」。
-- 鼠标左键拖动旋转，滚轮缩放。
+- 左下角有 xyz 坐标轴（X 红 / Y 绿 / Z 蓝，与视图同一旋转矩阵）。
+- 鼠标左键拖动旋转，滚轮缩放；相机按**世界坐标包围盒**定标（只在换场景时重算），
+  所以任意角度下缩放一致，左右拖动只改偏航、不改俯仰（俯仰夹在 ±85°）。
+- 求解选项里有**设备**下拉框：现在两条求解路径都只有 CPU，选 GPU 会明确回退并在结果表标注。
 
 ## 它做了什么
 
@@ -22,7 +25,7 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 | --- | --- | --- |
 | 建体 | 子进程 `python -m tools.web.step_builder`（gmsh + OCC 放样） | `wing.step`、`body.step`（有机身时）、`trailing_edge.json`、`build.json` |
 | 网格 | 子进程 `python -m panel.cad_half` | `mesh/surface.json`、`mesh/manifest.json`、`mesh.log` |
-| 求解 | 进程内 torch：固定尾迹 `p1_solve_torch` / 自由尾迹 `p1_steady_free_wake` | `summary.json`、`job.log` |
+| 求解 | 子进程 `python -m tools.web.solve_runner`（jax 半域稠密解 / 自由尾迹） | `summary.json`、`job.log` |
 
 两次子进程都是为了绕开本机限制：gmsh 只能在主线程 `initialize()`（HTTP 线程里会抛
 `signal only works in main thread`），而且沙箱禁止管道 stdio，所以子进程 stdout 一律写 `*.log` 文件，
@@ -33,9 +36,10 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 求解器只有**一套尾迹系统**，所以部件列表强制：
 
 - **升力面恰好一个**（`kind="wing"`）：参数见 `params.SCHEMA`，后缘折线就是 Kutta 条件的作用线。
-- **机身任意多个**（`kind="body"`）：椭球，参数 `length / diameter / nose_x`，面心固定在
-  `z = -0.75·diameter`（挂在机翼下方、与翼面留出间隙，避免实体相交）。机身壁面以
-  `--body-cad` 交给 `panel/cad_half.py`，被归为**非升力壁面**：有速度势与 Cp，但不参与环量/尾迹。
+- **机身任意多个**（`kind="body"`）：椭球，参数 `length / diameter / center_x / center_z`
+  （绝对位置，y 恒为 0，因为半域以 y=0 为对称面）。机身壁面以 `--body-cad` 交给
+  `panel/cad_half.py`，被归为**非升力壁面**：有速度势与 Cp，但不参与环量/尾迹。
+- 升力面的 `origin_x` 是**根前缘的绝对 x**；没有 z 偏移（后缘必须在 z=0），也没有 y 偏移（对称面）。
 
 多加一个升力面需要多套尾迹与多条后缘，当前离散做不到（`pipeline.split_parts` 会直接报错）。
 
@@ -84,4 +88,10 @@ field = {vertices: [[x,y,z], ...],   # 半域求解器网格（含尾迹节点�
   机身只用于几何/流场展示，不能当作带机身的整机气动结论。
 - **粗网格可能拓扑失败**：`sections=4` + `size=0.6` 出现过
   `ValueError: Non-manifold right wall edge`（`panel/half_surface_mesh.py`），界面会提示加密网格或增加展向站数。
-- GPU 不可选：两条路径都只暴露 CPU 设备（torch 版 p1 单翼路径才有 GPU）。
+- gpu 不可选：两条路径都只暴露 CPU 设备（torch 版 p1 单翼路径才有 GPU）。
+- **求解进程会偶发崩溃（0xC0000005）**：本机 jax（0.12.0.1, x64）在编译/执行约 300 未知量的
+  稠密解时约一半概率直接杀死解释器，与网格和部件位置无关（同一 surface 连续重跑，成功/崩溃随机出现）。
+  `panel/differentiable.py` 的 `linear_solve` 已从 host LAPACK（`jla.lu_factor`）改成
+  `jnp.linalg.solve`（XLA 的 LU），崩溃率下降但没消失；结果数值与原路径逐位一致。
+  因此求解放在子进程里跑，崩了由 `pipeline.solve` 自动重试（最多 6 次，通常 1–2 次内成功），
+  服务器的进程始终不受影响。连续 6 次失败才会把带退出码的错误写进结果表。

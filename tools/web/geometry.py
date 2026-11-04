@@ -168,9 +168,8 @@ def body_display_mesh(bodies, nu=32, nv=16):
     for body in bodies:
         a = 0.5 * float(body["length"])
         r = 0.5 * float(body["diameter"])
-        cx = float(body["nose_x"]) + a
-        # 机身挂在机翼下方: 面心 z 取 -0.75 直径, 顶面与机翼留出间隙, 避免实体相交。
-        cz = -0.75 * float(body["diameter"])
+        cx = float(body["center_x"])
+        cz = float(body["center_z"])
         rows = []
         for i in range(nv + 1):
             phi = math.pi * i / nv
@@ -206,8 +205,8 @@ def write_body_step(path, bodies):
         occ = gmsh.model.occ
         for body in bodies:
             a = 0.5 * float(body["length"])
-            cx = float(body["nose_x"]) + a
-            cz = -0.75 * float(body["diameter"])
+            cx = float(body["center_x"])
+            cz = float(body["center_z"])
             tag = occ.addSphere(cx, 0.0, cz, 0.5)
             occ.dilate([(3, tag)], cx, 0.0, cz,
                        float(body["length"]), float(body["diameter"]), float(body["diameter"]))

@@ -222,81 +222,79 @@ def mesh_surface(job, params, size, alpha_deg, ncpu=8):
                          vertices=len(data.get("coordinates") or []))
 
 
-def _solve_fixed(job, surface):
-    from panel.run_half_groups import run as run_half
-    job.say("稠密参考解（半域, 固定尾迹） ...")
-    report = run_half(surface, gradient=False, v1_check=False, max_panels=20000)
-    solve = report["solve"]
-    rows = []
-    for row in report["group_rows"]:
-        gamma = [float(v) for v in row["gamma"]]
-        n = len(gamma)
-        rows.append(dict(group=row["group_id"],
-                         gamma=[[i / max(n - 1, 1), g] for i, g in enumerate(gamma)],
-                         gamma_sum=row["gamma_sum"],
-                         kutta_residual_rms=row["kutta_residual_rms"]))
-    field = None
-    cp_faces = solve.get("Cp_faces") or []
-    try:
-        data = json.loads(Path(surface).read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        data = {}
-    faces = data.get("faces") or []
-    if cp_faces and len(cp_faces) == len(faces):
-        field = dict(vertices=data["coordinates"], faces=faces, cp=cp_faces,
-                     wake_faces=data.get("wake_faces") or [],
-                     chord=data.get("reference_chord"))
-    return dict(mode="fixed", CL=solve["CL"], CD=solve["CD_pressure"], CM=solve["CM"],
-                cp=[solve["Cp_min"], solve["Cp_max"]],
-                residual=solve["linear_residual_relative"],
-                seconds=solve["hot_seconds"], unknowns=solve["unknowns"],
-                panels=solve["wall_panels"], group_rows=rows, history=None,
-                field=field)
+CRASH_HINT = ("求解器（jax/LAPACK, x64）在该网格上偶发崩溃，属已知问题；"
+              "已自动重试，若仍失败可改动网格尺寸、迎角或部件位置。")
+# Exit codes seen when the solver's native code takes the interpreter down.
+CRASH_CODES = (-1073741819, 3221225477, -1073741571, 3221225725, 139)
 
 
-def _solve_free(job, surface, alpha, iterations, reference):
-    from panel.p1_lifting_g1 import from_dpanel_half_surface
-    from panel.p1_lifting_g2 import combine_wings
-    from panel.p1_steady_free_wake import solve_steady_free_wake
-    job.say("装载半域面板 ...")
-    wing = from_dpanel_half_surface(surface)
-    model = combine_wings([wing], reference_area=reference["area"],
-                          reference_chord=reference["chord"],
-                          reference_point=tuple(reference["point"]))
-    job.say("自由尾迹: alpha=%g, iterations=%d, 每轮同时重解 mu/Gamma" % (alpha, iterations))
+def _exit_text(code):
+    """Readable name for the abnormal exit codes seen on Windows."""
+    if code in (-1073741819, 3221225477):
+        return "0xC0000005 访问冲突"
+    if code in (-1073741571, 3221225725):
+        return "0xC00000FD 栈溢出"
+    if code is not None and code < 0:
+        return "0x%08X" % (code & 0xFFFFFFFF)
+    return str(code)
 
-    def save(iteration, mesh, state, record):
-        job.check()
-        cl = record.get("CL")
-        jump = record.get("jump_rms")
-        job.say("iter %d: CL=%s jump_rms=%s" % (
-            iteration,
-            "-" if cl is None else "%+.6f" % float(cl),
-            "-" if jump is None else "%.2e" % float(jump)))
 
-    value = solve_steady_free_wake(model, alpha, kutta="pressure",
-                                   iterations=int(iterations), relaxation=0.25,
-                                   save_callback=save)
-    history = []
-    for row in value["history"]:
-        history.append(dict(iteration=row.get("iteration"), CL=row.get("CL"),
-                            CD=row.get("CD_pressure"), jump_rms=row.get("jump_rms")))
-    final = value["state"]
-    rows = []
-    for result in final.get("group_results", []):
-        gamma = [float(v) for v in result["gamma"]]
-        n = len(gamma)
-        rows.append(dict(group=result["name"],
-                         gamma=[[i / max(n - 1, 1), g] for i, g in enumerate(gamma)],
-                         gamma_sum=result.get("Gamma_integral"),
-                         CL_gamma=result.get("CL_gamma")))
-    last = history[-1] if history else {}
-    return dict(mode="free", CL=last.get("CL"), CD=last.get("CD"),
-                CM=final.get("CM_y"), cp=None, residual=None, seconds=value.get("seconds"),
-                converged=bool(value.get("converged")),
-                geometry_stable=bool(value.get("geometry_stable")),
-                iterations=value.get("iterations"), history=history,
-                group_rows=rows, group_results=_plain(final.get("group_results")))
+def _spawn(job, command, log_path):
+    """Run one child process, forwarding its log; return (exit code, log path)."""
+    emitted = [0]
+    with open(log_path, "w", encoding="utf-8", errors="replace") as fh:
+        job.proc = subprocess.Popen(command, cwd=str(ROOT),
+                                    env=dict(ENV, PYTHONIOENCODING="utf-8"),
+                                    stdout=fh, stderr=subprocess.STDOUT)
+        while job.proc.poll() is None:
+            if job.cancel.is_set():
+                job.proc.kill()
+                job.proc.wait()
+                job.proc = None
+                raise Cancelled("用户取消")
+            _forward(job, log_path, emitted)
+            time.sleep(0.3)
+        code = job.proc.returncode
+    job.proc = None
+    _forward(job, log_path, emitted)
+    return code, log_path
+
+
+def solve(job, surface, wake, alpha, iterations, reference, attempts=6):
+    """Run the solve in a child process, retrying native crashes.
+
+    The solvers link jax/LAPACK; with x64 enabled the interpreter dies with an
+    access violation in roughly half of the runs on this platform (see README,
+    known issues). Isolating the solve keeps the HTTP server alive, and the
+    crash is normally harmless to retry because each attempt starts from the
+    same surface file.
+    """
+    last = None
+    for attempt in range(attempts):
+        if attempt:
+            job.say("求解进程崩溃（%s），第 %d 次重试" % (_exit_text(last), attempt))
+            time.sleep(0.5)
+        directory = job.run_dir / ("solve" if attempt == 0 else "solve_retry%d" % attempt)
+        log_path = job.run_dir / ("solve.log" if attempt == 0 else "solve_retry%d.log" % attempt)
+        command = [sys.executable, "-m", "tools.web.solve_runner",
+                   "--surface", str(surface), "--out", str(directory),
+                   "--wake", wake, "--alpha", "%g" % float(alpha),
+                   "--iterations", str(int(iterations)),
+                   "--reference", json.dumps(reference or {})]
+        if attempt == 0:
+            job.say("求解进程启动: wake=%s, alpha=%g, 设备=CPU" % (wake, float(alpha)))
+        code, log_path = _spawn(job, command, log_path)
+        result_path = directory / "result.json"
+        if code == 0 and result_path.exists():
+            return json.loads(result_path.read_text(encoding="utf-8"))
+        lines = [line.strip() for line in
+                 log_path.read_text(encoding="utf-8", errors="replace").splitlines() if line.strip()]
+        if code not in CRASH_CODES:
+            raise RuntimeError("求解进程异常退出 (exit %s %s)：%s。%s"
+                               % (code, _exit_text(code), " | ".join(lines[-4:]), CRASH_HINT))
+        last = code
+    raise RuntimeError("求解进程连续 %d 次崩溃 (exit %s %s)，已放弃。%s"
+                       % (attempts, last, _exit_text(last), CRASH_HINT))
 
 
 def run_job(job, options):
@@ -312,12 +310,9 @@ def run_job(job, options):
                                           params_module.normalise({})[0], size, alpha)
         job.check()
         job.state = "solving"
-        if wake == "free":
-            result = _solve_free(job, surface, alpha, iterations,
-                                 (job.build or {}).get("reference") or params_module.reference(
-                                     (job.build or {}).get("params") or params_module.normalise({})[0]))
-        else:
-            result = _solve_fixed(job, surface)
+        reference = (job.build or {}).get("reference") or params_module.reference(
+            (job.build or {}).get("params") or params_module.normalise({})[0])
+        result = solve(job, surface, wake, alpha, iterations, reference)
         result = _plain(result)
         if wake == "free" and not (result.get("converged") and result.get("geometry_stable")):
             history = result.get("history") or []
