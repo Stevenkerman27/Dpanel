@@ -26,15 +26,28 @@ def _half_thickness(x, tc):
 
 
 def _placement(station):
-    """Rotate a section-frame point about the trailing edge into body axes."""
+    """Rotate a section-frame point about the trailing edge into body axes.
+
+    Twist is applied in the section frame, then the section is rolled about the
+    x axis by the dihedral angle through its own TE: the thickness direction
+    becomes `(0, -sin(d), cos(d))` and the TE sits at `(te_x, y, |y| tan(d))`.
+    Rolling (rather than merely shifting z) keeps the section a rigid airfoil,
+    which is what a dihedral wing is.
+    """
     c, s = math.cos(station["twist"]), math.sin(station["twist"])
     chord = station["chord"]
     te = station["te_x"]
+    te_z = float(station.get("te_z", 0.0))
+    dihedral = math.atan(float(station.get("dihedral", 0.0)))
+    cd, sd = math.cos(dihedral), math.sin(dihedral)
+    y = float(station["y"])
 
     def place(x, z):
         xc = (x - 1.0) * chord   # x measured from the trailing edge
         zc = z * chord
-        return (te + xc * c + zc * s, -xc * s + zc * c)
+        x_off = xc * c + zc * s
+        z_off = -xc * s + zc * c
+        return (te + x_off, y - z_off * sd, te_z + z_off * cd)
 
     return place
 
@@ -43,9 +56,9 @@ def section_curves(station, count=41):
     """Upper and lower surface polylines of one section in body axes.
 
     `upper` runs LE->TE and `lower` runs TE->LE; both end exactly on the
-    trailing edge, which sits at (station["te_x"], z=0) in every section. That
-    keeps the declared trailing-edge polyline exactly in z=0 as
-    `lifting3d/cad_contact.py:validate_te_polyline` demands.
+    trailing edge at (station["te_x"], station["te_z"]) in the section plane, so
+    the declared TE polyline is reproduced to machine precision in 3-D (dihedral
+    included).
     """
     n = int(count)
     chord = station["chord"]
@@ -69,7 +82,7 @@ def section_loop(station, count=41):
 
 def section_xyz(station, count=41):
     """3D section loop at one span station."""
-    return [(x, station["y"], z) for x, z in section_loop(station, count)]
+    return list(section_loop(station, count))
 
 
 def display_mesh(p, sections=None, count=41):
@@ -98,9 +111,10 @@ def display_mesh(p, sections=None, count=41):
     # Closed tip caps: fan around each end section centroid.
     for idx, base in ((0, 0), (len(loops) - 1, (len(loops) - 1) * n_pts)):
         cx = sum(v[0] for v in loops[idx]) / n_pts
+        cy = sum(v[1] for v in loops[idx]) / n_pts
         cz = sum(v[2] for v in loops[idx]) / n_pts
         center = len(vertices)
-        vertices.append((cx, picked[idx]["y"], cz))
+        vertices.append((cx, cy, cz))
         for j in range(n_pts):
             k = (j + 1) % n_pts
             if idx == 0:
@@ -138,8 +152,8 @@ def write_step(path, p, count=41):
             # a 3.5-minute STEP import, while two splines give one face per span
             # segment and keep the trailing edge sharp (both splines end on it).
             upper, lower = section_curves(s, count)
-            upper_tags = [occ.addPoint(x, s["y"], z, tag=-1, meshSize=0.0) for x, z in upper]
-            lower_tags = [occ.addPoint(x, s["y"], z, tag=-1, meshSize=0.0) for x, z in lower]
+            upper_tags = [occ.addPoint(x, y, z, tag=-1, meshSize=0.0) for x, y, z in upper]
+            lower_tags = [occ.addPoint(x, y, z, tag=-1, meshSize=0.0) for x, y, z in lower]
             wires.append(occ.addCurveLoop([occ.addBSpline(upper_tags),
                                            occ.addBSpline(lower_tags)]))
         occ.synchronize()

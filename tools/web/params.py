@@ -5,11 +5,14 @@ form from SCHEMA, so this module is the single declaration of what the user may
 edit. Values are clamped to their declared range; nothing else is silently
 "corrected", so a typo shows up as a clamp the log can name.
 
-CAD contract: `panel/cad_half.py` requires the declared trailing edge to lie
-exactly in z=0 (`lifting3d/cad_contact.py:validate_te_polyline`). The trailing
-edge is therefore the datum of every section: the airfoil is rotated about its
-own TE point by the local twist, so the TE never leaves the plane. A dihedral
-angle would lift the TE and is consequently not offered as a variable.
+CAD contract: the declared trailing edge must lie on the exported wall (and,
+since issue #100, it no longer has to lie in z=0). The trailing edge is the
+datum of every section: the airfoil is rotated about its own TE point by the
+local twist, so a section never moves its own TE. Dihedral is applied as a pure
+z translation of the whole section, `z_te = |y| * tan(dihedral)`, which keeps
+the root TE on z=0 (the symmetry plane) and makes the declared TE a 3-D
+polyline; `panel/cad_half.py` builds its wake strips with that same z, so the
+sheet leaves the wing along the real TE instead of a flat z=0 line.
 """
 from __future__ import annotations
 
@@ -21,6 +24,7 @@ SCHEMA = [
     dict(key="root_chord", label="根弦长", unit="m", default=1.0, min=0.1, max=5.0, step=0.05),
     dict(key="tip_chord", label="梢弦长", unit="m", default=0.5, min=0.05, max=5.0, step=0.05),
     dict(key="sweep_deg", label="前缘后掠", unit="deg", default=12.0, min=-45.0, max=60.0, step=1.0),
+    dict(key="dihedral_deg", label="上反角", unit="deg", default=0.0, min=-20.0, max=20.0, step=0.5),
     dict(key="twist_root_deg", label="根部扭转", unit="deg", default=2.0, min=-8.0, max=8.0, step=0.5),
     dict(key="twist_tip_deg", label="梢部扭转", unit="deg", default=-1.0, min=-8.0, max=8.0, step=0.5),
     dict(key="thickness_root", label="根部厚度比", unit="-", default=0.12, min=0.03, max=0.25, step=0.005),
@@ -105,20 +109,24 @@ def _lerp(a, b, t):
 def half_stations(p):
     """Span stations from the symmetry plane (y=0) to the tip (y=b/2).
 
-    `te_x` is the trailing-edge x of the station; y and z of the TE are
-    (0, 0) by construction, which is what the CAD mesher requires.
+    `te_x` is the trailing-edge x of the station and `te_z` its height above
+    the symmetry plane; `te_z = |y| tan(dihedral)`, so a station's TE moves as a
+    rigid body and the root TE stays at z=0.
     """
     n = int(p["sections"])
     half = 0.5 * float(p["span"])
     sweep = math.tan(math.radians(p["sweep_deg"]))
+    dihedral = math.tan(math.radians(float(p.get("dihedral_deg", 0.0))))
     out = []
     for i in range(n):
         f = i / (n - 1.0)
         y = half * f
         chord = _lerp(p["root_chord"], p["tip_chord"], f)
         le_x = float(p.get("origin_x", 0.0)) + y * sweep
+        te_z = abs(y) * dihedral
         twist = math.radians(_lerp(p["twist_root_deg"], p["twist_tip_deg"], f))
-        out.append(dict(y=y, chord=chord, le_x=le_x, te_x=le_x + chord, twist=twist,
+        out.append(dict(y=y, chord=chord, le_x=le_x, te_x=le_x + chord, te_z=te_z,
+                        dihedral=dihedral, twist=twist,
                         tc=_lerp(p["thickness_root"], p["thickness_tip"], f),
                         camber=_lerp(p["camber_root"], p["camber_tip"], f),
                         position=p["camber_position"]))
@@ -132,14 +140,17 @@ def full_stations(p):
     for s in reversed(half):
         if s["y"] <= 0.0:
             continue
-        out.append(dict(s, y=-s["y"]))
+        # The two halves must roll in opposite directions about x, otherwise the
+        # dihedral wing is not symmetric about y=0 and cad_half rejects its y
+        # extent. Twist and te_z stay as they are.
+        out.append(dict(s, y=-s["y"], dihedral=-s["dihedral"]))
     out.extend(half)
     return out
 
 
 def trailing_edge_points(p):
-    """Declared trailing edge across the full span (y ascending, z exactly 0)."""
-    return [[float(s["te_x"]), float(s["y"]), 0.0] for s in full_stations(p)]
+    """Declared trailing edge across the full span (y ascending, 3-D)."""
+    return [[float(s["te_x"]), float(s["y"]), float(s["te_z"])] for s in full_stations(p)]
 
 
 def reference(p):
