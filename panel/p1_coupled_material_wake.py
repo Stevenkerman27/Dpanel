@@ -922,7 +922,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                          "was retired in S9 and its code is tag numpy-path-frozen-s8")
     from .p1_lifting_g2 import assemble_multi, solve_multi
     from .p1_steady_free_wake import (prepare_wake_material, reassemble_wake_only,
-                                     with_wake_xyz)
+                                     wake_material_graph_audit, with_wake_xyz)
 
     def _solve(target, operators_for_solve):
         """Solve the potential system on the torch chain.
@@ -990,6 +990,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
         raise ValueError("invalid geometry gates")
     started = time.perf_counter()
     materials = {g.name: prepare_wake_material(g) for g in mesh.groups}
+    # Preserve a pre-iteration audit of the actual material graph. This is
+    # deliberately diagnostic only: no long link is frozen or removed here.
+    material_graph = {name: wake_material_graph_audit(mat)
+                      for name, mat in materials.items()}
     # Reference topology declares which wake/wall pairs are allowed to touch.
     # Identity comes from shared vertex ids, never from coordinate proximity.
     declared = declared_contact_pairs([g.wake_faces for g in mesh.groups], mesh.faces,
@@ -1083,6 +1087,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                       fan_strips=fan_strips, quadrature_plan=plan,
                       core_radius=core_radius, strength_solve_kernel="unregularized_P1_BEM_operators",
                       groups=state['group_results'],
+                      material_graph=material_graph,
                       CLp_minus_CLgamma=float(state['CL']-state['CL_gamma']),
                       CL_relative_gap=float((state['CL']-state['CL_gamma'])/
                                             max(abs(state['CL_gamma']), 1e-12)),
