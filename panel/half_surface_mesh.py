@@ -132,8 +132,8 @@ def build_half_surface(points, wall_faces, wall_tags, wake_faces, *,
         raise ValueError("Invalid half CAD wall/wake/TE mesh shape")
     if (not np.isfinite(xyz).all() or not np.isfinite(te).all() or
             np.any(np.diff(te[:, 1]) <= 0) or
-            not np.allclose(te[:, 2], te[0, 2], rtol=0, atol=1e-12)):
-        raise ValueError("Nonfinite or non-planar declared TE")
+            np.any(np.linalg.norm(np.diff(te, axis=0), axis=1) <= 0)):
+        raise ValueError("Nonfinite, non-monotone or repeated declared TE")
     if (min(wall.min(), wake.min()) < 0 or
             max(wall.max(), wake.max()) >= len(xyz)):
         raise ValueError("Half mesh indices out of bounds")
@@ -170,10 +170,13 @@ def build_half_surface(points, wall_faces, wall_tags, wake_faces, *,
     wake_tri = xyz[wake]
     av = np.cross(wake_tri[:, 1]-wake_tri[:, 0],
                   wake_tri[:, 2]-wake_tri[:, 0])
-    if (np.any(av[:, 2] <= 0) or np.ptp(wake_tri[:, :, 2]) > tol
-            or np.max(abs(av[:, :2])) > 1e-9*scale*scale
-            or abs(float(wake_tri[0, 0, 2] - te[0, 2])) > tol):
-        raise ValueError("OCC half wake must be planar and +z oriented")
+    # A dihedral wake leaves the TE at the local TE height and stays level
+    # downstream, so facets must be +z oriented (a graph over x-y) but need not
+    # be horizontal and need not share one z.
+    if (np.any(av[:, 2] <= 0)
+            or abs(float(wake_tri[0, 0, 2]
+                         - np.interp(wake_tri[0, 0, 1], te[:, 1], te[:, 2]))) > tol):
+        raise ValueError("OCC half wake must be +z oriented and start at the TE")
 
     wall_edges, wake_edges = {}, {}
     for i, face in enumerate(wall):
@@ -227,13 +230,21 @@ def build_half_surface(points, wall_faces, wall_tags, wake_faces, *,
         if len(adjacent) != 2:
             raise ValueError("Physical wake/wall edge must have exactly two wall banks")
         v = xyz[np.asarray(edge)]
-        z = xyz[wall[adjacent]].mean(axis=1)[:, 2] - te[0, 2]
-        if not (z.min() < 0 and z.max() > 0):
-            raise ValueError("Wake/wall cut must have distinct upper and lower banks")
         edge_order = tuple(sorted(edge, key=lambda index: xyz[index, 1]))
         diff = abs(v[:, 0] - np.interp(v[:, 1], te[:, 1], te[:, 0]))
         on_te = bool(np.max(diff) <= tol and
-                     np.all(abs(v[:, 2]-te[0, 2]) <= tol))
+                     np.all(abs(v[:, 2]
+                               - np.interp(v[:, 1], te[:, 1], te[:, 2])) <= tol))
+        # A trailing-edge cut must have one wall bank above and one below the
+        # local TE height. A smooth wall contact only grazes the wake sheet, so
+        # its banks may sit on one side (this happens at the root of a dihedral
+        # wing, where the level wake leaves the TE at z=0 and runs downstream).
+        # Each bank is measured against the TE height at its own centroid y: a
+        # spanwise TE edge is not level when the wing has dihedral.
+        bank_xz = xyz[wall[adjacent]].mean(axis=1)
+        z = bank_xz[:, 2] - np.interp(bank_xz[:, 1], te[:, 1], te[:, 2])
+        if on_te and not (z.min() < 0 and z.max() > 0):
+            raise ValueError("TE cut must have distinct upper and lower banks")
         cuts.append(list(edge_order))
         cut_kind.append("trailing_edge" if on_te else "smooth_wall_contact")
         if on_te:

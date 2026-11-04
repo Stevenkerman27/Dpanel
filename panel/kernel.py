@@ -83,9 +83,14 @@ def triangle_potential(targets, triangles, interior_diagonal=False, source=True,
             edge_sum += jnp.sum(r[:, :, k] * outward[None], axis=2) * line_integral
             gradient_y -= outward[None, :, 1] * line_integral
         if linear_y:
-            # Integral (y_source-y_centroid)*dG/dn = (y_target-y_centroid)*D + h*dS/dy.
-            # Wake normals are +z, so dS/dy is purely tangential.
-            moment_y = (block_targets[:, None, 1] - triangles.mean(axis=1)[None, :, 1]) * doublet
+            # Integral (y_source-y_centroid)*dG/dn = (b.(x_target-x_centroid))*D
+            # + h*dS/dy, with b = e_y - n_y*n the in-plane part of the y axis.
+            # The target sits off the panel plane, so b.(x_target-x_centroid)
+            # is (y_target-y_centroid) - n_y*h: dropping n_y*h is only valid
+            # for wake normals of +z (horizontal wakes).
+            offset_y = (block_targets[:, None, 1] - triangles.mean(axis=1)[None, :, 1]
+                        - normals[None, :, 1] * height)
+            moment_y = offset_y * doublet
             moment_y += height * gradient_y / (4 * jnp.pi)
             return (doublet, moment_y)
         single = (edge_sum - height * omega) / (4 * jnp.pi)
