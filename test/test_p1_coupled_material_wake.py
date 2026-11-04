@@ -135,6 +135,7 @@ def test_long_material_link_is_a_boundary_not_a_26_chord_step():
     xyz, faces, mat = path_fixture()
     # One malformed/truncated predecessor interval among unit material links.
     mat.reference_xyz[1] = np.array([26., 0., 0.])
+    mat.reference_xyz[2] = np.array([27., 0., 0.])
     scale = wake_step_scale(xyz, faces, mat)
     assert scale["truncation"][1]
     assert scale["link"][1] == pytest.approx(26.)
