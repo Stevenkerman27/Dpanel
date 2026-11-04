@@ -14,6 +14,8 @@ JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾
 - 已退役的研究代码（P1 配点/Galerkin 变体等）见 [docs/RETIRED_RESEARCH.md](docs/RETIRED_RESEARCH.md)；它们的结果仍作为文档与 JSON 保留。
 - 浏览器工作台（改参数→建体→网格→求解，`python -m tools.web.server --port 8811`）见 [tools/web/README.md](tools/web/README.md)。它只包装现有求解器；自由尾迹塌陷缺陷在工作台里以黄色警告呈现。
 - P1 单翼与多组已合并成一个内核（2026-11-04）：`p1_lifting_g1.solve` 现在是 `solve_multi(combine_wings([wing]))` 的适配器，旧的单翼 torch 核 `p1_solve_torch.solve_single_torch` 已删除。合并前实测单组与旧路径 CL 差 3e-14、Γ 差 5e-14；合并后两者走同一实现，差值为 0。
+- 上反角支持（2026-11-04，分支 `feature/dihedral`）：后缘不再要求 z=0。`dihedral_deg`（±20°）让每个剖面绕自己的后缘点滚转，尾迹是后缘沿 x 拉伸出的 **+z 图面**；求解层 5 处“水平尾迹”断言放宽为“+z 图面”，`panel/kernel.py` 的线性环量项补了 `n_y` 修正（旧的 +z 假设在 20° 时把线性项放大 13 倍，216 个旋转算例对求积的最大误差 3.3e-6）。实测 0/5/10/20°：CL +0.428/+0.457/+0.461/+0.439，CD 0.0095/0.0102/0.0120/0.0102，面板 228/236/238/254；平面路径逐位不变（同一 `surface.json` 新旧差 1.4e-16）。物理精度未验收，见 [tools/web/README.md](tools/web/README.md)。
+- 环境限制：本机沙箱没给主工作树的 `lifting3d/` 目录写授权（在该目录新建空文件即报“访问被拒绝”，同级 `panel/`、`tools/` 正常，`icacls` 也查不到缺失的写权限条目），所以这项工作在 `runs/wt-dih` 工作树里开发，经分支推送与 PR 合入 `work/root-2026-11-03`。主工作树更新一次：在普通终端执行 `git pull --ff-only`（`git merge` 在这个目录会因写 `lifting3d/` 失败）。
 
 ## 文档入口
 
