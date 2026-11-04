@@ -11,8 +11,8 @@ def validate_te_polyline(te_polyline):
         raise ValueError("TE polyline coordinates must be finite")
     if np.any(np.diff(te_polyline[:, 1]) <= 0.0):
         raise ValueError("TE polyline y coordinates must be strictly increasing")
-    if np.any(te_polyline[:, 2] != 0.0):
-        raise ValueError("TE polyline must lie exactly in z=0")
+    if np.any(np.linalg.norm(np.diff(te_polyline, axis=0), axis=1) <= 0.0):
+        raise ValueError("Adjacent TE polyline points must be distinct")
     return te_polyline
 
 
@@ -22,10 +22,16 @@ def _curve_points(curve_tag, parameters):
 
 
 def _te_distance(points, te_polyline):
-    clamped_y = np.clip(points[:, 1], te_polyline[0, 1], te_polyline[-1, 1])
-    te_x = np.interp(clamped_y, te_polyline[:, 1], te_polyline[:, 0])
-    te_points = np.column_stack([te_x, clamped_y, np.zeros(len(points))])
-    return np.linalg.norm(points - te_points, axis=1)
+    """Euclidean distance to a 3-D piecewise-linear trailing-edge curve."""
+    points = np.asarray(points, dtype=float).reshape(-1, 3)
+    te = validate_te_polyline(te_polyline)
+    segments = np.diff(te, axis=0)
+    lengths2 = np.einsum("ij,ij->i", segments, segments)
+    offsets = points[:, None, :] - te[:-1][None, :, :]
+    fraction = np.einsum("nsi,si->ns", offsets, segments) / lengths2[None, :]
+    fraction = np.clip(fraction, 0., 1.)
+    closest = te[:-1][None, :, :] + fraction[:, :, None]*segments[None, :, :]
+    return np.sqrt(np.min(np.sum((points[:, None, :]-closest)**2, axis=2), axis=1))
 
 
 def _curve_projection(curve_tag, endpoint_point_tags, te_polyline, scan_samples, te_tolerance):
