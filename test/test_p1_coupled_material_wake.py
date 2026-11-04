@@ -6,7 +6,7 @@ import pytest
 
 from panel.p1_coupled_material_wake import (
     TotalVelocity, GeometryGates, triangle_data, limits, material_paths,
-    streamline_target, area_diagnostics, convex_overlap, geometry_failure,
+    streamline_target, wake_step_scale, area_diagnostics, convex_overlap, geometry_failure,
     snapshot_hash, solve_coupled_material_wake,
 )
 
@@ -130,6 +130,21 @@ def test_ineligible_nodes_are_not_silently_marched():
     xyz, _f, mat = path_fixture()
     target = streamline_target(xyz, mat, np.tile([1., 1., 1.], (6, 1)), np.zeros(6, bool))
     np.testing.assert_array_equal(target, xyz)
+
+def test_long_material_link_is_a_boundary_not_a_26_chord_step():
+    xyz, faces, mat = path_fixture()
+    # One malformed/truncated predecessor interval among unit material links.
+    mat.reference_xyz[1] = np.array([26., 0., 0.])
+    scale = wake_step_scale(xyz, faces, mat)
+    assert scale["truncation"][1]
+    assert scale["link"][1] == pytest.approx(26.)
+    velocity = np.tile([0., 1., 0.], (len(xyz), 1))
+    target = streamline_target(xyz, mat, velocity, np.ones(len(xyz), bool),
+                               step_scale=scale, truncation_policy="boundary")
+    np.testing.assert_array_equal(target[1], xyz[1])
+    # The path restarts at the fixed boundary node; it does not inherit ds=26.
+    np.testing.assert_allclose(target[2], xyz[1] + np.array([0., 1., 0.]))
+    assert np.linalg.norm(target[2]-xyz[2]) < 2.
 
 
 def test_area_weighting_relative_bands_and_identity_residual_not_jump():
