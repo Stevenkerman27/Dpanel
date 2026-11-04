@@ -1,4 +1,4 @@
-"""Render docs/ISSUE84_PROJECTION_DUFFY.md from the bench, gate-set and probe JSON."""
+"""Render docs/archive/issue/ISSUE84_PROJECTION_DUFFY.md from the bench, gate-set and probe JSON."""
 import json
 from pathlib import Path
 
@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BENCH = ROOT / "docs/issue84/projection_duffy_bench.json"
 GATE = ROOT / "docs/issue84/projection_gate_set.json"
 PROBE = ROOT / "docs/issue84/worst_node_probe.json"
-OUT = ROOT / "docs/ISSUE84_PROJECTION_DUFFY.md"
+OUT = ROOT / "docs/archive/issue/ISSUE84_PROJECTION_DUFFY.md"
 
 STRATS = [("fan", 16, 1), ("fan", 16, 8), ("fan", 32, 8), ("fan", 48, 64),
           ("legacy", 16, 1), ("legacy", 32, 1), ("legacy", 48, 1), ("legacy", 96, 1)]
@@ -107,7 +107,7 @@ def main():
     add("   collapse direction is nearly parallel to the long edge and the peak is smeared")
     add("   along the short one.")
     add("")
-    add("The measured consequence (`docs/ISSUE84_RM_BENCH.md`) is that raising the order")
+    add("The measured consequence (`docs/archive/issue/ISSUE84_RM_BENCH.md`) is that raising the order")
     add("does not converge: order 32 can be worse than order 16. That is aliasing, not")
     add("truncation error, and it is why C3 asked for a projection-aware decomposition.")
     add("")
@@ -219,9 +219,9 @@ def main():
     add("        --core-ratios 0.1,0.3,1,3 --ref-n 32 --ref-order 24 \\")
     add("        --out docs/issue84/projection_duffy_bench.json")
     add("    python tools/issue84/projection_gate_set.py \\")
-    add("        --main-half-surface runs/half_cad_wingbody_v1/surface.json \\")
-    add("        --csv quad:runs/issue84/wake_rejection_g2_rm48.csv \\")
-    add("        --csv eps:runs/issue84/wake_rejection_g2_analytic.csv \\")
+    add("        --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json \\")
+    add("        --csv quad:runs/studies/rm_bench/wake_rejection_g2_rm48.csv \\")
+    add("        --csv eps:runs/studies/rm_bench/wake_rejection_g2_analytic.csv \\")
     add("        --fan-orders 16 32 --out docs/issue84/projection_gate_set.json")
     add("")
     OUT.write_text("\n".join(parts) + "\n", encoding="utf-8")

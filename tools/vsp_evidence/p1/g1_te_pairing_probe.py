@@ -7,12 +7,12 @@ Run with PYTHONPATH pointing at the PR #59 worktree (module `panel.p1_lifting_g1
 
 It is a probe, not a fix: the TE pairs are reconstructed from upper_te_faces/lower_te_faces
 (the real cross-TE pairing) instead of trailing_edges (the TE edge chain), and the lower-bank
-potential trace is duplicated at each shared TE node. See docs/ISSUE58_G1_TE_PAIRING_DEFECT.md.
+potential trace is duplicated at each shared TE node. See docs/archive/issue/ISSUE58_G1_TE_PAIRING_DEFECT.md.
 """
 """Probe: corrected DPanel half-surface adapter for PR59 G1 (TE pairs from upper/lower faces)."""
 import json, sys, numpy as np
 from pathlib import Path
-sys.path.insert(0, r"D:/3D/Projects/panel/runs/pr59_git")
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import panel.p1_lifting_g1 as M
 
 def from_half_fixed(path):
@@ -71,7 +71,7 @@ def from_half_fixed(path):
                   "half CAD mirrored (fixed TE pairing)", ref_area, rp)
 
 if __name__ == "__main__":
-    path = r"D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"
+    path = r"D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"
     wing = from_half_fixed(path)
     print("faces", len(wing.faces), "dofs", wing.ndof_mu, "te rows", len(wing.te_pairs), "gamma", wing.gamma_hat.shape[1])
     print("te y range %.3f..%.3f" % (wing.te_pair_y.min(), wing.te_pair_y.max()))

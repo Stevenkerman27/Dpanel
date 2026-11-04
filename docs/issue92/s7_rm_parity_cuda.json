@@ -1,0 +1,178 @@
+{
+ "thresholds": {
+  "declared_before_measurement": true,
+  "field_relative": 1e-12,
+  "loads_relative": 1e-09,
+  "gated_iterations": [
+   0
+  ],
+  "decision_keys": [
+   "status",
+   "success",
+   "message"
+  ],
+  "criteria_equal": true,
+  "speedup_reported_only": true
+ },
+ "device": "cuda",
+ "sheet_triangles": 794,
+ "targets": 64,
+ "fields": {
+  "legacy_duffy": {
+   "quadrature": "legacy_duffy",
+   "scale": 1.0325121054789088,
+   "batch_max_relative": 2.1505278606108027e-16,
+   "single_max_relative": 2.1505278606108027e-16,
+   "numpy_seconds": 0.1658367000054568,
+   "torch_seconds": 0.014600399998016655,
+   "speedup": 11.358366895974381,
+   "chunk_budget": 16
+  },
+  "projection_fan": {
+   "quadrature": "projection_fan",
+   "scale": 1.0325111570941434,
+   "batch_max_relative": 1.0752649179595523e-16,
+   "single_max_relative": 1.0752649179595523e-16,
+   "numpy_seconds": 0.6610375000163913,
+   "torch_seconds": 0.997290899977088,
+   "speedup": 0.6628331814033178,
+   "chunk_budget": 16
+  }
+ },
+ "loop": {
+  "status_numpy": "iteration_limit",
+  "status_torch": "iteration_limit",
+  "records_numpy": 2,
+  "records_torch": 2,
+  "rows": [
+   {
+    "iteration": 0,
+    "CL": {
+     "numpy": 0.36547233109365784,
+     "torch": 0.36547233109365784,
+     "relative": 0.0
+    },
+    "CL_gamma": {
+     "numpy": 0.3423331354153439,
+     "torch": 0.3423331354153439,
+     "relative": 0.0
+    },
+    "CD_pressure": {
+     "numpy": -0.017593346450067226,
+     "torch": -0.017593346450067226,
+     "relative": 0.0
+    },
+    "CM_y": {
+     "numpy": -0.1125727821341487,
+     "torch": -0.1125727821341487,
+     "relative": 0.0
+    },
+    "recorded_backend": {
+     "numpy": "numpy",
+     "torch": "torch"
+    },
+    "kinematic_candidate": {
+     "numpy": false,
+     "torch": false
+    },
+    "velocity_method": {
+     "numpy": "rm_regularized_p1",
+     "torch": "rm_regularized_p1"
+    },
+    "accepted": {
+     "numpy": null,
+     "torch": null
+    },
+    "nonlinear": {
+     "numpy": {
+      "status": 4,
+      "success": true,
+      "message": "relative gradient tolerance reached",
+      "nfev": 7,
+      "criteria": {
+       "stationary": true,
+       "wall_at_floor": false,
+       "kutta": true
+      }
+     },
+     "torch": {
+      "status": 4,
+      "success": true,
+      "message": "relative gradient tolerance reached",
+      "nfev": 7,
+      "criteria": {
+       "stationary": true,
+       "wall_at_floor": false,
+       "kutta": true
+      }
+     }
+    }
+   },
+   {
+    "iteration": 1,
+    "CL": {
+     "numpy": 0.3660273488284662,
+     "torch": 0.3660273488284683,
+     "relative": 5.763022226452129e-15
+    },
+    "CL_gamma": {
+     "numpy": 0.34284272791974846,
+     "torch": 0.3428427279197507,
+     "relative": 6.4765732752251e-15
+    },
+    "CD_pressure": {
+     "numpy": -0.017521477503731318,
+     "torch": -0.017521477503730717,
+     "relative": 3.4255919488533746e-14
+    },
+    "CM_y": {
+     "numpy": -0.11399598084874707,
+     "torch": -0.11399598084874674,
+     "relative": 2.921742546603192e-15
+    },
+    "recorded_backend": {
+     "numpy": "numpy",
+     "torch": "torch"
+    },
+    "kinematic_candidate": {
+     "numpy": false,
+     "torch": false
+    },
+    "velocity_method": {
+     "numpy": "rm_regularized_p1",
+     "torch": "rm_regularized_p1"
+    },
+    "accepted": {
+     "numpy": null,
+     "torch": null
+    },
+    "nonlinear": {
+     "numpy": {
+      "status": 4,
+      "success": true,
+      "message": "relative gradient tolerance reached",
+      "nfev": 7,
+      "criteria": {
+       "stationary": true,
+       "wall_at_floor": false,
+       "kutta": true
+      }
+     },
+     "torch": {
+      "status": 4,
+      "success": true,
+      "message": "relative gradient tolerance reached",
+      "nfev": 7,
+      "criteria": {
+       "stationary": true,
+       "wall_at_floor": false,
+       "kutta": true
+      }
+     }
+    }
+   }
+  ]
+ },
+ "failures": [],
+ "passed": true
+}

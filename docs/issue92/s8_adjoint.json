@@ -1,0 +1,686 @@
+{
+ "thresholds": {
+  "declared_before_measurement": true,
+  "linear_relative": 1e-06,
+  "pressure_relative": 0.02,
+  "pressure_floor": 0.0001,
+  "fd_stability": 0.02
+ },
+ "alpha_deg": 4.0,
+ "step": 0.0001,
+ "cases": {
+  "g1_wing_rect": {
+   "name": "g1_wing_rect",
+   "kind": "g1",
+   "ineligible": [],
+   "production_loads": {
+    "CL": 0.256144450850513,
+    "CL_gamma": 0.22564372499288352,
+    "CD_pressure": -0.01976545168276149,
+    "CM_y": -0.038953793380571866
+   },
+   "pressure_status": 1,
+   "production_seconds": 0.038539000088348985,
+   "levels": {
+    "linear": {
+     "diagnostic": {
+      "stationarity": 1.6133056932744864e-05,
+      "condition": 135364.02038771298
+     },
+     "state_error": 0.3172306223158724,
+     "state_relative": 0.2807592261708233,
+     "pressure_rms": null,
+     "loads": {
+      "CL": -0.18903425104140728,
+      "CD_pressure": -0.04040372289410235,
+      "CM_y": 0.21643806382768085
+     },
+     "comparisons": {
+      "CL": {
+       "fd_step": -0.04685580389504618,
+       "fd_small": -0.046855805675705124,
+       "richardson": -0.04685580626925811,
+       "scale": 0.04685580626925811,
+       "fd_stability": 3.8002951788924006e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": -0.046855803784676894,
+        "absolute": 2.4845812143792223e-09,
+        "relative": 5.30261116434858e-08,
+        "passed": true
+       }
+      },
+      "CD_pressure": {
+       "fd_step": -0.004612084503648195,
+       "fd_small": -0.004612084581606668,
+       "richardson": -0.004612084607592826,
+       "scale": 0.004612084607592826,
+       "fd_stability": 1.6903088222201194e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": -0.004612084501563407,
+        "absolute": 1.06029418751874e-10,
+        "relative": 2.298947824532943e-08,
+        "passed": true
+       }
+      },
+      "CM_y": {
+       "fd_step": 0.05375742721414056,
+       "fd_small": 0.05375742817836925,
+       "richardson": 0.05375742849977882,
+       "scale": 0.05375742849977882,
+       "fd_stability": 1.7936659487944477e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": 0.053757427134030825,
+        "absolute": 1.3657479938644634e-09,
+        "relative": 2.540575380889141e-08,
+        "passed": true
+       }
+      }
+     },
+     "forward_seconds": 0.004823600058443844,
+     "adjoint_seconds": {
+      "exact": 0.019833700032904744
+     },
+     "oracle_stable": true,
+     "passed": true
+    },
+    "pressure": {
+     "diagnostic": {
+      "stationarity": 1.4603484973386534e-05,
+      "condition": 50383285.64136768,
+      "forward_nfev": 9,
+      "forward_status": 4
+     },
+     "state_error": 9.2294631937051e-09,
+     "state_relative": 8.168369514014246e-09,
+     "pressure_rms": 1.197356428159104e-07,
+     "loads": {
+      "CL": 0.2561444478597861,
+      "CD_pressure": -0.019765451993391546,
+      "CM_y": -0.0389537921274469
+     },
+     "comparisons": {
+      "CL": {
+       "fd_step": 0.06353238273026918,
+       "fd_small": 0.06353238250211835,
+       "richardson": 0.06353238242606807,
+       "scale": 0.06353238242606807,
+       "fd_stability": 3.5910951682941575e-09,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": 0.06353487503965669,
+        "absolute": 2.4926135886171874e-06,
+        "relative": 3.923374967903674e-05,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": 0.06353238791099977,
+        "absolute": 5.484931703270135e-09,
+        "relative": 8.63328509623087e-08,
+        "passed": true
+       }
+      },
+      "CD_pressure": {
+       "fd_step": 0.005664749165180255,
+       "fd_small": 0.005664749147017699,
+       "richardson": 0.0056647491409635145,
+       "scale": 0.0056647491409635145,
+       "fd_stability": 3.2062418315225955e-09,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": 0.005665354458093595,
+        "absolute": 6.053171300807528e-07,
+        "relative": 0.0001068568289641498,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": 0.005664749685349534,
+        "absolute": 5.443860197698602e-10,
+        "relative": 9.610064033255069e-08,
+        "passed": true
+       }
+      },
+      "CM_y": {
+       "fd_step": -0.009673723374396814,
+       "fd_small": -0.009673723226980013,
+       "richardson": -0.009673723177841079,
+       "scale": 0.009673723177841079,
+       "fd_stability": 1.523888975096852e-08,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": -0.009674363016715957,
+        "absolute": 6.398388748777434e-07,
+        "relative": 6.614194587905694e-05,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": -0.00967372559714747,
+        "absolute": 2.419306390638587e-09,
+        "relative": 2.5009051284207954e-07,
+        "passed": true
+       }
+      }
+     },
+     "forward_seconds": 0.004675499978475273,
+     "adjoint_seconds": {
+      "gauss_newton": 0.0054914000211283565,
+      "exact": 0.005569100030697882
+     },
+     "oracle_stable": true,
+     "passed": true
+    }
+   },
+   "passed": true
+  },
+  "g1_swept30": {
+   "name": "g1_swept30",
+   "kind": "g1",
+   "ineligible": [],
+   "production_loads": {
+    "CL": 0.40353568961031644,
+    "CL_gamma": 0.3979506669114861,
+    "CD_pressure": 0.002466501402284551,
+    "CM_y": -0.3296920617034346
+   },
+   "pressure_status": 2,
+   "production_seconds": 9.92737169994507,
+   "levels": {
+    "linear": {
+     "diagnostic": {
+      "stationarity": 4.759020953576156e-06,
+      "condition": 132893.7649963101
+     },
+     "state_error": 0.09616046839501063,
+     "state_relative": 0.053934571989295625,
+     "pressure_rms": null,
+     "loads": {
+      "CL": 0.21326337885088673,
+      "CD_pressure": -0.009432436738117736,
+      "CM_y": -0.13715855650023565
+     },
+     "comparisons": {
+      "CL": {
+       "fd_step": -0.011003915431212485,
+       "fd_small": -0.011003917561869246,
+       "richardson": -0.011003918272088166,
+       "scale": 0.011003918272088166,
+       "fd_stability": 1.9362709788598826e-07,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": -0.011003915933245016,
+        "absolute": 2.3388431504012264e-09,
+        "relative": 2.1254639416341233e-07,
+        "passed": true
+       }
+      },
+      "CD_pressure": {
+       "fd_step": -0.0024557451628898913,
+       "fd_small": -0.0024557455732127087,
+       "richardson": -0.002455745709986981,
+       "scale": 0.002455745709986981,
+       "fd_stability": 1.6708685093960698e-07,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": -0.0024557451992606558,
+        "absolute": 5.107263253804895e-10,
+        "relative": 2.079719912788515e-07,
+        "passed": true
+       }
+      },
+      "CM_y": {
+       "fd_step": 0.02811825526818912,
+       "fd_small": 0.0281182585548656,
+       "richardson": 0.02811825965042443,
+       "scale": 0.02811825965042443,
+       "fd_stability": 1.1688762120829339e-07,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": 0.028118255982391926,
+        "absolute": 3.6680325027349525e-09,
+        "relative": 1.3045019671690762e-07,
+        "passed": true
+       }
+      }
+     },
+     "forward_seconds": 0.10297919996082783,
+     "adjoint_seconds": {
+      "exact": 0.01662390003912151
+     },
+     "oracle_stable": true,
+     "passed": true
+    },
+    "pressure": {
+     "diagnostic": {
+      "stationarity": 1.2467446868598187e-05,
+      "condition": 608429915.9171968,
+      "forward_nfev": 13,
+      "forward_status": 4
+     },
+     "state_error": 6.053140014228298e-08,
+     "state_relative": 3.395090740589835e-08,
+     "pressure_rms": 2.405430940057561e-07,
+     "loads": {
+      "CL": 0.40353564108680384,
+      "CD_pressure": 0.0024664981248976544,
+      "CM_y": -0.3296920042935026
+     },
+     "comparisons": {
+      "CL": {
+       "fd_step": 0.06393622814265809,
+       "fd_small": 0.06393623032674434,
+       "richardson": 0.06393623105477308,
+       "scale": 0.06393623105477308,
+       "fd_stability": 3.4160384638918884e-08,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": 0.06359935597088033,
+        "absolute": 0.0003368750838927542,
+        "relative": 0.005268923086882601,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": 0.06393629119286309,
+        "absolute": 6.013809000782189e-08,
+        "relative": 9.405948554631349e-07,
+        "passed": true
+       }
+      },
+      "CD_pressure": {
+       "fd_step": 0.004233121627048031,
+       "fd_small": 0.004233121739943835,
+       "richardson": 0.00423312177757577,
+       "scale": 0.00423312177757577,
+       "fd_stability": 2.666963289707766e-08,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": 0.004208888625028372,
+        "absolute": 2.4233152547397697e-05,
+        "relative": 0.005724652826140895,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": 0.004233125905570158,
+        "absolute": 4.127994388154754e-09,
+        "relative": 9.751655173309897e-07,
+        "passed": true
+       }
+      },
+      "CM_y": {
+       "fd_step": -0.04645793963725664,
+       "fd_small": -0.04645794195456964,
+       "richardson": -0.04645794272700731,
+       "scale": 0.04645794272700731,
+       "fd_stability": 4.9879802358593136e-08,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": -0.04605615202923424,
+        "absolute": 0.0004017906977730676,
+        "relative": 0.00864848235174855,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": -0.04645801438060763,
+        "absolute": 7.165360031702317e-08,
+        "relative": 1.542332615502772e-06,
+        "passed": true
+       }
+      }
+     },
+     "forward_seconds": 0.48965869995299727,
+     "adjoint_seconds": {
+      "gauss_newton": 0.5824154999572784,
+      "exact": 0.7449081999948248
+     },
+     "oracle_stable": true,
+     "passed": true
+    }
+   },
+   "passed": true
+  },
+  "g1_wingbody_cad": {
+   "name": "g1_wingbody_cad",
+   "kind": "g1",
+   "ineligible": [
+    "pressure"
+   ],
+   "production_loads": {
+    "CL": 0.48570567597111647,
+    "CL_gamma": 0.4935132837180283,
+    "CD_pressure": 0.01188228739853703,
+    "CM_y": -0.13991621729468348
+   },
+   "pressure_status": 2,
+   "production_seconds": 2.4028529999777675,
+   "levels": {
+    "linear": {
+     "diagnostic": {
+      "stationarity": 5.530069473063599e-06,
+      "condition": 584604.0764937061
+     },
+     "state_error": 0.14239595519983667,
+     "state_relative": 0.055435283965154986,
+     "pressure_rms": null,
+     "loads": {
+      "CL": 0.3443464094165382,
+      "CD_pressure": 0.0019276674436826992,
+      "CM_y": -0.05741310085475475
+     },
+     "comparisons": {
+      "CL": {
+       "fd_step": -0.10003280447007379,
+       "fd_small": -0.10003280293269244,
+       "richardson": -0.10003280242023199,
+       "scale": 0.10003280242023199,
+       "fd_stability": 1.536877214305187e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": -0.1000328045799212,
+        "absolute": 2.159689205250004e-09,
+        "relative": 2.1589810072272844e-08,
+        "passed": true
+       }
+      },
+      "CD_pressure": {
+       "fd_step": -0.009419865746786854,
+       "fd_small": -0.009419865447911346,
+       "richardson": -0.009419865348286177,
+       "scale": 0.009419865348286177,
+       "fd_stability": 3.172821443041334e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": -0.009419865743211828,
+        "absolute": 3.949256512092436e-10,
+        "relative": 4.192476607758467e-08,
+        "passed": true
+       }
+      },
+      "CM_y": {
+       "fd_step": 0.08918501470351475,
+       "fd_small": 0.0891850137772071,
+       "richardson": 0.08918501346843788,
+       "scale": 0.08918501346843788,
+       "fd_stability": 1.038635998981711e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": 0.08918501474481909,
+        "absolute": 1.276381209058819e-09,
+        "relative": 1.4311610879674574e-08,
+        "passed": true
+       }
+      }
+     },
+     "forward_seconds": 0.00943350000306964,
+     "adjoint_seconds": {
+      "exact": 0.002235999912954867
+     },
+     "oracle_stable": true,
+     "passed": true
+    },
+    "pressure": {
+     "diagnostic": {
+      "stationarity": 9.764670188025015e-05,
+      "condition": 268008255031.53778,
+      "forward_nfev": 225,
+      "forward_status": 2
+     },
+     "state_error": 0.11000423560397754,
+     "state_relative": 0.042825065006364044,
+     "pressure_rms": 1.0734827695936702e-06,
+     "loads": {
+      "CL": 0.48919073608820274,
+      "CD_pressure": 0.014099479004064483,
+      "CM_y": -0.14029290498175973
+     },
+     "comparisons": {
+      "CL": {
+       "fd_step": 0.06097699202706197,
+       "fd_small": 0.04011492855948706,
+       "richardson": 0.03316090740362876,
+       "scale": 0.03316090740362876,
+       "fd_stability": 0.6291161823060366,
+       "oracle_stable": false,
+       "gauss_newton": {
+        "adjoint": 0.04816521226065823,
+        "absolute": 0.015004304857029471,
+        "relative": 0.45246967082051465,
+        "passed": false
+       },
+       "exact": {
+        "adjoint": 0.04706319378956336,
+        "absolute": 0.013902286385934604,
+        "relative": 0.4192372125623225,
+        "passed": false
+       }
+      },
+      "CD_pressure": {
+       "fd_step": 0.00358751211175512,
+       "fd_small": 0.002628976800839178,
+       "richardson": 0.0023094650305338638,
+       "scale": 0.0023094650305338638,
+       "fd_stability": 0.41504647104111553,
+       "oracle_stable": false,
+       "gauss_newton": {
+        "adjoint": 0.003310152504040771,
+        "absolute": 0.0010006874735069074,
+        "relative": 0.43329838740861343,
+        "passed": false
+       },
+       "exact": {
+        "adjoint": 0.003088667545386478,
+        "absolute": 0.0007792025148526142,
+        "relative": 0.33739524285955136,
+        "passed": false
+       }
+      },
+      "CM_y": {
+       "fd_step": -0.0036363102486058896,
+       "fd_small": 0.008415064781108761,
+       "richardson": 0.012432189791013645,
+       "scale": 0.012432189791013645,
+       "fd_stability": 0.9693686496344949,
+       "oracle_stable": false,
+       "gauss_newton": {
+        "adjoint": 0.005255393284157771,
+        "absolute": 0.007176796506855874,
+        "relative": 0.5772753334286672,
+        "passed": false
+       },
+       "exact": {
+        "adjoint": 0.00594152582832346,
+        "absolute": 0.006490663962690185,
+        "relative": 0.5220853342652337,
+        "passed": false
+       }
+      }
+     },
+     "forward_seconds": 0.24337589996866882,
+     "adjoint_seconds": {
+      "gauss_newton": 0.22960479999892414,
+      "exact": 0.2300188000081107
+     },
+     "oracle_stable": false,
+     "passed": false
+    }
+   },
+   "passed": false
+  },
+  "g2_conventional": {
+   "name": "g2_conventional",
+   "kind": "g2",
+   "ineligible": [],
+   "production_loads": {
+    "CL": 0.3097103449984369,
+    "CL_gamma": 0.2925817030320302,
+    "CD_pressure": -0.022534654551481622,
+    "CM_y": -0.0981442786461764
+   },
+   "pressure_status": 1,
+   "production_seconds": 0.07039309991523623,
+   "levels": {
+    "linear": {
+     "diagnostic": {
+      "stationarity": 7.296309767555729e-06,
+      "condition": 324754.20608554967
+     },
+     "state_error": 0.3627393446035471,
+     "state_relative": 0.15746552032865124,
+     "pressure_rms": null,
+     "loads": {
+      "CL": -0.03157659010529026,
+      "CD_pressure": -0.04147117540895243,
+      "CM_y": 0.23188028701706379
+     },
+     "comparisons": {
+      "CL": {
+       "fd_step": -0.045517322534160964,
+       "fd_small": -0.045517319863935805,
+       "richardson": -0.04551731897386075,
+       "scale": 0.04551731897386075,
+       "fd_stability": 5.86639375788786e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": -0.04551732269788271,
+        "absolute": 3.7240219588619006e-09,
+        "relative": 8.181549447146692e-08,
+        "passed": true
+       }
+      },
+      "CD_pressure": {
+       "fd_step": -0.005255065805703785,
+       "fd_small": -0.0052550657273636725,
+       "richardson": -0.0052550657012503015,
+       "scale": 0.0052550657012503015,
+       "fd_stability": 1.490754190884306e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": -0.0052550658048407806,
+        "absolute": 1.0359047907665397e-10,
+        "relative": 1.971249932270255e-08,
+        "passed": true
+       }
+      },
+      "CM_y": {
+       "fd_step": 0.08816656143675883,
+       "fd_small": 0.08816655868437716,
+       "richardson": 0.0881665577669166,
+       "scale": 0.0881665577669166,
+       "fd_stability": 3.121797810319442e-08,
+       "oracle_stable": true,
+       "exact": {
+        "adjoint": 0.0881665616011103,
+        "absolute": 3.834193698648569e-09,
+        "relative": 4.3488072980969915e-08,
+        "passed": true
+       }
+      }
+     },
+     "forward_seconds": 0.000912400078959763,
+     "adjoint_seconds": {
+      "exact": 0.0018056000117212534
+     },
+     "oracle_stable": true,
+     "passed": true
+    },
+    "pressure": {
+     "diagnostic": {
+      "stationarity": 8.708042777601918e-06,
+      "condition": 324214387.26703453,
+      "forward_nfev": 11,
+      "forward_status": 2
+     },
+     "state_error": 1.3163585776965192e-09,
+     "state_relative": 5.714326043198093e-10,
+     "pressure_rms": 1.3874592929993283e-07,
+     "loads": {
+      "CL": 0.3097103447174987,
+      "CD_pressure": -0.022534654645885055,
+      "CM_y": -0.09814427847670776
+     },
+     "comparisons": {
+      "CL": {
+       "fd_step": 0.05596953442266184,
+       "fd_small": 0.055969534765165634,
+       "richardson": 0.055969534879333566,
+       "scale": 0.055969534879333566,
+       "fd_stability": 6.1194683303404485e-09,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": 0.05596956997335729,
+        "absolute": 3.509402372176007e-08,
+        "relative": 6.270201065172393e-07,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": 0.05596953449514893,
+        "absolute": 3.841846354935008e-10,
+        "relative": 6.864174167639167e-09,
+        "passed": true
+       }
+      },
+      "CD_pressure": {
+       "fd_step": 0.004317753149931519,
+       "fd_small": 0.00431775317062677,
+       "richardson": 0.004317753177525187,
+       "scale": 0.004317753177525187,
+       "fd_stability": 4.793060237006238e-09,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": 0.00431831539124751,
+        "absolute": 5.622137223227838e-07,
+        "relative": 0.0001302097871757062,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": 0.004317753142072866,
+        "absolute": 3.5452320766571344e-11,
+        "relative": 8.21082616558726e-09,
+        "passed": true
+       }
+      },
+      "CM_y": {
+       "fd_step": -0.014466988917452572,
+       "fd_small": -0.014466989394640304,
+       "richardson": -0.014466989553702882,
+       "scale": 0.014466989553702882,
+       "fd_stability": 3.2984590903699004e-08,
+       "oracle_stable": true,
+       "gauss_newton": {
+        "adjoint": -0.014467535124661273,
+        "absolute": 5.455709583910423e-07,
+        "relative": 3.771143653389874e-05,
+        "passed": true
+       },
+       "exact": {
+        "adjoint": -0.014466988942550899,
+        "absolute": 6.111519831875079e-10,
+        "relative": 4.224458591878095e-08,
+        "passed": true
+       }
+      }
+     },
+     "forward_seconds": 0.007884699967689812,
+     "adjoint_seconds": {
+      "gauss_newton": 0.011275900062173605,
+      "exact": 0.00954300002194941
+     },
+     "oracle_stable": true,
+     "passed": true
+    }
+   },
+   "passed": true
+  }
+ },
+ "certified": [
+  "g1_wing_rect",
+  "g1_swept30",
+  "g2_conventional"
+ ],
+ "unstable": {
+  "g1_wingbody_cad": [
+   "pressure"
+  ]
+ },
+ "passed": false
+}

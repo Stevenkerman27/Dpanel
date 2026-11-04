@@ -54,7 +54,7 @@ runs/
 *.raw
 
 # Local audit workspace, dependency snapshots, and toolchains
-archive/
+/archive/
 **/audit/
 upgrade/
 OpenVSP-3.52.1-win64/
@@ -95,3 +95,4 @@ dist/
 test/_vspapi_tmp/
 # Phase 0 frozen fixture battery: geometry inputs only, no solver settings
 !docs/issue92/fixtures/*.npz
+

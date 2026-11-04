@@ -1,0 +1,128 @@
+"""Issue #92 B3: DPanel side of the four-geometry VSPAERO protocol.
+
+Builds each case exactly as the repository solves it (analytic make_wing for the
+rectangular wing, the frozen CAD surface otherwise), runs the steady fixed-wake
+signed-speed Kutta, and records CL, circulation lift, pressure drag, the
+Trefftz-plane induced drag and the spanwise circulation at the declared
+stations. Nothing here is new physics: it calls panel.p1_lifting_g1.
+
+`--device cpu|cuda` selects the torch device (section 10 of the protocol is the
+CUDA rerun); the output JSON records the device, the torch build and the GPU
+name, so a rerun cannot be mistaken for the other device.
+"""
+from __future__ import annotations
+
+import argparse
+import dataclasses
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+
+ROOT = Path(os.environ.get("PANEL_ROOT", Path.cwd()))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from panel.p1_lifting_g1 import make_wing, solve, from_dpanel_half_surface  # noqa: E402
+from tools.issue92.trefftz_full import trefftz_cd_full  # noqa: E402
+
+
+def _wing(spec):
+    """Build the case geometry and put its moment reference where the manifest says.
+
+    make_wing hard-codes the origin, and a CAD surface carries whatever reference
+    point its writer chose, so without this override CM_y would be integrated
+    about a different point than the one handed to VSPAERO as X_cg/Y_cg/Z_cg.
+    """
+    if spec["kind"] == "rect":
+        wing = make_wing(**spec["make_wing"])
+    else:
+        wing = from_dpanel_half_surface(ROOT / spec["surface"])
+    return dataclasses.replace(wing, reference_point=np.asarray(spec["moment_reference"], float))
+
+
+def _trefftz(wing, gamma, spec):
+    """Induced drag from the full-span circulation that also defines CL_gamma."""
+    stations = np.asarray(wing.gamma_y, float)
+    if len(stations) != len(gamma) + 2:
+        return None
+    cd, _ = trefftz_cd_full(stations, np.r_[0.0, gamma, 0.0], area=float(spec["sref"]))
+    return float(cd)
+
+
+def run_case(name, spec, *, alphas, out_dir, device="cpu", backend=None):
+    wing = _wing(spec)
+    rows = []
+    for alpha in alphas:
+        t0 = time.perf_counter()
+        res = solve(wing, alpha_deg=float(alpha), kutta="signed_speed",
+                    backend=backend, device=device)
+        seconds = time.perf_counter() - t0
+        gamma = np.asarray(res["gamma"], float)
+        row = dict(
+            alpha_deg=float(alpha),
+            CL=float(res["CL"]),
+            CL_gamma=float(res["CL_gamma"]),
+            CD_pressure=float(res["CD_pressure"]),
+            CM_y=float(res["CM_y"]),
+            CD_trefftz=_trefftz(wing, gamma, spec),
+            n_wall_faces=int(res["diagnostics"]["n_wall_faces"]),
+            constrained_rank=int(res["constrained_rank"]),
+            wall_rms=float(res["wall_rms"]),
+            kutta_rms=float(res["signed_kutta_rms"]),
+            seconds=float(seconds),
+            backend=res.get("backend"),
+            backend_source=res.get("backend_source"),
+            device=device,
+            stations=[float(v) for v in np.asarray(wing.gamma_y, float)],
+            gamma_stations=[float(v) for v in gamma],
+        )
+        rows.append(row)
+        print("%-8s a=%4.1f CL %+.5f CLg %+.5f CDp %+.6f CDt %s CM %+.5f" % (
+            name, alpha, row["CL"], row["CL_gamma"], row["CD_pressure"],
+            "%.6f" % row["CD_trefftz"] if row["CD_trefftz"] else "n/a", row["CM_y"]), flush=True)
+    return dict(case=name, kind=spec["kind"], geometry_sha256=spec["geometry_sha256"],
+                levels=spec.get("dpanel_levels", ["cad"]), rows=rows)
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="B3 DPanel side")
+    parser.add_argument("--cases", type=Path, default=ROOT / "docs/issue92/b3_cases.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "runs/benchmarks/b3_vspaero/b3/dpanel.json")
+    parser.add_argument("--only", nargs="*", default=None)
+    parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu",
+                        help="torch device for the solve (B2 device argument)")
+    parser.add_argument("--backend", default=None,
+                        help="torch is the only live chain; pass it explicitly to record intent")
+    args = parser.parse_args(argv)
+    doc = json.loads(args.cases.read_text(encoding="utf-8"))
+    alphas = doc.get("alphas_deg", [0.0, 2.0, 4.0, 6.0])
+    provenance = dict(device=args.device, python=sys.version.split()[0],
+                      platform=os.name, started=time.strftime("%Y-%m-%dT%H:%M:%S"))
+    if args.device == "cuda":
+        import torch
+        t0 = time.perf_counter()
+        torch.zeros(1, device="cuda")
+        torch.cuda.synchronize()
+        provenance.update(torch=torch.__version__,
+                          cuda_runtime=torch.version.cuda,
+                          cuda_device=torch.cuda.get_device_name(0),
+                          cuda_capability="%d.%d" % torch.cuda.get_device_capability(0),
+                          cuda_context_init_s=float(time.perf_counter() - t0))
+    results = []
+    for name, spec in doc["cases"].items():
+        if args.only and name not in args.only:
+            continue
+        results.append(run_case(name, spec, alphas=alphas, out_dir=args.out.parent,
+                                device=args.device, backend=args.backend))
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(dict(provenance=provenance, cases=results), indent=2),
+                        encoding="utf-8")
+    print("wrote", args.out)
+    return results
+
+
+if __name__ == "__main__":
+    main()

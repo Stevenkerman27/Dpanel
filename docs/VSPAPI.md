@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| 结论 | 新增 `vspapi/` —— 本项目内唯一一份 OpenVSP/VSPAERO 客户端（约 800 行 + 17 个纯 Python 测试），替代 `runs/vsp_conv/` 下的散装脚本与 DEP-OPT 整份拷贝 |
+| 结论 | 新增 `vspapi/` —— 本项目内唯一一份 OpenVSP/VSPAERO 客户端（约 800 行 + 17 个纯 Python 测试），替代 `runs/benchmarks/vsp_convergence/` 下的散装脚本与 DEP-OPT 整份拷贝 |
 | 依赖 | 纯层（tessellate/config/mesh/results/health）零依赖；只有 `vspapi.api` 需要 OpenVSP。求解器环境 `.conda_env` 不装 OpenVSP 也能跑全部测试 |
 | 状态 | `physical_accuracy_accepted = false`（外部对照工具，不改变求解器默认） |
 
@@ -15,13 +15,13 @@
 | `D:/3D/Projects/DEP-OPT/infrastructure.py` | 93 kB | 母本，生产验证过（机翼/机身/螺旋桨/控制面/FFD/质量/XFOIL 全在内） |
 | `D:/3D/Projects/GRASS-plane/infrastructure.py` | 53 kB | GRASS 自己的分支（注释写 "for vsp3.41"），用 `vsp.SET_SHOWN` 当 thick/thin 集 |
 | `D:/3D/Projects/aircraft-tools/aircraft_tools/openvsp_infrastructure.py` | 52 kB | 从 GRASS 提出来准备共享，但 DEP-OPT 与本项目都没用它 |
-| `panel/runs/vsp_conv/depopt/` | 93 kB | 上一轮照抄的 DEP-OPT 副本，仅供 `dep_vsp.py` 用 |
+| `panel/runs/benchmarks/vsp_convergence/depopt/` | 93 kB | 上一轮照抄的 DEP-OPT 副本，仅供 `dep_vsp.py` 用 |
 
 本项目里另有三层散装代码：
 
 * `audit/run_case.py`、`audit/junction/run_experiments.py`、`audit/reference_wing3d/run_reference.py` —— 早期 WBCAero 对照，各自 `import openvsp`。
-* `runs/vsp_conv/*.py`（`dep_vsp.py`、`panel_wake.py`、`panel_ladder.py`、`cluster_probe.py`、`vsp_case.py` …）—— 一次性驱动脚本。
-* `vspapi` 之前的一次性 API 内省脚本（`runs/_probe_*.py`、`runs/_enum*.py`）—— 结论已固化进 `vspapi.api.geometry_sets()` 与 `test/test_vspapi_core.py`；脚本本身在 2026-10-27 清理时删除，见 `docs/CLEANUP_2026-10-27.md`。
+* `runs/benchmarks/vsp_convergence/*.py`（`dep_vsp.py`、`panel_wake.py`、`panel_ladder.py`、`cluster_probe.py`、`vsp_case.py` …）—— 一次性驱动脚本。
+* `vspapi` 之前的一次性 API 内省脚本（`runs/_probe_*.py`、`runs/_enum*.py`）—— 结论已固化进 `vspapi.api.geometry_sets()` 与 `test/test_vspapi_core.py`；脚本本身在 2026-10-27 清理时删除，见 `docs/archive/notes/CLEANUP_2026-10-27.md`。
 
 **关键事实：`panel/` 求解器本身零 VSP 代码。** 所有 VSP 使用都在外部对照与审计里，所以可以整体收进一个独立包而不碰求解器（没有循环依赖）。
 
@@ -72,7 +72,7 @@ VSPAERO 没有分析方法开关，模式由**几何集**决定：
 ### 3.2 聚类门（`LECluster`）
 
 panel 模式的 `CLi`（后缘 Kutta-Joukowski 环量求和）在前缘弦向聚类过紧时会错到
-100 倍以上（证据见 `docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` 第 4.3 节）。其余设置
+100 倍以上（证据见 `docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` 第 4.3 节）。其余设置
 全同时实测：
 
 | `LECluster` | `CLi`@5deg | `CLwtot`@5deg |
@@ -114,12 +114,12 @@ DEP-OPT 的 `create_wing` 建出的模型（清理时的一次性脚本调用它
 
 ```
 SHA-256  D7E13757EE8355A92724BB130DA1D12C7E331B039A34301D1E37C222B49CBB9B
-         runs/vsp_conv/pth_355_re/trap.vspgeom      (DEP-OPT create_wing, 3.55 mesher)
-         runs/vsp_conv/api_355_panel/trap.vspgeom   (vspapi WingSpec,     3.55 mesher)
+         runs/benchmarks/vsp_convergence/pth_355_re/trap.vspgeom      (DEP-OPT create_wing, 3.55 mesher)
+         runs/benchmarks/vsp_convergence/api_355_panel/trap.vspgeom   (vspapi WingSpec,     3.55 mesher)
          6344 panels / 6367 points / wetted area 0.30662 / planform 0.30   -> ratio 1.022 (panel)
 ```
 
-即「移植」没有引入几何差：`vspapi` 的 wing 就是 DEP-OPT 那只翼。实求解（5°，单点）`CLwtot 0.71260 / CLi 0.7105`，与 `runs/vsp_conv/api_ladder.py` 的 52×120 档（0.71256）一致到 5e-5。
+即「移植」没有引入几何差：`vspapi` 的 wing 就是 DEP-OPT 那只翼。实求解（5°，单点）`CLwtot 0.71260 / CLi 0.7105`，与 `runs/benchmarks/vsp_convergence/api_ladder.py` 的 52×120 档（0.71256）一致到 5e-5。
 
 **顺带定下的两条事实**：
 
@@ -139,7 +139,7 @@ SHA-256  D7E13757EE8355A92724BB130DA1D12C7E331B039A34301D1E37C222B49CBB9B
 `vspapi` 刻意做到无全局状态、纯层零依赖，就是为了整包搬到
 `D:/3D/Projects/aircraft-tools`（改名 `aircraft_tools.vsp` 或平级模块）。
 搬过去之后 DEP-OPT 与 GRASS 改成 `import` 它，本机就只剩一份实现。
-在那之前，`runs/vsp_conv/depopt/` 保留作历史证据，但新代码一律走 `vspapi`。
+在那之前，`runs/benchmarks/vsp_convergence/depopt/` 保留作历史证据，但新代码一律走 `vspapi`。
 
 ## 7. 复现
 
@@ -153,6 +153,6 @@ $env:VSP_ROOT = 'D:/3D/Projects/OpenVSP-3.55.0-win64'
 $env:PYTHONPATH = 'D:/3D/Projects/panel'
 & C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi version
 # 求解（线程数只能走 -omp，Case.run 已自动拼上）
-& C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi sweep runs/vsp_conv/api_355_spec.json
+& C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi sweep runs/benchmarks/vsp_convergence/api_355_spec.json
 # 手工复现线程效果：& $VSP_ROOT/vspaero.exe -omp 16 trap   （cwd 需含 trap.vspgeom + trap.vspaero + trap.vkey）
 ```

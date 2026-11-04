@@ -1,0 +1,264 @@
+{
+ "schema": "dpanel.issue92.s7.reference.v1",
+ "rcond": 1e-11,
+ "kutta": "pressure",
+ "pressure_solver": "reference",
+ "cases": {
+  "g1_wing_rect": {
+   "sha256": "3bfcafda95b3bcb29c52c38d8c93807bb5fc57e6890d9738c9902091db073ec1",
+   "bytes": 5497,
+   "kind": "g1",
+   "alpha_deg": 5.0,
+   "loads": {
+    "CL": 0.31947298897042903,
+    "CL_gamma": 0.2819235972196489,
+    "CD_pressure": -0.013407339445502762,
+    "CM_y": -0.0486012741190873,
+    "wall_rms": 0.00212459011517394,
+    "jump_rms": 1.3136335981433191e-16,
+    "signed_kutta_rms": 0.005679977072573431,
+    "pressure_kutta_rms": 1.498242139372573e-07
+   },
+   "decisions": {
+    "pressure_status": 2,
+    "pressure_success": true,
+    "pressure_nfev": 4,
+    "pressure_message": "`ftol` termination condition is satisfied.",
+    "constrained_rank": 58,
+    "spectrum_rank": 5
+   },
+   "spectrum": {
+    "threshold": 1.732050807568877e-11,
+    "rank": 5,
+    "margin_over_threshold": 100000000000.0,
+    "gap_ratio": null,
+    "smallest_kept": 1.7320508075688772,
+    "largest_discarded": null
+   }
+  },
+  "g1_wing_camber": {
+   "sha256": "1944ce926510a2efe2b0f3fd0a84662735344d06e959e2d02106a84952cd7fcc",
+   "bytes": 5491,
+   "kind": "g1",
+   "alpha_deg": 5.0,
+   "loads": {
+    "CL": 0.45029134820016536,
+    "CL_gamma": 0.42222006422924224,
+    "CD_pressure": -0.013572436550737716,
+    "CM_y": -0.1295120782621358,
+    "wall_rms": 0.0021683210362745116,
+    "jump_rms": 1.3136335981433191e-16,
+    "signed_kutta_rms": 0.02113464895608814,
+    "pressure_kutta_rms": 1.5674789403526948e-07
+   },
+   "decisions": {
+    "pressure_status": 3,
+    "pressure_success": true,
+    "pressure_nfev": 10,
+    "pressure_message": "`xtol` termination condition is satisfied.",
+    "constrained_rank": 58,
+    "spectrum_rank": 5
+   },
+   "spectrum": {
+    "threshold": 1.732050807568877e-11,
+    "rank": 5,
+    "margin_over_threshold": 100000000000.0,
+    "gap_ratio": null,
+    "smallest_kept": 1.7320508075688772,
+    "largest_discarded": null
+   }
+  },
+  "g1_swept30": {
+   "sha256": "713f3e4e4519c3a2fcca9bd70e189f2323380ea4d65fd55041000ae2b4b06955",
+   "bytes": 28658,
+   "kind": "g1",
+   "alpha_deg": 5.0,
+   "loads": {
+    "CL": 0.4674214526153768,
+    "CL_gamma": 0.4591177927908034,
+    "CD_pressure": 0.007219985624543298,
+    "CM_y": -0.3761363619455591,
+    "wall_rms": 0.00035486769060383673,
+    "jump_rms": 5.550585043421512e-16,
+    "signed_kutta_rms": 0.017770707504551658,
+    "pressure_kutta_rms": 2.6372262787424175e-07
+   },
+   "decisions": {
+    "pressure_status": 2,
+    "pressure_success": true,
+    "pressure_nfev": 7,
+    "pressure_message": "`ftol` termination condition is satisfied.",
+    "constrained_rank": 1336,
+    "spectrum_rank": 63
+   },
+   "spectrum": {
+    "threshold": 2.444582091177153e-11,
+    "rank": 63,
+    "margin_over_threshold": 57850933600.356224,
+    "gap_ratio": null,
+    "smallest_kept": 1.4142135623730945,
+    "largest_discarded": null
+   }
+  },
+  "g1_elliptic": {
+   "sha256": "ba4fa0b4b8379598f3fb86ab297461edd9f675f35156707813fcbf885d5fbdbb",
+   "bytes": 38986,
+   "kind": "g1",
+   "alpha_deg": 5.0,
+   "loads": {
+    "CL": 0.3472736155437683,
+    "CL_gamma": 0.3400753819393768,
+    "CD_pressure": 0.0049227372732021,
+    "CM_y": -0.07531996207332511,
+    "wall_rms": 0.0002970747257516866,
+    "jump_rms": 3.714185619381564e-16,
+    "signed_kutta_rms": 0.008780662154406798,
+    "pressure_kutta_rms": 7.640932439940158e-07
+   },
+   "decisions": {
+    "pressure_status": 2,
+    "pressure_success": true,
+    "pressure_nfev": 12,
+    "pressure_message": "`ftol` termination condition is satisfied.",
+    "constrained_rank": 1562,
+    "spectrum_rank": 83
+   },
+   "spectrum": {
+    "threshold": 2.3215346637154353e-11,
+    "rank": 83,
+    "margin_over_threshold": 60917184846.58574,
+    "gap_ratio": null,
+    "smallest_kept": 1.4142135623730943,
+    "largest_discarded": null
+   }
+  },
+  "g2_conventional": {
+   "sha256": "22ed85a34bead94bae5ea4b321f3c9bdbd035a65eedd19afcf4b4a4951119d1b",
+   "bytes": 6487,
+   "kind": "g2",
+   "alpha_deg": 5.0,
+   "loads": {
+    "CL": 0.3654723302039162,
+    "CL_gamma": 0.34233313568958107,
+    "CD_pressure": -0.017593346735200358,
+    "CM_y": -0.11257278167355603,
+    "wall_rms": 0.0019177823458160234,
+    "jump_rms": 7.850462293418875e-17,
+    "signed_kutta_rms": 0.016867759453107343,
+    "pressure_kutta_rms": 1.6760907509220812e-07
+   },
+   "decisions": {
+    "pressure_status": 1,
+    "pressure_success": true,
+    "pressure_nfev": 5,
+    "pressure_message": "`gtol` termination condition is satisfied.",
+    "constrained_rank": 100,
+    "spectrum_rank": 8
+   },
+   "spectrum": {
+    "threshold": 1.732050807568877e-11,
+    "rank": 8,
+    "margin_over_threshold": 100000000000.0,
+    "gap_ratio": null,
+    "smallest_kept": 1.7320508075688772,
+    "largest_discarded": null
+   }
+  },
+  "g2_tail_low": {
+   "sha256": "7bb12c0a9aa2d8a207b82a933176a039b135e700ad9238a483111fbcc4ef3733",
+   "bytes": 6486,
+   "kind": "g2",
+   "alpha_deg": 5.0,
+   "loads": {
+    "CL": 0.3628331801624354,
+    "CL_gamma": 0.34093083993870726,
+    "CD_pressure": -0.017749943753945112,
+    "CM_y": -0.10785366039367245,
+    "wall_rms": 0.0019218623450907228,
+    "jump_rms": 1.7554167342883504e-16,
+    "signed_kutta_rms": 0.01679697507490231,
+    "pressure_kutta_rms": 1.7155103468140226e-07
+   },
+   "decisions": {
+    "pressure_status": 2,
+    "pressure_success": true,
+    "pressure_nfev": 5,
+    "pressure_message": "`ftol` termination condition is satisfied.",
+    "constrained_rank": 100,
+    "spectrum_rank": 8
+   },
+   "spectrum": {
+    "threshold": 1.732050807568877e-11,
+    "rank": 8,
+    "margin_over_threshold": 100000000000.0,
+    "gap_ratio": null,
+    "smallest_kept": 1.7320508075688772,
+    "largest_discarded": null
+   }
+  },
+  "g1_wingbody_cad": {
+   "sha256": "b1a346b05b9b2b152ffd43dd7515ece3f084d24e0b6e335d4f9853bc2d027483",
+   "bytes": 12382,
+   "kind": "g1",
+   "alpha_deg": 5.0,
+   "loads": {
+    "CL": 0.5361115367532608,
+    "CL_gamma": 0.5411492998787445,
+    "CD_pressure": 0.01596183706159363,
+    "CM_y": -0.1360040833956841,
+    "wall_rms": 0.001175875878163269,
+    "jump_rms": 7.292144878782058e-16,
+    "signed_kutta_rms": 0.047822639599320114,
+    "pressure_kutta_rms": 1.628041101575382e-06
+   },
+   "decisions": {
+    "pressure_status": 2,
+    "pressure_success": true,
+    "pressure_nfev": 15,
+    "pressure_message": "`ftol` termination condition is satisfied.",
+    "constrained_rank": 354,
+    "spectrum_rank": 99
+   },
+   "spectrum": {
+    "threshold": 2.960051479603817e-11,
+    "rank": 99,
+    "margin_over_threshold": 47776654295.29547,
+    "gap_ratio": null,
+    "smallest_kept": 1.4142135623730943,
+    "largest_discarded": null
+   }
+  },
+  "g1_wingbody_cad_3x": {
+   "sha256": "a7554ee569083d3d05f73db39f121aa9d1d99ceb22bdd8ae272c59a369f12a8a",
+   "bytes": 26482,
+   "kind": "g1",
+   "alpha_deg": 5.0,
+   "loads": {
+    "CL": 0.5535718574685162,
+    "CL_gamma": 0.564202904082225,
+    "CD_pressure": 0.013536902441149601,
+    "CM_y": -0.1492822162576438,
+    "wall_rms": 0.0005093399582370193,
+    "jump_rms": 6.185561624302953e-16,
+    "signed_kutta_rms": 0.04204913217048438,
+    "pressure_kutta_rms": 1.5034714023535466e-07
+   },
+   "decisions": {
+    "pressure_status": 2,
+    "pressure_success": true,
+    "pressure_nfev": 17,
+    "pressure_message": "`ftol` termination condition is satisfied.",
+    "constrained_rank": 1163,
+    "spectrum_rank": 101
+   },
+   "spectrum": {
+    "threshold": 3.124099870362659e-11,
+    "rank": 101,
+    "margin_over_threshold": 45267873021.259285,
+    "gap_ratio": null,
+    "smallest_kept": 1.4142135623730945,
+    "largest_discarded": null
+   }
+  }
+ }
+}

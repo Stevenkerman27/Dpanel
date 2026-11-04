@@ -1,13 +1,13 @@
 # 误差分离实验：几何 / 离散 / 势重构 / 尾缘条件
 
-日期 2026-10-25。执行 `PAUSE_HANDOFF.md` 恢复起点 ③：在明确支持域内分离四类误差来源，不做裁剪、不做正则化、不移动配置点。
+日期 2026-10-25（结果未复跑）。在明确支持域内分离四类误差来源，不做裁剪、不做正则化、不移动配置点。下文数字来自当时的 `runs/panel_error_budget_v2/`（未入库；重跑需要本机 Gmsh 与 CAD 输入），只作为误差量级的记录，不是当前求解器的验收结论。
 
 ## 1. 方法与可复现入口
 
 脚本 `panel/verify_error_budget.py`（本轮新增，已参数化 `--out/--radius/--aft/--sizes/--audit-python`）：
 
 - 几何：`lifting3d/results/cad_inputs_v1/naca0012_wing` 的翼 + Gmsh OCC 生成的椭球机身（半轴 2 / 0.35 / 0.35），平移机身使尾尖落在 x = 0.9999（离缝 1e-4）、1.0（精确相切）、1.0001（侵入 1e-4）。
-- 网格：`--radius 8`（radius 5 的保守包围盒会拒绝近相切工况，见 `runs/panel_cad_limits_r8`），h = 0.3 / 0.2 / 0.15；接触工况跑全部三档，另两个 aft 只跑 h = 0.3。
+- 网格：`--radius 8`（radius 5 的保守包围盒会拒绝近相切工况，见 `runs/studies/cad_limits/panel_cad_limits_r8`），h = 0.3 / 0.2 / 0.15；接触工况跑全部三档，另两个 aft 只跑 h = 0.3。
 - 每算例：`cad.py` → `solve.py` → `panel/audit.py`（独立 numba 核，不调用 JAX 求解器）。
 - 产物：`runs/panel_error_budget_v2/`（`*/record.json`、`*/solve/fields.npz`、`*/solve/independent_audit.json`、`summary.json`）。`runs/panel_error_budget_v1/` 是同代码的重复实验，用于检查可重复性。
 

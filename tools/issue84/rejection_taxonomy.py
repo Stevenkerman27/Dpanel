@@ -11,8 +11,8 @@ tokens, and additionally proves that the five non-sampling classes are empty by
 checking the geometry they would have to violate (positive min area, three incident
 faces, no root node, no near-coincident other-sheet face).
 
-Run:  python tools/issue84/rejection_taxonomy.py --csv runs/issue84/wake_rejection_g2_analytic.csv
-          --json runs/issue84/wake_rejection_g2_analytic.json --out docs/issue84/rejection_taxonomy.json
+Run:  python tools/issue84/rejection_taxonomy.py --csv runs/studies/rm_bench/wake_rejection_g2_analytic.csv
+          --json runs/studies/rm_bench/wake_rejection_g2_analytic.json --out docs/issue84/rejection_taxonomy.json
 """
 from __future__ import annotations
 

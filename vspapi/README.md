@@ -1,8 +1,8 @@
 # vspapi — OpenVSP / VSPAERO client (project copy)
 
 One small, tested client for the external VSPAERO comparisons. It replaces the
-ad-hoc scripts under `runs/vsp_conv/` and the verbatim DEP-OPT copy in
-`runs/vsp_conv/depopt/`.
+ad-hoc scripts under `runs/benchmarks/vsp_convergence/` and the verbatim DEP-OPT copy in
+`runs/benchmarks/vsp_convergence/depopt/`.
 
 ## Why a copy exists at all
 
@@ -57,7 +57,7 @@ Two traps, both of which cost real time here:
 
 In panel mode `CLi` (trailing-edge Kutta-Joukowski) is wrong by up to 200x when
 the chordwise leading-edge clustering is tight; see
-`docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` section 4.3. Measured with everything
+`docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` section 4.3. Measured with everything
 else identical: `LECluster 0.25 -> CLi 125.45`, `0.50 -> 5.50`,
 `0.80 -> 0.635` (`CLwtot` stays 0.65-0.67 throughout). `add_wing` refuses
 `LECluster < 0.5` unless `allow_risky_cluster=True`, and
@@ -80,7 +80,7 @@ else identical: `LECluster 0.25 -> CLi 125.45`, `0.50 -> 5.50`,
 ```powershell
 $env:VSP_ROOT = 'D:/3D/Projects/OpenVSP-3.55.0-win64'
 & C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi version
-& C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi inspect runs/vsp_conv/pth_52x120/trap.vspgeom --polar runs/vsp_conv/pth_52x120/trap.polar
+& C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi inspect runs/benchmarks/vsp_convergence/pth_52x120/trap.vspgeom --polar runs/benchmarks/vsp_convergence/pth_52x120/trap.polar
 ```
 
 ```python

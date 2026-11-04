@@ -1,0 +1,99 @@
+{
+  "records": [
+    {
+      "fan_order": 16,
+      "fan_strips": 1,
+      "kernel_seconds": 0.415755,
+      "max_relative_error": 0.031351175019558516,
+      "median_relative_error": 0.00400600119380094,
+      "ms_per_target": 51.517788,
+      "seconds": 0.824285,
+      "subtriangles_per_target": 1752,
+      "targets": 16
+    },
+    {
+      "fan_order": 16,
+      "fan_strips": 2,
+      "kernel_seconds": 0.842329,
+      "max_relative_error": 0.013894662969412198,
+      "median_relative_error": 0.0020715161936594503,
+      "ms_per_target": 102.783719,
+      "seconds": 1.64454,
+      "subtriangles_per_target": 3504,
+      "targets": 16
+    },
+    {
+      "fan_order": 16,
+      "fan_strips": 8,
+      "kernel_seconds": 3.763552,
+      "max_relative_error": 0.0005465983533889048,
+      "median_relative_error": 0.00014438933557406244,
+      "ms_per_target": 329.3289,
+      "seconds": 5.269262,
+      "subtriangles_per_target": 14016,
+      "targets": 16
+    },
+    {
+      "fan_order": 32,
+      "fan_strips": 1,
+      "kernel_seconds": 1.86445,
+      "max_relative_error": 0.0031406130981440333,
+      "median_relative_error": 0.0004409031171188777,
+      "ms_per_target": 142.388269,
+      "seconds": 2.278212,
+      "subtriangles_per_target": 1752,
+      "targets": 16
+    },
+    {
+      "fan_order": 32,
+      "fan_strips": 2,
+      "kernel_seconds": 3.757549,
+      "max_relative_error": 0.0007898859161965142,
+      "median_relative_error": 0.0001329059566900429,
+      "ms_per_target": 286.047819,
+      "seconds": 4.576765,
+      "subtriangles_per_target": 3504,
+      "targets": 16
+    },
+    {
+      "fan_order": 48,
+      "fan_strips": 1,
+      "kernel_seconds": 4.249211,
+      "max_relative_error": 0.00035839215921291,
+      "median_relative_error": 5.7814689035005944e-05,
+      "ms_per_target": 292.437781,
+      "seconds": 4.679004,
+      "subtriangles_per_target": 1752,
+      "targets": 16
+    },
+    {
+      "fan_order": 48,
+      "fan_strips": 2,
+      "kernel_seconds": 8.503922,
+      "max_relative_error": 4.798173666560265e-05,
+      "median_relative_error": 2.4473744832664087e-06,
+      "ms_per_target": 584.761812,
+      "seconds": 9.356189,
+      "subtriangles_per_target": 3504,
+      "targets": 16
+    },
+    {
+      "fan_order": 48,
+      "fan_strips": 8,
+      "kernel_seconds": 33.809209,
+      "max_relative_error": 0.0,
+      "median_relative_error": 0.0,
+      "ms_per_target": 2208.561937,
+      "seconds": 35.336991,
+      "subtriangles_per_target": 14016,
+      "targets": 16
+    }
+  ],
+  "reference": {
+    "fan_order": 48,
+    "fan_strips": 8,
+    "ms_per_target": 2175.262006,
+    "seconds": 34.804192
+  },
+  "targets": 16
+}

@@ -62,7 +62,7 @@ def main(argv=None):
     parser.add_argument("--stability-points", type=int, default=8)
     parser.add_argument("--batch-config", default="auto")
     parser.add_argument("--limit", type=int, default=0)
-    parser.add_argument("--out", type=Path, default=Path("runs/issue84/projection_fan_gate.json"))
+    parser.add_argument("--out", type=Path, default=Path("runs/studies/rm_bench/projection_fan_gate.json"))
     args = parser.parse_args(argv)
 
     started = time.perf_counter()

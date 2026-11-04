@@ -3,7 +3,7 @@ import numpy as np
 import panel.p1_coupled_material_wake as m
 from tools.issue84.wake_node_rejection import build_case
 
-mesh, alpha = build_case(["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"], case="g2", alpha_deg=5.0)
+mesh, alpha = build_case(["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"], case="g2", alpha_deg=5.0)
 g = mesh.groups[0]
 from panel.p1_steady_free_wake import prepare_wake_material
 mat = prepare_wake_material(g)

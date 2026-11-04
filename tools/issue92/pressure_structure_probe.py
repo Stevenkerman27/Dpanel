@@ -38,7 +38,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--fixture", default="g1_elliptic")
     ap.add_argument("--weight", type=float, default=5.)
-    ap.add_argument("--out", type=Path, default=ROOT / "runs/issue92/pressure_structure_probe.json")
+    ap.add_argument("--out", type=Path, default=ROOT / "runs/scratch/issue92_loose/pressure_structure_probe.json")
     args = ap.parse_args(argv)
 
     from panel.p1_lifting_g1 import assemble

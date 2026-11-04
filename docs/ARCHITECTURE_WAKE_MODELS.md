@@ -1,27 +1,26 @@
-# Wake models: representation, evaluator, update
+# 尾迹模型：表示、求值器、更新
 
-Status: architecture note for the B2 coupled material-wake experiment
-(`panel/p1_coupled_material_wake.py`). Nothing here changes a production default:
-`velocity_method='analytic_edges'` stays the default, and
-`physical_accuracy_accepted` stays false.
+状态：B2 耦合材料尾迹实验的架构说明
+（`panel/p1_coupled_material_wake.py`）。本文不改变任何生产默认值：
+`velocity_method='analytic_edges'` 仍为默认值，
+`physical_accuracy_accepted` 仍为 false。
 
-## 1. Three independent axes
+## 1. 三个相互独立的轴
 
-| axis | question | what selects it | what it does **not** change |
+| 轴 | 问题 | 由什么选择 | **不**改变什么 |
 | --- | --- | --- | --- |
-| representation | what object *is* the wake? | the wake-model choice (method 1/2/3) | the wall model, the Kutta condition, the solve |
-| evaluator | how is the induced velocity of that object computed? | for method 2 only, `area_quadrature`; for any method, quadrature order / fan strips / near-far split | the geometry of the wake sheet, the unknowns, the loads |
-| update | how does the wake geometry move between solves? | the B2 outer loop (`iterations`, `relaxation`, `max_backtracks`, geometry gates, per-node step caps) | the velocity model at a fixed geometry |
+| 表示 | 尾迹*究竟*是什么对象？ | 尾迹模型选择（方法 1/2/3） | 壁面模型、Kutta 条件、求解 |
+| 求值器 | 该对象的诱导速度如何计算？ | 仅方法 2 用 `area_quadrature`；任何方法都用求积阶数 / 扇形条带 / 近远场划分 | 尾迹面的几何、未知量、载荷 |
+| 更新 | 尾迹几何在两次求解之间如何移动？ | B2 外循环（`iterations`、`relaxation`、`max_backtracks`、几何门禁、逐节点步长上限） | 固定几何下的速度模型 |
 
-Confusing these three is what produced the earlier "five peer velocity methods"
-surface: `projection_fan` is an area integrator inside method 2, not a wake
-representation, and changing `fan_order` changes a number, not a model.
+混淆这三者，正是此前“五个同级速度方法”表象的来源：
+`projection_fan` 是方法 2 内部的面元积分器，不是一种尾迹
+表示，改动 `fan_order` 改变的只是一个数值，而不是一个模型。
 
-## 2. Method 1 -- P1 doublet sheet, unregularized (`analytic_edges`)
+## 2. 方法 1 —— P1 偶极子面片，未正则化（`analytic_edges`）
 
-Default and reference. The wake is a continuous P1 doublet sheet: `mu` varies
-linearly over every wake triangle, so the sheet carries two physical
-contributions,
+默认方法与基准。尾迹是连续的 P1 偶极子面片：`mu` 在每个尾迹三角形上
+线性变化，因此该面片携带两个物理贡献，
 
 ```
 u(x) = 1/(4 pi) [ ∫_boundary  gamma_l(l) × (x - y) / |x-y|^3 dl
@@ -30,98 +29,90 @@ gamma_l = linearly varying P1 trace on boundary / cut edges
 gamma_f = grad_s(mu_f) × n_f     (in-panel distributed vorticity)
 ```
 
-Status: production default, fully coupled to B2, evaluated exactly (edge
-integrals in closed form for the linear trace, area term by quadrature). Its
-value **on** the sheet is singular, so numbers taken at a wake node are not a
-converged principal value and must not be reported as one. That limitation is
-the reason method 2 exists, not a bug in method 1.
+状态：生产默认，与 B2 完全耦合，精确求值（线性迹的边界积分为闭式，
+面积项用求积）。它在面片**上**的取值是奇异的，因此在尾迹节点上取到的数
+不是收敛的主值，不得作为主值报告。这一限制正是方法 2 存在的
+原因，而不是方法 1 的缺陷。
 
-## 3. Method 2 -- regularized P1 sheet (`rm_regularized_p1`)
+## 3. 方法 2 —— 正则化 P1 面片（`rm_regularized_p1`）
 
-Same representation, same two contributions, one explicit Rosenhead-Moore core
-`a`: every denominator becomes `(|x-y|^2 + a^2)^(3/2)`, on both the boundary
-term and the area term. The P1 sheet is **not** replaced by constant-strength
-edge filaments.
+相同的表示、相同的两个贡献，外加一个显式的 Rosenhead-Moore 核
+`a`：每个分母都变为 `(|x-y|^2 + a^2)^(3/2)`，边界项与面积项均如此。
+P1 面片**不会**被替换为等强度的边元涡丝。
 
-Status: opt-in research / production candidate; requires an explicit
-`core_radius`. `area_quadrature` picks the integrator of the area term:
+状态：可选研究 / 生产候选；需要显式给出 `core_radius`。
+`area_quadrature` 选择面积项的积分器：
 
-| `area_quadrature` | what it is | when to use |
+| `area_quadrature` | 是什么 | 何时使用 |
 | --- | --- | --- |
-| `legacy_duffy` | fixed tensor-product Gauss-Legendre plus a single-vertex Duffy collapse | default, cheapest; aliases when the core is much smaller than the panel |
-| `projection_fan` | projection fan around the closest point, per-panel strips | the mode that removes the alias; the one used for accuracy evidence |
-| `projection_fan_adaptive` | projection fan near, composite Duffy far, a-posteriori budget | opt-in, self-gating; reports its own estimates |
+| `legacy_duffy` | 固定的张量积 Gauss-Legendre 加一次单顶点 Duffy 折叠 | 默认，最省；当核远小于面元时会产生混叠 |
+| `projection_fan` | 绕最近点的投影扇形，逐面元条带 | 消除混叠的模式；用于精度证据的那个 |
+| `projection_fan_adaptive` | 近处投影扇形、远处复合 Duffy、后验预算 | 可选，自门禁；报告自身的估计 |
 
-`fan_order`, `fan_strips`, `fan_refinement_order`, `fan_refinement_strips`,
-`near_ratio`, `adaptive_*` and `quadrature_order` are **numerical settings of
-this evaluator**. They never select a model, and none of them may be presented
-as a separate method.
+`fan_order`、`fan_strips`、`fan_refinement_order`、`fan_refinement_strips`、
+`near_ratio`、`adaptive_*` 和 `quadrature_order` 都是**本求值器的数值设置**。
+它们从不选择模型，其中任何一个都不得被当作独立方法来呈现。
 
-## 4. Method 3 -- Lagrangian vortex filaments (documented, not wired)
+## 4. 方法 3 —— 拉格朗日涡丝（有文档，未接线）
 
-A distinct representation: oriented filaments carrying circulation, induced
-velocity by Biot-Savart / Rosenhead-Moore segment summation,
+一种不同的表示：携带环量的有向涡丝，诱导速度由 Biot-Savart / Rosenhead-Moore 线段求和给出，
 
 ```
 u(x) = Σ_filaments Gamma/(4 pi) ∫ dl × (x - y) / (|x-y|^2 + a^2)^(3/2)
 ```
 
-It needs its own circulation transfer, filament connectivity, curved-filament
-self-induction treatment and a P1-to-filament mapping before it can be coupled.
-The segment kernel from PR #83 is a component and an oracle, not a solver. It is
-deliberately **not** accepted as a `velocity_method`; `panel/wake_velocity_methods.py`
-refuses it with an explanatory message.
+在能够耦合之前，它需要自己的环量传递、涡丝连通性、曲涡丝
+自诱导处理以及 P1 到涡丝的映射。PR #83 的线段核是一个组件和一个
+oracle，不是求解器。它被有意地**不**接受为 `velocity_method`；
+`panel/wake_velocity_methods.py` 会以解释性消息拒绝它。
 
-## 5. Deprecated backend (`legacy_gauss`)
+## 5. 弃用后端（`legacy_gauss`）
 
-The pre-2026-10-30 edge Gauss evaluator. Kept only so frozen snapshots that
-recorded `sampling_kernel='legacy_gauss'` still replay; it is not offered in the
-CLI choices and is not documented as a model.
+2026-10-30 之前的边 Gauss 求值器。仅保留以便记录了
+`sampling_kernel='legacy_gauss'` 的冻结快照仍可重放；它不在
+CLI 选项中出现，也不作为模型记录在文档中。
 
-## 6. Numerical vs physical controls
+## 6. 数值控制与物理控制
 
-| control | kind | effect |
+| 控制项 | 类别 | 作用 |
 | --- | --- | --- |
-| `velocity_method` | physical (model) | chooses method 1 or 2 (3 reserved) |
-| `core_radius` | physical (model parameter) | sets the RM core of method 2 |
-| `area_quadrature` | numerical (method 2 evaluator) | which integrator computes the area term |
-| `quadrature_order` | numerical | legacy edge Gauss order / Duffy order; ignored by method 1 |
-| `fan_order`, `fan_strips` | numerical | resolution of the projection fan |
-| `fan_refinement_*` | numerical (gate) | the refined configuration the sampling gate compares against |
-| `near_ratio`, `adaptive_*` | numerical | near/far split and budget of `projection_fan_adaptive` |
-| wake node count (mesh/geometry) | discrete geometry | where the sheet is sampled; **not** a velocity setting |
-| `iterations`, `relaxation`, `max_backtracks` | update | how the mixed-inverse/kinematic map moves the sheet |
+| `velocity_method` | 物理（模型） | 选择方法 1 或 2（3 保留） |
+| `core_radius` | 物理（模型参数） | 设定方法 2 的 RM 核 |
+| `area_quadrature` | 数值（方法 2 求值器） | 由哪个积分器计算面积项 |
+| `quadrature_order` | 数值 | 旧边 Gauss 阶数 / Duffy 阶数；方法 1 忽略 |
+| `fan_order`、`fan_strips` | 数值 | 投影扇形的分辨率 |
+| `fan_refinement_*` | 数值（门禁） | 采样门禁用于对比的细化配置 |
+| `near_ratio`、`adaptive_*` | 数值 | `projection_fan_adaptive` 的远近划分与预算 |
+| 尾迹节点数（网格/几何） | 离散几何 | 面片在何处采样；**不是**速度设置 |
+| `iterations`、`relaxation`、`max_backtracks` | 更新 | 混合逆/运动学映射如何移动面片 |
 
-Wake node count and wake iteration count are properties of the geometry and of
-the B2 loop. They change the answer by changing the discretisation and the
-fixed point, so they must be reported next to any velocity-method comparison;
-`fan_order`/`fan_strips` change only the quadrature error at fixed geometry.
+尾迹节点数与尾迹迭代次数是几何与 B2 循环的属性。它们通过改变离散化
+与不动点来改变答案，因此必须在任何速度方法对比旁边一并报告；
+`fan_order`/`fan_strips` 只改变固定几何下的求积误差。
 
-## 7. What is coupled, and what is not
+## 7. 耦合了什么，没耦合什么
 
-Coupled: wall and wake share the P1 potential representation; the wall solve is
-`solve_multi` (Dirichlet potential trace), the pressure-Kutta condition ties the
-sheet strength to the wall loading, and the B2 loop moves the wake with the
-kinematic map under the geometry gates (root/attachment/area/fold/step/wall/
-intersection) and per-node step caps. See
-`docs/ISSUE84_T5_CONTACT_AND_STEP_CONTROL.md` for the gate semantics.
+已耦合：壁面与尾迹共享 P1 势表示；壁面求解为
+`solve_multi`（Dirichlet 势迹），压力-Kutta 条件将面片强度与壁面载荷联系起来，
+B2 循环在几何门禁（根部/附着/面积/折叠/步长/壁面/
+相交）与逐节点步长上限下，用运动学映射移动尾迹。门禁语义见
+`docs/archive/issue/ISSUE84_T5_CONTACT_AND_STEP_CONTROL.md`。
 
-Not coupled: method 3; any filament-based geometry update; the Galerkin wall
-weak form (implemented and measured in issue #71 but not yet the B2 wall
-solver); a physical-accuracy claim of any kind.
+未耦合：方法 3；任何基于涡丝的几何更新；Galerkin 壁面
+弱形式（在 issue #71 中已实现并测量，但尚未成为 B2 壁面
+求解器）；任何形式的物理精度声明。
 
-## 8. API and compatibility
+## 8. API 与兼容性
 
-* `velocity_method` accepts `analytic_edges` (default) and `rm_regularized_p1`;
-  `legacy_gauss` is accepted only to replay old snapshots.
-* `area_quadrature` is only valid with method 2 and only with
-  `legacy_duffy`, `projection_fan` or `projection_fan_adaptive`; asking for a fan
-  with method 1 raises instead of being silently ignored.
+* `velocity_method` 接受 `analytic_edges`（默认）与 `rm_regularized_p1`；
+  `legacy_gauss` 仅为了重放旧快照而接受。
+* `area_quadrature` 仅在方法 2 下有效，且仅限
+  `legacy_duffy`、`projection_fan` 或 `projection_fan_adaptive`；在方法 1 下
+  请求扇形会抛错，而不是被静默忽略。
 * `python -m panel.run_p1_coupled_material_wake --describe-velocity-methods`
-  prints the model table below.
-* `panel/wake_velocity_methods.py` is the single source of truth for the model
-  list, statuses, numerical-control descriptions and the error messages; the
-  CLI choices and the solver guards both read it.
+  打印下面的模型表。
+* `panel/wake_velocity_methods.py` 是模型列表、状态、数值控制说明
+  与错误消息的唯一事实来源；CLI 选项与求解器守卫都读取它。
 
 ```
 method                 index  status                            coupled
@@ -131,7 +122,26 @@ rm_regularized_p1          2  opt-in research / production candidate True
 lagrangian_filaments       3  future model, not coupled        False
 ```
 
-Tests: `test/test_wake_velocity_methods.py` (registry, fail-closed guards, CLI
-table, doc contract), plus the existing `test_p1_coupled_material_wake.py`,
-`test_p1_regularized_sheet_velocity.py`, `test_p1_fan_quadrature_gate.py`,
-`test_p1_adaptive_area.py`.
+测试：`test/test_wake_velocity_methods.py`（注册表、fail-closed 守卫、CLI
+表、文档契约），外加已有的 `test_p1_coupled_material_wake.py`、
+`test_p1_regularized_sheet_velocity.py`、`test_p1_fan_quadrature_gate.py`、
+`test_p1_adaptive_area.py`。
+
+## 附录：术语对照（测试契约用词）
+
+测试 `test/test_wake_velocity_methods.py::test_doc_page_covers_the_required_distinctions`
+按英文关键词检查本页，因此中文化后这些词仍需出现；下表是唯一需要保留英文的地方。
+
+| 中文 | 关键词（测试用） |
+| --- | --- |
+| 表示（三种尾迹模型） | representation，Method 1，Method 2，Method 3 |
+| 求值器 | evaluator |
+| 更新 | update |
+| Rosenhead–Moore 正则化 | Rosenhead-Moore |
+| Biot–Savart 求和 | Biot-Savart |
+| 扇形阶数、扇形条带 | fan_order，fan_strips |
+| 尾迹节点数、尾迹迭代数 | wake node count，wake iteration count |
+| 物理精度是否被接受 | physical_accuracy_accepted |
+| 未耦合 | not coupled |
+| 投影扇形求积器 | projection_fan |
+| 面积求积 | area_quadrature |

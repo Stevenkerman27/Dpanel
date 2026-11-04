@@ -116,7 +116,7 @@ def recorder(iteration, current, state, record, arrays):
 
 
 rows = []
-mesh, alpha = build_case(["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"],
+mesh, alpha = build_case(["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"],
                          case="g2", alpha_deg=5.0)
 DECLARED.update(declared_pairs(mesh))
 print("declared contact pairs", len(DECLARED))

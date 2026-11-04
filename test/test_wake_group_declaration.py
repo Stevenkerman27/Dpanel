@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 from panel.wake_group_declaration import (  # noqa: E402
     SCHEMA, merged_stations, positive_trailing_edge, read_wake_groups)
 
-SCRATCH = ROOT / "runs" / "wake_declaration_tests"
+SCRATCH = ROOT / "runs" / "scratch" / "test_outputs" / "wake_declaration_tests"
 
 
 def _write(name, payload):

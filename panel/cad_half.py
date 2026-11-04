@@ -169,13 +169,19 @@ def _build(args, stage):
 
         wake_inputs = []
         for left, right in zip(stations[:-1], stations[1:]):
+            # Each strip carries the declared TE height of its two stations.
+            # The four corners stay coplanar because z is linear in y inside a
+            # strip, so a dihedral (or any spanwise TE curve) needs no new
+            # surface type; with a planar TE this is bit-for-bit the old z=0.
+            z_left = float(np.interp(left, te[:, 1], te[:, 2]))
+            z_right = float(np.interp(right, te[:, 1], te[:, 2]))
             corners = [
-                (float(np.interp(left, te[:, 1], te[:, 0])), left),
-                (args.radius, left),
-                (args.radius, right),
-                (float(np.interp(right, te[:, 1], te[:, 0])), right),
+                (float(np.interp(left, te[:, 1], te[:, 0])), left, z_left),
+                (args.radius, left, z_left),
+                (args.radius, right, z_right),
+                (float(np.interp(right, te[:, 1], te[:, 0])), right, z_right),
             ]
-            v = [occ.addPoint(float(x), float(y), 0.) for x, y in corners]
+            v = [occ.addPoint(float(x), float(y), float(z)) for x, y, z in corners]
             curves = [occ.addLine(v[k], v[(k+1)%4]) for k in range(4)]
             wake_inputs.append((2, occ.addPlaneSurface([occ.addWire(curves)])))
         fragments, ancestry = occ.fragment(fluid, wake_inputs)

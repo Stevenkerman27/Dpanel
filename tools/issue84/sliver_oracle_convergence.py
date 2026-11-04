@@ -16,7 +16,7 @@ from tools.issue84.sliver_subdivision import (reference_integral, split_faces,
                                               area_velocity_split, aspect,
                                               point_triangle_distance)
 
-SURFACE = "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"
+SURFACE = "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"
 POINT = np.array([22.333, 0.238, 0.0])
 CORE = 0.01
 
@@ -56,7 +56,7 @@ for depth, order, strips in ((4, 24, 8), (4, 32, 8), (5, 24, 8), (5, 16, 8)):
     print("fan    depth %d %d:%d |v| %.8e  %.2f s" % (depth, order, strips, rows[-1]["norm"], rows[-1]["seconds"]), flush=True)
 
 finest = np.asarray(rows[-1]["value"], float)
-Path("runs/issue84/oracle_convergence.json").write_text(
+Path("runs/studies/rm_bench/oracle_convergence.json").write_text(
     json.dumps(dict(rows=rows, wall=float(time.perf_counter())), indent=2), encoding="utf-8")
 for row in rows:
     err = float(np.linalg.norm(np.asarray(row["value"], float) - np.asarray(rows[3]["value"], float))

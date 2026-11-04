@@ -1,0 +1,46 @@
+{
+  "tolerances": {
+    "x_relative": 1e-11,
+    "cost_relative": 1e-11,
+    "optimality_absolute": 1e-09
+  },
+  "numpy": {
+    "status": 4,
+    "nfev": 9,
+    "nit": 4,
+    "cost": 1.577188174020199,
+    "optimality": 1.897625318131313e-07,
+    "message": "relative gradient tolerance reached",
+    "total_seconds": 0.012178300064988434
+  },
+  "torch": {
+    "status": 4,
+    "nfev": 9,
+    "nit": 4,
+    "cost": 1.5771881740201987,
+    "optimality": 1.8976263096992518e-07,
+    "message": "relative gradient tolerance reached",
+    "total_seconds": 0.010817700065672398
+  },
+  "scenarios": {
+    "numpy": "base",
+    "torch": "base"
+  },
+  "backtracks": {
+    "numpy": 0,
+    "torch": 0
+  },
+  "differences": {
+    "x_relative": 8.33857418858501e-16,
+    "cost_relative": 1.4078510642078122e-16,
+    "optimality_absolute": 9.915679388683429e-14
+  },
+  "checks": {
+    "same_status": true,
+    "same_nfev": true,
+    "x_relative": true,
+    "cost_relative": true,
+    "optimality": true
+  },
+  "passed": true
+}

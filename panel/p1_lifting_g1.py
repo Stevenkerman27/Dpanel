@@ -15,10 +15,32 @@ import json
 from pathlib import Path
 import time
 import numpy as np
-from scipy.linalg import lstsq, null_space
-from scipy.optimize import least_squares
 from .p1_closed_body import Mesh, influence_block
-from .p1_pressure_kutta_reduced import solve_structured_pressure
+from .p1_backend import resolve_backend
+
+
+def _torch_null_space(matrix,rcond=1e-11):
+    """Null space through torch.
+
+    The NumPy/SciPy solver was retired in S9 and, separately, a SciPy LAPACK call after
+    a torch kernel in the same interpreter dies with 0xC0000005
+    (docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f), so the derivative path uses the
+    ported rank-aware helpers.
+    """
+    import torch
+    from .p1_rank_aware_torch import null_space as _null_space
+    basis=_null_space(torch.as_tensor(np.asarray(matrix,float),dtype=torch.float64),
+                      rcond=rcond)
+    return basis.detach().cpu().numpy()
+
+
+def _torch_lstsq(matrix,rhs):
+    """Minimum-norm least squares through torch, with gelsd truncation semantics."""
+    import torch
+    from .p1_rank_aware_torch import lstsq as _lstsq
+    result=_lstsq(torch.as_tensor(np.asarray(matrix,float),dtype=torch.float64),
+                  torch.as_tensor(np.asarray(rhs,float),dtype=torch.float64))
+    return result.x.detach().cpu().numpy()
 
 
 @dataclass(frozen=True)
@@ -421,7 +443,9 @@ def assemble(wing, *, backend='numpy'):
     backend='numpy' is the reference kernel; backend='torch' routes the two influence
     matrices through panel/p1_batched_influence.py, which evaluates the same closed form
     over target x source blocks and is bitwise-equivalent to it up to float64 summation
-    order. The default does not move.
+    order. The default does not move. The production P1 solve no longer calls this with
+    backend='torch' (S10 retired the NumPy solve chain); the option remains for the
+    evidence tools in tools/issue92/influence_*.py.
     """
     mesh=_mesh_as_kernel(wing)
     nface=len(wing.faces);nt=wing.ndof_mu;ng=wing.gamma_hat.shape[1]
@@ -432,7 +456,7 @@ def assemble(wing, *, backend='numpy'):
             D=_doublet_matrix(wing.wake_xyz[f][None],mesh.centers,face_dofs=np.arange(3)[None],ndof=3)
             W+=D@wing.gamma_hat[f]
     elif backend=='torch':
-        from .p1_batched_influence import influence_matrix,wake_matrix
+        from .p1_batched_influence import influence_matrix, wake_matrix
         A=influence_matrix(mesh.triangles,mesh.centers,self_faces=np.arange(nface),face_dofs=wing.dof_face,ndof=nt)
         W=wake_matrix(wing.wake_xyz,wing.wake_faces,mesh.centers)@np.asarray(wing.gamma_hat,float)
     else:
@@ -474,100 +498,46 @@ def assemble(wing, *, backend='numpy'):
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
-          pressure_solver='reference', backend='numpy'):
-    ops=assemble(wing,backend=backend);A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH'];ng=W.shape[1];nm=len(A[0]);nk=len(K)
-    alpha=np.deg2rad(alpha_deg);U=np.array([np.cos(alpha),0,np.sin(alpha)])
-    rhs=-ops['mesh'].centers@U
-    scale=np.sqrt(ops['mesh'].areas/np.mean(ops['mesh'].areas))
-    # Two independent aerodynamic constraints, with no penalty factors:
-    # (i) wake jump is the TE potential discontinuity;
-    # (ii) Kutta chooses circulation through TE velocity, not through definition (i).
-    J=np.block([C,-GH])
-    E=np.block([K,np.zeros((nk,ng))])
-    B=wall_weight*scale[:,None]*np.column_stack([A,W])
-    bw=wall_weight*scale*rhs
-    def exact_constrained_solve(constraints):
-        N=null_space(constraints, rcond=1e-11)
-        if N.shape[1]==0: raise ValueError('No degrees of freedom after Kutta constraints')
-        t,_,rank,sv=lstsq(B@N,bw,lapack_driver='gelsd')
-        return N@t,rank,sv,N
-    initial,rank,sv,N_lin=exact_constrained_solve(np.vstack((J,E)))
-    mu_gamma=initial.copy();mu,gamma=mu_gamma[:nm],mu_gamma[nm:]
-    def pressure_residual(vec):
-        mu_=vec[:nm];vel=np.einsum('fij,j->fi',ops['grad'],mu_)
-        return np.array([np.mean(np.sum(vel[top]**2,axis=1))-np.mean(np.sum(vel[bot]**2,axis=1))
-                         for top,bot in ops['te_pairs']])
-    def pressure_jac(vec):
-        mu_=vec[:nm];vel=np.einsum('fij,j->fi',ops['grad'],mu_)
-        mat=np.zeros((nk,nm))
-        for i,(top,bot) in enumerate(ops['te_pairs']):
-            mat[i]=2*np.mean(np.einsum('fi,fij->fj',vel[top],ops['grad'][top]),axis=0) - 2*np.mean(np.einsum('fi,fij->fj',vel[bot],ops['grad'][bot]),axis=0)
-        return np.c_[mat,np.zeros((nk,ng))]
-    if kutta=='pressure':
-        N=null_space(J,rcond=1e-11)
-        # Jump equality is exact in this parameterisation for every iterate.
-        def f(t):
-            v=N@t
-            return np.r_[B@v-bw,kutta_weight*pressure_residual(v)]
-        def jac(t):
-            v=N@t
-            return np.vstack([B,kutta_weight*pressure_jac(v)])@N
-        z0=N.T@initial
-        t_pressure=time.perf_counter()
-        pressure_history=pressure_nfev=pressure_cost=pressure_optimality=None
-        pressure_precompute=None
-        if pressure_solver=='reference':
-            result=least_squares(f,z0,jac=jac,max_nfev=max_nfev,
-                                 ftol=1e-11,xtol=1e-11,gtol=1e-11)
-            pressure_nfev=result.nfev
-            pressure_cost=result.cost
-            pressure_optimality=float(np.linalg.norm(jac(result.x).T@result.fun,np.inf))
-        elif pressure_solver=='structured':
-            # Same residual, Jacobian, tolerances and budget; only the linear step
-            # changes (structured Gauss-Newton on the feasible subspace).
-            result=solve_structured_pressure(wall_operator=B,reduction=N,wall_rhs=bw,
-                                             pressure=pressure_residual,
-                                             pressure_jacobian=pressure_jac,x0=z0,
-                                             weight=kutta_weight,max_nfev=max_nfev)
-            pressure_history=result.history
-            pressure_nfev=result.nfev
-            pressure_cost=result.cost
-            pressure_optimality=result.optimality
-            pressure_precompute=result.precompute_seconds
-        else:
-            raise ValueError("pressure_solver must be 'reference' or 'structured'")
-        pressure_seconds=time.perf_counter()-t_pressure
-        mu_gamma=N@result.x;mu,gamma=mu_gamma[:nm],mu_gamma[nm:]
-    elif kutta!='signed_speed':raise ValueError('kutta must be signed_speed or pressure')
-    vel=np.einsum('fij,j->fi',ops['grad'],mu)
-    cp=1-np.sum(vel**2,axis=1)
-    force=-np.einsum('f,f,fi->i',cp,ops['mesh'].areas,ops['mesh'].normals)
-    eh=np.array([-np.sin(alpha),0,np.cos(alpha)]);ed=U
-    CL=float(force@eh/wing.reference_area); CD=float(force@ed/wing.reference_area)
-    gfull=np.r_[0,gamma,0];CLg=float(2*np.trapezoid(gfull,wing.gamma_y)/wing.reference_area)
-    moment=np.sum(np.cross(ops['mesh'].centers-wing.reference_point,
-                           -(cp*ops['mesh'].areas)[:,None]*ops['mesh'].normals),axis=0)
-    CM_y=float(moment[1]/(wing.reference_area*wing.chord))
-    return dict(CL=CL,CD_pressure=CD,CL_gamma=CLg,CM_y=CM_y,force=force,cp=cp,mu=mu,gamma=gamma,
-                constrained_rank=int(rank),singular=sv,
-                pressure_kutta_rms=float(np.sqrt(np.mean(pressure_residual(mu_gamma)**2))) if kutta=='pressure' else None,
-                signed_kutta_rms=float(np.sqrt(np.mean((K@mu)**2))),jump_rms=float(np.sqrt(np.mean((J@mu_gamma)**2))),
-                wall_rms=float(np.sqrt(np.mean((A@mu+W@gamma-rhs)**2))),
-                alpha_deg=alpha_deg,method=kutta,ops=ops,
-                pressure_solver=pressure_solver if kutta=='pressure' else None,
-                pressure_status=result.status if kutta=='pressure' else None,
-                pressure_message=result.message if kutta=='pressure' else None,
-                pressure_seconds=pressure_seconds if kutta=='pressure' else None,
-                pressure_history=pressure_history if kutta=='pressure' else None,
-                pressure_nfev=pressure_nfev if kutta=='pressure' else None,
-                pressure_cost=pressure_cost if kutta=='pressure' else None,
-                pressure_optimality=pressure_optimality if kutta=='pressure' else None,
-                pressure_precompute_seconds=pressure_precompute if kutta=='pressure' else None,
-                diagnostics=dict(n_wall_faces=len(wing.faces),n_wall_dofs=nm,
-                                 n_gamma_dofs=ng,n_kutta_rows=nk,
-                                 cp_min=float(cp.min()),cp_max=float(cp.max()),
-                                 reference_area=wing.reference_area,
-                                 source=wing.section,physical_accuracy_accepted=False))
+          pressure_solver=None, backend=None, device='cpu'):
+    """Solve one lifting surface as the single group of the G2 solver.
+
+    One wing is not a separate equation set: it is solve_multi with exactly one
+    LiftingGroup, so this entry point is a thin adapter over
+    panel.p1_lifting_g2.solve_multi(combine_wings([wing])) that renames the coupled
+    diagnostics back to the single-wing names the frozen fixtures and the issue92
+    tools read. The torch single-wing kernel
+    (p1_solve_torch.solve_single_torch) was a second implementation of the same
+    equations and has been deleted; the retired NumPy/SciPy chain is preserved at tag
+    numpy-path-frozen-s8 with its recorded answers in docs/issue92/references/.
+
+    wall_weight and jump_weight belonged to that retired single-wing weighting. The
+    merged kernel weighs every wall row by sqrt(area/mean_area) and every Kutta row by
+    kutta_weight, so any other value is rejected rather than silently ignored. seed is
+    unused because the pressure solve is deterministic.
+    """
+    if float(wall_weight)!=1. or float(jump_weight)!=6.:
+        raise ValueError(
+            "wall_weight/jump_weight belonged to the retired single-wing weighting; "
+            "the one-group solve uses uniform wall weighting and kutta_weight")
+    from .p1_lifting_g2 import combine_wings, solve_multi
+    out=solve_multi(combine_wings([wing]),alpha_deg,kutta=kutta,
+                    kut_weight=kutta_weight,max_nfev=max_nfev,
+                    pressure_solver=pressure_solver,backend=backend,device=device)
+    out['constrained_rank']=int(out['linear_constrained_rank'])
+    # The multi kernel reports only the smallest singular value of the constrained
+    # least-squares operator; keep a one-element spectrum under the legacy name.
+    out['singular']=np.asarray([out['linear_singular_min']],float)
+    out['method']=kutta
+    out['diagnostics']=dict(
+        n_wall_faces=int(len(wing.faces)),n_wall_dofs=int(np.size(out['mu'])),
+        n_gamma_dofs=int(np.size(out['gamma'])),
+        n_kutta_rows=int(len(wing.te_pairs)
+                         +(0 if getattr(wing,'contact_pairs',None) is None
+                           else len(wing.contact_pairs))),
+        cp_min=float(np.min(out['cp'])),cp_max=float(np.max(out['cp'])),
+        reference_area=float(wing.reference_area),source=wing.section,
+        physical_accuracy_accepted=False)
+    return out
 
 
 def alpha_sensitivity(wing, alpha_deg=5.):
@@ -580,7 +550,7 @@ def alpha_sensitivity(wing, alpha_deg=5.):
     A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH']
     ng=W.shape[1];nm=A.shape[1]
     J=np.c_[C,-GH];E=np.c_[K,np.zeros((len(K),ng))]
-    N=null_space(np.vstack([J,E]),rcond=1e-11)
+    N=_torch_null_space(np.vstack([J,E]),rcond=1e-11)
     weights=np.sqrt(ops['mesh'].areas/np.mean(ops['mesh'].areas))
     B=weights[:,None]*np.c_[A,W]
     rad=np.deg2rad(alpha_deg)
@@ -589,7 +559,7 @@ def alpha_sensitivity(wing, alpha_deg=5.):
     RHS=-weights[:,None]*ops['mesh'].centers
     # Same QR geometry/operator for both alpha RHS and its exact derivative.
     BN=B@N
-    T,_,_,_=lstsq(BN,np.c_[RHS@U,RHS@dU],lapack_driver='gelsd')
+    T=_torch_lstsq(BN,np.c_[RHS@U,RHS@dU])
     X=N@T
     mu,gamma=X[:nm,0],X[nm:,0]
     dmu,dgamma=X[:nm,1],X[nm:,1]

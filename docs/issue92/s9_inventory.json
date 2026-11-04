@@ -1,0 +1,581 @@
+{
+ "schema": "dpanel.issue92.s9.inventory.v1",
+ "root": "D:\\3D\\Projects\\panel\\runs\\fix_master",
+ "modules": 33,
+ "sites": 69,
+ "rows": [
+  {
+   "module": "panel/affine_consistent_recovery.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 34,
+     "text": "sv=np.linalg.svd(A,compute_uv=False)"
+    },
+    {
+     "line": 42,
+     "text": "sv=np.linalg.svd(C,compute_uv=False)"
+    },
+    {
+     "line": 48,
+     "text": "Q,R=np.linalg.qr(C,mode='reduced')"
+    },
+    {
+     "line": 49,
+     "text": "coeff=np.linalg.solve(R,Q.T@(z[js]-z[i]))/h"
+    }
+   ],
+   "count": 4,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/analytic_sphere.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 88,
+     "text": "mu = jnp.linalg.solve(doublet, single @ sigma)"
+    },
+    {
+     "line": 227,
+     "text": "mu_morino = np.linalg.solve(doublet, -freestream_term)"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/audit.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 95,
+     "text": "q, r = np.linalg.qr(matrix, mode=\"reduced\")"
+    },
+    {
+     "line": 96,
+     "text": "gradient[i] = np.linalg.solve(r, q.T @ (mu[row] - mu[i]))"
+    },
+    {
+     "line": 97,
+     "text": "affine_error = max(affine_error, float(np.max(abs(np.linalg.solve(r, q.T @ (matrix @ [.37, -.21])) - [.37, -.21]))))"
+    }
+   ],
+   "count": 3,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/audit_reference.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 211,
+     "text": "upper_fit, *_ = np.linalg.lstsq(design, cp_upper, rcond=None)"
+    },
+    {
+     "line": 212,
+     "text": "lower_fit, *_ = np.linalg.lstsq(design, cp_lower, rcond=None)"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/differentiable.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 19,
+     "text": "import jax.scipy.linalg as jla"
+    },
+    {
+     "line": 197,
+     "text": "singular = np.linalg.svd(design, compute_uv=False)"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/gamma_refinement.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 209,
+     "text": "np.linalg.cholesky(mass)  # Reject rank loss; no cutoff/regularization."
+    },
+    {
+     "line": 276,
+     "text": "from scipy.linalg import LinAlgWarning, lu_factor, lu_solve"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/half_native.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 229,
+     "text": "singular = np.linalg.svd(design, compute_uv=False)"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/half_native_gmres.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 13,
+     "text": "import scipy.linalg as la"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/iterative.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 15,
+     "text": "import jax.scipy.linalg as jla"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/matrix_free.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 14,
+     "text": "import scipy.linalg as sla"
+    },
+    {
+     "line": 209,
+     "text": "y = np.linalg.lstsq(hess[:j + 2, :j + 1], rhs, rcond=None)[0]"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_closed_body.py",
+   "role": "variant",
+   "sites": [
+    {
+     "line": 208,
+     "text": "Q,R=np.linalg.qr(Aw,mode='reduced')"
+    },
+    {
+     "line": 209,
+     "text": "singular=np.linalg.svd(R,compute_uv=False)"
+    },
+    {
+     "line": 213,
+     "text": "mu=np.linalg.solve(R,Q.T@bw)"
+    }
+   ],
+   "count": 3,
+   "torch_counterpart": "none",
+   "action": "closed-body Dirichlet demo (panel/run_p1_closed.py); not on the coupled path, keep until its own slice"
+  },
+  {
+   "module": "panel/p1_closed_jax.py",
+   "role": "variant",
+   "sites": [
+    {
+     "line": 81,
+     "text": "Q,R=jnp.linalg.qr(A*weights[:,None],mode='reduced')"
+    },
+    {
+     "line": 82,
+     "text": "mu=jnp.linalg.solve(R,Q.T@(weights*rhs))"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "jax counterpart of p1_closed_body",
+   "action": "not on the coupled path"
+  },
+  {
+   "module": "panel/p1_coupled_material_wake.py",
+   "role": "loop",
+   "sites": [
+    {
+     "line": 1091,
+     "text": "sv = np.linalg.svd(constraint, compute_uv=False)"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "torch branch at :1085",
+   "action": "constraint spectrum already taken in torch when solve_backend='torch'"
+  },
+  {
+   "module": "panel/p1_cp_diagnostics.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 29,
+     "text": "sv = np.linalg.svd(np.stack((e1,e2),axis=1),compute_uv=False)"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_dirichlet.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 211,
+     "text": "mu, residuals, rank, singular = np.linalg.lstsq(matrix, rhs, rcond=None)"
+    },
+    {
+     "line": 293,
+     "text": "fit = np.linalg.lstsq(np.stack([cos_node, np.ones_like(cos_node)], axis=1),"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_g1.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 140,
+     "text": "solution, _, rank, singular = np.linalg.lstsq(stacked, values, rcond=None)"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_galerkin_solver.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 9,
+     "text": "from scipy.linalg import cholesky, solve_triangular, lstsq, null_space"
+    },
+    {
+     "line": 128,
+     "text": "rank=int(np.linalg.matrix_rank(B@N))"
+    },
+    {
+     "line": 129,
+     "text": "sv=np.linalg.svd(B@N,compute_uv=False)"
+    }
+   ],
+   "count": 3,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_gate_checks.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 242,
+     "text": "fit = np.linalg.lstsq(design, coefficients, rcond=None)[0]"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_geometry_contact.py",
+   "role": "gate",
+   "sites": [
+    {
+     "line": 145,
+     "text": "_u, _s, vt = np.linalg.svd(centred, full_matrices=False)"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "torch not needed",
+   "action": "SVD only for point sets larger than a triangle; the gate passes triangles and takes the cross product"
+  },
+  {
+   "module": "panel/p1_lifting_g1.py",
+   "role": "entry",
+   "sites": [
+    {
+     "line": 18,
+     "text": "from scipy.linalg import lstsq, null_space"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "p1_solve_torch.solve_single_torch",
+   "action": "delete the NumPy solve branch and the trf call; keep assemble/mesh plumbing"
+  },
+  {
+   "module": "panel/p1_lifting_g2.py",
+   "role": "entry",
+   "sites": [
+    {
+     "line": 16,
+     "text": "from scipy.linalg import lstsq, null_space"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "p1_solve_torch.solve_multi_torch",
+   "action": "same as p1_lifting_g1"
+  },
+  {
+   "module": "panel/p1_pressure_kutta_reduced.py",
+   "role": "solver",
+   "sites": [
+    {
+     "line": 4,
+     "text": "scipy.optimize.least_squares, which takes a dense SVD of that matrix every"
+    },
+    {
+     "line": 27,
+     "text": "from scipy.linalg import solve_triangular"
+    },
+    {
+     "line": 94,
+     "text": "Q, R = np.linalg.qr(M, mode=\"reduced\")"
+    },
+    {
+     "line": 146,
+     "text": "y = np.linalg.solve(S, F @ Ginv_b)"
+    },
+    {
+     "line": 170,
+     "text": "The stop tests and their order follow scipy.optimize.least_squares:"
+    }
+   ],
+   "count": 5,
+   "torch_counterpart": "p1_pressure_kutta_torch + p1_pressure_kutta_torch_driver",
+   "action": "delete; structured QR/solve_triangular/OptimizeResult are duplicated"
+  },
+  {
+   "module": "panel/p1_pressure_kutta_torch.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 17,
+     "text": "np.linalg.qr                     -> torch.linalg.qr"
+    },
+    {
+     "line": 18,
+     "text": "scipy.linalg.solve_triangular    -> torch.linalg.solve_triangular"
+    },
+    {
+     "line": 19,
+     "text": "np.linalg.solve                  -> torch.linalg.solve"
+    }
+   ],
+   "count": 3,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_pressure_kutta_torch_driver.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 10,
+     "text": "solver is scipy.optimize.least_squares (trust-region-reflective, ftol=xtol=gtol=1e-11,"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_rank_aware_kutta.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 13,
+     "text": "from scipy.linalg import null_space, svd"
+    },
+    {
+     "line": 158,
+     "text": "sv_j = np.linalg.svd(jac(fit.x), compute_uv=False)"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_rank_aware_torch.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 23,
+     "text": "* scipy.linalg.null_space truncates at s.max() * rcond and keeps the trailing"
+    },
+    {
+     "line": 122,
+     "text": "\"\"\"Trailing right-singular vectors, with scipy.linalg.null_space semantics."
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/p1_rank_gauge.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 33,
+     "text": "singular = np.linalg.svd(operator, compute_uv=False)"
+    },
+    {
+     "line": 70,
+     "text": "free = np.linalg.lstsq(operator, target, rcond=None)"
+    },
+    {
+     "line": 76,
+     "text": "pinned = np.linalg.lstsq(reduced, shifted, rcond=None)"
+    },
+    {
+     "line": 78,
+     "text": "singular_free = np.linalg.svd(operator, compute_uv=False)"
+    },
+    {
+     "line": 79,
+     "text": "singular_pinned = np.linalg.svd(reduced, compute_uv=False)"
+    }
+   ],
+   "count": 5,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/pressure_recovery_ab.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 43,
+     "text": "s = np.linalg.svd(design, compute_uv=False)"
+    },
+    {
+     "line": 47,
+     "text": "q, r = np.linalg.qr(design, mode=\"reduced\")"
+    },
+    {
+     "line": 48,
+     "text": "return np.linalg.solve(r, q.T@values), ratio"
+    }
+   ],
+   "count": 3,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/pressure_stencil.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 68,
+     "text": "singular = np.linalg.svd(design, compute_uv=False)"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/probe_pressure_reconstruction.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 64,
+     "text": "singular = np.linalg.svd(design, compute_uv=False)"
+    },
+    {
+     "line": 68,
+     "text": "Q, R = np.linalg.qr(design, mode=\"reduced\")"
+    },
+    {
+     "line": 69,
+     "text": "fit = np.linalg.solve(R, Q.T @ target)"
+    }
+   ],
+   "count": 3,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/relax_wake.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 58,
+     "text": "from scipy.linalg import qr, solve_triangular"
+    }
+   ],
+   "count": 1,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/shed_group_blocks.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 41,
+     "text": "np.linalg.cholesky(mass)"
+    },
+    {
+     "line": 101,
+     "text": "x = np.linalg.solve(A,rhs)"
+    }
+   ],
+   "count": 2,
+   "torch_counterpart": "none",
+   "action": "review"
+  },
+  {
+   "module": "panel/solve.py",
+   "role": "unclassified",
+   "sites": [
+    {
+     "line": 36,
+     "text": "from scipy.linalg import lu_factor"
+    },
+    {
+     "line": 37,
+     "text": "from scipy.linalg.lapack import dgecon"
+    },
+    {
+     "line": 252,
+     "text": "singular = np.linalg.svd(local, compute_uv=False)"
+    },
+    {
+     "line": 314,
+     "text": "solution = jnp.linalg.solve(matrix, rhs)"
+    }
+   ],
+   "count": 4,
+   "torch_counterpart": "none",
+   "action": "review"
+  }
+ ]
+}

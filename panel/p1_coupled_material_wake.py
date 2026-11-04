@@ -17,6 +17,7 @@ from __future__ import annotations
 from .p1_geometry_contact import (classify_new_triangle, classify_swept_wall,
                                   declared_contact_pairs,
                                  swept_hull)
+from .p1_backend import resolve_backend
 from .wake_velocity_methods import (ACCEPTED_METHODS, AREA_QUADRATURES,
                                     ARCHITECTURE_DOC, DEFAULT_METHOD, describe,
                                     wiring_error)
@@ -75,7 +76,9 @@ class TotalVelocity:
                  fan_refinement_order=None, fan_refinement_strips=None,
                  near_ratio=2.0, adaptive_far_order=8, adaptive_far_levels=1,
                  adaptive_budget=2e-4, adaptive_max_escalations=2,
-                 adaptive_subdivision_levels=0, adaptive_subdivision_fan=(48, 8)):
+                 adaptive_subdivision_levels=0, adaptive_subdivision_fan=(48, 8),
+                 analytic_backend="loop", analytic_device="cpu", analytic_chunk=64,
+                 rm_backend="numpy", rm_device="cpu"):
         parts = [(mesh.xyz, mesh.faces, np.asarray(state['mu'])[mesh.dof_face])]
         offset = 0
         for group in mesh.groups:
@@ -128,9 +131,20 @@ class TotalVelocity:
         elif method == "rm_regularized_p1":
             if core_radius is None or not np.isfinite(core_radius) or core_radius <= 0:
                 raise ValueError("rm_regularized_p1 requires an explicit positive core_radius")
-            from .p1_regularized_sheet_velocity import RegularizedP1SheetField
+            # The regularized sheet has two execution backends. 'numpy' is the
+            # original per-target field; 'torch' batches the edge sum and the Duffy
+            # area term on an explicit device. Both are the same physics, and a backend
+            # that cannot be honoured raises instead of falling back.
+            if rm_backend == "torch":
+                from .p1_regularized_sheet_velocity_torch import \
+                    TorchRegularizedP1SheetField as _RegularizedField
+                _regularized_extra = dict(device=rm_device)
+            else:
+                from .p1_regularized_sheet_velocity import \
+                    RegularizedP1SheetField as _RegularizedField
+                _regularized_extra = {}
             self.core_radius = float(core_radius)
-            self._regularized = RegularizedP1SheetField(
+            self._regularized = _RegularizedField(
                 parts, freestream=self.free, core_radius=self.core_radius,
                 area_quadrature=area_quadrature, fan_order=fan_order,
                 fan_strips=fan_strips, fan_refinement_order=fan_refinement_order,
@@ -140,7 +154,7 @@ class TotalVelocity:
                 adaptive_budget=adaptive_budget,
                 adaptive_max_escalations=adaptive_max_escalations,
                 adaptive_subdivision_levels=adaptive_subdivision_levels,
-                adaptive_subdivision_fan=adaptive_subdivision_fan)
+                adaptive_subdivision_fan=adaptive_subdivision_fan, **_regularized_extra)
             # The gate plan is a property of the field, not of the caller: limits()
             # must compare the base fan against the refined fan, never the same
             # configuration twice (issue #84 task 1).
@@ -159,6 +173,44 @@ class TotalVelocity:
         elif method != "legacy_gauss":
             raise ValueError(wiring_error(method) or
                              "unknown P1 sheet-velocity integration method")
+        # The analytic evaluator has three interchangeable execution backends. 'loop'
+        # is the original per-target path and stays the default so that nothing that
+        # was recorded before changes; 'numpy' batches targets through the same closed
+        # form (bitwise identical, one call per chunk); 'torch' runs the batched kernel
+        # on an explicit device. A backend that cannot be honoured raises here instead
+        # of falling back, because a silent fallback would make a GPU timing a CPU one.
+        if analytic_backend not in ("loop", "numpy", "torch"):
+            raise ValueError("analytic_backend must be 'loop', 'numpy' or 'torch'")
+        if analytic_device not in ("cpu", "cuda"):
+            raise ValueError("analytic_device must be 'cpu' or 'cuda'")
+        if type(analytic_chunk) is not int or analytic_chunk < 1:
+            raise ValueError("analytic_chunk must be a positive integer")
+        if analytic_backend != "torch" and analytic_device != "cpu":
+            raise ValueError("analytic_device='cuda' requires analytic_backend='torch'")
+        if analytic_backend != "loop" and method != "analytic_edges":
+            raise ValueError("analytic_backend applies only to method='analytic_edges'")
+        self.analytic_backend = analytic_backend
+        self.analytic_device = analytic_device
+        self.analytic_chunk = analytic_chunk
+        if rm_backend not in ("numpy", "torch"):
+            raise ValueError("rm_backend must be 'numpy' or 'torch'")
+        if rm_device not in ("cpu", "cuda"):
+            raise ValueError("rm_device must be 'cpu' or 'cuda'")
+        if rm_backend != "torch" and rm_device != "cpu":
+            raise ValueError("rm_device='cuda' requires rm_backend='torch'")
+        if rm_backend != "numpy" and method != "rm_regularized_p1":
+            raise ValueError("rm_backend applies only to method='rm_regularized_p1'")
+        self.rm_backend = rm_backend
+        self.rm_device = (getattr(getattr(self._regularized, "device", None), "type",
+                                  rm_device)
+                          if method == "rm_regularized_p1" else rm_device)
+        self._torch_analytic = None
+        if analytic_backend == "torch":
+            from .p1_torch_analytic_sheet import GEOMETRY_KEYS, TorchAnalyticSheetField
+            arrays = {key: getattr(self._analytic, key) for key in GEOMETRY_KEYS}
+            self._torch_analytic = TorchAnalyticSheetField.from_arrays(
+                arrays, freestream=self.free, device=analytic_device)
+            self.analytic_device = self._torch_analytic.device.type
         if not np.isfinite(self.mu_face).all() or not np.isfinite(self.grad_face).all():
             raise FloatingPointError("nonfinite solved P1 strength")
 
@@ -192,6 +244,10 @@ class TotalVelocity:
                 raise ValueError("fan overrides require rm_regularized_p1 with a fan "
                                  "area quadrature")
         if self.method == "analytic_edges":
+            if self.analytic_backend == "torch":
+                return self._torch_analytic.velocity(p[None, :], chunk=1)[0]
+            if self.analytic_backend == "numpy":
+                return self._analytic.evaluate_many(p[None, :], chunk=1)[0]
             return self._analytic(p)
         if self.method == "rm_regularized_p1":
             return self._regularized(p, order=order, fan_order=fan_order,
@@ -249,6 +305,10 @@ class TotalVelocity:
             return self._regularized.evaluate_many(pts, order=order,
                                                    fan_order=fan_order,
                                                    fan_strips=fan_strips)
+        if self.analytic_backend == "numpy":
+            return self._analytic.evaluate_many(pts, chunk=self.analytic_chunk)
+        if self.analytic_backend == "torch":
+            return self._torch_analytic.velocity(pts, chunk=self.analytic_chunk)
         return np.stack([self(point, order=order) for point in pts])
 
 
@@ -511,6 +571,26 @@ def _bounds_overlap(p, q, tol):
                 or np.any(q.max(axis=0) < p.min(axis=0)-tol))
 
 
+def _bounds_candidates(first_min, first_max, second_min, second_max, tol):
+    """Pair mask of bounding-box overlaps, same predicate as _bounds_overlap.
+
+    Two boxes overlap unless they are separated on at least one axis. Evaluating
+    the predicate for every pair at once replaces the Python double loop that
+    dominated the coupled iteration (5.85M calls, 86% of a CAD iteration in
+    tools/issue92/b2_profile.py); the pair ORDER is preserved because callers
+    scan the mask row by row.
+    """
+    first_min = np.asarray(first_min, float).reshape(-1, 3)
+    first_max = np.asarray(first_max, float).reshape(-1, 3)
+    second_min = np.asarray(second_min, float).reshape(-1, 3)
+    second_max = np.asarray(second_max, float).reshape(-1, 3)
+    separated = np.zeros((len(first_min), len(second_min)), bool)
+    for axis in range(3):
+        separated |= first_max[:, axis, None] < second_min[None, :, axis]-tol
+        separated |= second_max[None, :, axis] < first_min[:, axis, None]-tol
+    return ~separated
+
+
 def convex_overlap(p, q, tol):
     """Conservative SAT overlap of small convex point hulls, including coplanar.
 
@@ -577,7 +657,7 @@ def wake_step_scale(wake_xyz, wake_faces, material, *, truncation_ratio=4.):
     'scale' is the SHORTEST incident triangle edge: a step cap only bounds strain
     when it is expressed in the mesh's own resolution.  Using the reference link
     as the cap (0.25 * a 26-chord truncation link = 6.5 chord, see
-    docs/ISSUE84_STREAMLINE_STEP_UNIT.md) accepts a displacement that deforms the
+    docs/archive/issue/ISSUE84_STREAMLINE_STEP_UNIT.md) accepts a displacement that deforms the
     sheet far beyond the area/fold gate, so the link is reported for diagnostics
     ('link', 'truncation') and never used as the cap.
 
@@ -712,11 +792,19 @@ def geometry_audit(mesh, candidates, materials, gates, *, declared=None, step_sc
         np.linalg.norm(wall[:, 2]-wall[:, 1], axis=1)),
         np.linalg.norm(wall[:, 0]-wall[:, 2], axis=1))
     pairs = 0
+    # Bounding boxes are computed once and compared for every pair at once; the
+    # scan order (i ascending, j ascending among overlapping pairs) is the same
+    # as the reference double loop, so pair counts and reported violations do
+    # not change.
+    hulls = np.asarray(swept, float)
+    hull_min, hull_max = hulls.min(axis=1), hulls.max(axis=1)
+    wall_min, wall_max = wall.min(axis=1), wall.max(axis=1)
+    near_wall = _bounds_candidates(hull_min, hull_max, wall_min, wall_max, tol)
+    near_self = _bounds_candidates(hull_min, hull_max, hull_min, hull_max, tol)
     for i, hull in enumerate(swept):
         label, face_id = owners[i]
-        for j, tri in enumerate(wall):
-            if not _bounds_overlap(hull, tri, tol):
-                continue
+        for j in np.nonzero(near_wall[i])[0]:
+            tri = wall[j]
             pairs += 1
             if pairs > gates.max_collision_pairs:
                 detail['contacts']['pairs_tested'] = pairs
@@ -771,10 +859,10 @@ def geometry_audit(mesh, candidates, materials, gates, *, declared=None, step_sc
     if detail['contacts']['violations_count']:
         return dict(reason='wall', detail=detail)
     for i, hull in enumerate(swept):
-        for j in range(i):
+        for j in np.nonzero(near_self[i])[0]:
+            if j >= i:
+                break
             if vertex_sets[i] & vertex_sets[j]:  # local fold gate covers neighbours
-                continue
-            if not _bounds_overlap(hull, swept[j], tol):
                 continue
             pairs += 1
             if pairs > gates.max_collision_pairs:
@@ -816,6 +904,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                 adaptive_far_order=8, adaptive_far_levels=1,
                                 adaptive_budget=2e-4, adaptive_max_escalations=2,
                                 gate_mode="audit", truncation_policy="advance",
+                                 analytic_backend="loop", analytic_device="cpu",
+                                 analytic_chunk=64, solve_backend=None,
+                                 solve_device="cpu", pressure_solver=None,
+                                 rm_backend="numpy", rm_device="cpu",
                                  save_callback=None):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
@@ -823,9 +915,32 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     not a pressure-continuous, mesh/epsilon-converged physical free wake.
     The complete accepted geometry is re-solved before a state is returned.
     """
+    # Argument errors are reported before environment errors: a bad device or an
+    # impossible solver pairing is the caller's mistake even where torch is missing.
+    if solve_backend not in (None, "torch"):
+        raise ValueError("solve_backend must be None or 'torch'; the NumPy solve chain "
+                         "was retired in S9 and its code is tag numpy-path-frozen-s8")
     from .p1_lifting_g2 import assemble_multi, solve_multi
     from .p1_steady_free_wake import (prepare_wake_material, reassemble_wake_only,
                                      with_wake_xyz)
+
+    def _solve(target, operators_for_solve):
+        """Solve the potential system on the torch chain.
+
+        Every value returned to the loop is a host array: the geometry audit and the
+        gates below are NumPy code, and they are safe there because they never call
+        LAPACK - a LAPACK call after a torch kernel crashes the process (section 6f).
+        """
+        # Through the public entry point, not around it: one dispatch site, and the
+        # loop stays replaceable in tests that count solves.
+        solved = solve_multi(target, alpha_deg, kutta=kutta, max_nfev=max_nfev,
+                             operators=operators_for_solve, backend="torch",
+                             device=solve_device, pressure_solver=pressure_solver)
+        for key in ("mu", "gamma", "cp"):
+            solved[key] = np.asarray(solved[key])
+        if "force" in solved:  # the loop itself never reads it; test doubles may omit it
+            solved["force"] = np.asarray(solved["force"], float)
+        return solved
     if (type(iterations) is not int or iterations < 0 or type(max_backtracks) is not int
             or max_backtracks < 0 or not 0 < relaxation <= 1
             or not all(np.isfinite(v) and v > 0 for v in
@@ -845,6 +960,29 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             raise ValueError("rm_regularized_p1 requires an explicit positive core_radius")
     elif core_radius is not None:
         raise ValueError("core_radius is only valid with velocity_method='rm_regularized_p1'")
+    if analytic_backend not in ("loop", "numpy", "torch"):
+        raise ValueError("analytic_backend must be 'loop', 'numpy' or 'torch'")
+    if analytic_backend != "loop" and velocity_method != "analytic_edges":
+        raise ValueError("analytic_backend applies only to velocity_method='analytic_edges'")
+    if rm_backend not in ("numpy", "torch"):
+        raise ValueError("rm_backend must be 'numpy' or 'torch'")
+    if rm_device not in ("cpu", "cuda"):
+        raise ValueError("rm_device must be 'cpu' or 'cuda'")
+    if rm_backend != "torch" and rm_device != "cpu":
+        raise ValueError("rm_device='cuda' requires rm_backend='torch'")
+    if rm_backend != "numpy" and velocity_method != "rm_regularized_p1":
+        raise ValueError("rm_backend applies only to velocity_method='rm_regularized_p1'")
+    if solve_device not in ("cpu", "cuda"):
+        raise ValueError("solve_device must be 'cpu' or 'cuda'")
+    if pressure_solver not in (None, "structured"):
+        raise ValueError(
+            "pressure_solver=%r was retired with the NumPy chain; its recorded answers "
+            "are docs/issue92/references/ and its code is tag numpy-path-frozen-s8"
+            % (pressure_solver,))
+    try:
+        solve_backend, solve_backend_source = resolve_backend(solve_backend)
+    except ValueError as error:
+        raise ValueError("solve_backend must be None or 'torch'") from error
     gates = GeometryGates() if gates is None else gates
     if (not np.isfinite(gates.max_area_ratio) or gates.max_area_ratio <= 1
             or not 0 < gates.max_fold_deg < 90 or not gates.max_step_fraction > 0
@@ -857,7 +995,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     declared = declared_contact_pairs([g.wake_faces for g in mesh.groups], mesh.faces,
                                       group_labels=[g.name for g in mesh.groups])
     static = assemble_multi(mesh)
-    fixed = solve_multi(mesh, alpha_deg, kutta=kutta, max_nfev=max_nfev, operators=static)
+    fixed = _solve(mesh, static)
     current, history, incoming = mesh, [], None
     status = 'iteration_limit'
     load_names = ('CL', 'CL_gamma', 'CD_pressure', 'CM_y')
@@ -881,8 +1019,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
             initial_equivalence = {k: 0. for k in load_names}
             initial_equivalence["W_relative"] = w_relative
         else:
-            state = solve_multi(current, alpha_deg, kutta=kutta,
-                                max_nfev=max_nfev, operators=ops)
+            state = _solve(current, ops)
         field = TotalVelocity(current, state, method=velocity_method, core_radius=core_radius,
                               area_quadrature=area_quadrature,
                               fan_order=fan_order, fan_strips=fan_strips,
@@ -892,7 +1029,11 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                               adaptive_far_order=adaptive_far_order,
                               adaptive_far_levels=adaptive_far_levels,
                               adaptive_budget=adaptive_budget,
-                              adaptive_max_escalations=adaptive_max_escalations)
+                              adaptive_max_escalations=adaptive_max_escalations,
+                              analytic_backend=analytic_backend,
+                              analytic_device=analytic_device,
+                              analytic_chunk=analytic_chunk,
+                              rm_backend=rm_backend, rm_device=rm_device)
         plan = (field.quadrature_plan(order) if hasattr(field, "quadrature_plan")
                 else dict(method=getattr(field, "method", "injected_field"),
                           base={}, refined={}, legacy_order=int(order)))
@@ -917,11 +1058,27 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                       sampling_adaptive_far_levels=np.asarray(int(adaptive_far_levels)),
                       sampling_adaptive_budget=np.asarray(float(adaptive_budget)),
                       sampling_adaptive_max_escalations=np.asarray(
-                          int(adaptive_max_escalations)))
+                          int(adaptive_max_escalations)),
+                      sampling_analytic_backend=np.asarray(analytic_backend),
+                      sampling_analytic_device=np.asarray(
+                          getattr(field, 'analytic_device', 'cpu')),
+                      sampling_analytic_chunk=np.asarray(int(analytic_chunk)),
+                      sampling_rm_backend=np.asarray(rm_backend),
+                      sampling_rm_device=np.asarray(
+                          getattr(field, 'rm_device', 'cpu')))
         record = {k: state[k] for k in (*load_names, 'wall_rms', 'jump_rms',
                   'pressure_kutta_rms', 'signed_kutta_rms',
                   'linear_constrained_rank', 'linear_singular_min', 'nonlinear')}
         record.update(iteration=iteration, velocity_method=velocity_method,
+                      solve_backend=solve_backend,
+                      solve_backend_source=solve_backend_source,
+                      solve_device=solve_device,
+                      pressure_solver=(None if kutta != "pressure" else
+                                       (pressure_solver or "structured")),
+                      analytic_backend=analytic_backend,
+                      analytic_device=getattr(field, 'analytic_device', 'cpu'),
+                      rm_backend=rm_backend,
+                      rm_device=getattr(field, 'rm_device', 'cpu'),
                       area_quadrature=area_quadrature, fan_order=fan_order,
                       fan_strips=fan_strips, quadrature_plan=plan,
                       core_radius=core_radius, strength_solve_kernel="unregularized_P1_BEM_operators",
@@ -931,7 +1088,10 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                             max(abs(state['CL_gamma']), 1e-12)),
                       wakes={}, incoming_update=incoming)
         constraint = ops['J'] if kutta == 'pressure' else np.vstack((ops['J'], ops['K']))
-        sv = np.linalg.svd(constraint, compute_uv=False)
+        import torch as _torch
+        _c = _torch.as_tensor(np.asarray(constraint, float), dtype=_torch.float64,
+                              device=solve_device)
+        sv = _torch.linalg.svdvals(_c).detach().cpu().numpy()
         record['constraint_rank'] = int(np.sum(sv > 1e-11*sv[0]))
         record['constraint_singular_min'] = float(sv[-1])
         targets, counts, step_scales = {}, {}, {}
@@ -1173,7 +1333,9 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
                     fan_strips=None, fan_refinement_order=None,
                     fan_refinement_strips=None, near_ratio=None,
                     adaptive_far_order=None, adaptive_far_levels=None,
-                    adaptive_budget=None, adaptive_max_escalations=None):
+                    adaptive_budget=None, adaptive_max_escalations=None,
+                    analytic_backend=None, analytic_device=None, analytic_chunk=None,
+                    rm_backend=None, rm_device=None):
     """Re-evaluate frozen total-flow samples without re-solving/changing mu/Gamma.
 
     A mismatch in the recorded content SHA is an error. Bitwise equality is
@@ -1234,6 +1396,25 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
     selected_escalations = (int(adaptive_max_escalations)
                             if adaptive_max_escalations is not None
                             else int(_recorded('sampling_adaptive_max_escalations', 2)))
+    # Snapshots written before the analytic backend existed recorded the 'loop' path,
+    # which is still the default, so an old snapshot replays bitwise unchanged.
+    recorded_backend = (str(arrays['sampling_analytic_backend'])
+                        if 'sampling_analytic_backend' in arrays else "loop")
+    recorded_device = (str(arrays['sampling_analytic_device'])
+                       if 'sampling_analytic_device' in arrays else "cpu")
+    recorded_chunk = (int(_recorded('sampling_analytic_chunk', 256)))
+    selected_backend = recorded_backend if analytic_backend is None else str(analytic_backend)
+    selected_device = recorded_device if analytic_device is None else str(analytic_device)
+    selected_chunk = recorded_chunk if analytic_chunk is None else int(analytic_chunk)
+    # Snapshots written before the regularized-sheet backend existed recorded the
+    # per-target NumPy field, which is still the default, so they replay unchanged.
+    recorded_rm_backend = (str(arrays['sampling_rm_backend'])
+                           if 'sampling_rm_backend' in arrays else "numpy")
+    recorded_rm_device = (str(arrays['sampling_rm_device'])
+                          if 'sampling_rm_device' in arrays else "cpu")
+    selected_rm_backend = (recorded_rm_backend if rm_backend is None
+                           else str(rm_backend))
+    selected_rm_device = recorded_rm_device if rm_device is None else str(rm_device)
     field = TotalVelocity(mesh, dict(mu=arrays['mu'], gamma=arrays['gamma'],
                                    alpha_deg=float(arrays['alpha_deg'])),
                           method=method, core_radius=selected_core,
@@ -1244,7 +1425,12 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
                           near_ratio=selected_near, adaptive_far_order=selected_far_order,
                           adaptive_far_levels=selected_far_levels,
                           adaptive_budget=selected_budget,
-                          adaptive_max_escalations=selected_escalations)
+                          adaptive_max_escalations=selected_escalations,
+                          analytic_backend=selected_backend,
+                          analytic_device=selected_device,
+                          analytic_chunk=selected_chunk,
+                          rm_backend=selected_rm_backend,
+                          rm_device=selected_rm_device)
     plan = field.quadrature_plan(selected_order)
     kwargs = dict(eps_fraction=float(arrays['sampling_eps_fraction']),
                   ladder=arrays['sampling_ladder'], order=selected_order)
@@ -1279,6 +1465,13 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
                 fan_refinement_order=selected_refine_order,
                 fan_refinement_strips=selected_refine_strips,
                 quadrature_plan=plan,
+                analytic_backend=selected_backend,
+                analytic_device=field.analytic_device,
+                analytic_chunk=selected_chunk,
+                recorded_analytic_backend=recorded_backend,
+                rm_backend=selected_rm_backend,
+                rm_device=getattr(field, 'rm_device', 'cpu'),
+                recorded_rm_backend=recorded_rm_backend,
                 replay_mode=("reproduce_recorded_samples" if method == recorded_method
                              and selected_core == recorded_core
                              and selected_order == int(arrays['sampling_order'])
@@ -1287,6 +1480,11 @@ def replay_snapshot(arrays, expected_sha, *, velocity_method=None, core_radius=N
                              and selected_fan_strips == recorded_fan_strips
                              and selected_refine_order == recorded_refine_order
                              and selected_refine_strips == recorded_refine_strips
+                             and selected_backend == recorded_backend
+                             and selected_device == recorded_device
+                             and selected_chunk == recorded_chunk
+                             and selected_rm_backend == recorded_rm_backend
+                             and selected_rm_device == recorded_rm_device
                              else "alternate_velocity_on_frozen_state"),
                 evaluation_finite=all(np.isfinite(v) for v in differences.values()),
                 strength_solve_kernel="frozen_unregularized_P1_BEM_state",

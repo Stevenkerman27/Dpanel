@@ -1,0 +1,46 @@
+{
+  "tolerances": {
+    "x_relative": 1e-11,
+    "cost_relative": 1e-11,
+    "optimality_absolute": 1e-09
+  },
+  "numpy": {
+    "status": 0,
+    "nfev": 100,
+    "nit": 31,
+    "cost": 2.111408060212976,
+    "optimality": 0.014647240571274589,
+    "message": "line search failed to reduce the residual",
+    "total_seconds": 0.025415900046937168
+  },
+  "torch": {
+    "status": 0,
+    "nfev": 100,
+    "nit": 31,
+    "cost": 2.1114080601311427,
+    "optimality": 0.01465043071400754,
+    "message": "line search failed to reduce the residual",
+    "total_seconds": 0.025000300025567412
+  },
+  "scenarios": {
+    "numpy": "stiff",
+    "torch": "stiff"
+  },
+  "backtracks": {
+    "numpy": 37,
+    "torch": 37
+  },
+  "differences": {
+    "x_relative": 1.2678681987864383e-07,
+    "cost_relative": 3.875764634015667e-11,
+    "optimality_absolute": 3.190142732950596e-06
+  },
+  "checks": {
+    "same_status": true,
+    "same_nfev": true,
+    "x_relative": false,
+    "cost_relative": false,
+    "optimality": false
+  },
+  "passed": false
+}

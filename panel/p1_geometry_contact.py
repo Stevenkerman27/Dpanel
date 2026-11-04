@@ -5,7 +5,7 @@ the candidate geometry before accepting it.  The sheet is attached to the
 wall: its root nodes are wall vertices, so wake triangles share vertices and
 edges with wall triangles by construction.  A boolean convex-hull SAT test
 cannot tell that declared contact apart from a transverse penetration, and it
-rejected every candidate update on the CAD case (docs/ISSUE84_T4_G2_UPDATE.md).
+rejected every candidate update on the CAD case (docs/archive/issue/ISSUE84_T4_G2_UPDATE.md).
 
 This module separates the two questions:
 
@@ -129,10 +129,26 @@ def _axes(p, q):
 
 
 def _dominant_normal(points):
-    """Unit normal of the flattest direction of a nearly flat point set."""
-    centred = np.asarray(points, float)-np.asarray(points, float).mean(axis=0)
-    _u, _s, vt = np.linalg.svd(centred, full_matrices=False)
-    n = vt[-1]
+    """Unit normal of the flattest direction of a nearly flat point set.
+
+    Triangles (what this gate sees) span their own plane, so the normal is the edge
+    cross product. Larger sets (a swept triangle's six-vertex hull) use torch's SVD:
+    a NumPy LAPACK call after a torch kernel in the same process kills it
+    (docs/ISSUE92_TORCH_PORT_MAP.md section 6f), and this module runs inside the
+    coupled loop, after the solve. torch is imported lazily so that importing this
+    module still works in an interpreter without it.
+    """
+    pts = np.asarray(points, float).reshape(-1, 3)
+    if len(pts) == 3:
+        cross = np.cross(pts[1]-pts[0], pts[2]-pts[0])
+        norm = np.linalg.norm(cross)
+        if norm > 0:
+            return cross/norm
+    centred = pts-pts.mean(axis=0)
+    import torch
+    _u, _s, vt = torch.linalg.svd(torch.as_tensor(centred, dtype=torch.float64),
+                                  full_matrices=False)
+    n = vt[-1].detach().cpu().numpy()
     norm = np.linalg.norm(n)
     return n/norm if norm > 0 else np.array([0., 0., 1.])
 

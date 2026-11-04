@@ -962,7 +962,7 @@
     "g1_wingbody_cad": {
       "kind": "wing",
       "meta": {
-        "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json",
+        "source": "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json",
         "source_sha256": "d04e439cddb2a80ff9d376257ed9a57d5613f538e111a0ba97f3fbb5f6405d5a",
         "kind": "wing",
         "alpha_deg": 5.0,
@@ -1116,7 +1116,7 @@
     "g1_wingbody_cad_3x": {
       "kind": "wing",
       "meta": {
-        "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_3x/surface.json",
+        "source": "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_3x/surface.json",
         "source_sha256": "034c216906e6f13b7a38f878ffa065f62dd6638e8f9198dc49d300bacec0a846",
         "kind": "wing",
         "alpha_deg": 5.0,
@@ -1271,7 +1271,7 @@
   "wake": {
     "kind": "wake",
     "meta": {
-      "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json",
+      "source": "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json",
       "alpha_deg": 5.0,
       "iterations": 1,
       "gate_mode": "off",

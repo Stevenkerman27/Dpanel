@@ -1,0 +1,48 @@
+{
+  "backends": {
+    "cpu": {
+      "accepted": true,
+      "batch_per_point_ms": 0.2017842617926528,
+      "batch_seconds": 3.832286699966062,
+      "gate_bitwise_equal": false,
+      "gate_max_relative_error": 3.7768213349638554e-15,
+      "gate_seconds": 0.04840209998656064,
+      "speedup_vs_numpy": 3.4099521051309476
+    },
+    "cuda": {
+      "accepted": true,
+      "batch_per_point_ms": 0.029988584668341617,
+      "batch_seconds": 0.569543200021144,
+      "cuda_peak_vram_bytes": 232184832,
+      "gate_bitwise_equal": false,
+      "gate_max_relative_error": 3.960856364654713e-15,
+      "gate_seconds": 0.13904769998043776,
+      "speedup_vs_numpy": 22.944552932120803
+    }
+  },
+  "cuda": {
+    "available": true,
+    "device": "NVIDIA GeForce RTX 5060",
+    "version": "13.2"
+  },
+  "gate_points": 109,
+  "gate_points_evaluable": 218,
+  "gate_points_singular": 0,
+  "gate_probe": "gate nodes offset by +-0.05 along z; the raw nodes lie on the sheet boundary where the analytic kernel is singular",
+  "numpy_batch_per_point_ms": 0.6880746682821506,
+  "numpy_batch_seconds": 13.067914100014605,
+  "numpy_gate_seconds": 0.154071600001771,
+  "passed": true,
+  "python": "3.13.14",
+  "schema": "dpanel.issue92.analytic_torch_bench.v1",
+  "sheet": {
+    "boundary_edges": 262,
+    "face_edges": 4998,
+    "faces": 1666
+  },
+  "thresholds": {
+    "cpu_max_relative_error": 1e-12,
+    "cuda_max_relative_error": 1e-10
+  },
+  "torch": "2.13.0+cu132"
+}

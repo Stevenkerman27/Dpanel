@@ -289,7 +289,7 @@ def render(gate_path, stability_path, ledger_path, parity_path='', selected_path
     lines.append('')
     lines += ['## 9. Stage-B ledger', '']
     lines.append('Node-level counter definitions, the G2 set algebra and the accepted')
-    lines.append('geometry updates are in docs/ISSUE84_G2_WAKE_LEDGER.md; the compact')
+    lines.append('geometry updates are in docs/archive/issue/ISSUE84_G2_WAKE_LEDGER.md; the compact')
     lines.append('artefact is ' + ledger_path + '.')
     lines.append('')
     return '\n'.join(lines)

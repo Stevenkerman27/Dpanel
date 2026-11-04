@@ -1,7 +1,7 @@
 """Assemble the geometry-robustness report from meshed, solved and swept cases.
 
 Run:  python tools/geom_robust/report.py
-Data: runs/geom_robust/{mesh,solve,peaks}, runs/geom_robust/alpha_<case>.json
+Data: runs/studies/geometry_robustness/{mesh,solve,peaks}, runs/studies/geometry_robustness/alpha_<case>.json
 """
 from __future__ import annotations
 
@@ -132,8 +132,8 @@ def main():
     add("# 多几何鲁棒性矩阵（后掠翼 / 椭圆翼 / BWB / 常规布局）")
     add("")
     add("本文件由 " + BT + "tools/geom_robust/report.py" + BT + " 从 "
-        + BT + "runs/geom_robust/{mesh,solve,peaks}" + BT + " 与 "
-        + BT + "runs/geom_robust/alpha_<case>.json" + BT
+        + BT + "runs/studies/geometry_robustness/{mesh,solve,peaks}" + BT + " 与 "
+        + BT + "runs/studies/geometry_robustness/alpha_<case>.json" + BT
         + " 的落盘产物程序化生成，全部数字来自本机实际运行（Windows 10，"
         + "Python 3.11.17，JAX 0.10.2 CPU，稠密 LU，迎角 5 度除非另注）。")
     add("")

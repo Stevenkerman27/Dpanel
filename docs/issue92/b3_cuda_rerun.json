@@ -1,0 +1,161 @@
+{
+  "schema": "b3-cuda-rerun/1",
+  "date": "2026-11-03",
+  "question": "the B3 four-geometry protocol run on the CUDA device as well as the CPU backend",
+  "provenance_cpu": {
+    "device": "cpu",
+    "python": "3.13.14",
+    "platform": "nt",
+    "started": "2026-11-03T14:19:37"
+  },
+  "provenance_cuda": {
+    "device": "cuda",
+    "python": "3.13.14",
+    "platform": "nt",
+    "started": "2026-11-03T14:21:08",
+    "torch": "2.13.0+cu132",
+    "cuda_runtime": "13.2",
+    "cuda_device": "NVIDIA GeForce RTX 5060",
+    "cuda_capability": "12.0",
+    "cuda_context_init_s": 0.37115699995774776
+  },
+  "verdict": "unchanged: 28 of 32 comparisons pass, the same four fail with the same attribution, because every DPanel fit moves by at most 1.1e-13 relative",
+  "gate_not_rerun_because": "the VSPAERO raw output runs/benchmarks/b3_vspaero/b3/vspaero.json is missing from the working tree; regenerate with tools.issue92.b3_vspaero before re-judging",
+  "reproduce": [
+    "python -m tools.issue92.b3_dpanel --device cpu  --out runs/benchmarks/b3_vspaero/b3/dpanel_cpu.json",
+    "python -m tools.issue92.b3_dpanel --device cuda --out runs/benchmarks/b3_vspaero/b3/dpanel_cuda.json"
+  ],
+  "totals": {
+    "seconds_cpu": 89.66596089990344,
+    "seconds_cuda": 117.31660940009169,
+    "ratio": 1.3083739718247756,
+    "first_solve_cpu": 0.9482123999623582,
+    "first_solve_cuda": 15.073138699983247
+  },
+  "cases": [
+    {
+      "case": "rect",
+      "wall_faces": 112,
+      "unknowns": 58,
+      "fits": {
+        "CL": {
+          "cpu": 0.06406459688694341,
+          "cuda": 0.06406459688694566,
+          "rel": 3.509273037077571e-14,
+          "intercept_cpu": 0.000525945416135043,
+          "intercept_cuda": 0.0005259454161174182
+        },
+        "CL_gamma": {
+          "cpu": 0.05672525859731414,
+          "cuda": 0.0567252585973159,
+          "rel": 3.094812083891762e-14,
+          "intercept_cpu": 0.00009687509767566937,
+          "intercept_cuda": 0.00009687509766104219
+        }
+      },
+      "per_alpha_max_abs_over_peak": {
+        "CL": 4.8821585974990805e-14,
+        "CL_gamma": 4.6852220753589705e-14,
+        "CD_pressure": 5.793252401860675e-15,
+        "CM_y": 1.6082657168947031e-13
+      },
+      "gamma_shape_max_rel": 0.027922109069322687,
+      "seconds_cpu": 0.1038564998889342,
+      "seconds_cuda": 0.1412720000371337,
+      "ratio": 1.360261516498363
+    },
+    {
+      "case": "swept30",
+      "wall_faces": 2764,
+      "unknowns": 1336,
+      "fits": {
+        "CL": {
+          "cpu": 0.06319310327433385,
+          "cuda": 0.06319310327433336,
+          "rel": 7.68632252739492e-15,
+          "intercept_cpu": 0.15667327876799275,
+          "intercept_cuda": 0.1566732787680789
+        },
+        "CL_gamma": {
+          "cpu": 0.06052915607770655,
+          "cuda": 0.060529156077703705,
+          "rel": 4.700125831838227e-14,
+          "intercept_cpu": 0.16213679627789562,
+          "intercept_cuda": 0.16213679627797584
+        }
+      },
+      "per_alpha_max_abs_over_peak": {
+        "CL": 1.8630253877866823e-13,
+        "CL_gamma": 1.689348530080436e-13,
+        "CD_pressure": 3.399322080123832e-13,
+        "CM_y": 1.9405050126522616e-13
+      },
+      "gamma_shape_max_rel": 3.2191907140017457e-12,
+      "seconds_cpu": 27.18894869997166,
+      "seconds_cuda": 36.86231830006,
+      "ratio": 1.3557831421447502
+    },
+    {
+      "case": "elliptic",
+      "wall_faces": 3220,
+      "unknowns": 1562,
+      "fits": {
+        "CL": {
+          "cpu": 0.06946038327012372,
+          "cuda": 0.06946038327013138,
+          "rel": 1.1028644688185199e-13,
+          "intercept_cpu": 0.001520310686676768,
+          "intercept_cuda": 0.0015203106867978378
+        },
+        "CL_gamma": {
+          "cpu": 0.06824510108175821,
+          "cuda": 0.06824510108176218,
+          "rel": 5.815871396072785e-14,
+          "intercept_cpu": 0.000605127834557101,
+          "intercept_cuda": 0.000605127834670538
+        }
+      },
+      "per_alpha_max_abs_over_peak": {
+        "CL": 4.066241118111242e-13,
+        "CL_gamma": 3.5545682608811083e-13,
+        "CD_pressure": 1.4642780050373477e-12,
+        "CM_y": 9.932667077908345e-13
+      },
+      "gamma_shape_max_rel": 5.097204836421695e-10,
+      "seconds_cpu": 39.20784549997188,
+      "seconds_cuda": 51.533630799967796,
+      "ratio": 1.3143703802853628
+    },
+    {
+      "case": "bwb",
+      "wall_faces": 2454,
+      "unknowns": 1197,
+      "fits": {
+        "CL": {
+          "cpu": 0.058598815622345105,
+          "cuda": 0.058598815622346256,
+          "rel": 1.965664964070315e-14,
+          "intercept_cpu": 0.10334187904688336,
+          "intercept_cuda": 0.10334187904691722
+        },
+        "CL_gamma": {
+          "cpu": 0.05867711309279298,
+          "cuda": 0.058677113092793644,
+          "rel": 1.1352532182721032e-14,
+          "intercept_cpu": 0.10879732322550922,
+          "intercept_cuda": 0.10879732322554542
+        }
+      },
+      "per_alpha_max_abs_over_peak": {
+        "CL": 9.943058069770502e-14,
+        "CL_gamma": 1.0013424354881244e-13,
+        "CD_pressure": 2.642429131495598e-13,
+        "CM_y": 1.424552457932442e-13
+      },
+      "gamma_shape_max_rel": 8.97369301538302e-12,
+      "seconds_cpu": 23.165310200070962,
+      "seconds_cuda": 28.779388300026767,
+      "ratio": 1.2423484965868752
+    }
+  ]
+}

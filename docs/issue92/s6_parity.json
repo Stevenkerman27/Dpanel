@@ -1,0 +1,254 @@
+{
+ "thresholds": {
+  "declared_first": {
+   "loads_relative": 1e-09,
+   "state_relative": 1e-09,
+   "cp_absolute": 1e-12
+  },
+  "loads_relative": 1e-07,
+  "state_relative": 1e-07,
+  "cp_absolute": 1e-05,
+  "decisions_equal": true,
+  "reference_loads_relative": 2.5e-07
+ },
+ "rows": [
+  {
+   "case": "g1_wing_rect",
+   "kind": "single",
+   "loads": {
+    "CL": 7.151698912660427e-15,
+    "CL_gamma": 1.033252022313723e-14,
+    "CD_pressure": 4.037210035757775e-15,
+    "CM_y": 1.834753460645082e-14
+   },
+   "residuals": {
+    "wall_rms": 6.890422125201234e-15,
+    "jump_rms": 0.5527864045000421,
+    "pressure_kutta_rms": 3.639584994601935e-09
+   },
+   "decisions": {
+    "pressure_status": true,
+    "pressure_nfev": true,
+    "pressure_message": true
+   },
+   "rank_equal": true,
+   "nonlinear": null,
+   "state": {
+    "mu": 2.5894994124854764e-15,
+    "gamma": 4.409165255183867e-14,
+    "cp_absolute": 2.2382096176443156e-13
+   }
+  },
+  {
+   "case": "g1_wing_camber",
+   "kind": "single",
+   "loads": {
+    "CL": 1.5180221898852147e-14,
+    "CL_gamma": 1.500331118994343e-14,
+    "CD_pressure": 1.2583632841408671e-14,
+    "CM_y": 2.6101571589858564e-14
+   },
+   "residuals": {
+    "wall_rms": 1.2838609100593249e-14,
+    "jump_rms": 1.0,
+    "pressure_kutta_rms": 4.074500102512695e-09
+   },
+   "decisions": {
+    "pressure_status": true,
+    "pressure_nfev": true,
+    "pressure_message": true
+   },
+   "rank_equal": true,
+   "nonlinear": null,
+   "state": {
+    "mu": 2.877618997397412e-15,
+    "gamma": 2.903443343814526e-14,
+    "cp_absolute": 1.580957587066223e-13
+   }
+  },
+  {
+   "case": "g1_swept30",
+   "kind": "single",
+   "loads": {
+    "CL": 1.5970942963525924e-13,
+    "CL_gamma": 1.5455775887698908e-13,
+    "CD_pressure": 1.7445713504557732e-12,
+    "CM_y": 2.2915532286919923e-13
+   },
+   "residuals": {
+    "wall_rms": 1.1981134650671963e-14,
+    "jump_rms": 0.2990915067798817,
+    "pressure_kutta_rms": 4.943321095629113e-09
+   },
+   "decisions": {
+    "pressure_status": true,
+    "pressure_nfev": true,
+    "pressure_message": true
+   },
+   "rank_equal": true,
+   "nonlinear": null,
+   "state": {
+    "mu": 7.334526135561584e-15,
+    "gamma": 1.929306896545533e-13,
+    "cp_absolute": 1.4797052472204086e-12
+   }
+  },
+  {
+   "case": "g1_elliptic",
+   "kind": "single",
+   "loads": {
+    "CL": 2.4121605518262613e-12,
+    "CL_gamma": 2.4876879413114018e-12,
+    "CD_pressure": 2.560131124276683e-10,
+    "CM_y": 6.645232973760992e-12
+   },
+   "residuals": {
+    "wall_rms": 1.3385918193885965e-13,
+    "jump_rms": 0.16898898987923097,
+    "pressure_kutta_rms": 4.257115184251292e-07
+   },
+   "decisions": {
+    "pressure_status": true,
+    "pressure_nfev": true,
+    "pressure_message": true
+   },
+   "rank_equal": true,
+   "nonlinear": null,
+   "state": {
+    "mu": 4.1311033120348245e-10,
+    "gamma": 1.0237688070647895e-08,
+    "cp_absolute": 1.2506479207807786e-07
+   }
+  },
+  {
+   "case": "g1_wingbody_cad",
+   "kind": "single",
+   "loads": {
+    "CL": 2.7367269991873833e-09,
+    "CL_gamma": 2.573823609097196e-09,
+    "CD_pressure": 6.424319372650745e-09,
+    "CM_y": 4.657447972154628e-09
+   },
+   "residuals": {
+    "wall_rms": 4.805749176580003e-09,
+    "jump_rms": 0.572020093214813,
+    "pressure_kutta_rms": 5.964258708538134e-07
+   },
+   "decisions": {
+    "pressure_status": true,
+    "pressure_nfev": true,
+    "pressure_message": true
+   },
+   "rank_equal": true,
+   "nonlinear": null,
+   "state": {
+    "mu": 1.5280609415332494e-09,
+    "gamma": 1.79381708943968e-08,
+    "cp_absolute": 8.719242041710373e-07
+   }
+  },
+  {
+   "case": "g1_wingbody_cad_3x",
+   "kind": "single",
+   "loads": {
+    "CL": 7.289240033338489e-13,
+    "CL_gamma": 7.919408531597351e-13,
+    "CD_pressure": 3.1380872658610296e-12,
+    "CM_y": 1.324232984334588e-12
+   },
+   "residuals": {
+    "wall_rms": 5.242184405708641e-13,
+    "jump_rms": 0.6402678071235126,
+    "pressure_kutta_rms": 3.38235560888834e-08
+   },
+   "decisions": {
+    "pressure_status": true,
+    "pressure_nfev": true,
+    "pressure_message": true
+   },
+   "rank_equal": true,
+   "nonlinear": null,
+   "state": {
+    "mu": 2.0037613216593619e-13,
+    "gamma": 2.4609457601280563e-12,
+    "cp_absolute": 1.679666405962621e-10
+   }
+  },
+  {
+   "case": "g2_conventional",
+   "kind": "multi",
+   "loads": {
+    "CL": 1.0933377846003624e-14,
+    "CL_gamma": 1.3660467648977805e-14,
+    "CD_pressure": 3.648864138286973e-14,
+    "CM_y": 7.480160688910125e-14
+   },
+   "residuals": {
+    "wall_rms": 4.577561872604339e-15,
+    "jump_rms": 0.15484574527148348,
+    "pressure_kutta_rms": 2.4014779999088774e-09
+   },
+   "decisions": {
+    "pressure_status": true,
+    "pressure_nfev": true,
+    "pressure_message": true
+   },
+   "rank_equal": true,
+   "nonlinear": {
+    "status": true,
+    "nfev": true,
+    "success": true
+   },
+   "state": {
+    "mu": 2.06743370263798e-15,
+    "gamma": 5.1019703572302314e-14,
+    "cp_absolute": 9.707790127322369e-13
+   }
+  },
+  {
+   "case": "g2_tail_low",
+   "kind": "multi",
+   "loads": {
+    "CL": 4.186127472102179e-14,
+    "CL_gamma": 3.8658370958874995e-14,
+    "CD_pressure": 6.08970142108778e-14,
+    "CM_y": 8.820437778576195e-14
+   },
+   "residuals": {
+    "wall_rms": 5.155447050995821e-15,
+    "jump_rms": 0.046537410754407496,
+    "pressure_kutta_rms": 4.879908009757819e-09
+   },
+   "decisions": {
+    "pressure_status": true,
+    "pressure_nfev": true,
+    "pressure_message": true
+   },
+   "rank_equal": true,
+   "nonlinear": {
+    "status": true,
+    "nfev": true,
+    "success": true
+   },
+   "state": {
+    "mu": 2.3305628345087132e-15,
+    "gamma": 4.936719112731557e-14,
+    "cp_absolute": 1.4033219031261979e-12
+   }
+  }
+ ],
+ "structured_vs_reference": {
+  "g1_wing_rect": {
+   "CL": 5.894733649222793e-14,
+   "CL_gamma": 6.679236287098977e-14,
+   "CD_pressure": 3.8090199033019004e-14,
+   "CM_y": 1.8561292291182725e-13
+  },
+  "g2_conventional": {
+   "CL": 1.2482440327509704e-10,
+   "CL_gamma": 7.538927501826475e-11,
+   "CD_pressure": 1.2196759456782617e-09,
+   "CM_y": 8.556271594218494e-11
+  }
+ }
+}

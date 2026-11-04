@@ -1,6 +1,6 @@
 # 厚翼身接触尾迹面元：方法与几何验证
 
-更新：2026-10-25。**本地工作已按用户要求暂停；完整鲁棒求解器尚未整体验收。** 本轮已从前置机身闭环推进到机身跨后缘、粗机身、双机身和真正带接触边界的尾迹。云端协同保持暂停，没有 push、merge 或 GitHub 评论。交接见 [PAUSE_HANDOFF.md](../PAUSE_HANDOFF.md)。
+更新：2026-11-03（初稿 2026-10-25）。**方法、离散实现与几何门禁已验证；完整鲁棒求解器与物理精度尚未验收**，当前状态以 [STATUS.md](../STATUS.md) 为准。本轮已从前置机身闭环推进到机身跨后缘、粗机身、双机身和真正带接触边界的尾迹。历史交接见 [PAUSE_HANDOFF.md](./archive/root/PAUSE_HANDOFF.md)。
 
 紧凑证据与原始字段哈希见 [summary.json](panel_robustness_evidence_v2/summary.json)。主矩阵37/37项、补充拓扑10/10项通过；四组完整AD/三档中心差分合计180/180个标量比较通过。这些检查认证公开输入范围内的离散实现及几何门禁，**不认证物理精度**。
 
@@ -8,7 +8,7 @@
 
 ## 为什么新增一个小求解器
 
-前阶段的 VortexAD 闭环保留，见 [WINGBODY_PANEL_LOOP.md](WINGBODY_PANEL_LOOP.md)。它定位了表面势梯度模板秩亏，但其默认尾迹接口不能直接表达机身遮挡后缘、流体侧带洞尾迹与接触势跳跃的相容约束。本轮没有改造上游接口，而在 `panel/` 独立实现透明的JAX源/偶极子求解器；解析核来自本仓库独立 `core/triangle_kernel.py` 的公式。
+前阶段的 VortexAD 闭环保留，见 [archive/notes/WINGBODY_PANEL_LOOP.md](archive/notes/WINGBODY_PANEL_LOOP.md)。它定位了表面势梯度模板秩亏，但其默认尾迹接口不能直接表达机身遮挡后缘、流体侧带洞尾迹与接触势跳跃的相容约束。本轮没有改造上游接口，而在 `panel/` 独立实现透明的JAX源/偶极子求解器；解析核来自本仓库独立 `core/triangle_kernel.py` 的公式。
 
 `panel/cad.py` 复用旧OCC布尔、部件识别和两遍接触站位构造，只生成二维表面网格，不生成或优化体网格。壁面通过共享边一致绕序、连通组件正体积检查；尾迹仅保留真正邻接流体的曲面。双机身粗例616壁面、细例1646壁面，CAD生成分别为数秒量级。旧P2双机身体网格失败记录不改写。
 
@@ -67,7 +67,7 @@ W_linear = D_constant wake_basis + M_y wake_slope
 
 新增门禁核对有向内部边相消、闭合边界环，并要求每条自由尾迹边属于翼尖或共同下游截断。所有wake面心须在闭体之外；同时求出所有平面壁面与wake平面的交线，逐段检查是否穿过wake三角形开内部，从而检出“面心在外、三角形却跨实体”的情况。归一化平面预算1e-12、重心坐标预算1e-10显式记录，不修改势核或压力。
 
-`runs/panel_topology_matrix_v1/` 的8个公开夹具均接受；一个面心检查会漏掉的小闭体穿过wake的输入被交线门禁拒绝，另一个悬空自由wake边界被分类门禁拒绝。原13项坏输入覆盖开口、重复面、翻面、坏TE配对、漏cut、非平面wake、实体内wake、缺失接触约束、无TE支持的Gamma、退化面和非法参数。
+`runs/studies/cad_limits/panel_topology_matrix_v1/` 的8个公开夹具均接受；一个面心检查会漏掉的小闭体穿过wake的输入被交线门禁拒绝，另一个悬空自由wake边界被分类门禁拒绝。原13项坏输入覆盖开口、重复面、翻面、坏TE配对、漏cut、非平面wake、实体内wake、缺失接触约束、无TE支持的Gamma、退化面和非法参数。
 
 ## 保留的物理误差与CAD边界
 
@@ -81,7 +81,7 @@ W_linear = D_constant wake_basis + M_y wake_slope
 
 细双机身CL比粗例增大约18.6%，全域法向误差也没有单调下降，**不能宣称网格收敛或物理精度通过**。零迎角残余升力也保留。当前所有结果均为 `physical_accuracy_accepted=false`。
 
-暂停前的4个近相切CAD探针保存在 `runs/panel_cad_limits_v1/`。aft=1.0001成功建表面网格（682壁面，接触展向长度0.00699991），未继续求解；aft=.9999、1.00000001和1.0的首轮失败实际来自OCC保守包围盒超出radius=5，**并非TE或近相切物理条件拒绝**。旧stage标签误导，当前代码已将其更名为 `cad_bounds_pass_*` 并补具体诊断，原失败文件不改写。radius增大后的重试尚未进行。
+暂停前的4个近相切CAD探针保存在 `runs/studies/cad_limits/panel_cad_limits_v1/`。aft=1.0001成功建表面网格（682壁面，接触展向长度0.00699991），未继续求解；aft=.9999、1.00000001和1.0的首轮失败实际来自OCC保守包围盒超出radius=5，**并非TE或近相切物理条件拒绝**。旧stage标签误导，当前代码已将其更名为 `cad_bounds_pass_*` 并补具体诊断，原失败文件不改写。radius增大后的重试尚未进行。
 
 当前契约限定闭合一致绕序壁面、平面声明TE、条带相容的固定平面wake和固定拓扑变形。未认证任意自交CAD、一般三维旋转、非平面/自由尾迹、重叠接触投影的独立环量、黏性分离或可压缩流。本轮几何优先不等于放弃这些模型边界。
 
@@ -92,9 +92,9 @@ W_linear = D_constant wake_basis + M_y wake_slope
 ```powershell
 .\.conda_env\python.exe aero.py --case cases/panel_two_bodies.json --out runs/NEW_TWO --export-surface
 .\.conda_env\python.exe aero.py --case cases/panel_cad_wingbody.json --out runs/NEW_CAD --export-surface
-.\.conda_env\python.exe panel/verify.py --out runs/NEW_MATRIX --audit-python C:/Users/zyx20/anaconda3/python.exe
-.\.conda_env\python.exe panel/verify_topology.py --out runs/NEW_TOPOLOGY
-C:/Users/zyx20/anaconda3/python.exe panel/report.py --matrix runs/NEW_MATRIX --topology runs/NEW_TOPOLOGY --out docs/NEW_EVIDENCE
+.\.conda_env\python.exe panel/verify.py --out runs/scratch/NEW_MATRIX --audit-python C:/Users/zyx20/anaconda3/python.exe
+.\.conda_env\python.exe panel/verify_topology.py --out runs/scratch/NEW_TOPOLOGY
+C:/Users/zyx20/anaconda3/python.exe panel/report.py --matrix runs/scratch/NEW_MATRIX --topology runs/scratch/NEW_TOPOLOGY --out docs/NEW_EVIDENCE
 ```
 
 `runs/panel_cli_two_final/` 使用补强门禁后的最终求解源码完成入口、45项导数和VTU导出；`runs/panel_cli_cad_v1/` 已完成从CAD到求解及导出。主矩阵保留的是补强交线门禁前的源码快照，新增门禁另有10项验证；不能把不同源码哈希悄悄混作同一个全量批次。所有失败、中间常值wake版本和旧P2产物保留。

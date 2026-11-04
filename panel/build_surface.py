@@ -86,6 +86,20 @@ assert np.all(counts_w <= 2)
 order_w = np.argsort(inverse_w, kind="stable")
 te_polyline = data["trailing_edge_points"]
 tolerance = 1e-7 * chord
+def _polyline_distance(samples, polyline):
+    """Shortest 3-D distance from each sample to a polyline (segment-wise)."""
+    best = np.full(len(samples), np.inf)
+    for start, end in zip(polyline[:-1], polyline[1:]):
+        segment = end - start
+        length2 = float(segment @ segment)
+        if length2 <= 0.0:
+            continue
+        fraction = np.clip(((samples - start) @ segment) / length2, 0.0, 1.0)
+        nearest = start + fraction[:, None]*segment
+        best = np.minimum(best, np.linalg.norm(samples - nearest, axis=1))
+    return best
+
+
 boundary = unique_w[counts_w == 1]
 cut_edges, cut_pairs, cut_kind, te_edges, te_pairs = [], [], [], [], []
 for edge in boundary:
@@ -93,9 +107,15 @@ for edge in boundary:
         continue
     pair = pairs[wall_lookup[tuple(edge)]]
     xyz = coordinates[edge]
-    distance = abs(xyz[:, 0] - np.interp(xyz[:, 1], te_polyline[:, 1], te_polyline[:, 0]))
-    on_te = bool(np.all(distance < tolerance) and np.all(abs(xyz[:, 2] - origin[2]) < tolerance))
-    bank_z = triangles[pair].mean(axis=1)[:, 2] - origin[2]
+    # The TE is a 3-D polyline since issue #100: match it in 3-D instead of
+    # testing x against te_x(y) and requiring the cut to sit in the z=origin
+    # plane. Airfoil thickness still separates TE nodes from the wall triangles
+    # next to them, so the distance test alone identifies the TE.
+    distance = _polyline_distance(xyz, te_polyline)
+    on_te = bool(np.all(distance < tolerance))
+    # Banks are "above/below the local cut line", not "above/below z=origin":
+    # with dihedral both banks of a tip station sit far above the root plane.
+    bank_z = triangles[pair].mean(axis=1)[:, 2] - float(xyz[:, 2].mean())
     assert bank_z.max() > 0 and bank_z.min() < 0, "Cut edge must have two distinct planar wall banks"
     pair = pair[np.argsort(-bank_z)]
     edge = edge[np.argsort(coordinates[edge, 1])]
@@ -126,7 +146,11 @@ for a, b in outflow:
 wake_faces = np.concatenate((wake_faces, np.asarray(extension)))
 wake_triangles = coordinates[wake_faces]
 wake_area_vectors = np.cross(wake_triangles[:, 1] - wake_triangles[:, 0], wake_triangles[:, 2] - wake_triangles[:, 0]) / 2
-assert np.all(wake_area_vectors[:, 2] > 0) and np.max(abs(wake_area_vectors[:, :2])) < 1e-10 * chord**2
+# A wake strip that follows a dihedral TE is still a valid upward-facing sheet,
+# but its area vector gains a spanwise (-y) component proportional to tan(dihedral).
+# Only the streamwise component must vanish and the sheet must face +z.
+assert np.all(wake_area_vectors[:, 2] > 0), "Wake facets must face upward"
+assert np.max(abs(wake_area_vectors[:, 0])) < 1e-10 * chord**2
 stations = data["gamma_stations"]
 station_dof = data["gamma_station_dof"]
 assert stations[0] < stations[-1] and station_dof[0] == station_dof[-1] == -1

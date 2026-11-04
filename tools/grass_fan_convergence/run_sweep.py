@@ -6,7 +6,7 @@ per projection-fan configuration.  One geometry update is applied per run, so th
 recorded coefficients include the wake-velocity quadrature effect; the wall
 solve itself is quadrature independent.
 
-Usage (repository root of runs/fix_master):
+Usage (from the repository root):
     python -m tools.grass_fan_convergence.run_sweep --out docs/issue84/grass_fan_convergence.json
 """
 from __future__ import annotations

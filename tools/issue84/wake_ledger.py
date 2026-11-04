@@ -206,7 +206,7 @@ def main(argv=None):
     parser.add_argument("--fan-strips", type=int, default=8)
     parser.add_argument("--fan-refinement-order", type=int, default=None)
     parser.add_argument("--fan-refinement-strips", type=int, default=None)
-    parser.add_argument("--out", type=Path, default=Path("runs/issue84/wake_ledger_g2.json"))
+    parser.add_argument("--out", type=Path, default=Path("runs/studies/rm_bench/wake_ledger_g2.json"))
     args = parser.parse_args(argv)
     solver_kwargs = dict(gate_mode=args.gate_mode, velocity_method=args.velocity_method,
                          area_quadrature=args.area_quadrature, order=args.order,
