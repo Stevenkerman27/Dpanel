@@ -197,3 +197,21 @@ print(json.dumps({
 
 gmsh.finalize()
 print("PASS: CAD boundary and embedded contact discovery")
+
+
+# 3-D trailing-edge geometry regression (no Gmsh runtime required).
+def test_validate_te_polyline_accepts_nonplanar_curve():
+    te = np.array([[1., -1., .2], [1.1, 0., .5], [1.2, 1., .1]])
+    assert np.array_equal(cad_contact.validate_te_polyline(te), te)
+
+
+def test_te_distance_is_euclidean_to_3d_segments():
+    te = np.array([[0., 0., 0.], [1., 1., 1.], [2., 2., 0.]])
+    points = np.array([[.5, .5, .5], [1., 1., 2.], [2., 2., 1.]])
+    assert np.allclose(cad_contact._te_distance(points, te), [0., 1., 1.])
+
+
+def test_validate_te_polyline_rejects_duplicate_points():
+    import pytest
+    with pytest.raises(ValueError):
+        cad_contact.validate_te_polyline(np.array([[0., 0., 0.], [0., 0., 0.]]))
