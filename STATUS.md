@@ -1,6 +1,6 @@
 # 项目状态
 
-更新：2026-11-03。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
+更新：2026-11-04。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
 
 ## 一句话
 
@@ -8,14 +8,17 @@ JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾
 
 ## 代码基线
 
-- 分支 `research/issue92-phase1-wake-evaluator`，提交 `ce91e0a`（master + 27 个提交）；根目录现在是唯一工作树。
-- torch 移植（issue #92）当前默认是 S9–S11；架构判断与当前默认见 [docs/ISSUE92_TORCH_PORT_MAP.md](docs/ISSUE92_TORCH_PORT_MAP.md)，S1–S8 的交付记录在 [docs/archive/issue/ISSUE92_DELIVERY_LOG.md](docs/archive/issue/ISSUE92_DELIVERY_LOG.md)。
-- B3 的 DPanel/VSPAERO 对照（48 项判定，4 项失败）连同共同参考点力矩、剖面 Cp、固定→自由尾迹见 [docs/ISSUE92_B3_VSPAERO_PROTOCOL.md](docs/ISSUE92_B3_VSPAERO_PROTOCOL.md)。自由尾迹的原生崩溃（`combine_wings` 后 0xC0000005，根因是 torch 环境 numpy 2.5.2 的大 dgemm 缺陷）已修，四个算例都能跑完 60 次迭代；但只有 rect 收敛，三个 CAD 翼的载荷在松弛中塌陷约四分之三，属未解决缺陷（见协议 §13）。
-- 已退役的研究代码（P1 配点/Galerkin 变体等）见 [docs/RETIRED_RESEARCH.md](docs/RETIRED_RESEARCH.md)；它们的结果仍作为文档与 JSON 保留。
+- `master` = `517e20e`。2026-11-04 通过 PR #109 把研发分支 `work/root-2026-11-03` 整条线 squash 并入（仓库禁止 merge commit），再通过 PR #110 合入 P1 自由尾迹前驱图审计。本地主工作树跟踪 `work/root-2026-11-03`，已与 master 同点。
+- 合并内容：docs 清理（520 文件/28.7 MB → 460 文件/17.6 MB，废弃证据进 `docs/archive/`）、`tools/web` 浏览器工作台、`panel/` 精简（删 20+ 个旧模块）、上反角支持、P1 G1/G2 合并内核。
+- 分支现状：`master`（唯一基线）+ `work/root-2026-11-03`（唯一开发分支，内容与 master 相同，后续从它继续）。临时分支（`pr107-review`、`dihedral-solver`、`merge/dev-to-master` 等）已删除。
+- 测试基线（2026-11-04，`python -m pytest -q test -p no:cacheprovider`）：`16 failed, 793 passed, 22 skipped`（177.97 s）。合并前 dev 分支单独跑同为 `16 failed, 793 passed, 22 skipped`，失败集合逐条相同 → 合并本身没有引入新失败。旧 master `0fe9903` 两次全量运行都在 `test/test_p1_lifting_g2_pressure_floor.py::test_accepts_floor_stop_without_claiming_plain_success` 处崩 `Windows fatal exception: access violation`（`scipy.linalg.lstsq`，exit 139），属环境级 BLAS flake。
+- 16 个已知失败集中在：`test_torch_panel_bridge`（3）、`test_iterative_panel`（3）、`test_half_native_panel`（2）、`test_cad_half_groups_wake_sheet`（2）、CLI 快照类（`test_p1_closed_body`、`test_pressure_recovery_half_integration`、`test_pressure_region_budget`、`test_wake_velocity_methods`）、`test_half_mirror_oracle`、`test_differentiable_panel_fields`、`test_torch_half_lifting`。均为合并前既有失败，未修。
 - 浏览器工作台（改参数→建体→网格→求解，`python -m tools.web.server --port 8811`）见 [tools/web/README.md](tools/web/README.md)。它只包装现有求解器；自由尾迹塌陷缺陷在工作台里以黄色警告呈现。
-- P1 单翼与多组已合并成一个内核（2026-11-04）：`p1_lifting_g1.solve` 现在是 `solve_multi(combine_wings([wing]))` 的适配器，旧的单翼 torch 核 `p1_solve_torch.solve_single_torch` 已删除。合并前实测单组与旧路径 CL 差 3e-14、Γ 差 5e-14；合并后两者走同一实现，差值为 0。
-- 上反角支持（2026-11-04，分支 `feature/dihedral`）：后缘不再要求 z=0。`dihedral_deg`（±20°）让每个剖面绕自己的后缘点滚转，尾迹是后缘沿 x 拉伸出的 **+z 图面**；求解层 5 处“水平尾迹”断言放宽为“+z 图面”，`panel/kernel.py` 的线性环量项补了 `n_y` 修正（旧的 +z 假设在 20° 时把线性项放大 13 倍，216 个旋转算例对求积的最大误差 3.3e-6）。实测 0/5/10/20°：CL +0.428/+0.457/+0.461/+0.439，CD 0.0095/0.0102/0.0120/0.0102，面板 228/236/238/254；平面路径逐位不变（同一 `surface.json` 新旧差 1.4e-16）。物理精度未验收，见 [tools/web/README.md](tools/web/README.md)。
-- 环境限制：本机沙箱没给主工作树的 `lifting3d/` 目录写授权（在该目录新建空文件即报“访问被拒绝”，同级 `panel/`、`tools/` 正常，`icacls` 也查不到缺失的写权限条目），所以这项工作在 `runs/wt-dih` 工作树里开发，经分支推送与 PR 合入 `work/root-2026-11-03`。主工作树更新一次：在普通终端执行 `git pull --ff-only`（`git merge` 在这个目录会因写 `lifting3d/` 失败）。
+- P1 单翼与多组已合并成一个内核（2026-11-04）：`p1_lifting_g1.solve` 现在是 `solve_multi(combine_wings([wing]))` 的适配器，旧的单翼 torch 核 `p1_solve_torch.solve_single_torch` 已删除。合并前实测单组与旧路径 CL 差 3e-14、Γ 差 5e-14。
+- 上反角支持（`dihedral_deg` ±20°，2026-11-04 随 #109 进 master）：后缘不再要求 z=0，尾迹是后缘沿 x 拉伸出的 +z 图面；求解层 5 处“水平尾迹”断言放宽为“+z 图面”，`panel/kernel.py` 的线性环量项补了 `n_y` 修正（旧的 +z 假设在 20° 时把线性项放大 13 倍，216 个旋转算例对求积的最大误差 3.3e-6）。实测 0/5/10/20°：CL +0.428/+0.457/+0.461/+0.439，CD 0.0095/0.0102/0.0120/0.0102；平面路径逐位不变（新旧差 1.4e-16）。物理精度未验收。
+- P1 自由尾迹审计（PR #110，`panel/p1_steady_free_wake.py:wake_material_graph_audit`）：每次迭代前记录前驱图（直连边中位数/最大值、最长链、环与 x 回折计数），纯诊断、不改物理。它回答“26 弦直连边 vs 28 弦累计路径”这类问题；26 弦直连边的根因仍未定。
+- B3 的 DPanel/VSPAERO 对照（48 项判定，4 项失败）见 [docs/ISSUE92_B3_VSPAERO_PROTOCOL.md](docs/ISSUE92_B3_VSPAERO_PROTOCOL.md)。自由尾迹的原生崩溃（`combine_wings` 后 0xC0000005，根因是 torch 环境 numpy 2.5.2 的大 dgemm 缺陷）已修，四个算例都能跑完 60 次迭代；但只有 rect 收敛，三个 CAD 翼的载荷在松弛中塌陷约四分之三，属未解决缺陷（协议 §13）。
+- 已退役的研究代码（P1 配点/Galerkin 变体等）见 [docs/RETIRED_RESEARCH.md](docs/RETIRED_RESEARCH.md)。
 
 ## 文档入口
 
@@ -28,11 +31,12 @@ JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾
 | 验收口径（代数 vs 物理） | [docs/WORKFLOW.md](docs/WORKFLOW.md) |
 | 测试现状与已知失败 | [docs/TEST_STATUS.md](docs/TEST_STATUS.md) |
 
-## 本轮文档清理（PR #99）
+## 合并记录（2026-11-04）
 
-- 交付分支 `work/root-2026-11-03`，PR：https://github.com/Stevenkerman27/Dpanel/pull/99 （base 为 `research/issue92-phase1-wake-evaluator`，所以 PR 只含一个提交）。
-- 内容：废弃证据与旧状态文档移入 `docs/archive/`（顶层保留 17 篇）；ISSUE92 只留当前默认 S9–S11 相关章节；新增本文件与测试基线文档。
-- 未包含：`.github/workflows/galerkin-cad-validation.yml` 里的文档路径过滤——更新它需要带 workflow 权限的 token。
+- PR #109 `merge: docs cleanup + tools/web workbench + panel slimming onto master`：squash 合并，44 提交、630 文件；合并树测试与 dev 分支完全一致（见上）。仓库设置禁止 merge commit，只能用 squash。
+- PR #110 `feat(panel): audit P1 free-wake predecessor graph per iteration`：取代 PR #107（后者有两个缺陷：非单调边按遍历起点重复计数、测试桩缺 `wake_material_graph_audit` 导致 6 个 mock 测试 ImportError）。验证：基线 48 passed，补丁 50 passed。
+- PR #99（docs 清理 → research 分支）内容已由 #109 进 master；PR #98（issue92 research 线）仍开放，等决定。
+- 沙箱限制：`git push`、`git fetch`、GitHub API 都需要 `danger-full-access` 提权（沙箱禁止管道 stdio，凭据助手取不到 token）；`git merge` 在本仓库会尝试 stash 而失败，需要合并时用 `git merge-tree --write-tree` + `git commit-tree` 造合并提交。
 
 ## 旧状态文档的处理
 
