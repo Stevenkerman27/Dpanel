@@ -69,7 +69,9 @@ else:
     expected_stations = stations[1:-1]
     te_x_error = te_coordinates[:, 0]-expected_te_x
     te_station_error = None
+    te_z_error = np.zeros_like(te_x_error)
     te_x_tolerance = 1.e-10
+    te_z_tolerance = te_x_tolerance
     te_station_tolerance = 1.e-12
 root_support = metadata.get("root_wake_support")
 if cad_mesh:
