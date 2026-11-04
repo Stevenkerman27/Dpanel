@@ -1,7 +1,7 @@
 """Run an entire coupled P1 G2 main-wing / raised-tail research configuration.
 
 python -m panel.run_p1_lifting_g2 --alpha 0 5 --out runs/g2_generated
-python -m panel.run_p1_lifting_g2 --main-half-surface runs/half_cad_wingbody_v1/surface.json --alpha 0 5 --out runs/g2_cad
+python -m panel.run_p1_lifting_g2 --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json --alpha 0 5 --out runs/g2_cad
 """
 from __future__ import annotations
 import argparse

@@ -1,8 +1,8 @@
 """Compare dense LU with dense-matvec GMRES on EXACTLY the same saved AIC.
 
 Usage:
-  python test/probe_linear_solvers.py runs/backend_probes/vortexad_aic.npz
-  python test/probe_linear_solvers.py runs/backend_probes/vortexad_aic.npz --rtol 1e-8
+  python test/probe_linear_solvers.py runs/benchmarks/backend_probes/vortexad_aic.npz
+  python test/probe_linear_solvers.py runs/benchmarks/backend_probes/vortexad_aic.npz --rtol 1e-8
 
 All GMRES operators below retain the dense A in memory. This is NOT FMM,
 H-matrix, or a matrix-free O(N) panel method. Record actual matrix source

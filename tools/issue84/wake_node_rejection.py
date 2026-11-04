@@ -17,9 +17,9 @@ does not change defaults, and never reclassifies a rejected node as eligible.
 Usage (from the repository root):
 
     python -m tools.issue84.wake_node_rejection \
-        --main-half-surface runs/half_cad_wingbody_v1/surface.json \
-        --out runs/issue84/wake_rejection_g2.json \
-        --csv runs/issue84/wake_rejection_g2.csv
+        --main-half-surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json \
+        --out runs/studies/rm_bench/wake_rejection_g2.json \
+        --csv runs/studies/rm_bench/wake_rejection_g2.csv
 """
 from __future__ import annotations
 
@@ -318,7 +318,7 @@ def main(argv=None):
     parser.add_argument("--ladder", type=float, nargs="+", default=(1., .5, .25, .125))
     parser.add_argument("--epsilon-tol", type=float, default=.02)
     parser.add_argument("--quadrature-tol", type=float, default=.002)
-    parser.add_argument("--out", type=Path, default=Path("runs/issue84/wake_rejection.json"))
+    parser.add_argument("--out", type=Path, default=Path("runs/studies/rm_bench/wake_rejection.json"))
     parser.add_argument("--csv", type=Path, default=None)
     args = parser.parse_args(argv)
 

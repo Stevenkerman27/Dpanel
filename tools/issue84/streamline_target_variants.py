@@ -27,7 +27,7 @@ def spy(xyz, material, velocity, eligible):
 
 
 m.streamline_target = spy
-mesh, alpha = build_case(["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"],
+mesh, alpha = build_case(["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"],
                          case="g2", alpha_deg=5.0)
 result = m.solve_coupled_material_wake(mesh, alpha, kutta='signed_speed', iterations=1,
                                        max_backtracks=12, gate_mode='audit')

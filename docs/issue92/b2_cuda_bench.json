@@ -1,0 +1,208 @@
+{
+  "thresholds": {
+    "load_relative": 1e-05,
+    "speedup": 1.5,
+    "repetitions": 2
+  },
+  "parity": {
+    "g2_conventional/cpu/solve": true,
+    "g2_conventional/cuda/solve": true,
+    "g2_cad/cpu/solve": true,
+    "g2_cad/cuda/solve": true
+  },
+  "speedup": {
+    "g2_conventional": {
+      "solve_speedup": 0.11916922970159999,
+      "loop_speedup": 0.6824745218506082,
+      "meets": false
+    },
+    "g2_cad": {
+      "solve_speedup": 0.2231105864042887,
+      "loop_speedup": 1.0466307676039865,
+      "meets": false
+    }
+  },
+  "passed": true,
+  "rows": [
+    {
+      "case": "g2_conventional",
+      "device": "cpu",
+      "gpu": null,
+      "wall_faces": 100,
+      "solve_cold_seconds": 0.014608900062739849,
+      "solve_warm_seconds": 0.008448299951851368,
+      "solve_seconds_all": [
+        0.014608900062739849,
+        0.008448299951851368
+      ],
+      "solve_peak_mib": null,
+      "loop_peak_mib": null,
+      "loop_seconds": 0.2638540000189096,
+      "loop_status": "iteration_limit",
+      "reference_status": "iteration_limit",
+      "solve_loads": {
+        "CL": 0.36547233109365784,
+        "CL_gamma": 0.3423331354153439,
+        "CD_pressure": -0.017593346450067226,
+        "CM_y": -0.1125727821341487
+      },
+      "solve_relative": {
+        "CL": 2.3542762909294496e-14,
+        "CL_gamma": 2.3836837240703008e-14,
+        "CD_pressure": 1.617058192241219e-14,
+        "CM_y": 6.706342709426066e-14
+      },
+      "loop_loads": {
+        "CL": 0.3661026863350898,
+        "CL_gamma": 0.3429198852455911,
+        "CD_pressure": -0.0175175179499118,
+        "CM_y": -0.11410924882090705
+      },
+      "loop_relative": {
+        "CL": 6.216718110607902e-15,
+        "CL_gamma": 8.417650851475361e-15,
+        "CD_pressure": 1.980558525399514e-14,
+        "CM_y": 8.622746760152925e-14
+      },
+      "uploaded_mib": 0.65869140625,
+      "peak_mib": null,
+      "torch_version": "2.13.0+cu132",
+      "cuda": "13.2"
+    },
+    {
+      "case": "g2_conventional",
+      "device": "cuda",
+      "gpu": "NVIDIA GeForce RTX 5060",
+      "wall_faces": 100,
+      "solve_cold_seconds": 15.4314131999854,
+      "solve_warm_seconds": 0.07089329999871552,
+      "solve_seconds_all": [
+        15.4314131999854,
+        0.07089329999871552
+      ],
+      "solve_peak_mib": 417.8818359375,
+      "loop_peak_mib": 417.9912109375,
+      "loop_seconds": 0.38661369995679706,
+      "loop_status": "iteration_limit",
+      "reference_status": "iteration_limit",
+      "solve_loads": {
+        "CL": 0.36547233109365207,
+        "CL_gamma": 0.3423331354153378,
+        "CD_pressure": -0.017593346450067673,
+        "CM_y": -0.11257278213414267
+      },
+      "solve_relative": {
+        "CL": 7.746328441122705e-15,
+        "CL_gamma": 5.999748149020485e-15,
+        "CD_pressure": 9.268504272602109e-15,
+        "CM_y": 1.3437341090577963e-14
+      },
+      "loop_loads": {
+        "CL": 0.3661026863350877,
+        "CL_gamma": 0.34291988524558953,
+        "CD_pressure": -0.01751751794991179,
+        "CM_y": -0.11410924882090599
+      },
+      "loop_relative": {
+        "CL": 1.1978554408244494e-14,
+        "CL_gamma": 1.2950232079192863e-14,
+        "CD_pressure": 1.940947354891524e-14,
+        "CM_y": 9.547046835994423e-14
+      },
+      "uploaded_mib": 0.65869140625,
+      "peak_mib": 417.9912109375,
+      "torch_version": "2.13.0+cu132",
+      "cuda": "13.2"
+    },
+    {
+      "case": "g2_cad",
+      "device": "cpu",
+      "gpu": null,
+      "wall_faces": 807,
+      "solve_cold_seconds": 0.18447840004228055,
+      "solve_warm_seconds": 0.19291209999937564,
+      "solve_seconds_all": [
+        0.18447840004228055,
+        0.19291209999937564
+      ],
+      "solve_peak_mib": null,
+      "loop_peak_mib": null,
+      "loop_seconds": 33.79440150002483,
+      "loop_status": "blocked_updated_nonlinear_solve",
+      "reference_status": "blocked_updated_nonlinear_solve",
+      "solve_loads": {
+        "CL": 0.4340597748767908,
+        "CL_gamma": 0.43843017681115853,
+        "CD_pressure": 0.0063572632335995955,
+        "CM_y": -0.11965443939372065
+      },
+      "solve_relative": {
+        "CL": 2.2196321640395305e-09,
+        "CL_gamma": 2.495635526176191e-09,
+        "CD_pressure": 1.3351440219588067e-08,
+        "CM_y": 6.686347293424012e-10
+      },
+      "loop_loads": {
+        "CL": 0.4341090167802126,
+        "CL_gamma": 0.4385197973805609,
+        "CD_pressure": 0.006384502760351808,
+        "CM_y": -0.11935555611935063
+      },
+      "loop_relative": {
+        "CL": 1.2730188615463412e-07,
+        "CL_gamma": 1.3322664313996378e-07,
+        "CD_pressure": 1.391272604800789e-06,
+        "CM_y": 2.6841382298920857e-08
+      },
+      "uploaded_mib": 15.603309631347656,
+      "peak_mib": null,
+      "torch_version": "2.13.0+cu132",
+      "cuda": "13.2"
+    },
+    {
+      "case": "g2_cad",
+      "device": "cuda",
+      "gpu": "NVIDIA GeForce RTX 5060",
+      "wall_faces": 807,
+      "solve_cold_seconds": 0.9727780999382958,
+      "solve_warm_seconds": 0.8646478999871761,
+      "solve_seconds_all": [
+        0.9727780999382958,
+        0.8646478999871761
+      ],
+      "solve_peak_mib": 84.3291015625,
+      "loop_peak_mib": 88.1640625,
+      "loop_seconds": 32.28875219996553,
+      "loop_status": "blocked_updated_nonlinear_solve",
+      "reference_status": "blocked_updated_nonlinear_solve",
+      "solve_loads": {
+        "CL": 0.4340597762124491,
+        "CL_gamma": 0.4384301783280266,
+        "CD_pressure": 0.006357263115921511,
+        "CM_y": -0.11965443928279308
+      },
+      "solve_relative": {
+        "CL": 8.574977165005512e-10,
+        "CL_gamma": 9.64135611927727e-10,
+        "CD_pressure": 5.159368840541652e-09,
+        "CM_y": 2.5843135628860894e-10
+      },
+      "loop_loads": {
+        "CL": 0.4341089913811894,
+        "CL_gamma": 0.43851977044675056,
+        "CD_pressure": 0.00638450666140394,
+        "CM_y": -0.11935555477558708
+      },
+      "loop_relative": {
+        "CL": 6.879348062972325e-08,
+        "CL_gamma": 7.180680737001573e-08,
+        "CD_pressure": 7.802545112434856e-07,
+        "CM_y": 1.5582890238394286e-08
+      },
+      "uploaded_mib": 15.603309631347656,
+      "peak_mib": 88.1640625,
+      "torch_version": "2.13.0+cu132",
+      "cuda": "13.2"
+    }
+  ]
+}

@@ -111,7 +111,7 @@ def test_peak_rss_and_json_report_are_finite():
         field(np.array([.3, -.4, 1.7]))
     finally:
         velocity_profile.enable(False)
-    out = Path(__file__).resolve().parents[1]/'runs'/'velocity_profile_tests'/'profile.json'
+    out = Path(__file__).resolve().parents[1]/'runs'/'scratch'/'test_outputs'/'velocity_profile_tests'/'profile.json'
     velocity_profile.write(out, status='test', wall_seconds=0.0)
     payload = json.loads(out.read_text(encoding='utf-8'))
     assert payload['status'] == 'test'

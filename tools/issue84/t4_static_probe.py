@@ -10,7 +10,7 @@ import panel.p1_coupled_material_wake as m
 from panel.p1_steady_free_wake import prepare_wake_material
 from tools.issue84.wake_node_rejection import build_case
 
-mesh, alpha = build_case(["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"],
+mesh, alpha = build_case(["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"],
                          case="g2", alpha_deg=5.0)
 gates = m.GeometryGates()
 materials = {g.name: prepare_wake_material(g) for g in mesh.groups}

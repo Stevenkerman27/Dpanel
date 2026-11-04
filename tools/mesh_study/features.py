@@ -1,7 +1,7 @@
 """Generate dpanel.mesh_features.v1 declarations for the elliptic test case.
 
 The points follow the same section formulas that generated the CAD
-(runs/geom_robust/make_cases.py): chord(y) = tip + (root - tip) * sqrt(1 - (y/L)^2),
+(runs/studies/geometry_robustness/make_cases.py): chord(y) = tip + (root - tip) * sqrt(1 - (y/L)^2),
 leading edge x = le_offset * (root - chord). Only the *features* are taken from
 that formula; nothing here guesses the mesh.
 """

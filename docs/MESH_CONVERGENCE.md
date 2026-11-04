@@ -2,7 +2,7 @@
 
 日期 2026-10-26。目标来自用户要求：之后的算例必须用足够多的面元，气动系数至少收敛到 5% 以内。
 
-2026-10-26复核：下表仅描述本序列相邻档变化，不认证渐近网格无关。多数壁面加密仍固定26站位/22个Gamma未知量；壁面、Gamma、尾迹方向/长度并未独立收敛。原始数字保留，物理精度仍未接受。尾迹研究见 [WAKE_ACCURACY.md](WAKE_ACCURACY.md)。
+2026-10-26复核：下表仅描述本序列相邻档变化，不认证渐近网格无关。多数壁面加密仍固定26站位/22个Gamma未知量；壁面、Gamma、尾迹方向/长度并未独立收敛。原始数字保留，物理精度仍未接受。尾迹研究见 [archive/notes/WAKE_ACCURACY.md](archive/notes/WAKE_ACCURACY.md)。
 
 | 系数 | 5% 收敛判据 | 判定 |
 | --- | --- | --- |
@@ -14,7 +14,7 @@
 
 本序列显示升力变化比近场阻力和力矩小，但没有证明进一步加密无效。大幅相消会放大压力误差；理想Trefftz量基于另一个尾迹模型，不能替换为同一有限尾迹场的精度证据。需通过同场重构对照、尾迹物理残差及独立细化继续区分误差。
 
-![收敛曲线](../runs/viz/figs/fig13_convergence.png)
+![收敛曲线](../runs/scratch/viz/figs/fig13_convergence.png)
 
 ## 1. 网格序列
 
@@ -42,7 +42,7 @@ python -m panel.cad_half --wing-cad <wing.step> --body-cad <body.step> \
 求解（LU，独立进程 + 20 ms 峰值 RSS 采样）：
 
 ```bat
-python runs/peak_wrap.py panel.run_half_native <peakdir> \
+python runs/scratch/peak_wrap.py panel.run_half_native <peakdir> \
   --surface <abs>/surface.json --out <newdir> --mode lu \
   --max-stencil-rings 6 --max-panels 6000
 ```
@@ -97,7 +97,7 @@ python runs/peak_wrap.py panel.run_half_native <peakdir> \
 
 ## 4. 理想Gamma-only Trefftz诊断
 
-`runs/trefftz_drag.py` 用条带常斜率 $d\Gamma/dy$ 的精确主值积分求下洗：
+`runs/scratch/trefftz_drag.py` 用条带常斜率 $d\Gamma/dy$ 的精确主值积分求下洗：
 
 ```python
 def trefftz_cd(stations, gamma, span, chord, U=1.0, rho=1.0):
@@ -134,6 +134,6 @@ def trefftz_cd(stations, gamma, span, chord, U=1.0, rho=1.0):
 ```bat
 python runs/conv_near_far.py   # 8 个网格的 CL/CD/CM + Trefftz CD -> runs/conv_diag/near_vs_far_field.json
 python runs/conv_diag.py       # 逐面阻力分解 -> runs/conv_diag/panel_drag_decomposition.json
-python runs/trefftz_drag.py    # 椭圆载荷校验
-python runs/viz/fig13.py       # 本文插图
+python runs/scratch/trefftz_drag.py    # 椭圆载荷校验
+python runs/scratch/viz/fig13.py       # 本文插图
 ```

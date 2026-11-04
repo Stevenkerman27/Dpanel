@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>DPanel 可微气动工作台</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="brand">DPanel <span>可微气动工作台</span></div>
+  <div id="server" class="status">连接中…</div>
+</header>
+<main>
+  <section class="left">
+    <div class="tabs">
+      <button class="tab active" data-tab="geom">几何</button>
+      <button class="tab" data-tab="result">结果</button>
+      <span id="viewHint" class="hint">左键旋转 · 滚轮缩放</span>
+    </div>
+    <div class="viewport">
+      <canvas id="view"></canvas>
+      <div id="legend" class="legend hidden">
+        <div class="legend-bar"></div>
+        <div class="legend-labels"><span id="cpMax">Cp</span><span id="cpMin">Cp</span></div>
+        <div class="legend-note">左=吸力峰（低 Cp）</div>
+      </div>
+      <div id="viewEmpty" class="view-empty">先点「生成几何」</div>
+    </div>
+    <section class="resultbar">
+      <div class="resultbar-head">
+        <span>结果</span>
+        <span id="resultMode" class="badge"></span>
+        <span id="resultTime" class="muted"></span>
+      </div>
+      <div class="resultbar-body">
+        <table id="resultTable"></table>
+        <div class="plotwrap"><canvas id="plot"></canvas></div>
+        <pre id="log"></pre>
+      </div>
+    </section>
+  </section>
+  <aside class="right">
+    <section class="card grow">
+      <div class="card-head">部件</div>
+      <ul id="partList" class="partlist"></ul>
+      <div class="row">
+        <button id="addWing">+ 升力面</button>
+        <button id="addBody">+ 机身</button>
+        <button id="delPart" class="danger">删除</button>
+      </div>
+      <p class="note">求解器只有一套尾迹系统：升力面恰好一个，机身可多个（椭球，挂在翼下）。</p>
+    </section>
+    <section class="card">
+      <div class="card-head"><span id="editorTitle">部件参数</span></div>
+      <div id="editor" class="editor"></div>
+    </section>
+    <section class="card">
+      <div class="card-head">求解</div>
+      <div class="grid2">
+        <label>迎角 α<input id="alpha" type="number" value="4" step="0.5"></label>
+        <label>网格尺寸 m<input id="size" type="number" value="0.35" step="0.05" min="0.05"></label>
+        <label>尾迹
+          <select id="wake"><option value="fixed">固定</option><option value="free">自由</option></select>
+        </label>
+        <label>迭代<input id="iterations" type="number" value="4" step="1" min="1"></label>
+        <label>设备
+          <select id="device"><option value="cpu">torch CPU</option><option value="cuda">torch GPU</option></select>
+        </label>
+      </div>
+      <div class="row">
+        <button id="build" class="primary">生成几何</button>
+        <button id="solve" class="primary">求解</button>
+        <button id="cancel" class="danger">取消</button>
+      </div>
+    </section>
+  </aside>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

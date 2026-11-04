@@ -1,7 +1,7 @@
 """VSPAERO input file (.vspaero) writer.
 
 The field order and formatting follow the files that produced the numbers in
-`docs/VSP_TRAPEZOID_CONVERGENCE.md`; `to_text()` is byte-stable so a round
+`docs/archive/notes/VSP_TRAPEZOID_CONVERGENCE.md`; `to_text()` is byte-stable so a round
 trip through `SweepConfig.from_text()` reproduces an existing case file.
 """
 

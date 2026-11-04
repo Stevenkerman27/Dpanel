@@ -11,7 +11,7 @@ from tools.issue92 import fixtures
 def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--fixture", default="g1_elliptic")
-    parser.add_argument("--out", type=Path, default=ROOT / "runs/issue92/block_sweep.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "runs/scratch/issue92_loose/block_sweep.json")
     parser.add_argument("--repeat", type=int, default=2)
     args = parser.parse_args(argv)
     import torch

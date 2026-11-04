@@ -1,4 +1,4 @@
-"""Render docs/ISSUE84_ADAPTIVE_AREA.md from the adaptive acceptance payload."""
+"""Render docs/archive/issue/ISSUE84_ADAPTIVE_AREA.md from the adaptive acceptance payload."""
 from __future__ import annotations
 
 import argparse
@@ -203,9 +203,9 @@ def render(payload):
     lines.append("")
     lines.append(FENCE + "powershell")
     lines.append("$env:PYTHONPATH='<worktree>;<repo>/runs'")
-    lines.append("$env:TMP=$env:TEMP=$env:TMPDIR=$env:DSH_TMP_ROOT='<repo>/runs/pipwork'")
+    lines.append("$env:TMP=$env:TEMP=$env:TMPDIR=$env:DSH_TMP_ROOT='<repo>/runs/scratch/pipwork'")
     lines.append("& '<repo>/.conda_env/python.exe' -u -m tools.issue84.adaptive_area_acceptance " +
-                 "--main-half-surface <repo>/runs/half_cad_wingbody_v1/surface.json --out " +
+                 "--main-half-surface <repo>/runs/cases/wingbody/half_cad_wingbody_v1/surface.json --out " +
                  "docs/issue84/adaptive_area_acceptance.json")
     lines.append(FENCE)
     lines.append("")
@@ -219,7 +219,7 @@ def main(argv=None):
     parser.add_argument("--json", type=Path,
                         default=Path("docs/issue84/adaptive_area_acceptance.json"))
     parser.add_argument("--out", type=Path,
-                        default=Path("docs/ISSUE84_ADAPTIVE_AREA.md"))
+                        default=Path("docs/archive/issue/ISSUE84_ADAPTIVE_AREA.md"))
     args = parser.parse_args(argv)
     payload = json.loads(args.json.read_text(encoding="utf-8"))
     args.out.write_text(render(payload), encoding="utf-8")

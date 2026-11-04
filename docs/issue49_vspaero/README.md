@@ -72,7 +72,7 @@ DPanel 的 `CL_Γ` 用物理展向积分（PR #51 修正后的 `dy`，不是尾�
 | --- | --- |
 | OpenVSP/VSPAERO 具体版本 | 第 1 节；`raw/lX/run.txt` 与 `ladders/*/stdout.log` 的 banner |
 | 厚体 panel 还是薄 VLM、GeomSet/ThinGeomSet | 第 1 节；每档 stdout 的 `Model type:` 行 |
-| CAD/TE/翼型/后缘厚度 SHA | `docs/VSP_TRAPEZOID_CONVERGENCE.md` §2；`cases/vsp/trap.vspgeom`、`runs/vsp_conv/cad_trap/{wing.step,trailing_edge.json}` |
+| CAD/TE/翼型/后缘厚度 SHA | `docs/archive/notes/VSP_TRAPEZOID_CONVERGENCE.md` §2；`cases/vsp/trap.vspgeom`、`runs/benchmarks/vsp_convergence/cad_trap/{wing.step,trailing_edge.json}` |
 | 网格与 wake 长/迭代/松弛 | 每档 `trap.vspaero`（`WakeIters`、`NumWakeNodes`、`WakeRelax`、`FarDist`）；`raw/lX/trap.vspgeom` |
 | α/β/Mach/Re | `trap.vspaero`（`AoA`、`Beta`、`Mach`、`ReCref = 1e7`）与 polar 行 |
 | Sref/bref/cref/参考点 | `Sref = 0.30`、`Bref = 2.0`、`Cref = 0.15`（3.52 档）/ `0.20`（3.55 档）；`X_cg = Y_cg = Z_cg = 0`；DPanel 的 `reference_chord` 是 MAC `0.15555556`，`moment_reference = [0.0388889, 0, 0]` |
@@ -100,7 +100,7 @@ DPanel 的 `CL_Γ` 用物理展向积分（PR #51 修正后的 `dy`，不是尾�
 ## 5. 复现
 
 ```powershell
-# 0) 所有脚本都在 tools/vsp_evidence/（已入库）；数据目录 runs/vsp_conv 不入库
+# 0) 所有脚本都在 tools/vsp_evidence/（已入库）；数据目录 runs/benchmarks/vsp_convergence 不入库
 Invoke-Expression (Get-Content tools/vsp_evidence/evidence_rerun.ps1.txt -Raw)
 # 1) 重建数值表
 .conda_env/python.exe tools/vsp_evidence/evidence_build.py
@@ -121,7 +121,7 @@ C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi sweep <spec.json> 
 
 - VSPAERO 是独立势流对照，**不是实验真值**；本目录不声明物理精度验收，`physical_accuracy_accepted = false` 不变。
 - 入库的是 3.55 阶梯（888–12996 面板 panel、420–6422 面 VLM）与 3.52 的 VLM 阶梯（240–12480 面）；
-  用户原始 `cases/vsp/trap.vspgeom`（6249 面）的读数见 `docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md`。
+  用户原始 `cases/vsp/trap.vspgeom`（6249 面）的读数见 `docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md`。
 - 粗档 `.vspgeom` 未入库（每档 0.1–6 MB），可用 `ladders/*/ladder.json` 里的 `tess_w`/`sect_tess_u` 一条命令重剖。
 
 ## 7. 复核后修正（2026-10-27，云端审阅）
@@ -171,3 +171,19 @@ VSP 3.55 档：V = 100 m/s、rho = 0.002377、Re = 1e7；DPanel：V = 20 m/s、r
 
 `sections.json` 与 `raw/lX/trap.tec.dat` 都是 3.52 的 VLM 薄壳；**3.55 厚 panel 的上/下表面 Cp 截面尚未入库**。
 要评价前缘吸力与压力恢复，需补 `ladders/api_panel_*` 的 tecplot 输出（y/b = 0.25 / 0.5 / 0.75），这是下一步。
+
+## 8. 原始数据的存放（2026-11-03 归档）
+
+为缩小工作树，`raw/` 与 `ladders/` 已于 2026-11-03 从工作树移除；它们的完整内容仍保存在
+本分支基线提交 `ce91e0a` 里，需要时按路径从历史检出（检出后即恢复本节各表引用的
+`raw/l1`–`raw/l4`、`ladders/api_panel_*`、`ladders/api_vlm_*` 路径）：
+
+```bash
+git checkout ce91e0a -- docs/issue49_vspaero/raw docs/issue49_vspaero/ladders
+python docs/issue49_vspaero/verify_sha.py   # 检出后仍是 135/135
+```
+
+作者本机另存有打包件 `docs/archive/evidence/issue49_vspaero_raw.tar.gz`（1.9 MB），未纳入版本库。
+
+`levels.json`、`sections.json`、`dpanel/`、`figs/`、`gamma/`、`p1/`、`wakesweep/` 与
+`sha256.json` 保留在原处；`sha256.json` 的路径就是解包后的路径。

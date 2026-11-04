@@ -15,7 +15,7 @@ import subprocess
 parser = argparse.ArgumentParser()
 parser.add_argument("--surface", type=Path, required=True)
 parser.add_argument("--out", type=Path, required=True)
-parser.add_argument("--backend", type=Path, default=Path("runs/backend_probes/src/VortexAD"))
+parser.add_argument("--backend", type=Path, default=Path("runs/benchmarks/backend_probes/src/VortexAD"))
 parser.add_argument("--ncpu", type=int, default=8)
 parser.add_argument("--alpha", type=float, default=5.)
 parser.add_argument("--bulge", type=float, default=0.)

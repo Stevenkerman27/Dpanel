@@ -1,6 +1,6 @@
 """Pure-NumPy regression for the circulation mass row of the shed-group v2 contract.
 
-The v2 contract (docs/ISSUE39_SHED_GROUPS_V2.md, section 4) defines
+The v2 contract (docs/archive/issue/ISSUE39_SHED_GROUPS_V2.md, section 4) defines
 
     mass[i, j]     = sum_{e,q} w_eq * B_i(y_eq) * B_j(y_eq)
     integrals[e,i] = sum_q     w_eq * B_i(y_eq)

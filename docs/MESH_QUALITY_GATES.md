@@ -30,7 +30,7 @@
 
 ## 本轮真实验证状态与下一步
 
-这套 panel.mesh_quality_gate 纯 NumPy 核心已经实际执行 pytest -q test/test_mesh_quality_gate.py：**17 passed**；它覆盖几何、非流形边、角度/增长拒绝、计数预算、非法参数、输入不改。当前云端**没有安装 Gmsh**，因此新的 cad_half.py CLI 接线、实际提交文件的旧无flag回归及真网格拒绝路径仍需本地重新运行。
+这套 panel.mesh_quality_gate 纯 NumPy 核心已经实际执行 pytest -q test/test_mesh_quality_gate.py：**17 passed**；它覆盖几何、非流形边、角度/增长拒绝、计数预算、非法参数、输入不改。当前环境**没有安装 Gmsh**（2026-11-03 复核：本机仍无 Gmsh），因此新的 cad_half.py CLI 接线、实际提交文件的旧无flag回归及真网格拒绝路径仍需本地重新运行。
 
 本地 agent 应在独立 worktree 验证：
 1. 旧无 flag 椭圆翼 size 0.100；无门禁时输出新增字段为零；在相同本机环境下不要求网格坐标/SHA 位相等（此前已证实 Gmsh 并非逐位确定）。

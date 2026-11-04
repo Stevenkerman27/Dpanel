@@ -6,7 +6,7 @@ carry a truncation row whose link is tens of chords long while its panels stay
 short; capping such a node at a quarter of that link (6.5 chord on the G2 CAD
 wake) accepts a displacement that deforms the sheet far beyond the area/fold
 gate, which is what the map-unit experiment measured
-(docs/ISSUE84_STREAMLINE_STEP_UNIT.md).  The link is therefore reported for
+(docs/archive/issue/ISSUE84_STREAMLINE_STEP_UNIT.md).  The link is therefore reported for
 diagnostics and truncation marking, never used as the cap.
 """
 import numpy as np

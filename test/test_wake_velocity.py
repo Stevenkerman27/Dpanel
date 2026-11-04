@@ -9,7 +9,7 @@ The kernel has to be checkable against quantities that were not derived from it:
 * the analytic vortex-sheet jump condition  jump = gamma x n
 
 Every tolerance below is a measured number, not a guess (see
-docs/ISSUE65_PHASE_A_WAKE_VELOCITY.md for the recorded values).
+docs/archive/issue/ISSUE65_PHASE_A_WAKE_VELOCITY.md for the recorded values).
 """
 import numpy as np
 import pytest

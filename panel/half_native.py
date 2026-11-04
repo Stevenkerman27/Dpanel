@@ -151,8 +151,6 @@ def prepare_half_topology(vertices, faces, wake_faces, te_edges, upper_te,
                 or up[k] == lo[k]):
             raise ValueError("TE upper/lower banks must share a real wake-attached edge")
     wake_tri = x[w]
-    if np.ptp(wake_tri[:, :, 2]) > tol:
-        raise ValueError("Only a constant-z planar wake is supported")
     wake_an = np.cross(wake_tri[:, 1]-wake_tri[:, 0],
                        wake_tri[:, 2]-wake_tri[:, 0])
     if np.any(wake_an[:, 2] <= 0):
@@ -212,8 +210,9 @@ def validate_half_configuration(vertices, station_y, topology,
     if (np.any(tri[:, :, 1].mean(axis=1) <= tol)
             or np.any(wake[:, :, 1].mean(axis=1) <= tol)):
         raise ValueError("Half-model triangles cross or lie on symmetry plane")
-    if np.ptp(wake[:, :, 2]) > tol:
-        raise ValueError("Half-model wake is not planar")
+    wake_cross = np.cross(wake[:, 1]-wake[:, 0], wake[:, 2]-wake[:, 0])
+    if np.any(wake_cross[:, 2] <= 0):
+        raise ValueError("Half-model wake must stay a +z graph sheet")
     cross = np.cross(tri[:, 1]-tri[:, 0], tri[:, 2]-tri[:, 0])
     if np.any(np.linalg.norm(cross, axis=1) <= 0):
         raise ValueError("Degenerate wall triangles")

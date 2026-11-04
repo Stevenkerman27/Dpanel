@@ -227,3 +227,41 @@ def test_agrees_with_production_in_the_smooth_far_field():
     fan = area_velocity(tri[None], gamma, point, core, order=24, strips=4)
     rel = np.linalg.norm(fan - production) / np.linalg.norm(production)
     assert rel < 1e-6, rel
+
+def _direct_area_terms(triangles, point, core, *, order, strips):
+    """Per-face Duffy sum written the long way, as the oracle for the fast kernel."""
+    u, v, w = _duffy_nodes(order)
+    point = np.asarray(point, float)
+    total = np.zeros((len(triangles), 3))
+    for f, tri in enumerate(np.asarray(triangles, float)):
+        piece, _meta = projection_fan(tri, point, strips=strips)
+        a2 = _sub_area2(piece)
+        for s in range(len(piece)):
+            q, b, c = piece[s]
+            source = q + u[:, None] * (b - q) + (u * v)[:, None] * (c - b)
+            r = point - source
+            den = (np.einsum("qi,qi->q", r, r) + core * core) ** 1.5
+            total[f] += a2[s] * np.einsum("q,qi->i", w, r / den[:, None])
+    return total
+
+
+@pytest.mark.parametrize("order,strips", [(8, 1), (8, 3), (16, 2)])
+def test_kernel_agrees_with_a_per_face_reference(order, strips):
+    """The in-place kernel and reduceat accumulation are a rearrangement, not a change."""
+    rng = np.random.default_rng(11)
+    tris = rng.normal(size=(3, 3, 3)) * 0.05
+    point = np.array([0.3, -0.2, 0.4])
+    got = area_terms(tris, point, 0.01, order=order, strips=strips)
+    ref = _direct_area_terms(tris, point, 0.01, order=order, strips=strips)
+    assert np.linalg.norm(got - ref) <= 1e-12 * np.linalg.norm(ref)
+
+
+def test_kernel_is_invariant_to_the_face_chunk():
+    rng = np.random.default_rng(13)
+    tris = rng.normal(size=(9, 3, 3)) * 0.05
+    point = np.array([-0.2, 0.1, 0.35])
+    base = area_terms(tris, point, 0.02, order=12, strips=2, face_chunk=64)
+    for chunk in (1, 2, 5):
+        got = area_terms(tris, point, 0.02, order=12, strips=2, face_chunk=chunk)
+        assert np.linalg.norm(got - base) <= 1e-15 * np.linalg.norm(base), chunk
+

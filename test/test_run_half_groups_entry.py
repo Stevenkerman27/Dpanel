@@ -3,7 +3,7 @@
 These tests drive panel.run_half_groups rather than the library API: they assert
 that the entry point reports reproducible hashes, real exit codes, the block
 structure [[D, W1..WG], [-T_g, M_g]] and the small-fixture battery F0-F8 as
-published in docs/ISSUE39_SHED_GROUPS_V2.md.
+published in docs/archive/issue/ISSUE39_SHED_GROUPS_V2.md.
 """
 import json
 from pathlib import Path
@@ -17,7 +17,7 @@ from panel.run_half_groups import (SCHEMA, code_manifest, groups_from_spec,
                                    single_group_from_surface)
 
 
-SCRATCH = Path(__file__).resolve().parents[1] / "runs" / "group_entry_tests"
+SCRATCH = Path(__file__).resolve().parents[1] / "runs" / "scratch" / "test_outputs" / "group_entry_tests"
 
 
 def _scratch(name):
@@ -32,7 +32,7 @@ def _scratch(name):
 def battery():
     # Deliberately not tmp_path_factory: the sandbox denies enumerating a
     # pytest-of-* root that already exists, which broke module-scoped fixtures.
-    out_dir = Path(__file__).resolve().parents[1] / "runs" / "group_entry_selfcheck"
+    out_dir = Path(__file__).resolve().parents[1] / "runs" / "scratch" / "test_outputs" / "group_entry_selfcheck"
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / "selfcheck.json"
     report = self_check(out, shift=0.4)

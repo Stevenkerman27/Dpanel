@@ -1,9 +1,9 @@
 ﻿"""Build the issue-49 VSPAERO evidence package (tables + file hashes).
 
 Reads:
-  runs/vsp_conv/vlm_lX/{trap.polar,trap.vspgeom}   (DEP-OPT-path ladder runs)
-  runs/vsp_conv/evidence/lX/{trap.vspaero,trap.tec.dat,stdout.log,run.txt}
-  runs/vsp_conv/dp_s0XX/{case.json,mesh/surface.json}
+  runs/benchmarks/vsp_convergence/vlm_lX/{trap.polar,trap.vspgeom}   (DEP-OPT-path ladder runs)
+  runs/benchmarks/vsp_convergence/evidence/lX/{trap.vspaero,trap.tec.dat,stdout.log,run.txt}
+  runs/benchmarks/vsp_convergence/dp_s0XX/{case.json,mesh/surface.json}
 Writes docs/issue49_vspaero/{levels.json,sha256.json,sections.json,summary.md}
 """
 from __future__ import annotations
@@ -193,11 +193,11 @@ def main():
     files = []
     for rel in ["cases/vsp/trap.vsp3", "cases/vsp/trap.vspgeom", "cases/vsp/trap.vkey",
                 "cases/vsp/trap.vspaero",
-                "runs/vsp_conv/cad_trap/wing.step",
-                "runs/vsp_conv/cad_trap/trailing_edge.json",
-                "runs/vsp_conv/cad_trap/geometry.json",
-                "runs/vsp_conv/dep_vsp.py", "runs/vsp_conv/dpanel_case.py",
-                "runs/vsp_conv/analyze.py", "runs/vsp_conv/evidence_build.py"]:
+                "runs/benchmarks/vsp_convergence/cad_trap/wing.step",
+                "runs/benchmarks/vsp_convergence/cad_trap/trailing_edge.json",
+                "runs/benchmarks/vsp_convergence/cad_trap/geometry.json",
+                "runs/benchmarks/vsp_convergence/dep_vsp.py", "runs/benchmarks/vsp_convergence/dpanel_case.py",
+                "runs/benchmarks/vsp_convergence/analyze.py", "runs/benchmarks/vsp_convergence/evidence_build.py"]:
         p = ROOT / rel
         if p.exists():
             files.append(dict(path=rel, bytes=p.stat().st_size, sha256=sha256(p)))
@@ -208,7 +208,7 @@ def main():
                     "evidence/%s/stdout.log" % tag]:
             p = VSP / rel
             if p.exists():
-                files.append(dict(path="runs/vsp_conv/" + rel, bytes=p.stat().st_size,
+                files.append(dict(path="runs/benchmarks/vsp_convergence/" + rel, bytes=p.stat().st_size,
                                   sha256=sha256(p)))
 
     (OUT / "levels.json").write_text(json.dumps(levels, indent=1), encoding="utf-8")

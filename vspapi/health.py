@@ -18,7 +18,7 @@ Two failure modes are cheap to detect and very expensive to miss:
    `CDo` contains an additive term in inviscid VLM runs, so `CDtot` and `L/D`
    are meaningless; `CLi` must be consistent with `CLwtot`.
 
-`docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` has the full evidence.
+`docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` has the full evidence.
 """
 
 from __future__ import annotations

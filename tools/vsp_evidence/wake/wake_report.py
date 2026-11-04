@@ -1,4 +1,4 @@
-"""Render docs/ISSUE49_WAKE_SENSITIVITY.md from the VSPAERO wake sweep JSONs."""
+"""Render docs/archive/issue/ISSUE49_WAKE_SENSITIVITY.md from the VSPAERO wake sweep JSONs."""
 import json
 from pathlib import Path
 
@@ -6,7 +6,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 RES = HERE / "wakesweep" / "results.json"
 REF = HERE / "wakesweep" / "results_ref.json"
-OUT = ROOT / "docs" / "ISSUE49_WAKE_SENSITIVITY.md"
+OUT = ROOT / "docs" / "../../../docs/archive/issue/ISSUE49_WAKE_SENSITIVITY.md"
 
 
 def pct(new, old):
@@ -34,12 +34,12 @@ def main():
     a("")
     a("## 设置")
     a("")
-    a("- 网格与几何：`runs/vsp_conv/api_355_panel`（OpenVSP 3.55 厚面元，12996 个面元，梯形翼 trap，Sref 0.30 / Cref 0.15 / Bref 2.0）。")
+    a("- 网格与几何：`runs/benchmarks/vsp_convergence/api_355_panel`（OpenVSP 3.55 厚面元，12996 个面元，梯形翼 trap，Sref 0.30 / Cref 0.15 / Bref 2.0）。")
     a("  所有扫描复用同一份 `trap.vspgeom` + `trap.vkey` 字节副本，只重写 `trap.vspaero` 的尾迹字段。")
     a("- 求解器：`D:/3D/Projects/OpenVSP-3.55.0-win64/vspaero.exe -omp 32 trap`（`NCPU` 字段无效，只有命令行 `-omp` 生效）。")
     a("- 迎角 5 度，其余（Vinf=100、Rho=0.002377、ReCref=1e7、Mach=0）逐字节沿用模板。")
     a("- 模板是 GUI 风格设置：`NumWakeNodes = 8`、`WakeIters = 5`、`WakeRelax = 1`、`FarDistToggle = 1`、`FarDist = -1`、`FreezeWakeAtIteration = 10000`。")
-    a("- 脚本：`runs/vsp_conv/wake_sweep.py`（主扫描）、`runs/vsp_conv/wake_ref.py`（参照与远场档）、`runs/vsp_conv/wake_report.py`（生成本文）。")
+    a("- 脚本：`runs/benchmarks/vsp_convergence/wake_sweep.py`（主扫描）、`runs/benchmarks/vsp_convergence/wake_ref.py`（参照与远场档）、`runs/benchmarks/vsp_convergence/wake_report.py`（生成本文）。")
     a("")
     if "ref_gui" in rb:
         g = rb["ref_gui"]
@@ -84,7 +84,7 @@ def main():
     if len(rl) == 4:
         a("- 松弛因子 0.2 / 0.5 / 1.0 的 CLtot 为 %.6f / %.6f / %.6f，跨度只有 %.2f%%：**在 nodes 32 上 relax 不是敏感项**。" % (
             rl[0]["CLtot"], rl[1]["CLtot"], rl[2]["CLtot"], abs(pct(rl[2]["CLtot"], rl[0]["CLtot"]))))
-        a("- 需要修正早先的记录：`docs/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` 的「relax = 1 会发散」是在**粗网格 + nodes 8** 上观察的；在 12996 面、nodes 32 上")
+        a("- 需要修正早先的记录：`docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md` 的「relax = 1 会发散」是在**粗网格 + nodes 8** 上观察的；在 12996 面、nodes 32 上")
         a("  relax = 1 给出 %.6f（比 relax = 0.5 低 %.2f%%），并未发散。该结论不能外推。" % (rl[2]["CLtot"], abs(pct(rl[2]["CLtot"], rl[1]["CLtot"]))))
         a("- 冻结尾迹（`FreezeWakeAtIteration = 1`）给 %.6f，比迭代尾迹高 %+.2f%%。" % (rl[3]["CLtot"], pct(rl[3]["CLtot"], rl[1]["CLtot"])))
     a("")
@@ -118,7 +118,7 @@ def main():
     a("")
     a("## 6. 归档")
     a("")
-    a("- 原始读数：`runs/vsp_conv/wakesweep/results.json`、`results_ref.json`；每档一个目录（`trap.vspaero`、`trap.polar`、`stdout.log`）")
+    a("- 原始读数：`runs/benchmarks/vsp_convergence/wakesweep/results.json`、`results_ref.json`；每档一个目录（`trap.vspaero`、`trap.polar`、`stdout.log`）")
     a("- 脚本：`tools/vsp_evidence/wake/{wake_sweep.py,wake_ref.py,wake_report.py}`")
     a("- 文档：本文件由 `wake_report.py` 从 JSON 生成（只读，不重解）")
     a("")

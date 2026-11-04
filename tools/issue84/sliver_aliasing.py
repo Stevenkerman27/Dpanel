@@ -1,6 +1,6 @@
 """Item C3 follow-up: the near-sheet aliasing source is sliver triangles, not *distance*.
 
-Earlier (docs/ISSUE84_RM_BENCH.md section 3) I reported that no single quadrature
+Earlier (docs/archive/issue/ISSUE84_RM_BENCH.md section 3) I reported that no single quadrature
 order converges near the sheet and that order 32 is the worst.  Re-measuring per
 part shows the effect is owned by a handful of 520:1 sliver triangles in the
 main-wing wake sheet (edges 0.05 / 26.0 / 26.0).  For them the fixed
@@ -19,8 +19,8 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(os.environ.get("PANEL_ROOT", Path.cwd()))
-sys.path.insert(0, str(ROOT / "runs/pr85_git"))
+ROOT = Path(os.environ.get("PANEL_ROOT", Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(ROOT))
 
 import numpy as np
 
@@ -87,10 +87,10 @@ def bisected_contribution(tri, point, tol, sub_order=8, core=CORE):
 
 
 def main():
-    mesh, alpha = build_case([str(ROOT / "runs/half_cad_wingbody_v1/surface.json")])
+    mesh, alpha = build_case([str(ROOT / "runs/cases/wingbody/half_cad_wingbody_v1/surface.json")])
     operators = assemble_multi(mesh)
     state = dict(solve_multi(mesh, alpha, kutta="pressure", operators=operators))
-    snap = np.load(str(ROOT / "runs/issue84/g2_ref/iteration_000.npz"))
+    snap = np.load(str(ROOT / "runs/studies/rm_bench/g2_ref/iteration_000.npz"))
     state["mu"] = snap["mu"]
     state["gamma"] = snap["gamma"]
     field = TotalVelocity(mesh, state, method="rm_regularized_p1", core_radius=CORE)

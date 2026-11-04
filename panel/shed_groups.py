@@ -1,7 +1,7 @@
 """Right-half multi-shed-group (v2) assembly, validation and dense reference solve.
 
 This module implements Step B of the v2 contract in
-`docs/ISSUE39_SHED_GROUPS_V2.md`: several independent lifting trailing edges,
+`docs/archive/issue/ISSUE39_SHED_GROUPS_V2.md`: several independent lifting trailing edges,
 each with its own finite horizontal wake, its own circulation stations and its
 own weak Kutta/mass rows, coupled only through the wall doublet intensity.
 
@@ -225,12 +225,14 @@ def validate_shed_groups(vertices, wall_faces, component_ids, groups, *,
             if pair in seen_edges:
                 raise ValueError("Duplicate shed edge across groups")
             seen_edges[pair] = g.group_id
-        wake_z = x[w][:, :, 2]
-        if float(np.ptp(wake_z)) > tol:
-            raise ValueError("Only horizontal constant-z wakes are supported in v2")
-        z0 = float(wake_z.mean())
-        if g.wake_z is not None and abs(float(g.wake_z) - z0) > tol:
-            raise ValueError("Group wake is not planar at its declared origin_z")
+        # A dihedral group wake leaves the TE at the local trailing-edge height
+        # and stays level downstream, so it is no longer one constant-z sheet;
+        # origin_z only pins wakes that still are planar.
+        wake_zs = x[w][:, :, 2]
+        z0 = float(wake_zs.mean())
+        if (g.wake_z is not None and float(np.ptp(wake_zs)) <= tol
+                and abs(float(g.wake_z) - z0) > tol):
+            raise ValueError("Planar group wake is not at its declared origin_z")
         cross = np.cross(x[w][:, 1] - x[w][:, 0], x[w][:, 2] - x[w][:, 0])
         if np.any(cross[:, 2] <= 0):
             raise ValueError("Group wake triangles must have +z normals")

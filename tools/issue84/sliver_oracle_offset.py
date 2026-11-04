@@ -19,7 +19,7 @@ from tools.issue84.wake_node_rejection import build_case
 from tools.issue84.sliver_subdivision import (reference_integral, area_velocity_split,
                                               point_triangle_distance)
 
-SURFACE = "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"
+SURFACE = "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"
 BASE = np.array([22.333, 0.238, 0.0])
 CORE = 0.01
 
@@ -67,6 +67,6 @@ for offset in (0.0, 0.01, 0.05, 0.2):
              abs(record["fan"]["48"]["norm"] - record["fan"]["96"]["norm"])
              / record["fan"]["96"]["norm"]), flush=True)
 
-Path("runs/issue84/oracle_offset.json").write_text(json.dumps(dict(rows=rows), indent=2),
+Path("runs/studies/rm_bench/oracle_offset.json").write_text(json.dumps(dict(rows=rows), indent=2),
                                                    encoding="utf-8")
-print("wrote runs/issue84/oracle_offset.json")
+print("wrote runs/studies/rm_bench/oracle_offset.json")

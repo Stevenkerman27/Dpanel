@@ -181,7 +181,7 @@
     "g1_swept30": {
       "status": "ok",
       "meta": {
-        "source": "D:/3D/Projects/panel/runs/fix_master/cases/geom_robust/surfaces/swept30_s075/surface.json",
+        "source": "cases/geom_robust/surfaces/swept30_s075/surface.json",
         "source_sha256": "5155468398265f82fbd0e91299b1f313af2f14c54fba4e5b8702e353dded8a72",
         "kind": "wing",
         "alpha_deg": 5.0,
@@ -214,7 +214,7 @@
     "g1_elliptic": {
       "status": "ok",
       "meta": {
-        "source": "D:/3D/Projects/panel/runs/fix_master/cases/geom_robust/surfaces/elliptic_s075/surface.json",
+        "source": "cases/geom_robust/surfaces/elliptic_s075/surface.json",
         "source_sha256": "310ddab41dbde522a28b1f1884b3547be5e05d4d4b6b22b533882a20534d7018",
         "kind": "wing",
         "alpha_deg": 5.0,
@@ -247,7 +247,7 @@
     "g1_wingbody_cad": {
       "status": "ok",
       "meta": {
-        "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json",
+        "source": "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json",
         "source_sha256": "d04e439cddb2a80ff9d376257ed9a57d5613f538e111a0ba97f3fbb5f6405d5a",
         "kind": "wing",
         "alpha_deg": 5.0,
@@ -280,7 +280,7 @@
     "g1_wingbody_cad_3x": {
       "status": "ok",
       "meta": {
-        "source": "D:/3D/Projects/panel/runs/half_cad_wingbody_3x/surface.json",
+        "source": "D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_3x/surface.json",
         "source_sha256": "034c216906e6f13b7a38f878ffa065f62dd6638e8f9198dc49d300bacec0a846",
         "kind": "wing",
         "alpha_deg": 5.0,

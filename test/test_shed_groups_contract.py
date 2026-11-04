@@ -216,12 +216,23 @@ def test_f5_contract_rejections():
     with pytest.raises(ValueError, match="Shed group role contradicts"):
         validate_shed_groups(vertices, faces, component_ids, [contradictory],
                              component_roles={int(tags[0]): "non_lifting"})
-    # Tilted wake is not representable
+    # A wake sheet shifted off its declared height is still rejected while planar.
+    lifted = vertices.copy()
+    lifted[np.asarray(raw["wake_faces"]), 2] += 0.01
+    with pytest.raises(ValueError, match="not at its declared origin_z"):
+        validate_shed_groups(lifted, faces, component_ids, [g0, g1])
+    # A tilted wake is representable as long as it stays a +z graph: a dihedral
+    # group wake leaves the TE at the local TE height, so it is not one
+    # constant-z sheet; origin_z only pins wakes that are still planar.
     tilt = vertices.copy()
-    tilt[np.asarray(raw["wake_faces"]), 2] += 0.01
-    with pytest.raises(ValueError,
-                       match="Only horizontal constant-z wakes|not planar at its declared"):
-        validate_shed_groups(tilt, faces, component_ids, [g0, g1])
+    wake_faces = np.asarray(raw["wake_faces"])
+    tilt[wake_faces, 2] += 0.01 * tilt[wake_faces, 1]
+    validate_shed_groups(tilt, faces, component_ids, [g0, g1])
+    # ... but a wake sheet wound the other way faces -z and is not a graph.
+    reversed_wake = _group(raw, 0, 0, 0.0, "a")
+    reversed_wake.wake_faces = np.asarray(raw["wake_faces"], dtype=np.int32)[:, ::-1]
+    with pytest.raises(ValueError, match=r"\+z normals"):
+        validate_shed_groups(vertices, faces, component_ids, [reversed_wake])
     # Shed edge must be shared by the group wake
     off = _group(raw, 0, 0, 0.0, "a")
     off.wake_faces = np.asarray(raw["wake_faces"], dtype=np.int32)[[0]] + n

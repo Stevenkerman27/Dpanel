@@ -126,11 +126,11 @@ def builders():
         return _wing_arrays(wing), dict(meta, kind="wing", alpha_deg=5., kutta="pressure")
 
     def g1_wingbody_cad():
-        wing, meta = _half_surface("runs/half_cad_wingbody_v1/surface.json")
+        wing, meta = _half_surface("runs/cases/wingbody/half_cad_wingbody_v1/surface.json")
         return _wing_arrays(wing), dict(meta, kind="wing", alpha_deg=5., kutta="pressure")
 
     def g1_wingbody_cad_3x():
-        wing, meta = _half_surface("runs/half_cad_wingbody_3x/surface.json")
+        wing, meta = _half_surface("runs/cases/wingbody/half_cad_wingbody_3x/surface.json")
         return _wing_arrays(wing), dict(meta, kind="wing", alpha_deg=5., kutta="pressure")
 
     return {

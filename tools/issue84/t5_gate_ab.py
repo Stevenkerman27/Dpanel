@@ -18,7 +18,7 @@ import numpy as np
 import panel.p1_coupled_material_wake as m
 from tools.issue84.wake_node_rejection import build_case
 
-SURFACE = ["D:/3D/Projects/panel/runs/half_cad_wingbody_v1/surface.json"]
+SURFACE = ["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"]
 ITERATIONS = int(sys.argv[2]) if len(sys.argv) > 2 else 6
 OUT = Path(sys.argv[3] if len(sys.argv) > 3 else "docs/issue84/t5_gate_ab.json")
 CONDITION = sys.argv[1] if len(sys.argv) > 1 else "new_gate_per_node"
