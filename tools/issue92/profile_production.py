@@ -117,10 +117,33 @@ def _fingerprint(result):
     return out
 
 
+def _resolve_source(value):
+    """Resolve a fixture source that may carry a stale absolute checkout prefix.
+
+    Phase 0 was measured inside the runs/fix_master worktree, so several manifest
+    entries still name D:/3D/Projects/panel/runs/fix_master/... . The same files
+    live in this checkout, so fall back to the longest suffix below cases/ or
+    runs/ before failing.
+    """
+    path = Path(value)
+    if path.exists():
+        return path
+    text = str(value).replace("\\", "/")
+    for marker in ("cases/", "runs/"):
+        index = text.find(marker)
+        if index < 0:
+            continue
+        try:
+            return fixtures._first_existing(text[index:])
+        except FileNotFoundError:
+            continue
+    raise FileNotFoundError("fixture source does not exist in this checkout: %s" % value)
+
+
 def _wing_object(name, entry):
     meta = entry["meta"]
     if "source" in meta:
-        return from_dpanel_half_surface(Path(meta["source"]))
+        return from_dpanel_half_surface(_resolve_source(meta["source"]))
     return make_wing(chord_panels=meta["chord_panels"], span_panels=meta["span_panels"],
                      thickness=meta["thickness"], camber=meta["camber"],
                      span=meta["span"], chord=meta["chord"],

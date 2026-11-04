@@ -181,7 +181,7 @@
     "g1_swept30": {
       "status": "ok",
       "meta": {
-        "source": "D:/3D/Projects/panel/runs/fix_master/cases/geom_robust/surfaces/swept30_s075/surface.json",
+        "source": "cases/geom_robust/surfaces/swept30_s075/surface.json",
         "source_sha256": "5155468398265f82fbd0e91299b1f313af2f14c54fba4e5b8702e353dded8a72",
         "kind": "wing",
         "alpha_deg": 5.0,
@@ -214,7 +214,7 @@
     "g1_elliptic": {
       "status": "ok",
       "meta": {
-        "source": "D:/3D/Projects/panel/runs/fix_master/cases/geom_robust/surfaces/elliptic_s075/surface.json",
+        "source": "cases/geom_robust/surfaces/elliptic_s075/surface.json",
         "source_sha256": "310ddab41dbde522a28b1f1884b3547be5e05d4d4b6b22b533882a20534d7018",
         "kind": "wing",
         "alpha_deg": 5.0,
