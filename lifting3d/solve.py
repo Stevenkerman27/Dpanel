@@ -53,7 +53,7 @@ try:
     result["mesh_sha256"] = hashlib.sha256(args.mesh.read_bytes()).hexdigest()
     raw = np.load(args.mesh)
     metadata = json.loads(args.mesh.with_name("mesh.json").read_text())
-    cad_mesh = metadata.get("geometry_family") == "imported_cad_planar_te"
+    cad_mesh = metadata.get("geometry_family") in ("imported_cad_planar_te", "imported_cad_3d_te")
     assert np.issubdtype(raw["boundary_tags"].dtype, np.integer) and np.isin(
         raw["boundary_tags"], [10, 20, 30, 100]).all(), "Physical boundary tags must be integers in {10,20,30,100}"
     for key in ["cut_upper_nodes", "cut_lower_nodes", "te_upper_nodes", "te_lower_nodes"]:
