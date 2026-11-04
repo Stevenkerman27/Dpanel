@@ -7,6 +7,7 @@ import sys
 import numpy as np
 import root_wake
 import cad_basis
+import cad_contact
 
 root = Path(__file__).resolve().parent
 sys.path.insert(0, str(root.parent/"volume"))
