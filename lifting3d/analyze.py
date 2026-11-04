@@ -62,7 +62,7 @@ wp, wc, wv, ww = coordinates[wall], cp[wall], normal_velocity[wall], weight[wall
 span = metadata["span"]
 origin = np.array(metadata.get("normalization_origin", [0., 0., 0.]))
 local_wp = wp-origin
-if metadata.get("geometry_family") == "imported_cad_planar_te":
+if metadata.get("geometry_family") in ("imported_cad_planar_te", "imported_cad_3d_te"):
     tip_y = mesh["gamma_stations"][[0, -1]]
     region = np.full(wc.shape, "surface", dtype="<U12")
     tip_distance = np.minimum(abs(wp[:, :, 1]-tip_y[0]), abs(wp[:, :, 1]-tip_y[1]))

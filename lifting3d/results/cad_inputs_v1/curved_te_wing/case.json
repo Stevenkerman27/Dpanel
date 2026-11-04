@@ -1,0 +1,11 @@
+{
+  "family": "curved_te_wing",
+  "volume": 0.3249581640173528,
+  "sections": 9,
+  "points_per_section": 41,
+  "amplitude": 0.25,
+  "half_span": 2.0,
+  "thickness": 0.12,
+  "te_points": 9,
+  "source": "lifting3d/make_curved_te_wing.py"
+}
