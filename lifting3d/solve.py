@@ -14,6 +14,7 @@ from threadpoolctl import threadpool_limits
 import schur
 import root_wake
 import cad_basis
+import cad_contact
 
 root = Path(__file__).resolve().parent
 sys.path.insert(0, str(root.parent/"volume"))
@@ -81,9 +82,9 @@ try:
         te_polyline = (raw["trailing_edge_points"]-normalization_origin)/physical_length
         assert te_polyline.ndim == 2 and te_polyline.shape[1] == 3 and len(te_polyline) >= 2
         assert np.isfinite(te_polyline).all() and np.all(np.diff(te_polyline[:, 1]) > 0.)
-        assert np.max(abs(te_polyline[:, 2])) < 1e-12, "Imported CAD currently requires a planar TE"
+        assert np.all(np.linalg.norm(np.diff(te_polyline, axis=0), axis=1) > 0.)
         assert args.kutta == "weak", "Imported CAD requires the topological-bank weak Kutta formulation"
-        result["scope"] = "Imported closed CAD, declared planar piecewise-linear TE, full-volume topological wake cut; validation in progress"
+        result["scope"] = "Imported closed CAD, declared 3-D piecewise-linear TE, full-volume topological wake cut; validation in progress"
     reference_area = metadata["reference_area"]/physical_length**2
     assert np.isfinite(reference_area) and reference_area > 0., "Reference area must be finite and positive"
     assert np.isfinite(metadata["span"]) and metadata["span"] > 0., "Span must be finite and positive"
@@ -183,9 +184,7 @@ try:
             corners = face[:3]
             span = metadata["span"]/physical_length
             if cad_mesh:
-                local_te = np.interp(points[corners, 1], te_polyline[:, 1], te_polyline[:, 0])
-                on_te = ((abs(points[corners, 0]-local_te) < te_match_tolerance)
-                         & (abs(points[corners, 2]) < te_match_tolerance)
+                on_te = ((cad_contact._te_distance(points[corners], te_polyline) < te_match_tolerance)
                          & (points[corners, 1] >= stations[0]-1e-12)
                          & (points[corners, 1] <= stations[-1]+1e-12))
             else:
