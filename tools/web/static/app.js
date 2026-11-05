@@ -4,7 +4,7 @@ const el = (id) => document.getElementById(id);
 const state = {
   schema: [], bodySchema: [], bodyDefaults: {},
   parts: [], selected: 0,
-  build: null, result: null, jobId: null,
+  build: null, result: null, mesh: null, meshLoading: false, jobId: null,
   tab: 'geom', busy: false, dirty: true, poll: null,
 };
 
@@ -99,7 +99,12 @@ function updateHint() {
   const hint = el('viewHint');
   if (state.busy) hint.textContent = '计算中…';
   else if (state.tab === 'geom') hint.textContent = '左键旋转 · 滚轮缩放';
-  else hint.textContent = state.result && state.result.field ? 'Cp 云图 · 半域镜像显示' : '先求解一次';
+  else if (state.tab === 'mesh') {
+    if (!state.mesh) hint.textContent = '尚无计算网格';
+    else if (state.dirty || state.mesh.size !== Number(el('size').value) ||
+             state.mesh.alpha !== Number(el('alpha').value)) hint.textContent = '网格参数已变化，请重新生成';
+    else hint.textContent = '壁面 ' + state.mesh.faces.length + ' 面板 · 尾迹 ' + state.mesh.wake_panels + ' 面板';
+  } else hint.textContent = state.result && state.result.field ? 'Cp 云图 · 半域镜像显示' : '先求解一次';
 }
 
 /* ---------------- viewer ---------------- */
@@ -114,18 +119,35 @@ function fitScene(scene) {
   const vertices = scene.vertices;
   const lo = [Infinity, Infinity, Infinity];
   const hi = [-Infinity, -Infinity, -Infinity];
+  const used = scene.fitFacesOnly ? new Array(vertices.length).fill(false) : null;
+  if (used) {
+    for (let i = 0; i < scene.faces.length; i += 1) {
+      for (let k = 0; k < scene.faces[i].length; k += 1) used[scene.faces[i][k]] = true;
+    }
+  }
   for (let i = 0; i < vertices.length; i += 1) {
+    if (used && !used[i]) continue;
     for (let k = 0; k < 3; k += 1) {
       if (vertices[i][k] < lo[k]) lo[k] = vertices[i][k];
       if (vertices[i][k] > hi[k]) hi[k] = vertices[i][k];
+      if (scene.mirror && k === 1) {
+        if (-vertices[i][k] < lo[k]) lo[k] = -vertices[i][k];
+        if (-vertices[i][k] > hi[k]) hi[k] = -vertices[i][k];
+      }
     }
   }
   const center = [0.5 * (lo[0] + hi[0]), 0.5 * (lo[1] + hi[1]), 0.5 * (lo[2] + hi[2])];
   let radius = 1e-6;
   for (let i = 0; i < vertices.length; i += 1) {
+    if (used && !used[i]) continue;
     const d = Math.hypot(vertices[i][0] - center[0], vertices[i][1] - center[1],
                          vertices[i][2] - center[2]);
     if (d > radius) radius = d;
+    if (scene.mirror) {
+      const mirroredDistance = Math.hypot(vertices[i][0] - center[0], -vertices[i][1] - center[1],
+                                          vertices[i][2] - center[2]);
+      if (mirroredDistance > radius) radius = mirroredDistance;
+    }
   }
   viewFit.center = center;
   viewFit.radius = radius;
@@ -172,7 +194,7 @@ window.addEventListener('mouseup', () => { dragging = null; });
 window.addEventListener('mousemove', (event) => {
   if (!dragging) return;
   cam.yaw += (event.clientX - dragging.x) * 0.01;
-  cam.pitch = Math.max(-1.45, Math.min(1.45, cam.pitch + (event.clientY - dragging.y) * 0.01));
+  cam.pitch = Math.max(-1.45, Math.min(1.45, cam.pitch - (event.clientY - dragging.y) * 0.01));
   dragging = { x: event.clientX, y: event.clientY };
   draw();
 });
@@ -222,11 +244,16 @@ function sceneGeometry() {
   if (!state.build || !state.build.mesh) return null;
   return { vertices: state.build.mesh.vertices, faces: state.build.mesh.faces, mode: 'plain', mirror: false };
 }
+function sceneMesh() {
+  if (!state.mesh) return null;
+  return { vertices: state.mesh.coordinates, faces: state.mesh.faces,
+           mode: 'mesh', mirror: true, fitFacesOnly: true };
+}
 function sceneField() {
   const field = state.result && state.result.field;
   if (!field || !field.cp || !field.cp.length) return null;
   return { vertices: field.vertices, faces: field.faces, cp: field.cp,
-           wake: field.wake_faces || [], mode: 'cp', mirror: true };
+           wake: field.wake_faces || [], mode: 'cp', mirror: true, fitFacesOnly: true };
 }
 
 function draw() {
@@ -235,9 +262,15 @@ function draw() {
   const width = view.width / ratio, height = view.height / ratio;
   ctx.fillStyle = '#0d1116';
   ctx.fillRect(0, 0, width, height);
-  const scene = state.tab === 'result' ? (sceneField() || sceneGeometry()) : sceneGeometry();
+  let scene = sceneGeometry();
+  if (state.tab === 'mesh') scene = sceneMesh();
+  if (state.tab === 'result') scene = sceneField() || sceneGeometry();
   el('viewEmpty').style.display = scene ? 'none' : 'flex';
-  if (!scene) { drawAxes(width, height); return; }
+  if (!scene) {
+    el('viewEmpty').textContent = state.tab === 'mesh' ? '点击「生成网格」' : '先点「生成几何」';
+    drawAxes(width, height);
+    return;
+  }
   const key = state.tab + '|' + (state.build ? state.build.job : '') + '|' + scene.mode + '|' + scene.vertices.length;
   if (viewFit.key !== key) { fitScene(scene); viewFit.key = key; }
   renderScene(scene, width, height);
@@ -453,7 +486,7 @@ function drawPlot() {
 /* ---------------- build / solve ---------------- */
 function setBusy(value) {
   state.busy = value;
-  ['build', 'solve', 'addWing', 'addBody', 'delPart'].forEach((id) => { el(id).disabled = value; });
+  ['build', 'mesh', 'solve', 'addWing', 'addBody', 'delPart'].forEach((id) => { el(id).disabled = value; });
   if (!value) {
     renderParts();
     el('addWing').disabled = state.parts.some((p) => p.kind === 'wing');
@@ -468,6 +501,7 @@ async function buildGeometry() {
     state.build = data;
     state.jobId = data.job;
     state.result = null;
+    state.mesh = null;
     state.dirty = false;
     renderResult();
     logLine('几何已生成：体积 ' + Number(data.step.volume).toFixed(4) + ' m³，' +
@@ -491,7 +525,7 @@ async function doBuild() {
   }
 }
 
-async function doSolve() {
+async function doMesh() {
   if (!state.parts.some((p) => p.kind === 'wing')) { logLine('[错误] 需要至少一个升力面'); return; }
   setBusy(true);
   try {
@@ -500,6 +534,34 @@ async function doSolve() {
       const ok = await buildGeometry();
       if (!ok) return;
     }
+    const body = {
+      job: state.jobId,
+      alpha: Number(el('alpha').value),
+      size: Number(el('size').value),
+    };
+    state.result = null;
+    state.mesh = null;
+    renderResult();
+    clearLog();
+    logLine('网格生成中：尺寸=' + body.size + ' m，迎角=' + body.alpha + '°');
+    await api('/api/mesh', body);
+    await pollMesh();
+  } catch (error) {
+    logLine('[错误] ' + error.message);
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function doSolve() {
+  if (!state.parts.some((p) => p.kind === 'wing')) { logLine('[错误] 需要至少一个升力面'); return; }
+  if (!state.mesh || state.dirty || state.mesh.size !== Number(el('size').value) ||
+      state.mesh.alpha !== Number(el('alpha').value)) {
+    logLine('[错误] 请先为当前几何、网格尺寸和迎角生成网格');
+    return;
+  }
+  setBusy(true);
+  try {
     const body = {
       job: state.jobId,
       alpha: Number(el('alpha').value),
@@ -519,7 +581,7 @@ async function doSolve() {
   }
 }
 
-function pollJob() {
+function pollMesh() {
   return new Promise((resolve) => {
     const tick = async () => {
       let data;
@@ -531,11 +593,11 @@ function pollJob() {
         return;
       }
       renderLog(data.log || []);
-      if (data.state === 'done') {
-        state.result = data.result;
-        state.tab = 'result';
-        document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'result'));
-        renderResult();
+      if (data.state === 'meshed') {
+        await loadMesh();
+        state.tab = 'mesh';
+        document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'mesh'));
+        updateHint();
         draw();
         resolve();
         return;
@@ -549,6 +611,55 @@ function pollJob() {
     };
     tick();
   });
+}
+
+function pollJob() {
+  return new Promise((resolve) => {
+    const tick = async () => {
+      let data;
+      try {
+        data = await api('/api/job?id=' + encodeURIComponent(state.jobId));
+      } catch (error) {
+        logLine('[错误] ' + error.message);
+        resolve();
+        return;
+      }
+      renderLog(data.log || []);
+      if (data.state === 'done') {
+        if (!state.mesh) await loadMesh();
+        state.result = data.result;
+        state.tab = 'result';
+        document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'result'));
+        renderResult();
+        draw();
+        resolve();
+        return;
+      }
+      if (data.state === 'solving' && !state.mesh) await loadMesh();
+      if (data.state === 'error' || data.state === 'cancelled') {
+        if (!state.mesh) await loadMesh();
+        logLine(data.error || '已取消');
+        resolve();
+        return;
+      }
+      setTimeout(tick, 700);
+    };
+    tick();
+  });
+}
+
+async function loadMesh() {
+  if (!state.jobId || state.meshLoading) return;
+  state.meshLoading = true;
+  try {
+    state.mesh = await api('/api/mesh?id=' + encodeURIComponent(state.jobId));
+    draw();
+    updateHint();
+  } catch (error) {
+    state.meshError = error.message;
+  } finally {
+    state.meshLoading = false;
+  }
 }
 
 let logCache = [];
@@ -574,6 +685,7 @@ document.querySelectorAll('.tab').forEach((button) => {
   button.addEventListener('click', () => {
     state.tab = button.dataset.tab;
     document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b === button));
+    if (state.tab === 'mesh' && !state.mesh) loadMesh();
     updateHint();
     draw();
   });
@@ -590,8 +702,10 @@ el('delPart').addEventListener('click', () => {
   renderParts(); renderEditor(); markDirty();
 });
 el('build').addEventListener('click', () => doBuild());
+el('mesh').addEventListener('click', () => doMesh());
 el('solve').addEventListener('click', () => doSolve());
 el('cancel').addEventListener('click', () => doCancel());
+['alpha', 'size'].forEach((id) => el(id).addEventListener('input', updateHint));
 
 async function boot() {
   try {

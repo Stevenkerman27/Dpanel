@@ -95,7 +95,25 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._send(200, dict(id=job.run_dir.name, state=job.state, error=job.error,
                                  log=job.log, result=job.result,
-                                 build=job.build, elapsed=time.time() - job.started))
+                                 build=job.build, mesh_info=job.mesh_info,
+                                 mesh_options=job.mesh_options,
+                                 elapsed=time.time() - job.started))
+            return
+        if path == "/api/mesh":
+            job = _job(parse_qs(parsed.query).get("id", [""])[0])
+            if job is None:
+                self._send(404, {"error": "unknown job"})
+                return
+            surface = job.run_dir / "mesh" / "surface.json"
+            if not surface.is_file():
+                self._send(404, {"error": "mesh not ready"})
+                return
+            data = json.loads(surface.read_text(encoding="utf-8"))
+            self._send(200, dict(coordinates=data.get("coordinates") or [],
+                                 faces=data.get("faces") or [],
+                                 wake_panels=len(data.get("wake_faces") or []),
+                                 size=(job.mesh_options or {}).get("size"),
+                                 alpha=(job.mesh_options or {}).get("alpha")))
             return
         self._send(404, {"error": "not found: " + path})
 
@@ -115,7 +133,7 @@ class Handler(BaseHTTPRequestHandler):
                     JOBS[job.run_dir.name] = job
                 self._send(200, dict(job=job.run_dir.name, **payload))
                 return
-            if path == "/api/solve":
+            if path == "/api/mesh":
                 job = _job(str(body.get("job", "")))
                 if job is None:
                     self._send(404, {"error": "unknown job"})
@@ -124,7 +142,32 @@ class Handler(BaseHTTPRequestHandler):
                     self._send(409, {"error": "job already running"})
                     return
                 job.cancel.clear()
+                job.error = None
                 job.state = "meshing"
+                thread = threading.Thread(target=pipeline.run_mesh, args=(job, body), daemon=True)
+                thread.start()
+                self._send(200, dict(job=job.run_dir.name, state=job.state))
+                return
+            if path == "/api/solve":
+                job = _job(str(body.get("job", "")))
+                if job is None:
+                    self._send(404, {"error": "unknown job"})
+                    return
+                if job.state in ("meshing", "solving"):
+                    self._send(409, {"error": "job already running"})
+                    return
+                requested_size = float(body.get("size", 0.3))
+                requested_alpha = float(body.get("alpha", 4.0))
+                if not job.mesh_info or not job.mesh_options:
+                    self._send(409, {"error": "请先生成计算网格"})
+                    return
+                if (job.mesh_options.get("size") != requested_size or
+                        job.mesh_options.get("alpha") != requested_alpha):
+                    self._send(409, {"error": "网格尺寸或迎角已变化，请重新生成网格"})
+                    return
+                job.cancel.clear()
+                job.error = None
+                job.state = "solving"
                 thread = threading.Thread(target=pipeline.run_job, args=(job, body), daemon=True)
                 thread.start()
                 self._send(200, dict(job=job.run_dir.name, state=job.state))

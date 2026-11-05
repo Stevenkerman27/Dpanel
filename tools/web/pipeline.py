@@ -30,6 +30,8 @@ class Job:
         self.log = []
         self.state = "built"
         self.result = None
+        self.mesh_info = None
+        self.mesh_options = None
         self.error = None
         self.build = None
         self.cancel = threading.Event()
@@ -297,17 +299,56 @@ def solve(job, surface, wake, alpha, iterations, reference, attempts=6):
                        % (attempts, last, _exit_text(last), CRASH_HINT))
 
 
+def run_mesh(job, options):
+    """Generate and save the solver mesh without starting the solve."""
+    alpha = float(options.get("alpha", 4.0))
+    size = float(options.get("size", 0.3))
+    try:
+        job.mesh_info = None
+        job.mesh_options = None
+        job.result = None
+        job.state = "meshing"
+        _, mesh_info = mesh_surface(job, (job.build or {}).get("params") or
+                                    params_module.normalise({})[0], size, alpha)
+        job.check()
+        job.mesh_info = mesh_info
+        job.mesh_options = dict(size=size, alpha=alpha)
+        job.state = "meshed"
+        job.say("网格已生成，可以开始求解")
+    except Cancelled as exc:
+        job.state = "cancelled"
+        job.say(str(exc))
+    except Exception as exc:  # noqa: BLE001 - reported to the browser
+        job.state = "error"
+        job.error = "%s: %s" % (type(exc).__name__, exc)
+        if "Non-manifold" in str(exc):
+            job.error += "（网格过粗或展向站数过少：请减小网格尺寸或增加展向站数后重试）"
+        job.say(job.error)
+        (job.run_dir / "error.txt").write_text(traceback.format_exc(), encoding="utf-8")
+    finally:
+        job.finished = time.time()
+        if job.proc is not None:
+            try:
+                job.proc.kill()
+            except Exception:
+                pass
+            job.proc = None
+
+
 def run_job(job, options):
-    """Mesh and solve; called on a worker thread."""
+    """Solve using the previously generated mesh."""
     alpha = float(options.get("alpha", 4.0))
     wake = str(options.get("wake", "fixed"))
     device = str(options.get("device", "cpu"))
     size = float(options.get("size", 0.3))
     iterations = int(options.get("iterations", 12))
     try:
-        job.state = "meshing"
-        surface, mesh_info = mesh_surface(job, (job.build or {}).get("params") or
-                                          params_module.normalise({})[0], size, alpha)
+        surface = job.run_dir / "mesh" / "surface.json"
+        if not surface.is_file() or not job.mesh_info or not job.mesh_options:
+            raise ValueError("请先生成计算网格")
+        if job.mesh_options.get("size") != size or job.mesh_options.get("alpha") != alpha:
+            raise ValueError("网格尺寸或迎角已变化，请重新生成网格")
+        mesh_info = job.mesh_info
         job.check()
         job.state = "solving"
         reference = (job.build or {}).get("reference") or params_module.reference(

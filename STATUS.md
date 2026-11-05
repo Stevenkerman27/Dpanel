@@ -1,6 +1,6 @@
 # 项目状态
 
-更新：2026-11-04。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
+更新：2026-11-05。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
 
 ## 一句话
 
@@ -14,7 +14,7 @@ JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾
 - 测试基线（2026-11-04，`python -m pytest -q test -p no:cacheprovider`）：合并后 master 实测 `16 failed, 796 passed, 21 skipped`（184.05 s，`runs/scratch/master_verbose.out`）；合并树当时 `16 failed, 793 passed, 22 skipped`（177.97 s），dev 分支单独跑同为 `16 failed, 793 passed, 22 skipped` 且失败集合逐条相同 → 合并本身没有引入新失败。
 - 环境 flake（已知，未修）：全量跑两次都在第 ~36 个测试处崩 `Windows fatal exception: access violation`（exit 139，栈在 `jax/_src/interpreters/mlir.py` 的 `_create_ir_context`；更早的 master 上同一位置换成 `scipy.linalg.lstsq`）。同一命令第三次跑完，结果即上面的 796 passed。复现命令：`python -m pytest -v test -p no:cacheprovider > runs/scratch/master_verbose.out 2>&1`。
 - 16 个已知失败集中在：`test_torch_panel_bridge`（3）、`test_iterative_panel`（3）、`test_half_native_panel`（2）、`test_cad_half_groups_wake_sheet`（2）、CLI 快照类（`test_p1_closed_body`、`test_pressure_recovery_half_integration`、`test_pressure_region_budget`、`test_wake_velocity_methods`）、`test_half_mirror_oracle`、`test_differentiable_panel_fields`、`test_torch_half_lifting`。均为合并前既有失败，未修。
-- 浏览器工作台（改参数→建体→网格→求解，`python -m tools.web.server --port 8811`）见 [tools/web/README.md](tools/web/README.md)。它只包装现有求解器；自由尾迹塌陷缺陷在工作台里以黄色警告呈现。
+- 浏览器工作台（改参数→建体→独立生成网格→独立求解，`python -m tools.web.server --port 8811`）见 [tools/web/README.md](tools/web/README.md)。2026-11-05 验证：`node --check tools/web/static/app.js`、`C:/Users/zyx20/anaconda3/envs/myml/python.exe -m py_compile tools/web/server.py tools/web/pipeline.py`；本地 API 顺序 `POST /api/build` → `POST /api/mesh` → `GET /api/job` → `GET /api/mesh` 实测默认网格 204 壁面 + 242 尾迹面板，未先生成网格及尺寸不匹配的求解请求均返回 HTTP 409。完整求解未执行。它只包装现有求解器；自由尾迹塌陷缺陷在工作台里以黄色警告呈现。
 - P1 单翼与多组已合并成一个内核（2026-11-04）：`p1_lifting_g1.solve` 现在是 `solve_multi(combine_wings([wing]))` 的适配器，旧的单翼 torch 核 `p1_solve_torch.solve_single_torch` 已删除。合并前实测单组与旧路径 CL 差 3e-14、Γ 差 5e-14。
 - 上反角支持（`dihedral_deg` ±20°，2026-11-04 随 #109 进 master）：后缘不再要求 z=0，尾迹是后缘沿 x 拉伸出的 +z 图面；求解层 5 处“水平尾迹”断言放宽为“+z 图面”，`panel/kernel.py` 的线性环量项补了 `n_y` 修正（旧的 +z 假设在 20° 时把线性项放大 13 倍，216 个旋转算例对求积的最大误差 3.3e-6）。实测 0/5/10/20°：CL +0.428/+0.457/+0.461/+0.439，CD 0.0095/0.0102/0.0120/0.0102；平面路径逐位不变（新旧差 1.4e-16）。物理精度未验收。
 - P1 自由尾迹审计（PR #110，`panel/p1_steady_free_wake.py:wake_material_graph_audit`）：每次迭代前记录前驱图（直连边中位数/最大值、最长链、环与 x 回折计数），纯诊断、不改物理。它回答“26 弦直连边 vs 28 弦累计路径”这类问题；26 弦直连边的根因仍未定。
