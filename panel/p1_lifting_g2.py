@@ -37,6 +37,7 @@ class LiftingGroup:
     contact_gamma_hat: object = None
     trace_audit: object = None
     te_face_pairs: object = None
+    wake_attachment_nodes: object = None
 
 
 @dataclass(frozen=True)
@@ -87,12 +88,27 @@ def combine_wings(wings: Sequence[Wing], *, origins=None, names=None,
         te_y=np.asarray(wing.te_pair_y,float)+origin[1]
         match=np.argmin(abs(te_line[:,1,None]-te_y[None,:]),axis=0)
         te_xyz=te_line[match]
+        # Carry declared TE geometric-node identity into separate wake numbering.
+        # This is topology metadata, not an inference from predecessor graph roots.
+        te_nodes=np.asarray(wing.te_geo,int)
+        te_points=xyz[te_nodes]
+        wake_points=np.asarray(wing.wake_xyz,float)+origin
+        attachment_nodes=[]
+        match_tol=1e-10*max(1.,float(wing.chord))
+        for point in te_points:
+            distance=np.linalg.norm(wake_points-point,axis=1)
+            node=int(np.argmin(distance))
+            if distance[node] > match_tol:
+                raise ValueError(f"{name}: declared TE node has no coincident wake attachment")
+            if node in attachment_nodes:
+                raise ValueError(f"{name}: duplicate wake node maps to multiple TE nodes")
+            attachment_nodes.append(node)
         groups.append(LiftingGroup(
             name=str(name),face_ids=np.arange(face_offset,face_offset+len(faces)),
             te_pairs=np.asarray(wing.te_pairs,int)+dof_offset,
             te_xyz=te_xyz,
             te_pair_y=np.asarray(wing.te_pair_y,float)+origin[1],
-            wake_xyz=np.asarray(wing.wake_xyz,float)+origin,
+            wake_xyz=wake_points,
             wake_faces=np.asarray(wing.wake_faces,int),
             gamma_y=np.asarray(wing.gamma_y,float)+origin[1],
             gamma_hat=np.asarray(wing.gamma_hat,float),
@@ -102,7 +118,8 @@ def combine_wings(wings: Sequence[Wing], *, origins=None, names=None,
             contact_gamma_hat=wing.contact_gamma_hat,trace_audit=wing.trace_audit,
             te_face_pairs=(None if wing.te_face_pairs is None else tuple(
                 (np.asarray(a,int)+face_offset,np.asarray(b,int)+face_offset)
-                for a,b in wing.te_face_pairs))))
+                for a,b in wing.te_face_pairs)),
+            wake_attachment_nodes=np.asarray(attachment_nodes,int)))
         node_offset+=len(xyz);dof_offset+=int(wing.ndof_mu);face_offset+=len(faces)
     if reference_area is None:
         reference_area=sum(g.reference_area for g in groups)
