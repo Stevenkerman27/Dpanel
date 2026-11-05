@@ -37,6 +37,7 @@ class WakeMaterial:
     predecessor: np.ndarray
     reference_xyz: np.ndarray
     panel_area: np.ndarray
+    attachments: np.ndarray
 
 
 def _wake_mesh(g: LiftingGroup) -> Mesh:
@@ -98,9 +99,19 @@ def prepare_wake_material(g: LiftingGroup) -> WakeMaterial:
             k=int(pred[k])
         else:
             raise ValueError(f'{g.name}: cyclic or invalid wake predecessor path')
+    declared=getattr(g,"wake_attachment_nodes",None)
+    if declared is None:
+        # Compatibility for hand-built legacy groups; combine_wings supplies
+        # explicit declared TE-node correspondence on production paths.
+        attachments=roots.copy()
+    else:
+        attachments=np.asarray(declared,int).reshape(-1)
+        if len(np.unique(attachments)) != len(attachments) or not np.isin(attachments,used).all():
+            raise ValueError(f"{g.name}: invalid declared wake attachment node map")
     return WakeMaterial(g.name,used,roots,used[np.argsort(ref[used,0])],pred,
                         ref,np.linalg.norm(np.cross(ref[f[:,1]]-ref[f[:,0]],
-                                                    ref[f[:,2]]-ref[f[:,0]]),axis=1)/2)
+                                                    ref[f[:,2]]-ref[f[:,0]]),axis=1)/2,
+                        attachments)
 
 
 def wake_material_graph_audit(material: WakeMaterial) -> dict:
@@ -300,37 +311,45 @@ def _node_velocities(g, face_velocity):
 
 
 def _one_wake_target(g, mat, vel, *, min_axial=0.08, freeze=False):
-    """Streamline-march frozen x-stations, including spanwise drift and rollup.
+    """Integrate transverse velocity drift over frozen material x stations.
 
-    Returns (target, frozen_nodes). A node whose upstream axial speed falls below
-    min_axial cannot be marched in x. With freeze=True it is held at its current
-    position and reported; with freeze=False this is an error, because silently
-    marching through a stagnation point would fabricate a streamline.
+    The predecessor graph supplies an upstream integration path only. Its
+    lateral edge offset is never interpreted as streamline displacement:
+    each node retains its own reference (y,z), and integrated drift is
+    accumulated separately. Explicit TE attachments and path roots are fixed.
     """
     current=np.asarray(g.wake_xyz,float)
-    target=current.copy()
     original=mat.reference_xyz
+    velocity=np.asarray(vel,float)
+    if velocity.shape != original.shape or not np.isfinite(velocity).all():
+        raise ValueError(f'{g.name}: invalid wake-node velocity field')
+    target=original.copy()
+    drift=np.zeros_like(original)
     frozen=[]
+    attachment_mask=np.zeros(len(original),bool)
+    attachment_mask[np.asarray(mat.attachments,int)]=True
     for node in mat.order:
+        node=int(node)
         predecessor=int(mat.predecessor[node])
-        if predecessor<0:
-            # True TE/attached row (based on ORIGINAL wake connectivity).
+        if attachment_mask[node] or predecessor<0:
+            drift[node]=0.
             target[node]=original[node]
             continue
-        v0=vel[predecessor];v1=vel[node]
+        v0=velocity[predecessor];v1=velocity[node]
         if min(v0[0],v1[0])<min_axial:
             if not freeze:
                 raise ValueError(f'{g.name}: wake streamwise marching requires Vx>0; '
                                  'reverse flow needs pseudo-time propagation')
-            frozen.append(int(node))
+            frozen.append(node)
+            drift[node]=np.zeros(3)
             target[node]=current[node]
             continue
         dx=original[node,0]-original[predecessor,0]
-        target[node,0]=original[node,0]
-        target[node,1:]=target[predecessor,1:]+0.5*dx*(
+        drift[node]=drift[predecessor]+0.5*dx*(
             v0[1:]/v0[0]+v1[1:]/v1[0])
+        target[node,0]=original[node,0]
+        target[node,1:]=original[node,1:]+drift[node]
     return target,frozen
-
 
 def with_wake_xyz(mesh: MultiLiftingMesh, wake_coordinates: dict[str,np.ndarray]):
     """Update wake coordinates ONLY; preserve material gamma_hat, wall, TE and faces."""
