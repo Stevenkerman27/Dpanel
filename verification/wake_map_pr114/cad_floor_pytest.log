@@ -1,0 +1,29 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+___________________ test_cad_fixture_floor_stop_is_accepted ___________________
+
+    def test_cad_fixture_floor_stop_is_accepted():
+        import os
+        from pathlib import Path
+        from panel.p1_lifting_g1 import make_wing, from_dpanel_half_surface
+        from panel.p1_lifting_g2 import combine_wings, solve_multi
+        root = Path(os.environ.get('PANEL_ROOT', Path(__file__).resolve().parents[1]))
+        fixture = root / CAD
+        if not fixture.is_file():
+            pytest.skip('CAD fixture absent: ' + str(fixture))
+        main = from_dpanel_half_surface(fixture)
+        tail = make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55, camber=0.,
+                         wake_panels=3)
+        mesh = combine_wings([main, tail], names=['main_wing', 'raised_tail'],
+                             origins=[(0., 0., 0.), (1.6, 0., .35)],
+                             reference_chord=main.chord, reference_point=main.reference_point)
+        state = solve_multi(mesh, 5., kutta='pressure', max_nfev=80)
+        nl = state['nonlinear']
+        assert nl['success'] is True
+>       assert nl['accepted_at_residual_floor'] is True
+E       assert False is True
+
+test\test_p1_lifting_g2_pressure_floor.py:138: AssertionError
+=========================== short test summary info ===========================
+FAILED test/test_p1_lifting_g2_pressure_floor.py::test_cad_fixture_floor_stop_is_accepted
+1 failed in 2.30s

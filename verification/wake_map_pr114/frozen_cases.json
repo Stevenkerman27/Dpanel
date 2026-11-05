@@ -1,0 +1,89 @@
+{
+  "head": "febedcca2d86e1ef2669c8776fcdc93f66d1760f",
+  "imported_solver": "D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "cases": {
+    "rect": {
+      "frozen_arrays_equal": true,
+      "declared_attachments": 7,
+      "graph_roots": 7,
+      "checks": {
+        "axial": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+        },
+        "oblique": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+        }
+      },
+      "replay": [
+        {
+          "iteration": 0,
+          "CL": 0.2561444508504888,
+          "max_gamma_difference": 0.0,
+          "max_cp_difference": 0.0,
+          "max_wake_difference": 0.0
+        }
+      ],
+      "first_step_completed": false,
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 71, in <module>\n    solved = wake.solve_steady_free_wake(mesh, 4., kutta=\"pressure\", iterations=1,\n                                        relaxation=.3, save_callback=save)\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 431, in solve_steady_free_wake\n    t,frozen_nodes=_one_wake_target(g,m,v,min_axial=min_axial,\n                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                                    freeze=frozen_guard)\n                                    ^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+    },
+    "swept30": {
+      "frozen_arrays_equal": true,
+      "declared_attachments": 63,
+      "graph_roots": 1,
+      "checks": {
+        "axial": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+        },
+        "oblique": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+        }
+      },
+      "replay": [
+        {
+          "iteration": 0,
+          "CL": 0.4035356379812883,
+          "max_gamma_difference": 0.0,
+          "max_cp_difference": 0.0,
+          "max_wake_difference": 0.0
+        }
+      ],
+      "first_step_completed": false,
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 71, in <module>\n    solved = wake.solve_steady_free_wake(mesh, 4., kutta=\"pressure\", iterations=1,\n                                        relaxation=.3, save_callback=save)\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 431, in solve_steady_free_wake\n    t,frozen_nodes=_one_wake_target(g,m,v,min_axial=min_axial,\n                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                                    freeze=frozen_guard)\n                                    ^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+    },
+    "elliptic": {
+      "frozen_arrays_equal": true,
+      "declared_attachments": 83,
+      "graph_roots": 2,
+      "checks": {
+        "axial": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+        },
+        "oblique": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+        }
+      },
+      "replay": [
+        {
+          "iteration": 0,
+          "CL": 0.2787569734348489,
+          "max_gamma_difference": 0.0,
+          "max_cp_difference": 0.0,
+          "max_wake_difference": 0.0
+        }
+      ],
+      "first_step_completed": false,
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 71, in <module>\n    solved = wake.solve_steady_free_wake(mesh, 4., kutta=\"pressure\", iterations=1,\n                                        relaxation=.3, save_callback=save)\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 431, in solve_steady_free_wake\n    t,frozen_nodes=_one_wake_target(g,m,v,min_axial=min_axial,\n                   ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                                    freeze=frozen_guard)\n                                    ^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\runs\\scratch\\wake_map_pr114\\panel\\p1_steady_free_wake.py\", line 348, in _one_wake_target\n    drift[node]=drift[predecessor]+0.5*dx*(\n                ~~~~~~~~~~~~~~~~~~^~~~~~~~~\n        v0[1:]/v0[0]+v1[1:]/v1[0])\n        ~~~~~~~~~~~~~~~~~~~~~~~~~~\nValueError: operands could not be broadcast together with shapes (3,) (2,) \n"
+    }
+  },
+  "physical_accuracy_accepted": false,
+  "seconds": 94.96479344367981,
+  "status": "blocked"
+}
