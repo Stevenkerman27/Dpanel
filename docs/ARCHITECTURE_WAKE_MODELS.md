@@ -179,6 +179,77 @@ python -m tools.material_graph_audit --case g2 --surface runs/cases/wingbody/hal
 局部日志与 T5 原始结果在 `runs/studies/wake_material_graph/g2_t5/`，
 启动日志在 `runs/scratch/g2_t5_material_graph.log`。算法、几何门槛和默认更新策略未改。
 
+## 10. B3 尾迹位置、离散与根部约束实验
+
+issue #113 的受控实验使用 `solve_steady_free_wake` 的 B3 单翼路径，
+不是 §9 的 G2 T5 耦合 material-wake 路径。实验流程使用
+ARS-Codex `experiment-agent` 的 run 模式，实际数值证据由本机脚本生成，
+不包含跨模型评审或物理精度验收。
+
+输入由 `docs/issue92/b3_cases.json` 的原 CAD 文件和矩形翼参数构建。
+冻结全部壁面、初始尾迹、P1 Gamma 基函数、参考量及 pressure-Kutta 设置；
+`initial_state.npz` 与逐轮快照记录输入和状态哈希。自由尾迹迭代 0
+采用 pressure-Kutta，不能与历史表中的 signed-speed 固定尾迹 CL 混用。
+三个 pressure 初值分别为 rect `0.256144450850491`、
+swept30 `0.403535637981266`、elliptic `0.278756973432855`。
+
+脚本和单项复现命令如下，均在仓库根目录使用唯一的 myml Python，
+设置 `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`：
+
+```powershell
+python -m tools.wake_sensitivity_baseline --case swept30 --iterations 60 --out runs/verification/issue102_wake_sensitivity
+python -m tools.wake_position_study --phase e1 --case swept30 --out runs/verification/issue102_wake_sensitivity
+python -m tools.wake_intervention_study --phase e2 --case swept30 --variant length_5 --iterations 8 --out runs/verification/issue102_wake_sensitivity
+python -m tools.wake_intervention_study --phase e3 --case swept30 --variant freeze_1 --iterations 60 --out runs/verification/issue102_wake_sensitivity
+python -m tools.wake_position_study --phase e4 --case swept30 --out runs/verification/issue102_wake_sensitivity
+python -m tools.wake_sensitivity_audit --case swept30 --out runs/verification/issue102_wake_sensitivity
+python -m tools.wake_sensitivity_report --out runs/verification/issue102_wake_sensitivity
+```
+
+基线和干预脚本拒绝覆盖冻结输入或已有历史。复算应指定另一个功能输出目录，
+或先保留失败尝试；不能覆盖失败来得到“全通过”。多算例的剩余队列由
+`tools.wake_sensitivity_queue` 管理，子进程并发上限为 8，单任务超时 7200 s。
+`queue.json` 记录实际命令、PID、退出码与超时；`*_error.log` 保留错误。
+路径中的 issue102 是 #113 明确要求的证据目录名，属于此实验的兼容例外。
+
+E1 将真实壁面重合的后缘定义为 attachment；网格边 BFS 的第 1 行、
+第 1–3 行和第 4 行及以后分别作为 first-free、near-TE 和 downstream。
+这些集合不等于按 x 选择前驱得到的 graph roots。每次扰动从同一冻结状态
+开始，只改变尾迹坐标；A/J/K/grad 复用，只重装 W。中心差分以
+`epsilon/chord` 为自变量，同时报告对称中心偏移，以发现非线性响应。
+固定流向探针和初次自由更新方向都按该区域的最大节点位移归一化。
+
+E2 在 `x=max(初始 attachment x)+L*c` 处截断有限 P1 面片，
+交点沿原面片线性插值 Gamma hats，公共近尾迹及 Gamma 自由度不变；
+截面之后不附加延拓，不调用 `boundary` 策略。流向和展向分别选择投影最长边，
+作一次符合共享边的中点细分，P1 基函数精确继承。非结构三角形的斜边同时
+带 x/y 分量，因此必须同时读取 dx/dy 分布；这不是纯张量网格的单轴细化证明。
+E2 只执行 8 次更新，用于比较初始失稳，不足以声称长时间收敛。
+
+E3 的 freeze_1/2/3 分别固定 BFS 第 0、0–1、0–2 行；
+smooth 使用 `smoothstep(row/3)` 位移权重。仍使用原 P1 势、Gamma、
+探针、原始目标、轴向保护与 0.3 松弛。每轮分别保存未松弛目标位移、
+实际位移、法向滑移、CL/Gamma 和几何检查；这些边界约束仅用于诊断。
+
+E4 捕获原 pressure-Kutta 求解使用的 QR 因子，
+测量加权壁面算子在 `null(J)` 上的谱，以及加入压力残差 Jacobian 后的谱。
+小于等于 256 列时才使用精确 SVD；其余通过 QR 三角求解配合
+Gram/逆 Gram 的 Lanczos 极值估计，同时保存特征对残差及 1 范数条件估计。
+不为该实验额外构造大型完整 Jacobian；谱估计不等于精确数值秩证明。
+
+几何审计使用六条真实线段/三角形相交测试、共面正面积重叠与闭合壁面的
+立体角 winding。只排除初始声明的公共后缘点/边接触，不放宽接触容差。
+最小全局壁面距离为零时，由仍与壁面重合的节点证明；另列非 attachment
+节点到壁面三角形的最小距离，不能把后者冒充全局最小距离。
+`e1_geometry_audit.json` 独立校正早期实验审计的误接触分类，
+原始数值结果及失败日志保留，复核不重新求解或替换 CL/Gamma。
+
+所有输出保持 `physical_accuracy_accepted=false`。原求解器的非线性
+success/stationary、jump/Kutta 残差、严格 `wall_over_floor<=1.05`
+检查分开报告；后掠翼的冻结 pressure 初值本身不满足最后一项。
+几何稳定、滑移收敛、内层收敛和物理精度不能互相替代。
+实验执行进度与阻塞只写根目录 `STATUS.md`。
+
 ## 附录：术语对照（测试契约用词）
 
 测试 `test/test_wake_velocity_methods.py::test_doc_page_covers_the_required_distinctions`
