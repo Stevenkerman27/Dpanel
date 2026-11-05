@@ -1,0 +1,8 @@
+rect e2 rect_96 iter=0 CL=0.256144451 raw=0.3923 step=0.1177 slip=4.565e-02 valid=True
+rect e2 rect_96 iter=1 CL=0.256270877 raw=0.2746 step=0.08239 slip=3.464e-02 valid=True
+rect e2 rect_96 iter=2 CL=0.256362036 raw=0.1922 step=0.05765 slip=2.742e-02 valid=True
+rect e2 rect_96 iter=3 CL=0.256426933 raw=0.1344 step=0.04033 slip=2.284e-02 valid=True
+rect e2 rect_96 iter=4 CL=0.256472740 raw=0.09404 step=0.02821 slip=2.005e-02 valid=True
+rect e2 rect_96 iter=5 CL=0.256504883 raw=0.0658 step=0.01974 slip=1.839e-02 valid=True
+rect e2 rect_96 iter=6 CL=0.256527347 raw=0.04605 step=0.01381 slip=1.741e-02 valid=True
+rect e2 rect_96 iter=7 CL=0.256543003 raw=0.03224 step=0.009671 slip=1.684e-02 valid=True

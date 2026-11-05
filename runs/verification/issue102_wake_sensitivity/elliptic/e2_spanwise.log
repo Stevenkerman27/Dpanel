@@ -1,0 +1,8 @@
+elliptic e2 spanwise iter=0 CL=0.278756973 raw=6.349 step=1.905 slip=5.515e-02 valid=True
+elliptic e2 spanwise iter=1 CL=0.085227645 raw=5.673 step=1.702 slip=9.569e-02 valid=False
+elliptic e2 spanwise iter=2 CL=0.074810608 raw=13 step=3.9 slip=1.051e-01 valid=False
+elliptic e2 spanwise iter=3 CL=0.071062954 raw=29.55 step=8.866 slip=1.771e-01 valid=False
+elliptic e2 spanwise iter=4 CL=0.068945297 raw=9.796 step=2.939 slip=3.090e-01 valid=False
+elliptic e2 spanwise iter=5 CL=0.067497596 raw=10.99 step=3.298 slip=6.995e-01 valid=False
+elliptic e2 spanwise iter=6 CL=0.066105674 raw=10.28 step=3.083 slip=1.113e+00 valid=False
+elliptic e2 spanwise iter=7 CL=0.065547940 raw=8.619 step=2.586 slip=4.982e+00 valid=False

@@ -1,0 +1,2 @@
+elliptic e3 freeze_1 iter=0 CL=0.278756973 raw=5.227 step=1.568 slip=5.294e-02 valid=True
+elliptic e3 freeze_1 iter=1 CL=0.239566406 raw=2.182 step=0.6547 slip=3.636e+00 valid=False

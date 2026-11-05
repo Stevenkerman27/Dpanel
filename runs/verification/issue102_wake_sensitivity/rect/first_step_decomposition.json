@@ -1,0 +1,280 @@
+{
+  "case": "rect",
+  "schema": "dpanel.wake_sensitivity.first_step.v1",
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_first_step_decomposition.py",
+    "--case",
+    "rect",
+    "--out",
+    "runs\\verification\\issue102_wake_sensitivity"
+  ],
+  "frozen_initial_state_sha256": "20141fa1103a80e2c9a5941a8e4139473251e704f6172c669f6d04b344550250",
+  "source_sha256": "7297b4c74c557d3ba9bf4f8cbe8f0439b922159735322215549e4e14af8773b3",
+  "attached_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "graph_root_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "rows": [
+    {
+      "CL": 0.256144450850496,
+      "CL_gamma": 0.22564372499286667,
+      "CM_y": 0.024581638527098465,
+      "wall_rms": 0.0020140693205220766,
+      "jump_rms": 9.930136612989092e-17,
+      "pressure_kutta_rms": 1.1973564307631297e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.00013105118434479692,
+        "optimality": 9.284111158894617e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 9.284073530302969e-12,
+        "gradient_relative": 2.535691219681732e-12,
+        "residual_norm": 0.01618957592679901,
+        "wall_rms": 0.0015297711281240965,
+        "wall_floor_rms": 0.0014724480069924816,
+        "wall_over_floor": 1.038930489130614,
+        "pressure_rms": 1.1973564307631297e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "name": "attachment_only",
+      "max_displacement_chord": 0.0,
+      "gamma": [
+        0.15843734817069827,
+        0.116799808876697,
+        0.1528311249673613,
+        0.16020569372039656,
+        0.0886571992434469
+      ],
+      "geometry": {
+        "min_area2": 1.6666666666666663,
+        "min_reference_signed_jacobian": 1.0,
+        "min_wake_wall_distance": 0.0,
+        "min_nonattachment_vertex_wall_distance": 2.5,
+        "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+        "attachment_max_displacement_chord": 0.0,
+        "attachment_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "prepared_root_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "violation_count": 0,
+        "violations": [],
+        "wall_closed": true,
+        "inside_wall_node_ids": [],
+        "new_inside_wall_node_ids": [],
+        "new_or_deeper_violation_count": 0,
+        "new_or_deeper_violations": [],
+        "pairs_tested": 136,
+        "tolerance": 1e-10,
+        "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+      },
+      "W_relative_change": 1.0754230367482393e-16
+    },
+    {
+      "CL": 0.2563074609374016,
+      "CL_gamma": 0.22571102625673084,
+      "CM_y": 0.024544867506088336,
+      "wall_rms": 0.0020134429607853014,
+      "jump_rms": 1.4043333874306804e-16,
+      "pressure_kutta_rms": 1.192362700813985e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.0001310129865618447,
+        "optimality": 8.778381016885661e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 8.778456789064991e-12,
+        "gradient_relative": 2.397161986987538e-12,
+        "residual_norm": 0.01618721634882571,
+        "wall_rms": 0.0015295481690055716,
+        "wall_floor_rms": 0.0014725089270295167,
+        "wall_over_floor": 1.0387360924806885,
+        "pressure_rms": 1.192362700813985e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "name": "free_only",
+      "max_displacement_chord": 0.12047431080965595,
+      "gamma": [
+        0.15862101515399368,
+        0.11677250383277415,
+        0.1527944418484508,
+        0.16040989037656644,
+        0.08853522755840745
+      ],
+      "geometry": {
+        "min_area2": 1.6650664850144496,
+        "min_reference_signed_jacobian": 0.9983010681285129,
+        "min_wake_wall_distance": 0.0,
+        "min_nonattachment_vertex_wall_distance": 2.5000500634012615,
+        "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+        "attachment_max_displacement_chord": 0.0,
+        "attachment_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "prepared_root_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "violation_count": 0,
+        "violations": [],
+        "wall_closed": true,
+        "inside_wall_node_ids": [],
+        "new_inside_wall_node_ids": [],
+        "new_or_deeper_violation_count": 0,
+        "new_or_deeper_violations": [],
+        "pairs_tested": 122,
+        "tolerance": 1e-10,
+        "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+      },
+      "W_relative_change": 0.1157743203274091
+    },
+    {
+      "CL": 0.2563074609374016,
+      "CL_gamma": 0.22571102625673084,
+      "CM_y": 0.024544867506088336,
+      "wall_rms": 0.0020134429607853014,
+      "jump_rms": 1.4043333874306804e-16,
+      "pressure_kutta_rms": 1.192362700813985e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.0001310129865618447,
+        "optimality": 8.778381016885661e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 8.778456789064991e-12,
+        "gradient_relative": 2.397161986987538e-12,
+        "residual_norm": 0.01618721634882571,
+        "wall_rms": 0.0015295481690055716,
+        "wall_floor_rms": 0.0014725089270295167,
+        "wall_over_floor": 1.0387360924806885,
+        "pressure_rms": 1.192362700813985e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "name": "all",
+      "max_displacement_chord": 0.12047431080965595,
+      "gamma": [
+        0.15862101515399368,
+        0.11677250383277415,
+        0.1527944418484508,
+        0.16040989037656644,
+        0.08853522755840745
+      ],
+      "geometry": {
+        "min_area2": 1.6650664850144496,
+        "min_reference_signed_jacobian": 0.9983010681285129,
+        "min_wake_wall_distance": 0.0,
+        "min_nonattachment_vertex_wall_distance": 2.5000500634012615,
+        "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+        "attachment_max_displacement_chord": 0.0,
+        "attachment_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "prepared_root_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "violation_count": 0,
+        "violations": [],
+        "wall_closed": true,
+        "inside_wall_node_ids": [],
+        "new_inside_wall_node_ids": [],
+        "new_or_deeper_violation_count": 0,
+        "new_or_deeper_violations": [],
+        "pairs_tested": 122,
+        "tolerance": 1e-10,
+        "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+      },
+      "W_relative_change": 0.1157743203274091
+    }
+  ],
+  "physical_accuracy_accepted": false,
+  "all_step_CL_difference": 0.0,
+  "status": "completed"
+}

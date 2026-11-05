@@ -197,6 +197,7 @@ swept30 `0.403535637981266`、elliptic `0.278756973432855`。
 设置 `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`：
 
 ```powershell
+python -m tools.wake_sensitivity_run --out runs/verification/wake_sensitivity_replay
 python -m tools.wake_sensitivity_baseline --case swept30 --iterations 60 --out runs/verification/issue102_wake_sensitivity
 python -m tools.wake_position_study --phase e1 --case swept30 --out runs/verification/issue102_wake_sensitivity
 python -m tools.wake_intervention_study --phase e2 --case swept30 --variant length_5 --iterations 8 --out runs/verification/issue102_wake_sensitivity
@@ -205,6 +206,12 @@ python -m tools.wake_position_study --phase e4 --case swept30 --out runs/verific
 python -m tools.wake_sensitivity_audit --case swept30 --out runs/verification/issue102_wake_sensitivity
 python -m tools.wake_sensitivity_report --out runs/verification/issue102_wake_sensitivity
 ```
+
+第一条为完整复现入口，要求一个不存在的新输出目录，自动启动三例基线、
+在首步冻结后优先启动 E1，再执行有并发上限和逐任务超时的 E2/E3/E4，
+最后独立复核、生成汇总和图。已有分阶段作业用 `--collect-only` 收集，
+不会重新启动数值队列。完整新目录的启动编排未在本轮重复执行；
+本轮实际命令、子进程退出码和收集模式由各 manifest、queue、driver 收据记录。
 
 基线和干预脚本拒绝覆盖冻结输入或已有历史。复算应指定另一个功能输出目录，
 或先保留失败尝试；不能覆盖失败来得到“全通过”。多算例的剩余队列由
@@ -249,6 +256,64 @@ success/stationary、jump/Kutta 残差、严格 `wall_over_floor<=1.05`
 检查分开报告；后掠翼的冻结 pressure 初值本身不满足最后一项。
 几何稳定、滑移收敛、内层收敛和物理精度不能互相替代。
 实验执行进度与阻塞只写根目录 `STATUS.md`。
+
+附加运动学零检验不解流场，直接给 `_one_wake_target` 输入均匀速度 `(1,0,0)`：
+
+```powershell
+python -m tools.wake_material_kinematics --out runs/verification/issue102_wake_sensitivity
+python -m tools.wake_first_step_decomposition --case swept30 --out runs/verification/issue102_wake_sensitivity
+```
+
+矩形翼此时目标位移严格为 0；后掠翼 65 个真实后缘节点中 64 个移动，
+未松弛最大位移 2c，椭圆翼则有 83/85 个移动、最大 attachment 位移同为 2c。
+原更新公式将任意网格前驱边当成流线段，仅以原 Δx 积分横向速度，
+遗漏原边横向偏移；只有 graph roots 固定，其他真实 attachment 也被积分。
+因此 CAD 平面参考尾迹连均匀轴向流的不动点检查也不满足。
+这是 B3 更新映射的直接运动学缺陷证据，不涉及 G2 T5 26c 边或 OpenBLAS。
+首步拆分是额外诊断，包含已翻转面片的状态，不能将其当成物理解或外推小扰动导数。
+矩形均匀流不动点测试通过；后掠控制以明确的 `xfail(strict=True)` 保留未修复的
+同一物理要求，未来修正时必须将其转为正常通过，不能把预期失败当作算法验收。
+均匀流的未松弛目标中，swept30 的 1110/1110、elliptic 的 1497/1528 个面片
+退化；矩形 0/24。这与实际采用 0.3 松弛的首步几何检查分开记录。
+
+## 11. 研究分支的方法与合并边界
+
+2026-11-05 对旧研究分支的审查以其远端提交为依据。提交历史不相同不代表
+功能一定缺失：`research/issue82-regularized-filament-induction` 的
+`panel/regularized_vortex_filament.py` 与主线逐字节相同；#92 的性能回执、
+移植映射和冻结数据已在本仓库。旧分支的历史源码可以从对应 Git 提交取回，
+不应把其旧目录结构整体覆盖当前树。
+
+- **#49，`5fec584`，对照与误差分离。** 冻结壁面、尾迹与参考量，
+  分别改变 Gamma 空间、网格和外部求解器尾迹参数；同时报告压力载荷、
+  环量载荷、远场诱导阻力与展向分布。外部求解器的设置敏感性和并行
+  不确定性不应被当作 DPanel 的误差或验证真值。后缘上下岸的声明是
+  拓扑约束，不能用后缘折线的相邻点猜配。既有数据和限制见
+  [Gamma 细化](archive/issue/ISSUE49_GAMMA_REFINEMENT.md)、
+  [VSPAERO 尾迹敏感性](archive/issue/ISSUE49_WAKE_SENSITIVITY.md)和
+  [后缘配对](archive/issue/ISSUE58_G1_TE_PAIRING_FIX.md)。
+- **#80，`1c615ca`，无核直涡丝 oracle。** 单条直线段的对称主值为零，
+  不等于弯曲涡丝的完整自诱导；在多边形细化时，相邻段的贡献可呈对数
+  增长。旧分支的独立直线段核未并入生产路径。未来若重新引入，应先用
+  独立线积分、方向/尺度不变性和闭环细化测试其奇异性约定，不能把常强度
+  涡丝求和直接替代 P1 面片的边界项与面内强度梯度项。
+- **#82，`ac875c0`，有限核涡丝。** Rosenhead-Moore 核半径是显式模型
+  长度，不是自动随网格变化的误差容差。固定正核半径时可比较多边形环与
+  连续环积分，并分别检查核半径敏感性；不同核模型的半径和自诱导常数
+  不可直接互换。该独立核已在主线，但尚未耦合 P1 尾迹，见
+  [原研究及验证](archive/issue/ISSUE82_REGULARIZED_FILAMENT_INDUCTION.md)。
+- **#92，`ce91e0a`，尾迹求值和后端。** 固定几何和采样点后分阶段测量，
+  把表示、积分误差、单次核性能与完整迭代性能分开；投影扇形只在明确的
+  近场/远场误差预算下替换求积，不因一次计时选择生产默认值。历史
+  fan/Duffy 对比、GPU 加速及混合后端结果属于当时机器与配置，不是当前
+  性能保证；旧版混合运行时访问冲突也不能直接外推到已热修的环境。
+  切换求解后端还必须验证秩阈值、停止条件、载荷、几何门禁和导数，
+  而不只比较数组。见 [求值器分析](archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md)、
+  [Torch 移植映射](ISSUE92_TORCH_PORT_MAP.md)和
+  [外部对照协议](ISSUE92_B3_VSPAERO_PROTOCOL.md)。
+
+这些审查保留方法及证据，不表示上述研究分支已逐提交合并，也不接受物理精度。
+尤其自由尾迹在真实 CAD 几何上的不动点与切向条件仍需独立修复、验证。
 
 ## 附录：术语对照（测试契约用词）
 

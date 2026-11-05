@@ -1,0 +1,35 @@
+started swept30/e2_length_5 pid=10564
+started swept30/e2_length_10 pid=8876
+started swept30/e2_length_20 pid=31448
+finished swept30/e2_length_5 exit=0 timeout=False
+finished swept30/e2_length_20 exit=0 timeout=False
+started swept30/e2_streamwise pid=26904
+started swept30/e2_spanwise pid=12836
+finished swept30/e2_length_10 exit=0 timeout=False
+started swept30/e3_freeze_3 pid=8380
+started swept30/e3_smooth pid=36304
+started elliptic/e3_freeze_2 pid=10128
+finished swept30/e2_streamwise exit=0 timeout=False
+started elliptic/e3_freeze_3 pid=39728
+finished swept30/e2_spanwise exit=0 timeout=False
+started elliptic/e3_smooth pid=41392
+started rect/e3_freeze_2 pid=11812
+finished rect/e3_freeze_2 exit=0 timeout=False
+started rect/e3_freeze_3 pid=35460
+started rect/e3_smooth pid=14024
+finished rect/e3_freeze_3 exit=0 timeout=False
+finished rect/e3_smooth exit=0 timeout=False
+started elliptic/e2_length_5 pid=32612
+started elliptic/e2_streamwise pid=35888
+started elliptic/e2_spanwise pid=38784
+finished swept30/e3_freeze_3 exit=0 timeout=False
+started elliptic/e4 pid=13656
+finished elliptic/e2_length_5 exit=0 timeout=False
+finished swept30/e3_smooth exit=0 timeout=False
+finished elliptic/e4 exit=0 timeout=False
+finished elliptic/e2_streamwise exit=0 timeout=False
+finished elliptic/e2_spanwise exit=0 timeout=False
+finished elliptic/e3_freeze_2 exit=0 timeout=False
+finished elliptic/e3_freeze_3 exit=0 timeout=False
+finished elliptic/e3_smooth exit=0 timeout=False
+queue complete

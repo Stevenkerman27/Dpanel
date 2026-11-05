@@ -1,0 +1,8 @@
+swept30 e2 length_10 iter=0 CL=0.403037522 raw=2.36 step=0.708 slip=4.695e-02 valid=False
+swept30 e2 length_10 iter=1 CL=0.130936510 raw=1.556 step=0.4668 slip=7.398e-02 valid=False
+swept30 e2 length_10 iter=2 CL=0.111959908 raw=1.127 step=0.3382 slip=6.751e-02 valid=False
+swept30 e2 length_10 iter=3 CL=0.104562707 raw=3.92 step=1.176 slip=1.666e-01 valid=False
+swept30 e2 length_10 iter=4 CL=0.100672046 raw=7.196 step=2.159 slip=2.166e-01 valid=False
+swept30 e2 length_10 iter=5 CL=0.098239343 raw=16.87 step=5.061 slip=6.750e-01 valid=False
+swept30 e2 length_10 iter=6 CL=0.096466439 raw=8.974 step=2.692 slip=1.788e+00 valid=False
+swept30 e2 length_10 iter=7 CL=0.094769548 raw=12.31 step=3.692 slip=4.978e+00 valid=False

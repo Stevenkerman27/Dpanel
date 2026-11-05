@@ -27,6 +27,10 @@ manifest = dict(schema="dpanel.wake_sensitivity.manifest.v1", issue=113,
                                  jax=jax.__version__, torch=torch.__version__,
                                  collector_blas=threadpool_info()),
                 physical_accuracy_accepted=False, cases={}, files={}, failures=[],
+                material_passport=dict(origin_skill="experiment-agent", mode="run", date="2026-11-05",
+                                       verification_status="UNVERIFIED", output_schema="exp_result_v1",
+                                       scope="physical accuracy; local numerical executions have separate receipts"),
+                source_provenance_note="Per-run source hashes identify actual instrumentation and audit revisions, including initially uncommitted scripts; head alone is not a claim of a clean experimental worktree.",
                 source_sha256={p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                                for p in sorted((root / "tools").glob("wake_*.py"))})
 collections = {phase: dict(schema="dpanel.wake_sensitivity."+phase+".collection.v1",
@@ -74,12 +78,36 @@ for case in cases:
                         geometry_audit=case+"/e1_geometry_audit.json" if audit else None,
                         derivatives=audit["derivatives"] if audit else result["derivatives"],
                         derivative_acceptance="corrected audit" if audit else "RAW AUDIT; DO NOT ACCEPT")
+            with np.load(folder/"initial_state.npz") as frozen:
+                xyz = frozen["state_wake_xyz"]
+            te = xyz[result["attachment_ids"]]
+            te = te[np.argsort(te[:, 1])]
+            dx = (xyz[:, 0]-np.interp(xyz[:, 1], te[:, 1], te[:, 0]))/baseline["spec"]["cref"]
+            item["region_local_TE_dx_chord_min_median_max"] = {
+                name: np.percentile(dx[ids], [0, 50, 100]).tolist()
+                for name, ids in result["regions"].items() if ids}
         else:
             item["rows"] = result["rows"]
+            audit_path = folder / "e1_geometry_audit.json"
+            position_audit = json.loads(audit_path.read_text(encoding="utf-8")) if audit_path.exists() else {}
+            position_geometry = {r["name"]: r["geometry"] for r in position_audit.get("rows", [])}
+            snapshot_geometry = {r["iteration"]: r["geometry"] for r in
+                                 (baseline_audit or {}).get("rows", [])}
             for row in item["rows"]:
                 if "wall_operator_unchanged" in row:
                     row["body_A_unchanged"] = row.pop("wall_operator_unchanged")
                     row["combined_wall_B_unchanged"] = False
+                quality = position_geometry.get(row["name"])
+                if row["name"] == "baseline":
+                    quality = position_audit.get("initial_geometry")
+                elif row["name"].startswith("baseline_iteration_"):
+                    quality = snapshot_geometry.get(int(row["name"].split("_")[-1]))
+                row["geometry"] = quality
+                row["geometry_audit_source"] = "saved matching E1 perturbation or baseline snapshot; no extra aerodynamic solve"
+                row["admissible"] = (None if quality is None else bool(
+                    row.get("inner_converged", False) and row.get("finite_gamma", False)
+                    and quality["min_area2"] > 0 and quality["min_reference_signed_jacobian"] > 0
+                    and quality["new_or_deeper_violation_count"] == 0))
         collections[phase]["cases"][case] = item
         if result.get("failures"):
             manifest["failures"].append(dict(path=case+"/"+filename, failed_solves=result["failures"]))
@@ -106,6 +134,14 @@ for case in cases:
                 "converged", "geometry_stable", "all_states_admissible", "command",
                 "attachment_ids", "prepared_root_ids", "row_ids", "constrained_ids", "error")}
             item["path"] = path.relative_to(out).as_posix()
+            with np.load(path.parent/"initial_mesh.npz") as initial:
+                xyz = initial["wake_xyz"]
+            te = xyz[result["attachment_ids"]]
+            te = te[np.argsort(te[:, 1])]
+            dx = (xyz[:, 0]-np.interp(xyz[:, 1], te[:, 1], te[:, 0]))/baseline["spec"]["cref"]
+            item["row_local_TE_dx_chord_min_median_max"] = {
+                row: np.percentile(dx[ids], [0, 50, 100]).tolist()
+                for row, ids in result["row_ids"].items() if ids}
             item["rows"] = []
             for r in result["rows"]:
                 quality = r["geometry"]
@@ -148,6 +184,8 @@ for path in sorted(out.rglob("*")):
 queue_path = out / "queue.json"
 queue = json.loads(queue_path.read_text(encoding="utf-8")) if queue_path.exists() else {}
 manifest["queue"] = queue
+manifest["process_failures"] = [r for r in queue.get("completed", [])
+                                 if r.get("exit_code", 0) != 0]
 kinematics = out / "uniform_axial_kinematics.json"
 if kinematics.exists():
     manifest["uniform_axial_kinematics"] = json.loads(kinematics.read_text(encoding="utf-8"))

@@ -2,10 +2,11 @@ from dataclasses import replace
 import json
 
 import numpy as np
+import pytest
 
 from panel.p1_lifting_g1 import make_wing
 from panel.p1_lifting_g2 import assemble_multi, combine_wings
-from panel.p1_steady_free_wake import with_wake_xyz
+from panel.p1_steady_free_wake import _one_wake_target, prepare_wake_material, with_wake_xyz
 from tools.wake_mesh_interventions import clip_wake, refine_wake
 from tools.wake_sensitivity_geometry import attachment_rows, audit_geometry, geometry_context
 
@@ -83,3 +84,24 @@ def test_directional_refinement_preserves_p1_potential_operator_and_orientation(
         operators = assemble_multi(changed)
         np.testing.assert_allclose(operators["W"], baseline["W"], atol=2e-14, rtol=1e-12)
         np.testing.assert_array_equal(operators["J"], baseline["J"])
+
+
+@pytest.mark.parametrize("sweep", [
+    0.,
+    pytest.param(.2, marks=pytest.mark.xfail(
+        strict=True, reason="Known B3 defect: mesh-edge marching loses reference transverse offsets and moves TE attachment")),
+])
+def test_uniform_axial_flow_preserves_the_flat_reference_wake(sweep):
+    wing = make_wing(chord_panels=3, span_panels=4, wake_panels=3)
+    wall, wake = wing.xyz.copy(), wing.wake_xyz.copy()
+    wall[:, 0] += sweep*abs(wall[:, 1])
+    wake[:, 0] += sweep*abs(wake[:, 1])
+    mesh = combine_wings([replace(wing, xyz=wall, wake_xyz=wake)])
+    group = mesh.groups[0]
+    material = prepare_wake_material(group)
+    velocity = np.zeros_like(group.wake_xyz)
+    velocity[:, 0] = 1.
+    target, frozen = _one_wake_target(group, material, velocity, min_axial=.08, freeze=True)
+    assert frozen == []
+    np.testing.assert_allclose(target[np.unique(group.wake_faces)],
+                               group.wake_xyz[np.unique(group.wake_faces)], atol=1e-12, rtol=0.)

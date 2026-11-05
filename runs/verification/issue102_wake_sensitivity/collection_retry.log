@@ -1,0 +1,86 @@
+waiting for bounded numerical jobs; elapsed 0s
+waiting for bounded numerical jobs; elapsed 61s
+waiting for bounded numerical jobs; elapsed 121s
+waiting for bounded numerical jobs; elapsed 182s
+waiting for bounded numerical jobs; elapsed 243s
+waiting for bounded numerical jobs; elapsed 304s
+waiting for bounded numerical jobs; elapsed 364s
+waiting for bounded numerical jobs; elapsed 425s
+waiting for bounded numerical jobs; elapsed 486s
+waiting for bounded numerical jobs; elapsed 547s
+waiting for bounded numerical jobs; elapsed 608s
+waiting for bounded numerical jobs; elapsed 668s
+waiting for bounded numerical jobs; elapsed 729s
+waiting for bounded numerical jobs; elapsed 790s
+waiting for bounded numerical jobs; elapsed 850s
+waiting for bounded numerical jobs; elapsed 911s
+waiting for bounded numerical jobs; elapsed 972s
+waiting for bounded numerical jobs; elapsed 1032s
+waiting for bounded numerical jobs; elapsed 1093s
+waiting for bounded numerical jobs; elapsed 1153s
+waiting for bounded numerical jobs; elapsed 1214s
+waiting for bounded numerical jobs; elapsed 1275s
+waiting for bounded numerical jobs; elapsed 1335s
+waiting for bounded numerical jobs; elapsed 1396s
+waiting for bounded numerical jobs; elapsed 1456s
+waiting for bounded numerical jobs; elapsed 1517s
+waiting for bounded numerical jobs; elapsed 1577s
+waiting for bounded numerical jobs; elapsed 1638s
+waiting for bounded numerical jobs; elapsed 1698s
+waiting for bounded numerical jobs; elapsed 1759s
+waiting for bounded numerical jobs; elapsed 1819s
+waiting for bounded numerical jobs; elapsed 1880s
+waiting for bounded numerical jobs; elapsed 1940s
+waiting for bounded numerical jobs; elapsed 2001s
+waiting for bounded numerical jobs; elapsed 2061s
+waiting for bounded numerical jobs; elapsed 2122s
+waiting for bounded numerical jobs; elapsed 2182s
+waiting for bounded numerical jobs; elapsed 2242s
+waiting for bounded numerical jobs; elapsed 2303s
+waiting for bounded numerical jobs; elapsed 2363s
+waiting for bounded numerical jobs; elapsed 2424s
+rect baseline audited 61
+rect E1 audited 72
+rect attachment_only CL=0.256144451 step=0c Jmin=1
+rect free_only CL=0.256307461 step=0.120474c Jmin=0.9983
+rect all CL=0.256307461 step=0.120474c Jmin=0.9983
+swept30 baseline audited 61
+swept30 E1 audited 120
+swept30 attachment_only CL=0.138970262 step=0.594177c Jmin=-3.9215
+swept30 free_only CL=0.350666731 step=1.08734c Jmin=0.68994
+swept30 all CL=0.130984561 step=1.08734c Jmin=0.68994
+elliptic baseline audited 61
+elliptic E1 audited 120
+elliptic attachment_only CL=0.104194176 step=0.587997c Jmin=-7.5306
+elliptic free_only CL=0.239566406 step=1.56808c Jmin=-6.9318
+elliptic all CL=0.082522395 step=1.56808c Jmin=0.69505
+rect roots=7 attached=7 moving_attached=0 uniform_raw=0c attach_raw=0c
+swept30 roots=1 attached=65 moving_attached=64 uniform_raw=2c attach_raw=2c
+elliptic roots=2 attached=85 moving_attached=83 uniform_raw=2.125c attach_raw=2c
+runs\verification\issue102_wake_sensitivity\root_motion_histories.png
+rect baseline completed iter=60 CL 0.256144451 -> 0.256714919
+  e2 rect_96      completed iter=8 CL1=0.256271 last=0.256554 slip=0.01649
+  e3 freeze_1     completed iter=60 CL1=0.256307 last=0.256715 slip=0.01302
+  e3 freeze_2     completed iter=60 CL1=0.256143 last=0.256143 slip=0.04498
+  e3 freeze_3     completed iter=60 CL1=0.256144 last=0.256144 slip=0.04493
+  e3 smooth       completed iter=60 CL1=0.256185 last=0.256710 slip=0.01302
+swept30 baseline completed iter=60 CL 0.403535638 -> 0.092611742
+  e2 length_10    completed iter=8 CL1=0.130937 last=0.093445 slip=1.069
+  e2 length_20    completed iter=8 CL1=0.130977 last=0.089898 slip=5.013
+  e2 length_5     completed iter=8 CL1=0.130799 last=0.093757 slip=2.72
+  e2 spanwise     completed iter=8 CL1=0.131069 last=0.092307 slip=15.99
+  e2 streamwise   completed iter=8 CL1=0.131069 last=0.092487 slip=10.98
+  e3 freeze_1     completed iter=60 CL1=0.350667 last=0.311913 slip=23.85
+  e3 freeze_2     completed iter=60 CL1=0.371254 last=0.312059 slip=23.63
+  e3 freeze_3     completed iter=60 CL1=0.379816 last=0.331440 slip=15.53
+  e3 smooth       completed iter=60 CL1=0.367451 last=0.282923 slip=21.61
+elliptic baseline completed iter=60 CL 0.278756973 -> 0.063838226
+  e2 length_5     completed iter=8 CL1=0.082863 last=0.067820 slip=2.606
+  e2 spanwise     completed iter=8 CL1=0.085228 last=0.064598 slip=8.278
+  e2 streamwise   completed iter=8 CL1=0.082238 last=0.065834 slip=6.664
+  e3 freeze_1     completed iter=60 CL1=0.239566 last=0.243749 slip=10.48
+  e3 freeze_2     completed iter=60 CL1=0.272169 last=0.225837 slip=7.211
+  e3 freeze_3     completed iter=60 CL1=0.280853 last=0.260307 slip=10.02
+  e3 smooth       completed iter=60 CL1=0.262457 last=0.245382 slip=14.2
+execution_complete=True preserved_failures=1
+all numerical attempts collected; physical accuracy remains unaccepted

@@ -1,0 +1,23 @@
+.F...                                                                    [100%]
+================================== FAILURES ===================================
+_______ test_geometry_audit_does_not_treat_aabb_contact_as_penetration ________
+
+    def test_geometry_audit_does_not_treat_aabb_contact_as_penetration():
+        mesh = combine_wings([make_wing(chord_panels=3, span_panels=4, wake_panels=3)])
+        context = geometry_context(mesh)
+        baseline = audit_geometry(mesh, context)
+        assert baseline["violation_count"] == 0
+        assert baseline["inside_wall_node_ids"] == []
+        assert baseline["wall_closed"]
+        xyz = mesh.groups[0].wake_xyz.copy()
+        free = np.setdiff1d(context["topology"]["used"], context["topology"]["attached"])
+        xyz[free, 2] += .01
+        changed = with_wake_xyz(mesh, {mesh.groups[0].name: xyz})
+        result = audit_geometry(changed, context, baseline)
+>       assert result["new_or_deeper_violation_count"] == 0
+E       assert 3 == 0
+
+test\test_wake_sensitivity_experiments.py:36: AssertionError
+=========================== short test summary info ===========================
+FAILED test/test_wake_sensitivity_experiments.py::test_geometry_audit_does_not_treat_aabb_contact_as_penetration
+1 failed, 4 passed in 0.70s

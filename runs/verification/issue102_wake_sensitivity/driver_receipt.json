@@ -1,0 +1,115 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_sensitivity_run.py",
+    "--collect-only",
+    "--out",
+    "runs/verification/issue102_wake_sensitivity"
+  ],
+  "child_commands": [
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_sensitivity_audit",
+        "--case",
+        "rect",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_first_step_decomposition",
+        "--case",
+        "rect",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_sensitivity_audit",
+        "--case",
+        "swept30",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_first_step_decomposition",
+        "--case",
+        "swept30",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_sensitivity_audit",
+        "--case",
+        "elliptic",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_first_step_decomposition",
+        "--case",
+        "elliptic",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_material_kinematics",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_sensitivity_plot",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "-m",
+        "tools.wake_sensitivity_report",
+        "--out",
+        "runs\\verification\\issue102_wake_sensitivity"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "seconds": 2784.676159620285,
+  "collect_only": true
+}

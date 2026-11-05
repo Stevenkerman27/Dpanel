@@ -1,0 +1,8 @@
+swept30 e2 streamwise iter=0 CL=0.403535638 raw=4.196 step=1.259 slip=4.780e-02 valid=False
+swept30 e2 streamwise iter=1 CL=0.131068795 raw=1.961 step=0.5884 slip=1.168e-01 valid=False
+swept30 e2 streamwise iter=2 CL=0.111538258 raw=1.385 step=0.4156 slip=1.054e-01 valid=False
+swept30 e2 streamwise iter=3 CL=0.103930485 raw=13.97 step=4.19 slip=1.188e-01 valid=False
+swept30 e2 streamwise iter=4 CL=0.099890735 raw=9.229 step=2.769 slip=1.407e-01 valid=False
+swept30 e2 streamwise iter=5 CL=0.097222283 raw=13.93 step=4.178 slip=1.929e-01 valid=False
+swept30 e2 streamwise iter=6 CL=0.095360198 raw=20.1 step=6.029 slip=1.069e+01 valid=False
+swept30 e2 streamwise iter=7 CL=0.093453831 raw=8.866 step=2.66 slip=4.137e+00 valid=False

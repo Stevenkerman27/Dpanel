@@ -1,0 +1,4815 @@
+{
+  "schema": "dpanel.wake_sensitivity.manifest.v1",
+  "issue": 113,
+  "head": "a58846f338de5da5d0cdd932fba43e4358ee2262",
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+    "numpy": "2.4.6",
+    "scipy": "1.18.0",
+    "jax": "0.12.0.1",
+    "torch": "2.13.0+cu132",
+    "collector_blas": [
+      {
+        "user_api": "blas",
+        "internal_api": "openblas",
+        "num_threads": 1,
+        "prefix": "libscipy_openblas",
+        "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+        "version": "0.3.31.188.0",
+        "threading_layer": "pthreads",
+        "architecture": "SkylakeX"
+      },
+      {
+        "user_api": "openmp",
+        "internal_api": "openmp",
+        "num_threads": 1,
+        "prefix": "libiomp",
+        "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\torch\\lib\\libiomp5md.dll",
+        "version": null
+      },
+      {
+        "user_api": "openmp",
+        "internal_api": "openmp",
+        "num_threads": 1,
+        "prefix": "libiomp",
+        "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\torch\\lib\\libiompstubs5md.dll",
+        "version": null
+      }
+    ]
+  },
+  "physical_accuracy_accepted": false,
+  "cases": {
+    "rect": {
+      "baseline_manifest": "rect/manifest.json",
+      "frozen_initial_state": "rect/initial_state.npz",
+      "frozen_initial_state_sha256": "20141fa1103a80e2c9a5941a8e4139473251e704f6172c669f6d04b344550250",
+      "spec": {
+        "kind": "rect",
+        "make_wing": {
+          "chord_panels": 4,
+          "span_panels": 6,
+          "thickness": 0.12,
+          "camber": 0.0,
+          "span": 4.0,
+          "chord": 1.0,
+          "wake_panels": 2
+        },
+        "sref": 4.0,
+        "cref": 1.0,
+        "moment_reference": [
+          0.25,
+          0.0,
+          0.0
+        ],
+        "stations": [
+          {
+            "y": 0.0,
+            "chord": 1.0,
+            "le_x": 0.0,
+            "twist_deg": 0.0,
+            "thickness": 0.12
+          },
+          {
+            "y": 2.0,
+            "chord": 1.0,
+            "le_x": 0.0,
+            "twist_deg": 0.0,
+            "thickness": 0.12
+          }
+        ],
+        "geometry_sha256": "b7f99ef2d4217e45a5a9b73a121eb810022e32f38bd259ab1736dda806760534",
+        "symmetry": 0,
+        "n_stations": 2,
+        "chord_root": 1.0,
+        "chord_tip": 1.0,
+        "half_span": 2.0
+      },
+      "settings": {
+        "alpha_deg": 4.0,
+        "kutta": "pressure",
+        "relaxation": 0.3,
+        "iterations": 60,
+        "probe_fraction": 0.055,
+        "step_fraction": 0.009,
+        "wake_velocity_block": 24,
+        "max_nfev": 80,
+        "geometry_tol": 0.002,
+        "slip_tol": 0.01,
+        "min_axial": 0.08,
+        "frozen_guard": true,
+        "max_step_chord": 0.0,
+        "slip_gate": 0.0,
+        "probe_floor_fraction": 0.0,
+        "relax_min_abs_y": 0.0
+      },
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "D:\\3D\\Projects\\panel\\tools\\wake_sensitivity_baseline.py",
+        "--case",
+        "rect",
+        "--out",
+        "runs/verification/issue102_wake_sensitivity",
+        "--iterations",
+        "60"
+      ],
+      "exit_code": 0,
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+        "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+        "numpy": "2.4.6",
+        "scipy": "1.18.0",
+        "torch": "2.13.0+cu132",
+        "blas": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+            "version": "0.3.31.188.0",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "openmp",
+            "internal_api": "openmp",
+            "num_threads": 1,
+            "prefix": "libiomp",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\torch\\lib\\libiomp5md.dll",
+            "version": null
+          },
+          {
+            "user_api": "openmp",
+            "internal_api": "openmp",
+            "num_threads": 1,
+            "prefix": "libiomp",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\torch\\lib\\libiompstubs5md.dll",
+            "version": null
+          }
+        ],
+        "threads": {
+          "OPENBLAS_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        }
+      },
+      "status": "completed",
+      "pressure_initial_CL": 0.2561444508504888,
+      "historical_pressure_initial_CL": 0.25614445085049137,
+      "initial_CL_difference": 2.55351295663786E-15,
+      "latest_CL": 0.25671491870151153,
+      "historical_final_CL": 0.25671491870151447,
+      "final_CL_difference": -2.942091015256665E-15,
+      "snapshots": [
+        {
+          "path": "rect/iteration_000.npz",
+          "sha256": "32b85cfccc24bd0611b7b81d2f08ae0faacc12af1ec15db37ff1f118ce78d320"
+        },
+        {
+          "path": "rect/iteration_001.npz",
+          "sha256": "5ebf74c9d88539ce9c5b04ac2461d87077c498fd4d3f48f1d917cac31ce45461"
+        },
+        {
+          "path": "rect/iteration_002.npz",
+          "sha256": "c78c92b235b711cc6c6f386dc1d76fd0e141961933a621108205d7f282ea81a8"
+        },
+        {
+          "path": "rect/iteration_003.npz",
+          "sha256": "1b89240666915b503b651cf5495a197a136232c2aad37a175e38e98d2efecbca"
+        },
+        {
+          "path": "rect/iteration_004.npz",
+          "sha256": "2b72821371e3737268eafee09ecb5b938a64304405a7bb32289ee715b785bc91"
+        },
+        {
+          "path": "rect/iteration_005.npz",
+          "sha256": "e4b6f9d958c6f772df8576bb99de796a67ba09dc2ae804e7a87e2f3ae4d8f18f"
+        },
+        {
+          "path": "rect/iteration_006.npz",
+          "sha256": "5f30e12eb134afd999d0999d7970d973bc0555cd52f97ddf9bea3bbc8dde5ee1"
+        },
+        {
+          "path": "rect/iteration_007.npz",
+          "sha256": "2dad7be094a92ea686606b76ffeb8c5d8261141b317dfb689d92683a631934d3"
+        },
+        {
+          "path": "rect/iteration_008.npz",
+          "sha256": "4bcfa14ea886f15d321d8d34dad868c2709f2a882bcdc1ed0353218541c3cdd0"
+        },
+        {
+          "path": "rect/iteration_009.npz",
+          "sha256": "e507f06b48069009b88a1c84c3cb023ed39d62a37db5886208d32702858dd162"
+        },
+        {
+          "path": "rect/iteration_010.npz",
+          "sha256": "2e5f7918e60297a1e7bb8599a9f6b6114a9534e9fa3c28608aa377108ab62795"
+        },
+        {
+          "path": "rect/iteration_011.npz",
+          "sha256": "34a1fb90c8deacd5d97e5c76c37f917333f89b9f861ce4f54f23d65c21471cb2"
+        },
+        {
+          "path": "rect/iteration_012.npz",
+          "sha256": "db869a18ca460513d60ab2a61fd78584bdd9060269f8ced0336910f0aae91ce5"
+        },
+        {
+          "path": "rect/iteration_013.npz",
+          "sha256": "ce1121aaf6438ba819f01cbe737a173bf7a8bcc98cc6db16833af6c1fddb6907"
+        },
+        {
+          "path": "rect/iteration_014.npz",
+          "sha256": "f1f59ded4de0b68730fc3bd9c74660cfcaf15c45539563eff6682fd5fa9a1ae6"
+        },
+        {
+          "path": "rect/iteration_015.npz",
+          "sha256": "60e212b0b1b8e0779f9ddbd52fffb791865eaf2908978f21de790a4e57ee2b93"
+        },
+        {
+          "path": "rect/iteration_016.npz",
+          "sha256": "d92ad1d9b0101a67caf7ec7dbbe3c8e20b95951d8948993d78d21b4171f72cf7"
+        },
+        {
+          "path": "rect/iteration_017.npz",
+          "sha256": "04369a957c306707ac8cb94b940e0993ba3f71539ffec4d03574719f3751afac"
+        },
+        {
+          "path": "rect/iteration_018.npz",
+          "sha256": "6066dbdfd25e8bcfae6d329d0b7b5e54d538a9bb2b2301f2704db112e7f18fba"
+        },
+        {
+          "path": "rect/iteration_019.npz",
+          "sha256": "0bbff90d95b7ea273b373e153b646df3ff74948aea9e65b05353406d41b555ed"
+        },
+        {
+          "path": "rect/iteration_020.npz",
+          "sha256": "012d8ba5a88ca12e3ae6a3e44127afe6359af646c8143c69ca416dc9ad2dfa9e"
+        },
+        {
+          "path": "rect/iteration_021.npz",
+          "sha256": "242a05d504fe800cd1275b4b5e31edc8fb717aee51189cbe6b86c5c36572a2af"
+        },
+        {
+          "path": "rect/iteration_022.npz",
+          "sha256": "6ca52abc45406f6ab615d39b7f51a77c9d3a53fed4f2d6b47f8f031d30318ac0"
+        },
+        {
+          "path": "rect/iteration_023.npz",
+          "sha256": "bf175ce4c10d2568258b34213f8a718a7b9391ce3d5431fc4e227b05f688e5e0"
+        },
+        {
+          "path": "rect/iteration_024.npz",
+          "sha256": "6036d544f5c8bedf2ce218c4b5faf2d220e2344fa48714e03128b29332c4938a"
+        },
+        {
+          "path": "rect/iteration_025.npz",
+          "sha256": "fe0f2f778b07089223bf9c2e27812daf17e1b530cf0b84836b5d276e3b518f96"
+        },
+        {
+          "path": "rect/iteration_026.npz",
+          "sha256": "4646ba13f66ff1353f2693c2c29f238999a0d3f7deb394fe13cb495836ecab6b"
+        },
+        {
+          "path": "rect/iteration_027.npz",
+          "sha256": "3e32ac1da0c52f7f1109fad0cd756ad3b7613b2f02e88a46be1adfa54d248609"
+        },
+        {
+          "path": "rect/iteration_028.npz",
+          "sha256": "c0ea7b806726d03deaca1ef4738cc74156eed2c066100d06f75d20277594a5d9"
+        },
+        {
+          "path": "rect/iteration_029.npz",
+          "sha256": "f7987d96fd883d7d377cb7df07af1f6d42c9d72d33f7c31445a11da246390e1b"
+        },
+        {
+          "path": "rect/iteration_030.npz",
+          "sha256": "611d77fc87fbc58bb74e1dba967bf5270328395256309c195bbd4344f6b27f57"
+        },
+        {
+          "path": "rect/iteration_031.npz",
+          "sha256": "27373c651886bd83e20148d60eb10b228b96b272c17ab03564e8c6441ebae2b2"
+        },
+        {
+          "path": "rect/iteration_032.npz",
+          "sha256": "dcc0f2b32803e262e608d151660c07b12382e8d000d9e84111c5d866d0a8b293"
+        },
+        {
+          "path": "rect/iteration_033.npz",
+          "sha256": "64b2f54b637a8c2dd7817f7387988af09985e7f5e591adcf3c5bebe3fe73a1f9"
+        },
+        {
+          "path": "rect/iteration_034.npz",
+          "sha256": "e2180c07d2ef1f96e0529846f3672df9324772b8b9c6aa11d0b60d157b81b855"
+        },
+        {
+          "path": "rect/iteration_035.npz",
+          "sha256": "25716faea83a0d071b920ff8b4d160b08587d0c78b5f9f26599ef3f7ce01e82d"
+        },
+        {
+          "path": "rect/iteration_036.npz",
+          "sha256": "1386b07ba202f26d5c309153328197f882bec76e6b22f02a6828e720976e4461"
+        },
+        {
+          "path": "rect/iteration_037.npz",
+          "sha256": "51da4897cd5465cbb84772a1c413f955eda557c5a90e34ede5506b319e9ce220"
+        },
+        {
+          "path": "rect/iteration_038.npz",
+          "sha256": "0d30dcd99a42bcd8021e9f3dfadf46a96d1e472758810598661005a79e4c860c"
+        },
+        {
+          "path": "rect/iteration_039.npz",
+          "sha256": "fb5abb7d9c0232659a283824d01a325075121f0e41048dabf108ad25a30b2d94"
+        },
+        {
+          "path": "rect/iteration_040.npz",
+          "sha256": "b9eb046b23ec081443dbb5addd953b888b851f3bbc5875d20c67968658146871"
+        },
+        {
+          "path": "rect/iteration_041.npz",
+          "sha256": "2a02931a09ffdaf0e09983efe55d2e9d9c8462e6c49dae15a71af90365f26926"
+        },
+        {
+          "path": "rect/iteration_042.npz",
+          "sha256": "147842fc82b1c5fc7aaa06031010e781e3abd08a32577211570a886c26c37be2"
+        },
+        {
+          "path": "rect/iteration_043.npz",
+          "sha256": "f371d86c767d02c9aab7cce6aa7aef68484d6bca18e4201425cd8d6fef5ec7f8"
+        },
+        {
+          "path": "rect/iteration_044.npz",
+          "sha256": "00c0085ffab37aaa94d82abb9367c61172c430850ea77b18ef9c8b136ebbb180"
+        },
+        {
+          "path": "rect/iteration_045.npz",
+          "sha256": "85d34ee054daf00103cb01eb4c48b635f168339df16729a07931397675feb9c3"
+        },
+        {
+          "path": "rect/iteration_046.npz",
+          "sha256": "26b778284675015283576b92d9385052c3c9835d9894f62fb395220b5d71b459"
+        },
+        {
+          "path": "rect/iteration_047.npz",
+          "sha256": "4890085f96cafea06b9c8e0781748ad083f3e28ad1ca8e276c27d6b9eea1d3ab"
+        },
+        {
+          "path": "rect/iteration_048.npz",
+          "sha256": "2f7f20f458661bf7c59c8936c8dfd771741dd49670df9e247dcde9ab5fa2d6c1"
+        },
+        {
+          "path": "rect/iteration_049.npz",
+          "sha256": "cf311205cc48617b31ecfdac949d74b45c1bc732847215b583ff95114d34dc43"
+        },
+        {
+          "path": "rect/iteration_050.npz",
+          "sha256": "f7493c4132f71e7db2f80c22226ace7caedcb8666d4f92c0abacda5c9e19b7ef"
+        },
+        {
+          "path": "rect/iteration_051.npz",
+          "sha256": "5d8486981713846685461b34f414503fe8c5ba0655e41890313629330752e736"
+        },
+        {
+          "path": "rect/iteration_052.npz",
+          "sha256": "eb9b27a12fdbab87bfa9db82e08913a69720c081f5a98fe6e75c388eb4f64f08"
+        },
+        {
+          "path": "rect/iteration_053.npz",
+          "sha256": "7f720eaedf3458953a9b953c7ada39c43d911e7b252a5476de38a81e65d288d2"
+        },
+        {
+          "path": "rect/iteration_054.npz",
+          "sha256": "bd994124a34aee436d4e08b7172efd2bde92fade0c9bceeb6f4fe89bd3f4ed19"
+        },
+        {
+          "path": "rect/iteration_055.npz",
+          "sha256": "3f794d7b0e7259fb8d4ff9b44e52b3000a8732c886a4b13989a2e4606a7b2658"
+        },
+        {
+          "path": "rect/iteration_056.npz",
+          "sha256": "e8df4fb1b8edf384586e46841986cfc995d935002118e2e5f959fa52945853c0"
+        },
+        {
+          "path": "rect/iteration_057.npz",
+          "sha256": "8186b5fff4ab4f5a12140f9e350e550ee22eb4ddf8c748a719e178590bf9b2d3"
+        },
+        {
+          "path": "rect/iteration_058.npz",
+          "sha256": "703c76bdf370d15f9cad0ab82e5ee57b8d0154554892a8e9bd17762a46658466"
+        },
+        {
+          "path": "rect/iteration_059.npz",
+          "sha256": "2d3f61e10fa09c85b235538c56ef5ba0e2e3524f84b4c6cef61e5e0c022ef847"
+        },
+        {
+          "path": "rect/iteration_060.npz",
+          "sha256": "5a4549f1a3573892f711f3f07f7335df47b489163ea583115e89d08b6eaf8f7c"
+        }
+      ],
+      "geometry_audit_complete": true,
+      "first_step_decomposition": {
+        "case": "rect",
+        "schema": "dpanel.wake_sensitivity.first_step.v1",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "D:\\3D\\Projects\\panel\\tools\\wake_first_step_decomposition.py",
+          "--case",
+          "rect",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity"
+        ],
+        "frozen_initial_state_sha256": "20141fa1103a80e2c9a5941a8e4139473251e704f6172c669f6d04b344550250",
+        "source_sha256": "7297b4c74c557d3ba9bf4f8cbe8f0439b922159735322215549e4e14af8773b3",
+        "attached_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "graph_root_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "rows": [
+          {
+            "CL": 0.256144450850496,
+            "CL_gamma": 0.22564372499286667,
+            "CM_y": 0.024581638527098465,
+            "wall_rms": 0.0020140693205220766,
+            "jump_rms": 9.930136612989092E-17,
+            "pressure_kutta_rms": 1.1973564307631297E-07,
+            "nonlinear": {
+              "success": true,
+              "message": "ftol termination condition is satisfied",
+              "nfev": 7,
+              "status": 2,
+              "cost": 0.00013105118434479692,
+              "optimality": 9.284111158894617E-12,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 9.284073530302969E-12,
+              "gradient_relative": 2.535691219681732E-12,
+              "residual_norm": 0.01618957592679901,
+              "wall_rms": 0.0015297711281240965,
+              "wall_floor_rms": 0.0014724480069924816,
+              "wall_over_floor": 1.038930489130614,
+              "pressure_rms": 1.1973564307631297E-07,
+              "criteria": {
+                "stationary": true,
+                "wall_at_floor": true,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "attachment_only",
+            "max_displacement_chord": 0.0,
+            "gamma": [
+              0.15843734817069827,
+              0.116799808876697,
+              0.1528311249673613,
+              0.16020569372039656,
+              0.0886571992434469
+            ],
+            "geometry": {
+              "min_area2": 1.6666666666666663,
+              "min_reference_signed_jacobian": 1.0,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 2.5,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.0,
+              "attachment_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "prepared_root_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 136,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 1.0754230367482393E-16
+          },
+          {
+            "CL": 0.2563074609374016,
+            "CL_gamma": 0.22571102625673084,
+            "CM_y": 0.024544867506088336,
+            "wall_rms": 0.0020134429607853014,
+            "jump_rms": 1.4043333874306804E-16,
+            "pressure_kutta_rms": 1.192362700813985E-07,
+            "nonlinear": {
+              "success": true,
+              "message": "ftol termination condition is satisfied",
+              "nfev": 7,
+              "status": 2,
+              "cost": 0.0001310129865618447,
+              "optimality": 8.778381016885661E-12,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 8.778456789064991E-12,
+              "gradient_relative": 2.397161986987538E-12,
+              "residual_norm": 0.01618721634882571,
+              "wall_rms": 0.0015295481690055716,
+              "wall_floor_rms": 0.0014725089270295167,
+              "wall_over_floor": 1.0387360924806885,
+              "pressure_rms": 1.192362700813985E-07,
+              "criteria": {
+                "stationary": true,
+                "wall_at_floor": true,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "free_only",
+            "max_displacement_chord": 0.12047431080965595,
+            "gamma": [
+              0.15862101515399368,
+              0.11677250383277415,
+              0.1527944418484508,
+              0.16040989037656644,
+              0.08853522755840745
+            ],
+            "geometry": {
+              "min_area2": 1.6650664850144496,
+              "min_reference_signed_jacobian": 0.9983010681285129,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 2.5000500634012615,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.0,
+              "attachment_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "prepared_root_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 122,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 0.1157743203274091
+          },
+          {
+            "CL": 0.2563074609374016,
+            "CL_gamma": 0.22571102625673084,
+            "CM_y": 0.024544867506088336,
+            "wall_rms": 0.0020134429607853014,
+            "jump_rms": 1.4043333874306804E-16,
+            "pressure_kutta_rms": 1.192362700813985E-07,
+            "nonlinear": {
+              "success": true,
+              "message": "ftol termination condition is satisfied",
+              "nfev": 7,
+              "status": 2,
+              "cost": 0.0001310129865618447,
+              "optimality": 8.778381016885661E-12,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 8.778456789064991E-12,
+              "gradient_relative": 2.397161986987538E-12,
+              "residual_norm": 0.01618721634882571,
+              "wall_rms": 0.0015295481690055716,
+              "wall_floor_rms": 0.0014725089270295167,
+              "wall_over_floor": 1.0387360924806885,
+              "pressure_rms": 1.192362700813985E-07,
+              "criteria": {
+                "stationary": true,
+                "wall_at_floor": true,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "all",
+            "max_displacement_chord": 0.12047431080965595,
+            "gamma": [
+              0.15862101515399368,
+              0.11677250383277415,
+              0.1527944418484508,
+              0.16040989037656644,
+              0.08853522755840745
+            ],
+            "geometry": {
+              "min_area2": 1.6650664850144496,
+              "min_reference_signed_jacobian": 0.9983010681285129,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 2.5000500634012615,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.0,
+              "attachment_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "prepared_root_ids": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 122,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 0.1157743203274091
+          }
+        ],
+        "physical_accuracy_accepted": false,
+        "all_step_CL_difference": 0.0,
+        "status": "completed"
+      }
+    },
+    "swept30": {
+      "baseline_manifest": "swept30/manifest.json",
+      "frozen_initial_state": "swept30/initial_state.npz",
+      "frozen_initial_state_sha256": "68c016ddeace04f5571db46040ece96f7d907e6df2dc5abed6f5dff2a202fcd6",
+      "spec": {
+        "kind": "cad_half",
+        "surface": "cases/geom_robust/surfaces/swept30_s075/surface.json",
+        "surface_sha256": "5155468398265f82fbd0e91299b1f313af2f14c54fba4e5b8702e353dded8a72",
+        "sref": 3.0,
+        "cref": 1.0,
+        "moment_reference": [
+          0.25,
+          0.0,
+          0.0
+        ],
+        "stations": [
+          {
+            "y": 0.0,
+            "chord": 1.0,
+            "le_x": 0.0,
+            "twist_deg": 0.0,
+            "thickness": 0.121497387
+          },
+          {
+            "y": 0.5,
+            "chord": 0.875,
+            "le_x": 0.319925135,
+            "twist_deg": 0.0,
+            "thickness": 0.121409003
+          },
+          {
+            "y": 1.0,
+            "chord": 0.75,
+            "le_x": 0.639850269,
+            "twist_deg": 0.0,
+            "thickness": 0.121143438
+          },
+          {
+            "y": 1.5,
+            "chord": 0.625,
+            "le_x": 0.959775404,
+            "twist_deg": 0.0,
+            "thickness": 0.121480706
+          },
+          {
+            "y": 2.0,
+            "chord": 0.5,
+            "le_x": 1.279700538,
+            "twist_deg": 0.0,
+            "thickness": 0.119588034
+          }
+        ],
+        "geometry_sha256": "811881503396fbe3ef3b195bb212ffe4e398eebfee8b2a732fd10ec667560ec5",
+        "symmetry": 1,
+        "n_stations": 5,
+        "chord_root": 1.0,
+        "chord_tip": 0.5,
+        "half_span": 2.0
+      },
+      "settings": {
+        "alpha_deg": 4.0,
+        "kutta": "pressure",
+        "relaxation": 0.3,
+        "iterations": 60,
+        "probe_fraction": 0.055,
+        "step_fraction": 0.009,
+        "wake_velocity_block": 24,
+        "max_nfev": 80,
+        "geometry_tol": 0.002,
+        "slip_tol": 0.01,
+        "min_axial": 0.08,
+        "frozen_guard": true,
+        "max_step_chord": 0.0,
+        "slip_gate": 0.0,
+        "probe_floor_fraction": 0.0,
+        "relax_min_abs_y": 0.0
+      },
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "D:\\3D\\Projects\\panel\\tools\\wake_sensitivity_baseline.py",
+        "--case",
+        "swept30",
+        "--out",
+        "runs/verification/issue102_wake_sensitivity",
+        "--iterations",
+        "60"
+      ],
+      "exit_code": 0,
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+        "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+        "numpy": "2.4.6",
+        "scipy": "1.18.0",
+        "torch": "2.13.0+cu132",
+        "blas": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+            "version": "0.3.31.188.0",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "openmp",
+            "internal_api": "openmp",
+            "num_threads": 1,
+            "prefix": "libiomp",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\torch\\lib\\libiomp5md.dll",
+            "version": null
+          },
+          {
+            "user_api": "openmp",
+            "internal_api": "openmp",
+            "num_threads": 1,
+            "prefix": "libiomp",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\torch\\lib\\libiompstubs5md.dll",
+            "version": null
+          }
+        ],
+        "threads": {
+          "OPENBLAS_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        }
+      },
+      "status": "completed",
+      "pressure_initial_CL": 0.4035356379812883,
+      "historical_pressure_initial_CL": 0.4035356379812663,
+      "initial_CL_difference": 2.19824158875781E-14,
+      "latest_CL": 0.09261174202995788,
+      "historical_final_CL": 0.09427308657648241,
+      "final_CL_difference": -0.0016613445465245291,
+      "snapshots": [
+        {
+          "path": "swept30/iteration_000.npz",
+          "sha256": "8bda665c9817e96163a7c0ee251596fa10041d3004139e2af1c3da70a5a17f58"
+        },
+        {
+          "path": "swept30/iteration_001.npz",
+          "sha256": "4d444007bb14c7611a3557b9739be30ded0bcc1322f04400c8e6a736b6a0ee97"
+        },
+        {
+          "path": "swept30/iteration_002.npz",
+          "sha256": "c44bbffea86a80f1b41f808ec829eb37760d077f1b200ea27698a07b0a560c5d"
+        },
+        {
+          "path": "swept30/iteration_003.npz",
+          "sha256": "de183a736a52f5b2c62e4fbdcabd468a2ec0a94b6afbb997c26eabf84159a5c6"
+        },
+        {
+          "path": "swept30/iteration_004.npz",
+          "sha256": "8939711b6a8d186f223ed1957d8159f2ea12f91d42c18b8ab4a033d4b47d9942"
+        },
+        {
+          "path": "swept30/iteration_005.npz",
+          "sha256": "c08c2346569e71ac8c96cd16d721224b8bda9714a44789665f19e7554f7067c9"
+        },
+        {
+          "path": "swept30/iteration_006.npz",
+          "sha256": "f2847a3e1e836fac85f8a689b230c802644d0958953420ecd6db1316eb3f437f"
+        },
+        {
+          "path": "swept30/iteration_007.npz",
+          "sha256": "6beebb9b7ddfca3fdd0ccc759b1cdfebe02d0bed594b3f98d060a508f9f5c385"
+        },
+        {
+          "path": "swept30/iteration_008.npz",
+          "sha256": "eb2d6d342be2524ba578c85380d3bf7a33833a78cf723e878fdf293c7a3e7ea3"
+        },
+        {
+          "path": "swept30/iteration_009.npz",
+          "sha256": "4e1fe2781c580f7d2a4d2c68d1f76b3a770090b355f2fde46c8bf57b76b7833f"
+        },
+        {
+          "path": "swept30/iteration_010.npz",
+          "sha256": "26aaed8442c4cef63ad671a001a9f017f19649c94a31b76dc518c69756f6cad7"
+        },
+        {
+          "path": "swept30/iteration_011.npz",
+          "sha256": "53e4bd2d5bc4a8d013d771cb896b462f1451260d9baf954c924fd16b0bce17cf"
+        },
+        {
+          "path": "swept30/iteration_012.npz",
+          "sha256": "53855f4a8398f59abd387e14cd9447ee304bfe4b5cfb3ecd4065c20619573ba5"
+        },
+        {
+          "path": "swept30/iteration_013.npz",
+          "sha256": "c4dc1327e459122a7686172c0e233de17b53c9f6b6fa736096d2c6a85dfb836c"
+        },
+        {
+          "path": "swept30/iteration_014.npz",
+          "sha256": "d1800dddf8d7b4bd6a1cfd34d1fe4e75cf8fee38a9d1bbeb5535f8a7eea936e3"
+        },
+        {
+          "path": "swept30/iteration_015.npz",
+          "sha256": "6a7ecf5dba1b1e03bd339c964c7a3f038eb94ede243f44eb3b566fb6b3614214"
+        },
+        {
+          "path": "swept30/iteration_016.npz",
+          "sha256": "bd194a43da865d9fc216a53f8e67f61440ec27c54ae64c7281a77c51c1e39832"
+        },
+        {
+          "path": "swept30/iteration_017.npz",
+          "sha256": "e28507e8b2b18c44a2b9f37a85c92a383c895241f07bd3caae49c56ff55f955a"
+        },
+        {
+          "path": "swept30/iteration_018.npz",
+          "sha256": "aae4ac42d1bdb6959afc993a3e3ad077d682cde78d1fcad41587b434f415ef11"
+        },
+        {
+          "path": "swept30/iteration_019.npz",
+          "sha256": "fb9316998bd98c2f1eb0afdb578004efa75cccdb85319e29d5dd43524a85a06c"
+        },
+        {
+          "path": "swept30/iteration_020.npz",
+          "sha256": "cfe8014ef0c7b2efce3436e64affe10e0b553e2a9125474e2fa2017349a3ac96"
+        },
+        {
+          "path": "swept30/iteration_021.npz",
+          "sha256": "9ae3a3ef1a6304ebc3e5b7bb139f6571414407fa54adf661493945da626a3dce"
+        },
+        {
+          "path": "swept30/iteration_022.npz",
+          "sha256": "6d688f16f2129f62f4c7869a6750b03ae06b0cb27cb3fd2762f5e1108a87a73a"
+        },
+        {
+          "path": "swept30/iteration_023.npz",
+          "sha256": "c06bfbf0a33bc5f70c333a628dbb8c55bedd971e4da2ab7f9a0207ebdaf972d7"
+        },
+        {
+          "path": "swept30/iteration_024.npz",
+          "sha256": "c1cc01992b90742e8d5a6053b2d6aa9f7a139ad91e366415a740d286b290fe99"
+        },
+        {
+          "path": "swept30/iteration_025.npz",
+          "sha256": "4d54a00032989b02c2e441bc2a184f0404b29de2885afc50793c082b5ee9934e"
+        },
+        {
+          "path": "swept30/iteration_026.npz",
+          "sha256": "39593398ab612d26daaa2474ceebc6e9e6c179d480b66541d2ac3e4072116835"
+        },
+        {
+          "path": "swept30/iteration_027.npz",
+          "sha256": "886b7040b242cf8c5b6a16efbcf7014cf990c818cf2c7b03d3df36f57a53b2e6"
+        },
+        {
+          "path": "swept30/iteration_028.npz",
+          "sha256": "74eac9d0804df90d7a858d2cbcb6a342b26cc36527ff1889ecfa1c4c51f1cb3a"
+        },
+        {
+          "path": "swept30/iteration_029.npz",
+          "sha256": "55f296daaeb0c6710f27480c2ac3156b1b1d3e0159c9c18bf41cd3755c1c1f2a"
+        },
+        {
+          "path": "swept30/iteration_030.npz",
+          "sha256": "3414164a133a45e6f5729625026e497347c78d14dcc8ad241374818d5f9bcbc9"
+        },
+        {
+          "path": "swept30/iteration_031.npz",
+          "sha256": "3d580458c3c4a228703adeeeb231f35c5ff17279c2bf557ab248c2fa055f3b62"
+        },
+        {
+          "path": "swept30/iteration_032.npz",
+          "sha256": "0e29fd71dfe1d611f4e3edbe4b32fd41e09f20d470702efd91ab50f67dbc78fc"
+        },
+        {
+          "path": "swept30/iteration_033.npz",
+          "sha256": "494e0b8e8845b8188278bca4db4dc9ea66fbe3df255f7949859ea3da44b2843a"
+        },
+        {
+          "path": "swept30/iteration_034.npz",
+          "sha256": "107f76f5862cbc665eec1addb6da893f014db00138beb5902eb1d29134aa47f4"
+        },
+        {
+          "path": "swept30/iteration_035.npz",
+          "sha256": "c4365dbfe523b1fdc022a110f089e6f5623e88051c32c95b4accbbcd25e7f90a"
+        },
+        {
+          "path": "swept30/iteration_036.npz",
+          "sha256": "090e506e1c28eae1f064b91109cd705653c09cbf689f23627f2d621a1ee67c88"
+        },
+        {
+          "path": "swept30/iteration_037.npz",
+          "sha256": "facbd55e9047fed82efd45fe6a0a74fbe9fca83a435e2d19aeeae50885858796"
+        },
+        {
+          "path": "swept30/iteration_038.npz",
+          "sha256": "9e3a6d4a7def6e98fa02285e5216b6ef2ef319cecb09ddc4d0063ad6ca9c5097"
+        },
+        {
+          "path": "swept30/iteration_039.npz",
+          "sha256": "da43845a0a48d1ef2678cf5aa1e2c3fae0b8e1c15cced7868c7458767e79cad7"
+        },
+        {
+          "path": "swept30/iteration_040.npz",
+          "sha256": "ae5e25762317fe3ee6c410b905702e80cee1ac3677218e9dfe9fcb4bdf42e1e5"
+        },
+        {
+          "path": "swept30/iteration_041.npz",
+          "sha256": "1d1aef933d7c12efd803cf36a1bc6c4486a473db5e45871cfde363b0edbe640b"
+        },
+        {
+          "path": "swept30/iteration_042.npz",
+          "sha256": "0e0c2149eb3a9a7949d6d0da176a7a7e2a854e4107509e2393f81428fc6e16cb"
+        },
+        {
+          "path": "swept30/iteration_043.npz",
+          "sha256": "40fc7f935df72c90b1f7a0d9eebebc1c26dd47d1a17ba19d6cc61fa1d54648f3"
+        },
+        {
+          "path": "swept30/iteration_044.npz",
+          "sha256": "9d763ff3bba3a188a0668799b305beb9bc6596e195b7ea64ebf84c8114eab27c"
+        },
+        {
+          "path": "swept30/iteration_045.npz",
+          "sha256": "b988367bb5cb7740f5ccae850ca214b1e4a0316b411f13c8eefe18edc02e2fc7"
+        },
+        {
+          "path": "swept30/iteration_046.npz",
+          "sha256": "e7e962e8ac0e0173483afb8b38031be56696809c8829f752bbcf350fbfe16d8a"
+        },
+        {
+          "path": "swept30/iteration_047.npz",
+          "sha256": "4e9babed5d308604b571be47597a0f3e350f354d4e201b85445780292618c6b0"
+        },
+        {
+          "path": "swept30/iteration_048.npz",
+          "sha256": "041c5c1ee9f7c5e41e39f0313feaf7c568b03f7a817d5745ff36f7cb52ee740e"
+        },
+        {
+          "path": "swept30/iteration_049.npz",
+          "sha256": "49cb10fc0e9e519f5cda8adcfb2a26c681e5c2cccfb1b72f73ea77ca354f95ef"
+        },
+        {
+          "path": "swept30/iteration_050.npz",
+          "sha256": "b0d98428370b4f41b42102ef6a14224ba76d7753857f74f0f058d9f2d5eb9a34"
+        },
+        {
+          "path": "swept30/iteration_051.npz",
+          "sha256": "4444dc995a3ea5e12a6d98e2fcdb3a208a28376aed0d15e30dcb0ebd72c7b3ea"
+        },
+        {
+          "path": "swept30/iteration_052.npz",
+          "sha256": "87d20b75107befa22bb2123f2425c40af6a92a233ee009a2a00297e5a89678b4"
+        },
+        {
+          "path": "swept30/iteration_053.npz",
+          "sha256": "28630d0eb7e06e2821c9f4dcd76ce8b702cebe6488c3efc44fe35496a71f756b"
+        },
+        {
+          "path": "swept30/iteration_054.npz",
+          "sha256": "858ae08d7ecb9b1be5c6f2e6e55ab5bdccf672a93a71ad5777002cbf6db33227"
+        },
+        {
+          "path": "swept30/iteration_055.npz",
+          "sha256": "c163c26e6b9a5f66212405be28370f3c6fa60c82546ef9504ed760fa6bf69c9b"
+        },
+        {
+          "path": "swept30/iteration_056.npz",
+          "sha256": "2d5e729eecb63b0ceabf8459004beb8a1a3f3bfee8ae3bc5c57e6d684886b3cd"
+        },
+        {
+          "path": "swept30/iteration_057.npz",
+          "sha256": "ce76dab33f2b8fa5770b14a9b3b28a3e44e5bb32f056b0e1833a6bccd146f967"
+        },
+        {
+          "path": "swept30/iteration_058.npz",
+          "sha256": "501b58c5cc4f16f89887f94a2784018fdebf884d95496e89aa4454ee0e9e8bba"
+        },
+        {
+          "path": "swept30/iteration_059.npz",
+          "sha256": "534e9c842c39004785cd6ca41a3f2a6ab2d1007c560ba4cd87d055e7c3646549"
+        },
+        {
+          "path": "swept30/iteration_060.npz",
+          "sha256": "562f7e027e99ccc2c5f16a231a8f6929a57d8822678f3c82c890b08537ac0258"
+        }
+      ],
+      "geometry_audit_complete": true,
+      "first_step_decomposition": {
+        "case": "swept30",
+        "schema": "dpanel.wake_sensitivity.first_step.v1",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "D:\\3D\\Projects\\panel\\tools\\wake_first_step_decomposition.py",
+          "--case",
+          "swept30",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity"
+        ],
+        "frozen_initial_state_sha256": "68c016ddeace04f5571db46040ece96f7d907e6df2dc5abed6f5dff2a202fcd6",
+        "source_sha256": "7297b4c74c557d3ba9bf4f8cbe8f0439b922159735322215549e4e14af8773b3",
+        "attached_ids": [
+          1,
+          12,
+          13,
+          15,
+          16,
+          18,
+          19,
+          21,
+          22,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          994,
+          995,
+          997,
+          998,
+          1000,
+          1001,
+          1003,
+          1004,
+          1023,
+          1024,
+          1025,
+          1026,
+          1027,
+          1028,
+          1057,
+          1058,
+          1059,
+          1060,
+          1061,
+          1062,
+          1088,
+          1089,
+          1090,
+          1091,
+          1092,
+          1093,
+          1115,
+          1116,
+          1117,
+          1118,
+          1119,
+          1120
+        ],
+        "graph_root_ids": [
+          1
+        ],
+        "rows": [
+          {
+            "CL": 0.13897026176195917,
+            "CL_gamma": 0.14641735624605834,
+            "CM_y": -0.03915067077866307,
+            "wall_rms": 0.0003386582282426386,
+            "jump_rms": 6.603860504550758E-16,
+            "pressure_kutta_rms": 3.2983155255366097E-07,
+            "nonlinear": {
+              "success": true,
+              "message": "relative gradient tolerance reached",
+              "nfev": 9,
+              "status": 4,
+              "cost": 0.00015407528152834764,
+              "optimality": 3.1459377124488388E-09,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 3.1459377436060987E-09,
+              "gradient_relative": 1.3564283893707446E-10,
+              "residual_norm": 0.017554217813867647,
+              "wall_rms": 0.00033389686599014486,
+              "wall_floor_rms": 0.0002711839708293157,
+              "wall_over_floor": 1.231255907084202,
+              "pressure_rms": 3.2983155255366097E-07,
+              "criteria": {
+                "stationary": true,
+                "wall_at_floor": false,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "attachment_only",
+            "max_displacement_chord": 0.594176565037764,
+            "gamma": [
+              0.0451491001878331,
+              0.047424627587313584,
+              0.04921521622474585,
+              0.05254628777950649,
+              0.0571565201939149,
+              0.06867744227921788,
+              0.0752408294714637,
+              0.0876840900283398,
+              0.0752408294714656,
+              0.06867744227921457,
+              0.05715652019393272,
+              0.05254628777950901,
+              0.04921521622475464,
+              0.04742462758732608,
+              0.045149100187812215
+            ],
+            "geometry": {
+              "min_area2": 5.265718637428164E-05,
+              "min_reference_signed_jacobian": -3.921516877344176,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 0.056467803409649436,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.594176565037764,
+              "attachment_ids": [
+                1,
+                12,
+                13,
+                15,
+                16,
+                18,
+                19,
+                21,
+                22,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                994,
+                995,
+                997,
+                998,
+                1000,
+                1001,
+                1003,
+                1004,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1057,
+                1058,
+                1059,
+                1060,
+                1061,
+                1062,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1115,
+                1116,
+                1117,
+                1118,
+                1119,
+                1120
+              ],
+              "prepared_root_ids": [
+                1
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 770,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 0.6406194291186926
+          },
+          {
+            "CL": 0.3506667306827292,
+            "CL_gamma": 0.3488721290701933,
+            "CM_y": -0.18696190304218926,
+            "wall_rms": 0.00029437486294791557,
+            "jump_rms": 7.168154243039519E-16,
+            "pressure_kutta_rms": 1.6878325860568874E-07,
+            "nonlinear": {
+              "success": true,
+              "message": "relative gradient tolerance reached",
+              "nfev": 9,
+              "status": 4,
+              "cost": 0.00011938742247465877,
+              "optimality": 4.977044228848086E-09,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 4.977043773410328E-09,
+              "gradient_relative": 2.419339798255616E-10,
+              "residual_norm": 0.015452341083127524,
+              "wall_rms": 0.0002939173516155453,
+              "wall_floor_rms": 0.00027894371942458146,
+              "wall_over_floor": 1.0536797609992876,
+              "pressure_rms": 1.6878325860568874E-07,
+              "criteria": {
+                "stationary": true,
+                "wall_at_floor": false,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "free_only",
+            "max_displacement_chord": 1.0873397361663657,
+            "gamma": [
+              0.07906544422101733,
+              0.10375204455105266,
+              0.1275432412192311,
+              0.14570993616018194,
+              0.16050240474146965,
+              0.17015973076623234,
+              0.17457568165148846,
+              0.17061580779978527,
+              0.17457568165150178,
+              0.17015973076623567,
+              0.160502404741461,
+              0.1457099361601852,
+              0.12754324121920993,
+              0.10375204455107838,
+              0.0790654442210294
+            ],
+            "geometry": {
+              "min_area2": 0.0018410735849363731,
+              "min_reference_signed_jacobian": 0.689942391658188,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 0.06833489402665463,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.0,
+              "attachment_ids": [
+                1,
+                12,
+                13,
+                15,
+                16,
+                18,
+                19,
+                21,
+                22,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                994,
+                995,
+                997,
+                998,
+                1000,
+                1001,
+                1003,
+                1004,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1057,
+                1058,
+                1059,
+                1060,
+                1061,
+                1062,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1115,
+                1116,
+                1117,
+                1118,
+                1119,
+                1120
+              ],
+              "prepared_root_ids": [
+                1
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 1020,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 0.34646787317698396
+          },
+          {
+            "CL": 0.13098456121662902,
+            "CL_gamma": 0.139193842616015,
+            "CM_y": -0.03428174855914553,
+            "wall_rms": 0.00033016457606676713,
+            "jump_rms": 7.21632091818098E-16,
+            "pressure_kutta_rms": 3.0446649793848786E-07,
+            "nonlinear": {
+              "success": true,
+              "message": "relative gradient tolerance reached",
+              "nfev": 9,
+              "status": 4,
+              "cost": 0.0001470583024711274,
+              "optimality": 1.905566837552959E-09,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 1.9055667829328865E-09,
+              "gradient_relative": 8.407599500094685E-11,
+              "residual_norm": 0.01714982813156595,
+              "wall_rms": 0.0003262050235921936,
+              "wall_floor_rms": 0.00027044053620025075,
+              "wall_over_floor": 1.2061987014796163,
+              "pressure_rms": 3.0446649793848786E-07,
+              "criteria": {
+                "stationary": true,
+                "wall_at_floor": false,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "all",
+            "max_displacement_chord": 1.0873397361663657,
+            "gamma": [
+              0.03914119786327264,
+              0.04282243065588793,
+              0.046233906475017426,
+              0.050036671916654826,
+              0.0547220891870193,
+              0.066339860375989,
+              0.07359805801371022,
+              0.08937462672098939,
+              0.0735980580137143,
+              0.06633986037598406,
+              0.054722089187031316,
+              0.05003667191665639,
+              0.04623390647501065,
+              0.04282243065588804,
+              0.03914119786326455
+            ],
+            "geometry": {
+              "min_area2": 0.0018410735849363731,
+              "min_reference_signed_jacobian": 0.689942391658188,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 0.06833489402665463,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.594176565037764,
+              "attachment_ids": [
+                1,
+                12,
+                13,
+                15,
+                16,
+                18,
+                19,
+                21,
+                22,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                994,
+                995,
+                997,
+                998,
+                1000,
+                1001,
+                1003,
+                1004,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1057,
+                1058,
+                1059,
+                1060,
+                1061,
+                1062,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1115,
+                1116,
+                1117,
+                1118,
+                1119,
+                1120
+              ],
+              "prepared_root_ids": [
+                1
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 50,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 0.7788164263645336
+          }
+        ],
+        "physical_accuracy_accepted": false,
+        "all_step_CL_difference": 0.0,
+        "status": "completed"
+      }
+    },
+    "elliptic": {
+      "baseline_manifest": "elliptic/manifest.json",
+      "frozen_initial_state": "elliptic/initial_state.npz",
+      "frozen_initial_state_sha256": "96061d22f16f7337ccfc9aebbf8b666765c36e52423524e85bdce6c427b7f1f1",
+      "spec": {
+        "kind": "cad_half",
+        "surface": "cases/geom_robust/surfaces/elliptic_s075/surface.json",
+        "surface_sha256": "310ddab41dbde522a28b1f1884b3547be5e05d4d4b6b22b533882a20534d7018",
+        "sref": 3.1722548357643863,
+        "cref": 1.0,
+        "moment_reference": [
+          0.25,
+          0.0,
+          0.0
+        ],
+        "stations": [
+          {
+            "y": 0.0,
+            "chord": 1.0,
+            "le_x": 0.0,
+            "twist_deg": 0.0,
+            "thickness": 0.119723121
+          },
+          {
+            "y": 0.31286893,
+            "chord": 0.988303924,
+            "le_x": 0.002924019,
+            "twist_deg": 0.0,
+            "thickness": 0.119723121
+          },
+          {
+            "y": 0.618033989,
+            "chord": 0.95350369,
+            "le_x": 0.011624077,
+            "twist_deg": 0.0,
+            "thickness": 0.120011479
+          },
+          {
+            "y": 0.907980999,
+            "chord": 0.896456198,
+            "le_x": 0.025885951,
+            "twist_deg": 0.0,
+            "thickness": 0.120011479
+          },
+          {
+            "y": 1.175570505,
+            "chord": 0.818566145,
+            "le_x": 0.045358464,
+            "twist_deg": 0.0,
+            "thickness": 0.119767694
+          },
+          {
+            "y": 1.414213562,
+            "chord": 0.721751442,
+            "le_x": 0.069562139,
+            "twist_deg": 0.0,
+            "thickness": 0.119965339
+          },
+          {
+            "y": 1.618033989,
+            "chord": 0.60839599,
+            "le_x": 0.097901003,
+            "twist_deg": 0.0,
+            "thickness": 0.119767694
+          },
+          {
+            "y": 1.782013048,
+            "chord": 0.481290975,
+            "le_x": 0.129677256,
+            "twist_deg": 0.0,
+            "thickness": 0.119723121
+          },
+          {
+            "y": 1.902113033,
+            "chord": 0.343566145,
+            "le_x": 0.164108464,
+            "twist_deg": 0.0,
+            "thickness": 0.116633896
+          },
+          {
+            "y": 1.975376681,
+            "chord": 0.198612742,
+            "le_x": 0.200346815,
+            "twist_deg": 0.0,
+            "thickness": 0.119767694
+          },
+          {
+            "y": 2.0,
+            "chord": 0.05,
+            "le_x": 0.2375,
+            "twist_deg": 0.0,
+            "thickness": 0.106599932
+          }
+        ],
+        "geometry_sha256": "40c76b952cb9f3930747479df180185baf0f41d924b2a3a8423fef3795f0b46d",
+        "symmetry": 1,
+        "n_stations": 11,
+        "chord_root": 1.0,
+        "chord_tip": 0.05,
+        "half_span": 2.0
+      },
+      "settings": {
+        "alpha_deg": 4.0,
+        "kutta": "pressure",
+        "relaxation": 0.3,
+        "iterations": 60,
+        "probe_fraction": 0.055,
+        "step_fraction": 0.009,
+        "wake_velocity_block": 24,
+        "max_nfev": 80,
+        "geometry_tol": 0.002,
+        "slip_tol": 0.01,
+        "min_axial": 0.08,
+        "frozen_guard": true,
+        "max_step_chord": 0.0,
+        "slip_gate": 0.0,
+        "probe_floor_fraction": 0.0,
+        "relax_min_abs_y": 0.0
+      },
+      "command": [
+        "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+        "D:\\3D\\Projects\\panel\\tools\\wake_sensitivity_baseline.py",
+        "--case",
+        "elliptic",
+        "--out",
+        "runs/verification/issue102_wake_sensitivity",
+        "--iterations",
+        "60"
+      ],
+      "exit_code": 0,
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+        "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+        "numpy": "2.4.6",
+        "scipy": "1.18.0",
+        "torch": "2.13.0+cu132",
+        "blas": [
+          {
+            "user_api": "blas",
+            "internal_api": "openblas",
+            "num_threads": 1,
+            "prefix": "libscipy_openblas",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\numpy.libs\\libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+            "version": "0.3.31.188.0",
+            "threading_layer": "pthreads",
+            "architecture": "SkylakeX"
+          },
+          {
+            "user_api": "openmp",
+            "internal_api": "openmp",
+            "num_threads": 1,
+            "prefix": "libiomp",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\torch\\lib\\libiomp5md.dll",
+            "version": null
+          },
+          {
+            "user_api": "openmp",
+            "internal_api": "openmp",
+            "num_threads": 1,
+            "prefix": "libiomp",
+            "filepath": "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\Lib\\site-packages\\torch\\lib\\libiompstubs5md.dll",
+            "version": null
+          }
+        ],
+        "threads": {
+          "OPENBLAS_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        }
+      },
+      "status": "completed",
+      "pressure_initial_CL": 0.2787569734348489,
+      "historical_pressure_initial_CL": 0.2787569734328554,
+      "initial_CL_difference": 1.993516463016931E-12,
+      "latest_CL": 0.06383822561315668,
+      "historical_final_CL": 0.06556532796370938,
+      "final_CL_difference": -0.0017271023505527061,
+      "snapshots": [
+        {
+          "path": "elliptic/iteration_000.npz",
+          "sha256": "fbc6c7fd3b0eb86ee706bcbf30d0b506b62a269023e693982cde50f23dd6f0ba"
+        },
+        {
+          "path": "elliptic/iteration_001.npz",
+          "sha256": "067fc5df05530202854c1a7c826a41f6f2bb0b3fa63df99fa70a838a8f23c6c3"
+        },
+        {
+          "path": "elliptic/iteration_002.npz",
+          "sha256": "882b9973761cf8e1095a108fb20b4273823f734ac0958ac207a8c7b2a70288df"
+        },
+        {
+          "path": "elliptic/iteration_003.npz",
+          "sha256": "78c483dd51b43107d8954bcc7e491df218e431e77955a7290f28818632816c82"
+        },
+        {
+          "path": "elliptic/iteration_004.npz",
+          "sha256": "1438061ed5f6df155137b73f60957149d9a1c5e8c9b0faec4bfcee2bb3f67cea"
+        },
+        {
+          "path": "elliptic/iteration_005.npz",
+          "sha256": "b2b1e87b04dfb9ffe1c841022258818a45b1e37febdb6775ad22872eb6476fb6"
+        },
+        {
+          "path": "elliptic/iteration_006.npz",
+          "sha256": "e99c66befe46e52d0f2598f13cce2ad4d7052abca0f922e88a398e1281cf83c4"
+        },
+        {
+          "path": "elliptic/iteration_007.npz",
+          "sha256": "4a738e13b9d4d80826199cd58b79ba5738e0cff4fad6369230cf8ccaacc5fe32"
+        },
+        {
+          "path": "elliptic/iteration_008.npz",
+          "sha256": "0cf8ee9923ce52d27c1387c467b49f8c99e475cb97a2ade133a28948c3f9739d"
+        },
+        {
+          "path": "elliptic/iteration_009.npz",
+          "sha256": "0103a2d5ff21348f833cb1fc6c2dcdea50d63dc491221f632b3d30e868363914"
+        },
+        {
+          "path": "elliptic/iteration_010.npz",
+          "sha256": "4be4e67e2eebb6b6e80ec16f7f8593cc6acb474941c4dcea939cc2705935b199"
+        },
+        {
+          "path": "elliptic/iteration_011.npz",
+          "sha256": "def06a6533c07fc5fecbe168c32712a5711c7bf1bde134e784d2a21f2006751d"
+        },
+        {
+          "path": "elliptic/iteration_012.npz",
+          "sha256": "9f56e7df9959aaffaa40d0904392abe8867e72c1d6423e9e271ae8e3e95b2f4f"
+        },
+        {
+          "path": "elliptic/iteration_013.npz",
+          "sha256": "edc898c25900ede8a4ea7f7b201b2ff87428ac9bdd9954d97e9f376964262014"
+        },
+        {
+          "path": "elliptic/iteration_014.npz",
+          "sha256": "8f123254fa00d986fbb4f06d2fb4a41f567d51797f53fc0a6b106cfc2886a35a"
+        },
+        {
+          "path": "elliptic/iteration_015.npz",
+          "sha256": "3b2a075b0f994cdabbff04f959d945555e2c00bfe93515a7697e68cef079fef9"
+        },
+        {
+          "path": "elliptic/iteration_016.npz",
+          "sha256": "634994dd6e209c129d46e5952d696e6af234f1b1181f1e8a23ee49f871ef2b1b"
+        },
+        {
+          "path": "elliptic/iteration_017.npz",
+          "sha256": "973d6b70355236c8e269395747725ca0d65e1ca84d727c4190db88d81e012c8e"
+        },
+        {
+          "path": "elliptic/iteration_018.npz",
+          "sha256": "0ee32b54ab138ca9884203a98e7de42ec3884e4b8a4197db497c0081a3eccddb"
+        },
+        {
+          "path": "elliptic/iteration_019.npz",
+          "sha256": "4f75b0cb37d647266aee40acee5ec8800882bce433674d83c0dd290ebd633649"
+        },
+        {
+          "path": "elliptic/iteration_020.npz",
+          "sha256": "48248c22a66750dc4ea7d52fcfbcbe7a649ac70f0ff51cff12e6df44f1d091a0"
+        },
+        {
+          "path": "elliptic/iteration_021.npz",
+          "sha256": "620ff0bc5fca4a3af910760b80be2a7786f6c72f651bebf0bbe217d35eff95b0"
+        },
+        {
+          "path": "elliptic/iteration_022.npz",
+          "sha256": "1f272e591b37a16e2462d247f146f090f53b6051c6376ccc6fe6b9c504ceacdc"
+        },
+        {
+          "path": "elliptic/iteration_023.npz",
+          "sha256": "3c08e089f0aa8e407f9e5b51e4ee246027403f622a460be02e29e235f001570a"
+        },
+        {
+          "path": "elliptic/iteration_024.npz",
+          "sha256": "a207c36f3b9aeebdfce0988de98b46c79e937088217a99b007299911ba35e7fd"
+        },
+        {
+          "path": "elliptic/iteration_025.npz",
+          "sha256": "172307c53fbc20954b20956bccb4a7751868814876ed124a2cd698524ae433c0"
+        },
+        {
+          "path": "elliptic/iteration_026.npz",
+          "sha256": "da352d6e0d903cea0507573936a54f95309be41ed3fb1511f26ab4ba3bf6c1f1"
+        },
+        {
+          "path": "elliptic/iteration_027.npz",
+          "sha256": "644d9ed2b3b08c6e89c8a76bb84fd6e615b03758fcb6f60199be3765941f03b5"
+        },
+        {
+          "path": "elliptic/iteration_028.npz",
+          "sha256": "85ad47f70c8338f70e6e51bf87b6556de8060f17fea50037951ec1f41ce0198d"
+        },
+        {
+          "path": "elliptic/iteration_029.npz",
+          "sha256": "97039007424ecebc5a180e3e54c18652c154911f7b1b8d7a847446ebd606a80d"
+        },
+        {
+          "path": "elliptic/iteration_030.npz",
+          "sha256": "45ba9e2c2b44ae401d3c511a85b2665c2679cc447d229d1ae61b50ed659f0a73"
+        },
+        {
+          "path": "elliptic/iteration_031.npz",
+          "sha256": "ba98bf387422ef5c6b75b9654b87499a331039413cbf96e0c2fa5398f0f4428e"
+        },
+        {
+          "path": "elliptic/iteration_032.npz",
+          "sha256": "f2d57508af63542410a0daf87c5f5522b3252230273f70a5060b661a0fe58d1b"
+        },
+        {
+          "path": "elliptic/iteration_033.npz",
+          "sha256": "ad8781c4a7fd82b60952c6632a6ff9dae482dc09069a5c49203ed250205d4d0f"
+        },
+        {
+          "path": "elliptic/iteration_034.npz",
+          "sha256": "7ab3318118c65cb9cfdc9b68f1c700e355b3cf3d2b56d7ffbea7fb5c6eef5973"
+        },
+        {
+          "path": "elliptic/iteration_035.npz",
+          "sha256": "ddd07268a9c98e687ba71e0f8bed9d6063124c81e7f47d1dad0e53e043d34b34"
+        },
+        {
+          "path": "elliptic/iteration_036.npz",
+          "sha256": "cf4aa18a026785e01b32de16778f6317b0330426d599048dd6f6722c009bfcf3"
+        },
+        {
+          "path": "elliptic/iteration_037.npz",
+          "sha256": "e6dbcb53d418ef1b95f03b2d442e9e460a7dbf20368e68609609de59ae71604a"
+        },
+        {
+          "path": "elliptic/iteration_038.npz",
+          "sha256": "80ecc22dd19f64cf97e918dd8345485fda02bd183f8b1331c067993c661b16ca"
+        },
+        {
+          "path": "elliptic/iteration_039.npz",
+          "sha256": "2537a5863d324ea7e88abb892687a70101cbeb75b997b30710f1deefd2d297c0"
+        },
+        {
+          "path": "elliptic/iteration_040.npz",
+          "sha256": "3f9613b37e838f478b0e6f7e8370579488b8924c0b92b5d0546f45cf65f544d2"
+        },
+        {
+          "path": "elliptic/iteration_041.npz",
+          "sha256": "39797b7a391de0fb9a1511c9f24c5cf8d0068fdcceee3176c7595b21c7dceb12"
+        },
+        {
+          "path": "elliptic/iteration_042.npz",
+          "sha256": "d51e4d25d9469415911f075227a91ef9e1a4f9897ada32eae2a9c329cf1e6ad9"
+        },
+        {
+          "path": "elliptic/iteration_043.npz",
+          "sha256": "d6de2ca1bf4009b89c18894c6539967c1fe295ad21b519e06c9804c0026c0941"
+        },
+        {
+          "path": "elliptic/iteration_044.npz",
+          "sha256": "d18723d983956d6fce09113a9b8f8d35c911fe5fd26c00e4dd1d6e821c252b40"
+        },
+        {
+          "path": "elliptic/iteration_045.npz",
+          "sha256": "0467453afae88e945ce82bd9551b81c4904e958d4ac0633eca5f2ba89512878c"
+        },
+        {
+          "path": "elliptic/iteration_046.npz",
+          "sha256": "d0b764afbf03a482865385d0abf79a7dcbcd30a2a6649bcc6602829b99efa474"
+        },
+        {
+          "path": "elliptic/iteration_047.npz",
+          "sha256": "b62caeb1af915332ceb71e861250e986bdd8850b73da679932dacba6288fd2a9"
+        },
+        {
+          "path": "elliptic/iteration_048.npz",
+          "sha256": "1f0851ab7db91e89a5c2161d074c2c6aba338b5e5da932e5c4e3a7cf7d1fc5df"
+        },
+        {
+          "path": "elliptic/iteration_049.npz",
+          "sha256": "ae23229d748ac43234a521797670f7f5b589581e50b18576c15388e3a90786fa"
+        },
+        {
+          "path": "elliptic/iteration_050.npz",
+          "sha256": "acbc73aea3c032fd8085dcb7009258fff7b0dcbb85dfbb9c77cb8a4df7d17100"
+        },
+        {
+          "path": "elliptic/iteration_051.npz",
+          "sha256": "f7d4132a83f84d498180f931822f2b9ee7b6be7bb4a06c750dd1b333cac21c1d"
+        },
+        {
+          "path": "elliptic/iteration_052.npz",
+          "sha256": "e12d63c44f052530b6792040bc2fbfd6d7d803f1b23ac9d34beb5c2191ae0ccf"
+        },
+        {
+          "path": "elliptic/iteration_053.npz",
+          "sha256": "09e9052811032b3702b84b7b13054e8192d4a3661c022b839a5105aecf3cfbf9"
+        },
+        {
+          "path": "elliptic/iteration_054.npz",
+          "sha256": "9a7f078818ba0c0e760746ad0a5d1b02e0a68ad5073488998c5bdd463e7de87e"
+        },
+        {
+          "path": "elliptic/iteration_055.npz",
+          "sha256": "a37dca12169368f2640817edc23e3085376c91475860920c0db948dfbcb5e7ee"
+        },
+        {
+          "path": "elliptic/iteration_056.npz",
+          "sha256": "1970ff3302ce5750f352b47e825b50c0eeb3bcfdc98a7853ba2e653f0b5bb743"
+        },
+        {
+          "path": "elliptic/iteration_057.npz",
+          "sha256": "10d697e9a736cbdbbb87781af9c72e8fd83a2ccc534662334bfff03d3c9bef87"
+        },
+        {
+          "path": "elliptic/iteration_058.npz",
+          "sha256": "1d881c2fb4078e85f95ae8a2a6ff9f9e7bfc62de6992bae6d7f74d5a6bbcc518"
+        },
+        {
+          "path": "elliptic/iteration_059.npz",
+          "sha256": "5f24d5e521bb1749a43b3f10cc24abc5d0ed58fb53b8dccceff6ebb7afc0fc3a"
+        },
+        {
+          "path": "elliptic/iteration_060.npz",
+          "sha256": "1782502ee6510fa3ca012d51fd460647fb90d1b50d02671a2590243777b8650b"
+        }
+      ],
+      "geometry_audit_complete": true,
+      "first_step_decomposition": {
+        "case": "elliptic",
+        "schema": "dpanel.wake_sensitivity.first_step.v1",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "D:\\3D\\Projects\\panel\\tools\\wake_first_step_decomposition.py",
+          "--case",
+          "elliptic",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity"
+        ],
+        "frozen_initial_state_sha256": "96061d22f16f7337ccfc9aebbf8b666765c36e52423524e85bdce6c427b7f1f1",
+        "source_sha256": "7297b4c74c557d3ba9bf4f8cbe8f0439b922159735322215549e4e14af8773b3",
+        "attached_ids": [
+          1,
+          21,
+          22,
+          24,
+          25,
+          27,
+          28,
+          30,
+          31,
+          33,
+          34,
+          36,
+          37,
+          39,
+          40,
+          42,
+          44,
+          46,
+          102,
+          103,
+          104,
+          105,
+          135,
+          136,
+          137,
+          165,
+          166,
+          167,
+          194,
+          195,
+          196,
+          220,
+          221,
+          222,
+          242,
+          243,
+          260,
+          261,
+          262,
+          274,
+          275,
+          283,
+          288,
+          1223,
+          1224,
+          1226,
+          1227,
+          1229,
+          1230,
+          1232,
+          1233,
+          1235,
+          1236,
+          1238,
+          1239,
+          1241,
+          1242,
+          1244,
+          1246,
+          1248,
+          1266,
+          1267,
+          1268,
+          1269,
+          1299,
+          1300,
+          1301,
+          1329,
+          1330,
+          1331,
+          1358,
+          1359,
+          1360,
+          1384,
+          1385,
+          1386,
+          1406,
+          1407,
+          1424,
+          1425,
+          1426,
+          1438,
+          1439,
+          1447,
+          1452
+        ],
+        "graph_root_ids": [
+          46,
+          1248
+        ],
+        "rows": [
+          {
+            "CL": 0.10419417646620374,
+            "CL_gamma": 0.10342674366656301,
+            "CM_y": 0.050579442055438226,
+            "wall_rms": 0.0002970797798923702,
+            "jump_rms": 4.90977078251457E-16,
+            "pressure_kutta_rms": 6.233488011664041E-06,
+            "nonlinear": {
+              "success": false,
+              "message": "maximum number of function evaluations exceeded",
+              "nfev": 80,
+              "status": 0,
+              "cost": 0.0001237547907366299,
+              "optimality": 0.020459404240619934,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 0.020459404240619886,
+              "gradient_relative": 0.0006275449579437192,
+              "residual_norm": 0.015732437238815202,
+              "wall_rms": 0.0002772026158197346,
+              "wall_floor_rms": 0.0002454344228631235,
+              "wall_over_floor": 1.1294365826358754,
+              "pressure_rms": 6.233488011664041E-06,
+              "criteria": {
+                "stationary": false,
+                "wall_at_floor": false,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "attachment_only",
+            "max_displacement_chord": 0.5879972611547927,
+            "gamma": [
+              0.010407803934850246,
+              0.021905932570546377,
+              0.025727958750866253,
+              0.026849532669708354,
+              0.033311350589628745,
+              0.03081304644432739,
+              0.03753160679844758,
+              0.031113224234837963,
+              0.03931155454692852,
+              0.038290806154360854,
+              0.043500908795622184,
+              0.04628184266831742,
+              0.05444327895919099,
+              0.05250924574688204,
+              0.061273396304455885,
+              0.056308594838157616,
+              0.046987972531549876,
+              0.05955930497863111,
+              0.06037544105078524,
+              0.05240595270299409,
+              0.05430644455040553,
+              0.04627904224854208,
+              0.04349574240241632,
+              0.038302399621640816,
+              0.039346235370497556,
+              0.031174974190416118,
+              0.03753911973455601,
+              0.030793158623594115,
+              0.03377191868280394,
+              0.02666504545400509,
+              0.025094373074204566,
+              0.02198806954186513,
+              0.010374140651655206
+            ],
+            "geometry": {
+              "min_area2": 0.0003212556020902104,
+              "min_reference_signed_jacobian": -7.530568152332674,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 0.01604052265578357,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.5879972611547927,
+              "attachment_ids": [
+                1,
+                21,
+                22,
+                24,
+                25,
+                27,
+                28,
+                30,
+                31,
+                33,
+                34,
+                36,
+                37,
+                39,
+                40,
+                42,
+                44,
+                46,
+                102,
+                103,
+                104,
+                105,
+                135,
+                136,
+                137,
+                165,
+                166,
+                167,
+                194,
+                195,
+                196,
+                220,
+                221,
+                222,
+                242,
+                243,
+                260,
+                261,
+                262,
+                274,
+                275,
+                283,
+                288,
+                1223,
+                1224,
+                1226,
+                1227,
+                1229,
+                1230,
+                1232,
+                1233,
+                1235,
+                1236,
+                1238,
+                1239,
+                1241,
+                1242,
+                1244,
+                1246,
+                1248,
+                1266,
+                1267,
+                1268,
+                1269,
+                1299,
+                1300,
+                1301,
+                1329,
+                1330,
+                1331,
+                1358,
+                1359,
+                1360,
+                1384,
+                1385,
+                1386,
+                1406,
+                1407,
+                1424,
+                1425,
+                1426,
+                1438,
+                1439,
+                1447,
+                1452
+              ],
+              "prepared_root_ids": [
+                46,
+                1248
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 972,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 1.9069821337994688
+          },
+          {
+            "CL": 0.23956640583463729,
+            "CL_gamma": 0.23454067717208388,
+            "CM_y": 0.0195049043129216,
+            "wall_rms": 0.00027602824826875846,
+            "jump_rms": 4.62978250046815E-16,
+            "pressure_kutta_rms": 1.0142458011067094E-07,
+            "nonlinear": {
+              "success": true,
+              "message": "relative gradient tolerance reached",
+              "nfev": 13,
+              "status": 4,
+              "cost": 0.00011139579113003003,
+              "optimality": 2.674939334719459E-08,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 2.6749393462241993E-08,
+              "gradient_relative": 7.93187143718094E-10,
+              "residual_norm": 0.014926204549719104,
+              "wall_rms": 0.00026303977978604163,
+              "wall_floor_rms": 0.0002283284643091475,
+              "wall_over_floor": 1.152023601533519,
+              "pressure_rms": 1.0142458011067094E-07,
+              "criteria": {
+                "stationary": true,
+                "wall_at_floor": false,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "free_only",
+            "max_displacement_chord": 1.5680803815912876,
+            "gamma": [
+              0.015861631270242676,
+              0.03814786244704019,
+              0.06086718516047562,
+              0.06552977359541512,
+              0.08253598077106611,
+              0.09366845079924752,
+              0.10031895225131866,
+              0.10652077809138284,
+              0.11011062199842475,
+              0.11282254760259179,
+              0.11329214197466236,
+              0.11193390552281096,
+              0.10987907155658189,
+              0.10568070899203988,
+              0.1012322802716728,
+              0.10016233401864688,
+              0.0703447333657806,
+              0.10415833487272927,
+              0.10137017101914157,
+              0.10539419688328765,
+              0.10959266112424317,
+              0.11180033524901148,
+              0.11313543808975812,
+              0.11265289588810899,
+              0.10991606049427523,
+              0.10633062307339378,
+              0.10021780672495209,
+              0.09355878310109178,
+              0.08245702169627064,
+              0.0654807500690282,
+              0.06073973032357497,
+              0.0381350905238272,
+              0.015849382443150595
+            ],
+            "geometry": {
+              "min_area2": 0.000553962120351491,
+              "min_reference_signed_jacobian": -6.931839274057956,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 0.01569765924785014,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.0,
+              "attachment_ids": [
+                1,
+                21,
+                22,
+                24,
+                25,
+                27,
+                28,
+                30,
+                31,
+                33,
+                34,
+                36,
+                37,
+                39,
+                40,
+                42,
+                44,
+                46,
+                102,
+                103,
+                104,
+                105,
+                135,
+                136,
+                137,
+                165,
+                166,
+                167,
+                194,
+                195,
+                196,
+                220,
+                221,
+                222,
+                242,
+                243,
+                260,
+                261,
+                262,
+                274,
+                275,
+                283,
+                288,
+                1223,
+                1224,
+                1226,
+                1227,
+                1229,
+                1230,
+                1232,
+                1233,
+                1235,
+                1236,
+                1238,
+                1239,
+                1241,
+                1242,
+                1244,
+                1246,
+                1248,
+                1266,
+                1267,
+                1268,
+                1269,
+                1299,
+                1300,
+                1301,
+                1329,
+                1330,
+                1331,
+                1358,
+                1359,
+                1360,
+                1384,
+                1385,
+                1386,
+                1406,
+                1407,
+                1424,
+                1425,
+                1426,
+                1438,
+                1439,
+                1447,
+                1452
+              ],
+              "prepared_root_ids": [
+                46,
+                1248
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 1346,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 0.9928559700995859
+          },
+          {
+            "CL": 0.08252239467577065,
+            "CL_gamma": 0.08272960780762832,
+            "CM_y": 0.05484612278400057,
+            "wall_rms": 0.00029333704861356116,
+            "jump_rms": 4.67539845600027E-16,
+            "pressure_kutta_rms": 3.366366681375216E-06,
+            "nonlinear": {
+              "success": false,
+              "message": "maximum number of function evaluations exceeded",
+              "nfev": 80,
+              "status": 0,
+              "cost": 0.00012129953592703954,
+              "optimality": 0.05392851503803529,
+              "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+              "accepted_at_residual_floor": false,
+              "gradient_absolute": 0.05392851503803533,
+              "gradient_relative": 0.0016192642582611193,
+              "residual_norm": 0.01557559218309491,
+              "wall_rms": 0.00027447044273601817,
+              "wall_floor_rms": 0.0002443180056372456,
+              "wall_over_floor": 1.1234147152606584,
+              "pressure_rms": 3.366366681375216E-06,
+              "criteria": {
+                "stationary": false,
+                "wall_at_floor": false,
+                "kutta": true
+              },
+              "tolerances": {
+                "gradient_relative": 1E-06,
+                "pressure_rms": 0.0001,
+                "wall_floor_ratio": 1.05
+              }
+            },
+            "name": "all",
+            "max_displacement_chord": 1.5680803815912876,
+            "gamma": [
+              0.010622330571315813,
+              0.022283605723616734,
+              0.025917583209637912,
+              0.0273181733051322,
+              0.03389521106364045,
+              0.031142431139353194,
+              0.037317121467402375,
+              0.031577908524298495,
+              0.038634015943543515,
+              0.036632063227709524,
+              0.040103574423776156,
+              0.039505456859705246,
+              0.04200238285443464,
+              0.036511062668277,
+              0.038687036973453215,
+              0.03851422329052556,
+              0.005223030259400688,
+              0.042644262251875655,
+              0.038311529254058174,
+              0.035093334042622715,
+              0.04137726234524433,
+              0.03934671600662363,
+              0.039854554729886034,
+              0.036420100082676515,
+              0.03846617431042977,
+              0.031446825344389126,
+              0.037208333570838054,
+              0.03108338078433366,
+              0.0335945347917151,
+              0.02741856485610801,
+              0.026194936446815194,
+              0.022216258665351558,
+              0.010629154755017134
+            ],
+            "geometry": {
+              "min_area2": 0.0006471963224837782,
+              "min_reference_signed_jacobian": 0.6950471043220056,
+              "min_wake_wall_distance": 0.0,
+              "min_nonattachment_vertex_wall_distance": 0.01569765924785014,
+              "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+              "attachment_max_displacement_chord": 0.5879972611547927,
+              "attachment_ids": [
+                1,
+                21,
+                22,
+                24,
+                25,
+                27,
+                28,
+                30,
+                31,
+                33,
+                34,
+                36,
+                37,
+                39,
+                40,
+                42,
+                44,
+                46,
+                102,
+                103,
+                104,
+                105,
+                135,
+                136,
+                137,
+                165,
+                166,
+                167,
+                194,
+                195,
+                196,
+                220,
+                221,
+                222,
+                242,
+                243,
+                260,
+                261,
+                262,
+                274,
+                275,
+                283,
+                288,
+                1223,
+                1224,
+                1226,
+                1227,
+                1229,
+                1230,
+                1232,
+                1233,
+                1235,
+                1236,
+                1238,
+                1239,
+                1241,
+                1242,
+                1244,
+                1246,
+                1248,
+                1266,
+                1267,
+                1268,
+                1269,
+                1299,
+                1300,
+                1301,
+                1329,
+                1330,
+                1331,
+                1358,
+                1359,
+                1360,
+                1384,
+                1385,
+                1386,
+                1406,
+                1407,
+                1424,
+                1425,
+                1426,
+                1438,
+                1439,
+                1447,
+                1452
+              ],
+              "prepared_root_ids": [
+                46,
+                1248
+              ],
+              "violation_count": 0,
+              "violations": [],
+              "wall_closed": true,
+              "inside_wall_node_ids": [],
+              "new_inside_wall_node_ids": [],
+              "new_or_deeper_violation_count": 0,
+              "new_or_deeper_violations": [],
+              "pairs_tested": 26,
+              "tolerance": 1E-10,
+              "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+            },
+            "W_relative_change": 2.0276591150502044
+          }
+        ],
+        "physical_accuracy_accepted": false,
+        "all_step_CL_difference": 0.0,
+        "status": "completed"
+      }
+    }
+  },
+  "files": {
+    "collection.log": {
+      "sha256": "43128772940ca465ab225efea9bab5c058322a67cb2a606dabc8d9bd10805247",
+      "bytes": 547
+    },
+    "collection_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "collection_retry.log": {
+      "sha256": "124ad7fe894ebbb43dd4461ab99ad6e4135e446d6fa165d22ae4b7bbec79bcd2",
+      "bytes": 4948
+    },
+    "collection_retry_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "e1_position_sensitivity.json": {
+      "sha256": "fdea4bdbf104e0a5999d725576f6153df5d68c65045144701209908e9b16b22a",
+      "bytes": 153878
+    },
+    "e2_length_resolution.json": {
+      "sha256": "1107fff98cec07386e8ff83bba8adee9917677e3580b20f38dd62e13d74c2ff8",
+      "bytes": 581150
+    },
+    "e3_root_rows.json": {
+      "sha256": "f81f0a74cde8f358e890e6296e48f41153dbfc6a586da5733941196fe9e2b535",
+      "bytes": 1178821
+    },
+    "e4_conditioning.json": {
+      "sha256": "d9fc1265ed4d5cee5c0884a9046de90b423f93cd9f5822c7aefd0977aec35bc3",
+      "bytes": 1276180
+    },
+    "elliptic/audit.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/audit_corrected.log": {
+      "sha256": "d3b842143779c9445b6ae7359a0cd4da6ca3989bf0b92da43c72726ae478cad2",
+      "bytes": 55
+    },
+    "elliptic/audit_corrected_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/audit_error.log": {
+      "sha256": "dfea6c016f23b271950f10801dc6567f21a10a2553cb760af73c9b21851b5329",
+      "bytes": 1078
+    },
+    "elliptic/baseline.log": {
+      "sha256": "40dd011e1f8eb0df5557f68799ee23e148e62d539efe6dfa96e2bd57fe12fabf",
+      "bytes": 4727
+    },
+    "elliptic/baseline_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/baseline_geometry_audit.json": {
+      "sha256": "b72bd5d333331135aa85e11ea568ac5288e76b9479b00c07628c5060bae2abb7",
+      "bytes": 602884
+    },
+    "elliptic/e1.log": {
+      "sha256": "446c5bb7d2baf0113dcc59f0cc5238f34acb11cf2d78d39121976d98197bd07c",
+      "bytes": 4630
+    },
+    "elliptic/e1_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/e1_geometry_audit.json": {
+      "sha256": "558096561cfe35963b8c42b00f86c03aa1e181f1024623ba90fc64f81671d9b1",
+      "bytes": 3041807
+    },
+    "elliptic/e1_position_sensitivity.json": {
+      "sha256": "e8ed9713088e202d8008f69997443985f0403998f8e80ad932bd5512a9f123e8",
+      "bytes": 3684617
+    },
+    "elliptic/e2_length_5/history.json": {
+      "sha256": "b6c1aee859997b68d26d5c37737c10e2ca2a8c3d2a543d6a98b7b1d592530fa0",
+      "bytes": 91748
+    },
+    "elliptic/e2_length_5.log": {
+      "sha256": "8824e92c08008739d4655bae167ae9472d8c030e72fc1b0feee5e96aca2ad7c6",
+      "bytes": 740
+    },
+    "elliptic/e2_length_5_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/e2_spanwise/history.json": {
+      "sha256": "a5a72000b7bb168daf497226eee1def87835dc755561bc42823d9e12d1f5c82f",
+      "bytes": 117314
+    },
+    "elliptic/e2_spanwise.log": {
+      "sha256": "26b9ba23caec9f4f7ee8722cdbfdfc124ee1f5a52dd1d29be6c58c1b502d4f13",
+      "bytes": 730
+    },
+    "elliptic/e2_spanwise_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/e2_streamwise/history.json": {
+      "sha256": "95fe39b56d2b1f03c136f2fd5ef42563016fcde42401cada101571d91d9f2c29",
+      "bytes": 111683
+    },
+    "elliptic/e2_streamwise.log": {
+      "sha256": "26b184b121bf44e5d888559a570229c7ac75ce3f523c8bce06fcc35c1e0c1866",
+      "bytes": 748
+    },
+    "elliptic/e2_streamwise_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/e3_freeze_1/history.json": {
+      "sha256": "6573616f5fec717e51c68b380308191f0b6fb2523c09806c72c22731b3086637",
+      "bytes": 498021
+    },
+    "elliptic/e3_freeze_1.log": {
+      "sha256": "32e445cc86777d5b6b52eb43fb4fc659522aa3fb0681e26bd01ad93b0b9a1f94",
+      "bytes": 5552
+    },
+    "elliptic/e3_freeze_1_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/e3_freeze_1_serialization_failure/history.json": {
+      "sha256": "090e7bd89668e8b7811aa43a2f47a828230ae0b1e653299b5602fee007c80b20",
+      "bytes": 51779
+    },
+    "elliptic/e3_freeze_1_serialization_failure.log": {
+      "sha256": "d69955f3e6a7a6cd815ae28affbdc2fa4a6037e0b64925b1f50c4042f3a604fb",
+      "bytes": 184
+    },
+    "elliptic/e3_freeze_1_serialization_failure_error.log": {
+      "sha256": "4adacfcdaeaf670395b610c4f9ee12f659a1838515a1e07c28101501e7406e18",
+      "bytes": 2094
+    },
+    "elliptic/e3_freeze_2/history.json": {
+      "sha256": "f236c4a4bdfbbd39f3411d6eba7c8cf9b7a85e762102f39edd150a58e86cd375",
+      "bytes": 519357
+    },
+    "elliptic/e3_freeze_2.log": {
+      "sha256": "ad0fe38198dd25195d2d37b9c49be084a791d2b70d52661566d359a4cf304d93",
+      "bytes": 5560
+    },
+    "elliptic/e3_freeze_2_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/e3_freeze_3/history.json": {
+      "sha256": "74a1e4112c3e31e6dd1ea5f1e06fe1e2ebb5a44767e9ad48ede1f44277bd0977",
+      "bytes": 550794
+    },
+    "elliptic/e3_freeze_3.log": {
+      "sha256": "4a492751eb4f5bf18d6b830f639c3a456d9d71f66943fb8ca95b8a61adbcbb52",
+      "bytes": 5564
+    },
+    "elliptic/e3_freeze_3_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/e3_smooth/history.json": {
+      "sha256": "67f4cf1cc5f729384048619afa114a099841ec56a98454bd962b505ef2b96ed4",
+      "bytes": 501533
+    },
+    "elliptic/e3_smooth.log": {
+      "sha256": "a41f9a8a486ca79288597cb8e116b8f89d603d772a572f3eb6d8583bb05d7d7d",
+      "bytes": 5434
+    },
+    "elliptic/e3_smooth_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/e4.log": {
+      "sha256": "efa35ccabb4f3723c63789423a99c747acf98bf0b423ba87a6caf5ca9c3dc94f",
+      "bytes": 1285
+    },
+    "elliptic/e4_conditioning.json": {
+      "sha256": "dcaa2707ea1be5d7b5a54043d255005b1f591167d38a3229ea3d100af148dead",
+      "bytes": 172582
+    },
+    "elliptic/e4_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/first_step.log": {
+      "sha256": "b97c51bf17c8770bb8a0e796295fd5b440e895c8772c7fc5cf5c7df1cc17ab40",
+      "bytes": 187
+    },
+    "elliptic/first_step_decomposition.json": {
+      "sha256": "93ca1e58e39f720c66f4d40b16f32ad2124b402f641b11f835e77134e8c6fbbe",
+      "bytes": 15908
+    },
+    "elliptic/first_step_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "elliptic/manifest.json": {
+      "sha256": "5669c680071ab50fcb580a502631aa5437e0cade45e9d28edeb52292370fb475",
+      "bytes": 351984
+    },
+    "experiment_tests.log": {
+      "sha256": "c4734db8a4f647a7407a39ce4ad3a3c96c418299f1aff14ea407955e7993ec3b",
+      "bytes": 1311
+    },
+    "experiment_tests_corrected.log": {
+      "sha256": "99d799c461387931c9ca8ee071da49c8f19e018cb2c01feff00247deae3c88a9",
+      "bytes": 100
+    },
+    "final_focused_tests.log": {
+      "sha256": "4b7d9f467430e6a626b2f730b999c3d4e02c2181dda5a0fc18ad612ca0cf00e7",
+      "bytes": 112
+    },
+    "full_pytest.log": {
+      "sha256": "ae3ba1b7d70dd23f260c9c380e2b3d5b35e040d25e0711fb5e58d3bd97ccc999",
+      "bytes": 29533
+    },
+    "full_pytest_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "merge_full_pytest.log": {
+      "sha256": "86c9bf7f623987722714ff9223af779cd615b12d2cbf8ab7fd66540c4bf07567",
+      "bytes": 28268
+    },
+    "merge_full_pytest_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "merge_review_tests.log": {
+      "sha256": "601d2bff768b1ba86ffbe03e6c8ae9f51effa5615387a9d5c0cf7cd74747ce89",
+      "bytes": 194
+    },
+    "merge_review_tests_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "queue.json": {
+      "sha256": "a5b3a62a2aab7db01f625338d93841a0d78bb755ec42f1e40f88992b62a481ce",
+      "bytes": 10025
+    },
+    "queue.log": {
+      "sha256": "32bc94d955f6896f06659303c2327e3112a45976ee30f8d0f7c9cf04ce994603",
+      "bytes": 1522
+    },
+    "queue_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/audit.log": {
+      "sha256": "73a392e52051692809c1e3cc9b51f77b7c3c6f8c7f1501583a9632d044aaf700",
+      "bytes": 46
+    },
+    "rect/audit_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/baseline.log": {
+      "sha256": "6e5f9e8f0b8f7564f6a571f7e308f746cd3f3c2bfcb8b147c031adc0605aed99",
+      "bytes": 4321
+    },
+    "rect/baseline_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/baseline_geometry_audit.json": {
+      "sha256": "e6e7dab222c3385e57024bfb266078ab2eb2a3ef0b85c528e9c065524aa70fe9",
+      "bytes": 85607
+    },
+    "rect/e1.log": {
+      "sha256": "395b7be8750bb90f36d72f0d2704c291f6247b1f464ff62c77a676a4a3a57eb1",
+      "bytes": 2638
+    },
+    "rect/e1_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/e1_geometry_audit.json": {
+      "sha256": "45c2558a5f1065a500656ce61f98ba4ef3b86772e41728188051f7974f093778",
+      "bytes": 116237
+    },
+    "rect/e1_position_sensitivity.json": {
+      "sha256": "7f6222769602330bb0572ca41d1fbbcf7e5db3cca315ec9884878c1b34304833",
+      "bytes": 724846
+    },
+    "rect/e2_rect_96/history.json": {
+      "sha256": "b3bd1302cf96cb50c3b1247597ac664a415bca654957761e1c37f5e7bb2d0c5e",
+      "bytes": 36675
+    },
+    "rect/e2_rect_96.log": {
+      "sha256": "80e9fe3cc123c276b2b5ec746a91ace7f670260a923bd8ff2cc0c9a97e79b441",
+      "bytes": 715
+    },
+    "rect/e2_rect_96_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/e3_freeze_1/history.json": {
+      "sha256": "35d63ab95ce58a7e0ec3028a1cda2617100ef31593396b6543237b1fd514dc9a",
+      "bytes": 219539
+    },
+    "rect/e3_freeze_1.log": {
+      "sha256": "9acf125cde6a94869035405328fbd00e96143f4b17229cde320b5ec015b107ab",
+      "bytes": 5686
+    },
+    "rect/e3_freeze_1_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/e3_freeze_2/history.json": {
+      "sha256": "ec972febb75ae0fdc598784b4c2913dd659e272e4e6295ad2f1746510fe3f3c9",
+      "bytes": 218557
+    },
+    "rect/e3_freeze_2.log": {
+      "sha256": "0c5f6be760b94ffeb41185c1907fbac7bb5eb8f70580fbde58bc10d27236db60",
+      "bytes": 5540
+    },
+    "rect/e3_freeze_2_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/e3_freeze_3/history.json": {
+      "sha256": "46785520fc7de45565b777f3cc8e43c409bcb29981d66aeb5da9040b85d1aa5c",
+      "bytes": 215311
+    },
+    "rect/e3_freeze_3.log": {
+      "sha256": "a31be46ff335136bb72918e0a7f67cd0810b4696b9401335687029586d8ea1de",
+      "bytes": 5090
+    },
+    "rect/e3_freeze_3_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/e3_smooth/history.json": {
+      "sha256": "fbe4e3b781bf1fecd7c5454486d127e9035c5995aa0f1db955e74eb805e9e0cb",
+      "bytes": 219575
+    },
+    "rect/e3_smooth.log": {
+      "sha256": "ddd25cbe4a4d7dd02ec99cf6660ca8476b20d069df2cd1271330fbd9958d4ea2",
+      "bytes": 5466
+    },
+    "rect/e3_smooth_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/e4.log": {
+      "sha256": "cb00f440a4568d4e673b44fd68f240c466ac2ec00b4225b58e5738f48698dfec",
+      "bytes": 449
+    },
+    "rect/e4_conditioning.json": {
+      "sha256": "a9b17ed0797cd16d4398fec9492378ccd16496c76c13d468a2d3fac305851d53",
+      "bytes": 52471
+    },
+    "rect/e4_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/first_step.log": {
+      "sha256": "370bcd0e9dc146372202995ef10e3d90d5a6f3732a3c3c66598a49530e2928df",
+      "bytes": 162
+    },
+    "rect/first_step_decomposition.json": {
+      "sha256": "c0c93d6680bf7269b653e7cffcd833b10b141e4069d670398a2c8ab977f0d447",
+      "bytes": 8804
+    },
+    "rect/first_step_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "rect/manifest.json": {
+      "sha256": "b4a70bd9861997e2835722845f509a1ff7a310e1d895aea3c7a15057a4a4c4c7",
+      "bytes": 246456
+    },
+    "swept30/audit.log": {
+      "sha256": "c97d8a4ccaacbbadde48b24473e7901b431ca536dce94ca18ccd1d4824f9ffa6",
+      "bytes": 29
+    },
+    "swept30/audit_corrected.log": {
+      "sha256": "bca588b9e2f91ba001c980a5e55ba3dd7247fb05aec55efea22c13f371ccaac9",
+      "bytes": 53
+    },
+    "swept30/audit_corrected_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/audit_error.log": {
+      "sha256": "805d0641234eb845d2189b43a232fdea6db4fbc35caacde5fb8e4d71fd9f2d45",
+      "bytes": 1085
+    },
+    "swept30/baseline.log": {
+      "sha256": "0e132d52385e0d7115d443fbf9674fb6392ecf3f600166361162abd43fca99b2",
+      "bytes": 4648
+    },
+    "swept30/baseline_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/baseline_geometry_audit.json": {
+      "sha256": "3e6b4c44258c9e6ec4465754a6e2f53de539db2279058b5d359d61d1d2709998",
+      "bytes": 140746
+    },
+    "swept30/e1.log": {
+      "sha256": "39ace7facc938285478fb05ad7ed7aa87c00837ec704eacf245b96871f0d4cfd",
+      "bytes": 4618
+    },
+    "swept30/e1_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e1_geometry_audit.json": {
+      "sha256": "1dec1c9786ce0ad4ababad3cabaae0ab73ad3a9b353b50de386a6e4dec44f232",
+      "bytes": 5102044
+    },
+    "swept30/e1_position_sensitivity.json": {
+      "sha256": "80663d61d22c9686fd6d5665ca8076841d7a0bc4e197f81c7af3803cfb8a83a2",
+      "bytes": 3388167
+    },
+    "swept30/e2_length_10/history.json": {
+      "sha256": "5b9e5460a48fa1fbbddb54c8c9677f559d6415c932417df4f70c5c7bfde1f5ac",
+      "bytes": 75426
+    },
+    "swept30/e2_length_10.log": {
+      "sha256": "48f2f54ca48502e00214959e3a8dceac8bd672906b3f109dbcc57ad943481198",
+      "bytes": 736
+    },
+    "swept30/e2_length_10_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e2_length_20/history.json": {
+      "sha256": "383e884eeb50ca31bf9920b20a5f7a4e7d1e0b445878fcc0f28e116b3ffe45a7",
+      "bytes": 75426
+    },
+    "swept30/e2_length_20.log": {
+      "sha256": "3d68ac3d1adea3e9babe43bef887e8982a2bf5c85e9daa5590ffa0012bbce2a2",
+      "bytes": 737
+    },
+    "swept30/e2_length_20_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e2_length_5/history.json": {
+      "sha256": "ce3186299afd9f7a2af7c933a077a1bf634ec8456796ab78e493b1889942fc19",
+      "bytes": 75399
+    },
+    "swept30/e2_length_5.log": {
+      "sha256": "6bdc3de2275b55e69be4e4837ba891ef8582fcc635482f7464e9d89ad8e48bfd",
+      "bytes": 733
+    },
+    "swept30/e2_length_5_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e2_spanwise/history.json": {
+      "sha256": "a8bcb81fd470f504139644a08e925ad98a96b3d469298a3692a2720666a16766",
+      "bytes": 93774
+    },
+    "swept30/e2_spanwise.log": {
+      "sha256": "ba6437af118bd2a11d5bcd23562ceb4356a5e379d1e9a5091f83cc7e9534becd",
+      "bytes": 729
+    },
+    "swept30/e2_spanwise_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e2_streamwise/history.json": {
+      "sha256": "05d382c01f27f4d584676af1bda6b2a789450c85419ea34a5281734c5d51af05",
+      "bytes": 90778
+    },
+    "swept30/e2_streamwise.log": {
+      "sha256": "a2d4318f01a78dd4f1f02429870a511f4e510040e7d3e1f8ae8e9f7f8eee0425",
+      "bytes": 743
+    },
+    "swept30/e2_streamwise_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e3_freeze_1/history.json": {
+      "sha256": "09cb100d2af0f95e4440baf70d6d9f1d15c2372b5c0980c7c4767c4ee0d70e02",
+      "bytes": 427059
+    },
+    "swept30/e3_freeze_1.log": {
+      "sha256": "9a6aff7430fcdccae807bdd92cb1b86e34776e6840e11a132fc4830c53022a1f",
+      "bytes": 5494
+    },
+    "swept30/e3_freeze_1_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e3_freeze_2/history.json": {
+      "sha256": "dc8bce96be18f4b4714a66e164c9da3300e4fb47589d253f5e9253a053785839",
+      "bytes": 514477
+    },
+    "swept30/e3_freeze_2.log": {
+      "sha256": "7aed6cef32adeed81553822354fbae23b93fe26ddaa2585dbe5a82674052586c",
+      "bytes": 5503
+    },
+    "swept30/e3_freeze_2_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e3_freeze_3/history.json": {
+      "sha256": "5c65a53a32f1923e265a7986f3fdf09c75a6d4bdfec77677f3696abdd7e25afd",
+      "bytes": 456417
+    },
+    "swept30/e3_freeze_3.log": {
+      "sha256": "011661426e2df73ac397f0554f2c6abeea8ebfd91ea1bc3e662e1b3fa68abedb",
+      "bytes": 5500
+    },
+    "swept30/e3_freeze_3_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e3_smooth/history.json": {
+      "sha256": "1ee403cdc0d84543ad16fc9df4ca05796fc00bda0ef1884e8c1e852d48ba1222",
+      "bytes": 588936
+    },
+    "swept30/e3_smooth.log": {
+      "sha256": "d3a33b0ce55860af6c702034dbdaccd40aa0428bdd402977ad2b43c20dc14701",
+      "bytes": 5369
+    },
+    "swept30/e3_smooth_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/e4.log": {
+      "sha256": "4fb382c9f0c5f7208e930de9af5466ec813d37e48d7fad0bc4581233b6251655",
+      "bytes": 1258
+    },
+    "swept30/e4_conditioning.json": {
+      "sha256": "ad8bc458ee40a4a6a83fe62f5e9a342aa7a97cbd59cd9cdec8fc007f15ed9e46",
+      "bytes": 149846
+    },
+    "swept30/e4_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/first_step.log": {
+      "sha256": "c859494ceb6681bd7eeaa71dda83d5c99edfebfc16085f84d1d4353e58f2a340",
+      "bytes": 184
+    },
+    "swept30/first_step_decomposition.json": {
+      "sha256": "36209d63dd10c7f65786c56456ef10074840566124dadcb616642d81293f2f77",
+      "bytes": 12957
+    },
+    "swept30/first_step_error.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "swept30/manifest.json": {
+      "sha256": "295a2741c79b3d26b832f0b3c569464a621e8e584b0f81d386df0eb7a0af32a2",
+      "bytes": 275892
+    },
+    "uniform_axial_kinematics.json": {
+      "sha256": "e34d9cb8818d92656b7c2addbc857cacd9c554effcbf94816edcdc4cd3f2519d",
+      "bytes": 18449
+    }
+  },
+  "failures": [
+    {
+      "path": "elliptic/e3_freeze_1_serialization_failure/history.json",
+      "status": "preserved_failed_attempt"
+    }
+  ],
+  "material_passport": {
+    "origin_skill": "experiment-agent",
+    "mode": "run",
+    "date": "2026-11-05",
+    "verification_status": "UNVERIFIED",
+    "output_schema": "exp_result_v1",
+    "scope": "physical accuracy; local numerical executions have separate receipts"
+  },
+  "source_provenance_note": "Per-run source hashes identify actual instrumentation and audit revisions, including initially uncommitted scripts; head alone is not a claim of a clean experimental worktree.",
+  "source_sha256": {
+    "tools/wake_first_step_decomposition.py": "7297b4c74c557d3ba9bf4f8cbe8f0439b922159735322215549e4e14af8773b3",
+    "tools/wake_intervention_study.py": "9893b91a5fa147d647710da56dfafbca8e70411dc7f8a760bb4ae2ec6881abe2",
+    "tools/wake_material_kinematics.py": "7057f5b1cb29db72a6d8b1213575a6cc2644543be07d39ff1d6d99d31366527a",
+    "tools/wake_mesh_interventions.py": "23a74ea4a0e32406f2b08d2d3888879ae569124eab6f3bf2e04e4ee1cff066da",
+    "tools/wake_position_study.py": "97c833bd46b6c0a385eacf7ef638aa420b927e78b2aad2d75907dffff24829e7",
+    "tools/wake_sensitivity_audit.py": "4d6298e6e0d7098d2f966c8b6fe2b7f4a10d586553d25c8ed51c3ed2fee19724",
+    "tools/wake_sensitivity_baseline.py": "8116db30af549bdd72c1f0a511de5181c4cdcb2779b98731dab8ebf619b1197a",
+    "tools/wake_sensitivity_geometry.py": "80fccfb4b2203b62e7cf79d687cb1475e5b70f467e853eedd2221bb80029c3f1",
+    "tools/wake_sensitivity_plot.py": "b52f0c6ccf7bf272af18f653500dc1b89358df4a0adc97d28097afcf6a4f2491",
+    "tools/wake_sensitivity_queue.py": "cd40e5eda818ff8e7bfe024a3a9aad4be7f59241ff8b4c4476b2e151a2b934e6",
+    "tools/wake_sensitivity_report.py": "bd18fc53fab917b4720a0927bc822e415d2dd52a1505a60cfef15f40d258dda5",
+    "tools/wake_sensitivity_run.py": "855eeab53b547f97eecdd4afdd2a851f73336d7ba1fa4751906fff3c7ee66fc0"
+  },
+  "queue": {
+    "completed": [
+      {
+        "label": "swept30/e2_length_5",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e2",
+          "--case",
+          "swept30",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "length_5",
+          "--iterations",
+          "8"
+        ],
+        "started": 1793869672.075144,
+        "pid": 10564,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 396.1076138019562
+      },
+      {
+        "label": "swept30/e2_length_20",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e2",
+          "--case",
+          "swept30",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "length_20",
+          "--iterations",
+          "8"
+        ],
+        "started": 1793869672.090533,
+        "pid": 31448,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 396.10330963134766
+      },
+      {
+        "label": "swept30/e2_length_10",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e2",
+          "--case",
+          "swept30",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "length_10",
+          "--iterations",
+          "8"
+        ],
+        "started": 1793869672.0832057,
+        "pid": 8876,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 401.7381649017334
+      },
+      {
+        "label": "swept30/e2_streamwise",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e2",
+          "--case",
+          "swept30",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "streamwise",
+          "--iterations",
+          "8"
+        ],
+        "started": 1793870068.2027912,
+        "pid": 26904,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 1465.4719738960266
+      },
+      {
+        "label": "swept30/e2_spanwise",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e2",
+          "--case",
+          "swept30",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "spanwise",
+          "--iterations",
+          "8"
+        ],
+        "started": 1793870068.2202377,
+        "pid": 12836,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 1724.0919194221497
+      },
+      {
+        "label": "rect/e3_freeze_2",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e3",
+          "--case",
+          "rect",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "freeze_2",
+          "--iterations",
+          "60"
+        ],
+        "started": 1793872599.7175314,
+        "pid": 11812,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 11.367230653762817
+      },
+      {
+        "label": "rect/e3_freeze_3",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e3",
+          "--case",
+          "rect",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "freeze_3",
+          "--iterations",
+          "60"
+        ],
+        "started": 1793872611.096871,
+        "pid": 35460,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 11.32287311553955
+      },
+      {
+        "label": "rect/e3_smooth",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e3",
+          "--case",
+          "rect",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "smooth",
+          "--iterations",
+          "60"
+        ],
+        "started": 1793872611.1092098,
+        "pid": 14024,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 11.31961703300476
+      },
+      {
+        "label": "swept30/e3_freeze_3",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e3",
+          "--case",
+          "swept30",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "freeze_3",
+          "--iterations",
+          "60"
+        ],
+        "started": 1793870073.8302698,
+        "pid": 8380,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 3471.89896607399
+      },
+      {
+        "label": "swept30/e4",
+        "preserved_existing": "runs\\verification\\issue102_wake_sensitivity\\swept30\\e4_conditioning.json"
+      },
+      {
+        "label": "elliptic/e2_length_5",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e2",
+          "--case",
+          "elliptic",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "length_5",
+          "--iterations",
+          "8"
+        ],
+        "started": 1793872622.4411294,
+        "pid": 32612,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 933.3164758682251
+      },
+      {
+        "label": "swept30/e3_smooth",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e3",
+          "--case",
+          "swept30",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "smooth",
+          "--iterations",
+          "60"
+        ],
+        "started": 1793870163.405362,
+        "pid": 36304,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 3452.3731451034546
+      },
+      {
+        "label": "elliptic/e4",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_position_study",
+          "--phase",
+          "e4",
+          "--case",
+          "elliptic",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity"
+        ],
+        "started": 1793873545.75374,
+        "pid": 13656,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 445.15863513946533
+      },
+      {
+        "label": "elliptic/e2_streamwise",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e2",
+          "--case",
+          "elliptic",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "streamwise",
+          "--iterations",
+          "8"
+        ],
+        "started": 1793872622.4555037,
+        "pid": 35888,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 2043.6917893886566
+      },
+      {
+        "label": "elliptic/e2_spanwise",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e2",
+          "--case",
+          "elliptic",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "spanwise",
+          "--iterations",
+          "8"
+        ],
+        "started": 1793873000.531677,
+        "pid": 38784,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 2080.7493629455566
+      },
+      {
+        "label": "elliptic/e3_freeze_2",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e3",
+          "--case",
+          "elliptic",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "freeze_2",
+          "--iterations",
+          "60"
+        ],
+        "started": 1793870213.3630362,
+        "pid": 10128,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 4892.925245523453
+      },
+      {
+        "label": "elliptic/e3_freeze_3",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e3",
+          "--case",
+          "elliptic",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "freeze_3",
+          "--iterations",
+          "60"
+        ],
+        "started": 1793871533.6964843,
+        "pid": 39728,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 4052.7326033115387
+      },
+      {
+        "label": "elliptic/e3_smooth",
+        "command": [
+          "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+          "-m",
+          "tools.wake_intervention_study",
+          "--phase",
+          "e3",
+          "--case",
+          "elliptic",
+          "--out",
+          "runs\\verification\\issue102_wake_sensitivity",
+          "--variant",
+          "smooth",
+          "--iterations",
+          "60"
+        ],
+        "started": 1793871792.3352597,
+        "pid": 41392,
+        "exit_code": 0,
+        "timed_out": false,
+        "seconds": 3889.1280546188354
+      }
+    ],
+    "external_pids": [],
+    "pending": [],
+    "running": []
+  },
+  "process_failures": [],
+  "uniform_axial_kinematics": {
+    "schema": "dpanel.wake_sensitivity.uniform_axial.v1",
+    "command": [
+      "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+      "D:\\3D\\Projects\\panel\\tools\\wake_material_kinematics.py",
+      "--out",
+      "runs\\verification\\issue102_wake_sensitivity"
+    ],
+    "source_sha256": {
+      "tools\\wake_material_kinematics.py": "7057f5b1cb29db72a6d8b1213575a6cc2644543be07d39ff1d6d99d31366527a",
+      "panel\\p1_steady_free_wake.py": "3978ba3532f07846fb8972129541fcd97bb7b8d5f297e133dacf0771f1ce3a16"
+    },
+    "imposed_velocity": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "min_axial": 0.08,
+    "freeze": true,
+    "interpretation": "kinematic identity check only; no aerodynamic solve or physical accuracy acceptance",
+    "cases": {
+      "rect": {
+        "frozen_initial_state_sha256": "20141fa1103a80e2c9a5941a8e4139473251e704f6172c669f6d04b344550250",
+        "wake_faces": 24,
+        "used_nodes": 21,
+        "attached_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "graph_roots": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "moving_attachment_ids": [],
+        "uniform_flow_max_raw_displacement_chord": 0.0,
+        "uniform_flow_attachment_max_raw_displacement_chord": 0.0,
+        "uniform_flow_relaxed_attachment_displacement_chord": 0.0,
+        "uniform_flow_identity_passed": true,
+        "unrelaxed_target_area_ratio": 1.0,
+        "unrelaxed_target_degenerate_faces": 0,
+        "unrelaxed_target_min_reference_jacobian": 1.0,
+        "off_axis_predecessor_count": 0,
+        "off_axis_predecessor_ids": [],
+        "max_original_crossstream_predecessor_offset_chord": 0.0,
+        "axial_guard_frozen_ids": [],
+        "target_formula": "target_yz[node]=target_yz[pred]+.5*original_dx*(Vyz[pred]/Vx[pred]+Vyz[node]/Vx[node]); original transverse edge offset is absent"
+      },
+      "swept30": {
+        "frozen_initial_state_sha256": "68c016ddeace04f5571db46040ece96f7d907e6df2dc5abed6f5dff2a202fcd6",
+        "wake_faces": 1110,
+        "used_nodes": 609,
+        "attached_ids": [
+          1,
+          12,
+          13,
+          15,
+          16,
+          18,
+          19,
+          21,
+          22,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          994,
+          995,
+          997,
+          998,
+          1000,
+          1001,
+          1003,
+          1004,
+          1023,
+          1024,
+          1025,
+          1026,
+          1027,
+          1028,
+          1057,
+          1058,
+          1059,
+          1060,
+          1061,
+          1062,
+          1088,
+          1089,
+          1090,
+          1091,
+          1092,
+          1093,
+          1115,
+          1116,
+          1117,
+          1118,
+          1119,
+          1120
+        ],
+        "graph_roots": [
+          1
+        ],
+        "moving_attachment_ids": [
+          12,
+          13,
+          15,
+          16,
+          18,
+          19,
+          21,
+          22,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          994,
+          995,
+          997,
+          998,
+          1000,
+          1001,
+          1003,
+          1004,
+          1023,
+          1024,
+          1025,
+          1026,
+          1027,
+          1028,
+          1057,
+          1058,
+          1059,
+          1060,
+          1061,
+          1062,
+          1088,
+          1089,
+          1090,
+          1091,
+          1092,
+          1093,
+          1115,
+          1116,
+          1117,
+          1118,
+          1119,
+          1120
+        ],
+        "uniform_flow_max_raw_displacement_chord": 2.0,
+        "uniform_flow_attachment_max_raw_displacement_chord": 2.0,
+        "uniform_flow_relaxed_attachment_displacement_chord": 0.6,
+        "uniform_flow_identity_passed": false,
+        "unrelaxed_target_area_ratio": 0.0,
+        "unrelaxed_target_degenerate_faces": 1110,
+        "unrelaxed_target_min_reference_jacobian": 0.0,
+        "off_axis_predecessor_count": 372,
+        "off_axis_predecessor_ids": [
+          12,
+          13,
+          15,
+          16,
+          18,
+          19,
+          21,
+          22,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          278,
+          279,
+          280,
+          281,
+          282,
+          283,
+          284,
+          285,
+          286,
+          287,
+          288,
+          289,
+          290,
+          291,
+          292,
+          293,
+          294,
+          295,
+          296,
+          297,
+          298,
+          299,
+          300,
+          301,
+          302,
+          303,
+          304,
+          305,
+          306,
+          307,
+          308,
+          309,
+          310,
+          311,
+          312,
+          313,
+          314,
+          315,
+          316,
+          317,
+          318,
+          319,
+          320,
+          321,
+          322,
+          323,
+          324,
+          325,
+          326,
+          327,
+          328,
+          329,
+          330,
+          331,
+          332,
+          333,
+          334,
+          335,
+          336,
+          337,
+          338,
+          339,
+          340,
+          341,
+          342,
+          343,
+          344,
+          345,
+          346,
+          347,
+          348,
+          349,
+          350,
+          351,
+          352,
+          353,
+          354,
+          355,
+          356,
+          357,
+          358,
+          359,
+          360,
+          361,
+          362,
+          363,
+          364,
+          365,
+          366,
+          367,
+          368,
+          369,
+          370,
+          371,
+          372,
+          373,
+          374,
+          375,
+          376,
+          377,
+          378,
+          379,
+          380,
+          381,
+          382,
+          383,
+          384,
+          385,
+          386,
+          387,
+          388,
+          389,
+          390,
+          391,
+          392,
+          393,
+          394,
+          395,
+          396,
+          397,
+          398,
+          399,
+          400,
+          401,
+          402,
+          403,
+          404,
+          405,
+          406,
+          407,
+          408,
+          409,
+          410,
+          411,
+          412,
+          413,
+          414,
+          415,
+          416,
+          417,
+          418,
+          419,
+          420,
+          421,
+          422,
+          423,
+          424,
+          425,
+          426,
+          427,
+          428,
+          429,
+          430,
+          431,
+          994,
+          995,
+          997,
+          998,
+          1000,
+          1001,
+          1003,
+          1004,
+          1023,
+          1024,
+          1025,
+          1026,
+          1027,
+          1028,
+          1057,
+          1058,
+          1059,
+          1060,
+          1061,
+          1062,
+          1088,
+          1089,
+          1090,
+          1091,
+          1092,
+          1093,
+          1115,
+          1116,
+          1117,
+          1118,
+          1119,
+          1120,
+          1222,
+          1223,
+          1224,
+          1225,
+          1226,
+          1227,
+          1228,
+          1229,
+          1230,
+          1231,
+          1232,
+          1233,
+          1234,
+          1235,
+          1236,
+          1237,
+          1238,
+          1239,
+          1240,
+          1241,
+          1242,
+          1243,
+          1244,
+          1245,
+          1246,
+          1247,
+          1248,
+          1249,
+          1250,
+          1251,
+          1252,
+          1253,
+          1254,
+          1255,
+          1256,
+          1257,
+          1258,
+          1259,
+          1260,
+          1261,
+          1262,
+          1263,
+          1264,
+          1265,
+          1266,
+          1267,
+          1268,
+          1269,
+          1270,
+          1271,
+          1272,
+          1273,
+          1274,
+          1275,
+          1276,
+          1277,
+          1278,
+          1279,
+          1280,
+          1281,
+          1282,
+          1283,
+          1284,
+          1285,
+          1286,
+          1287,
+          1288,
+          1289,
+          1290,
+          1291,
+          1292,
+          1293,
+          1294,
+          1295,
+          1296,
+          1297,
+          1298,
+          1299,
+          1300,
+          1301,
+          1302,
+          1303,
+          1304,
+          1305,
+          1306,
+          1307,
+          1308,
+          1309,
+          1310,
+          1311,
+          1312,
+          1313,
+          1314,
+          1315,
+          1316,
+          1317,
+          1318,
+          1319,
+          1320,
+          1321,
+          1322,
+          1323,
+          1324,
+          1325,
+          1326,
+          1327,
+          1328,
+          1329,
+          1330,
+          1331,
+          1332,
+          1333,
+          1334,
+          1335,
+          1336,
+          1337,
+          1338,
+          1339,
+          1340,
+          1341,
+          1342,
+          1343,
+          1344,
+          1345,
+          1346,
+          1347,
+          1348,
+          1349,
+          1350,
+          1351,
+          1352,
+          1353,
+          1354,
+          1355,
+          1356,
+          1357,
+          1358,
+          1359,
+          1360,
+          1361,
+          1362,
+          1363,
+          1364,
+          1365,
+          1366,
+          1367,
+          1368,
+          1369,
+          1370,
+          1371,
+          1372,
+          1373,
+          1374,
+          1375
+        ],
+        "max_original_crossstream_predecessor_offset_chord": 0.125,
+        "axial_guard_frozen_ids": [],
+        "target_formula": "target_yz[node]=target_yz[pred]+.5*original_dx*(Vyz[pred]/Vx[pred]+Vyz[node]/Vx[node]); original transverse edge offset is absent"
+      },
+      "elliptic": {
+        "frozen_initial_state_sha256": "96061d22f16f7337ccfc9aebbf8b666765c36e52423524e85bdce6c427b7f1f1",
+        "wake_faces": 1528,
+        "used_nodes": 841,
+        "attached_ids": [
+          1,
+          21,
+          22,
+          24,
+          25,
+          27,
+          28,
+          30,
+          31,
+          33,
+          34,
+          36,
+          37,
+          39,
+          40,
+          42,
+          44,
+          46,
+          102,
+          103,
+          104,
+          105,
+          135,
+          136,
+          137,
+          165,
+          166,
+          167,
+          194,
+          195,
+          196,
+          220,
+          221,
+          222,
+          242,
+          243,
+          260,
+          261,
+          262,
+          274,
+          275,
+          283,
+          288,
+          1223,
+          1224,
+          1226,
+          1227,
+          1229,
+          1230,
+          1232,
+          1233,
+          1235,
+          1236,
+          1238,
+          1239,
+          1241,
+          1242,
+          1244,
+          1246,
+          1248,
+          1266,
+          1267,
+          1268,
+          1269,
+          1299,
+          1300,
+          1301,
+          1329,
+          1330,
+          1331,
+          1358,
+          1359,
+          1360,
+          1384,
+          1385,
+          1386,
+          1406,
+          1407,
+          1424,
+          1425,
+          1426,
+          1438,
+          1439,
+          1447,
+          1452
+        ],
+        "graph_roots": [
+          46,
+          1248
+        ],
+        "moving_attachment_ids": [
+          1,
+          21,
+          22,
+          24,
+          25,
+          27,
+          28,
+          30,
+          31,
+          33,
+          34,
+          36,
+          37,
+          39,
+          40,
+          42,
+          44,
+          102,
+          103,
+          104,
+          105,
+          135,
+          136,
+          137,
+          165,
+          166,
+          167,
+          194,
+          195,
+          196,
+          220,
+          221,
+          222,
+          242,
+          243,
+          260,
+          261,
+          262,
+          274,
+          275,
+          283,
+          288,
+          1223,
+          1224,
+          1226,
+          1227,
+          1229,
+          1230,
+          1232,
+          1233,
+          1235,
+          1236,
+          1238,
+          1239,
+          1241,
+          1242,
+          1244,
+          1246,
+          1266,
+          1267,
+          1268,
+          1269,
+          1299,
+          1300,
+          1301,
+          1329,
+          1330,
+          1331,
+          1358,
+          1359,
+          1360,
+          1384,
+          1385,
+          1386,
+          1406,
+          1407,
+          1424,
+          1425,
+          1426,
+          1438,
+          1439,
+          1447,
+          1452
+        ],
+        "uniform_flow_max_raw_displacement_chord": 2.125,
+        "uniform_flow_attachment_max_raw_displacement_chord": 2.0,
+        "uniform_flow_relaxed_attachment_displacement_chord": 0.6,
+        "uniform_flow_identity_passed": false,
+        "unrelaxed_target_area_ratio": 0.9948822745133111,
+        "unrelaxed_target_degenerate_faces": 1497,
+        "unrelaxed_target_min_reference_jacobian": 0.0,
+        "off_axis_predecessor_count": 331,
+        "off_axis_predecessor_ids": [
+          1,
+          21,
+          22,
+          24,
+          25,
+          27,
+          28,
+          30,
+          31,
+          33,
+          34,
+          36,
+          37,
+          39,
+          40,
+          42,
+          44,
+          102,
+          103,
+          104,
+          105,
+          135,
+          136,
+          137,
+          165,
+          166,
+          167,
+          194,
+          195,
+          196,
+          220,
+          221,
+          222,
+          242,
+          243,
+          260,
+          261,
+          262,
+          274,
+          275,
+          283,
+          288,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          510,
+          511,
+          512,
+          513,
+          514,
+          515,
+          516,
+          517,
+          518,
+          519,
+          520,
+          521,
+          522,
+          523,
+          524,
+          525,
+          526,
+          527,
+          528,
+          529,
+          530,
+          531,
+          532,
+          533,
+          534,
+          535,
+          536,
+          537,
+          538,
+          539,
+          540,
+          541,
+          542,
+          543,
+          544,
+          545,
+          546,
+          547,
+          548,
+          549,
+          550,
+          551,
+          552,
+          553,
+          554,
+          555,
+          556,
+          557,
+          558,
+          559,
+          560,
+          561,
+          562,
+          563,
+          564,
+          565,
+          566,
+          567,
+          568,
+          569,
+          570,
+          571,
+          572,
+          573,
+          574,
+          575,
+          576,
+          577,
+          578,
+          579,
+          580,
+          581,
+          582,
+          583,
+          584,
+          585,
+          586,
+          587,
+          588,
+          589,
+          590,
+          591,
+          592,
+          593,
+          594,
+          595,
+          596,
+          597,
+          598,
+          599,
+          600,
+          601,
+          602,
+          604,
+          605,
+          606,
+          607,
+          608,
+          609,
+          610,
+          611,
+          612,
+          613,
+          614,
+          615,
+          616,
+          617,
+          618,
+          619,
+          620,
+          621,
+          622,
+          623,
+          624,
+          625,
+          626,
+          1223,
+          1224,
+          1226,
+          1227,
+          1229,
+          1230,
+          1232,
+          1233,
+          1235,
+          1236,
+          1238,
+          1239,
+          1241,
+          1242,
+          1244,
+          1246,
+          1266,
+          1267,
+          1268,
+          1269,
+          1299,
+          1300,
+          1301,
+          1329,
+          1330,
+          1331,
+          1358,
+          1359,
+          1360,
+          1384,
+          1385,
+          1386,
+          1406,
+          1407,
+          1424,
+          1425,
+          1426,
+          1438,
+          1439,
+          1447,
+          1452,
+          1666,
+          1667,
+          1668,
+          1669,
+          1670,
+          1671,
+          1672,
+          1673,
+          1674,
+          1675,
+          1676,
+          1677,
+          1678,
+          1679,
+          1680,
+          1681,
+          1682,
+          1683,
+          1684,
+          1685,
+          1686,
+          1687,
+          1688,
+          1689,
+          1690,
+          1691,
+          1692,
+          1693,
+          1694,
+          1695,
+          1696,
+          1697,
+          1698,
+          1699,
+          1700,
+          1701,
+          1702,
+          1703,
+          1704,
+          1705,
+          1706,
+          1707,
+          1708,
+          1709,
+          1710,
+          1711,
+          1712,
+          1713,
+          1714,
+          1715,
+          1716,
+          1717,
+          1718,
+          1719,
+          1720,
+          1721,
+          1722,
+          1723,
+          1724,
+          1725,
+          1726,
+          1727,
+          1728,
+          1729,
+          1730,
+          1731,
+          1732,
+          1733,
+          1734,
+          1735,
+          1736,
+          1737,
+          1738,
+          1739,
+          1740,
+          1741,
+          1742,
+          1743,
+          1744,
+          1745,
+          1746,
+          1747,
+          1748,
+          1749,
+          1750,
+          1751,
+          1752,
+          1753,
+          1754,
+          1755,
+          1756,
+          1757,
+          1758,
+          1759,
+          1760,
+          1761,
+          1762,
+          1763,
+          1764,
+          1765,
+          1766,
+          1768,
+          1769,
+          1770,
+          1771,
+          1772,
+          1773,
+          1774,
+          1775,
+          1776,
+          1777,
+          1778,
+          1779,
+          1780,
+          1781,
+          1782,
+          1783,
+          1784,
+          1785,
+          1786,
+          1787,
+          1788,
+          1789,
+          1790
+        ],
+        "max_original_crossstream_predecessor_offset_chord": 0.125,
+        "axial_guard_frozen_ids": [],
+        "target_formula": "target_yz[node]=target_yz[pred]+.5*original_dx*(Vyz[pred]/Vx[pred]+Vyz[node]/Vx[node]); original transverse edge offset is absent"
+      }
+    },
+    "physical_accuracy_accepted": false
+  },
+  "test_comparison": {
+    "reference": "runs/verification/native_blas/fixed_pytest.log",
+    "current": "full_pytest.log",
+    "reference_failed": [
+      "FAILED test/test_differentiable_panel_fields.py::test_local_force_moment_vjp_to_vertices_and_moving_stations",
+      "FAILED test/test_half_mirror_oracle.py::test_native_half_matches_real_reflection_and_load_vjp",
+      "FAILED test/test_half_native_panel.py::test_half_geometry_and_station_vjp_against_three_central_differences",
+      "FAILED test/test_half_native_panel.py::test_streamed_half_action_does_not_trace_full_square_aic",
+      "FAILED test/test_iterative_panel.py::test_implicit_geometry_gradient_and_station_chain_matches_lu_and_fd[False]",
+      "FAILED test/test_iterative_panel.py::test_implicit_geometry_gradient_and_station_chain_matches_lu_and_fd[True]",
+      "FAILED test/test_iterative_panel.py::test_streamed_primal_has_no_full_wall_aic_array_in_jaxpr",
+      "FAILED test/test_p1_lifting_g2_pressure_floor.py::test_cad_fixture_floor_stop_is_accepted",
+      "FAILED test/test_torch_half_lifting.py::test_torch_half_geometry_and_station_adjoint_vs_jax_and_fd",
+      "FAILED test/test_torch_panel_bridge.py::test_forward_and_all_seven_vjps_match_native_jax",
+      "FAILED test/test_torch_panel_bridge.py::test_torch_geometry_parameters_pass_gradcheck_and_three_step_fd"
+    ],
+    "current_failed": [
+      "FAILED test/test_differentiable_panel_fields.py::test_local_force_moment_vjp_to_vertices_and_moving_stations",
+      "FAILED test/test_half_mirror_oracle.py::test_native_half_matches_real_reflection_and_load_vjp",
+      "FAILED test/test_half_native_panel.py::test_half_geometry_and_station_vjp_against_three_central_differences",
+      "FAILED test/test_half_native_panel.py::test_streamed_half_action_does_not_trace_full_square_aic",
+      "FAILED test/test_iterative_panel.py::test_implicit_geometry_gradient_and_station_chain_matches_lu_and_fd[False]",
+      "FAILED test/test_iterative_panel.py::test_implicit_geometry_gradient_and_station_chain_matches_lu_and_fd[True]",
+      "FAILED test/test_iterative_panel.py::test_streamed_primal_has_no_full_wall_aic_array_in_jaxpr",
+      "FAILED test/test_p1_lifting_g2_pressure_floor.py::test_cad_fixture_floor_stop_is_accepted",
+      "FAILED test/test_torch_half_lifting.py::test_torch_half_geometry_and_station_adjoint_vs_jax_and_fd",
+      "FAILED test/test_torch_panel_bridge.py::test_forward_and_all_seven_vjps_match_native_jax",
+      "FAILED test/test_torch_panel_bridge.py::test_torch_geometry_parameters_pass_gradcheck_and_three_step_fd"
+    ],
+    "new_failed": [],
+    "resolved_failed": []
+  },
+  "missing_completed_runs_or_audits": [],
+  "execution_complete": true,
+  "acceptance_note": "Execution completion is not numerical or physical acceptance. Production nonlinear convergence and the stricter 1.05 wall-floor check are distinct. E2 is limited to eight updates. Unstructured projected-edge refinement cannot claim a pure tensor-grid one-axis refinement. Keep B3 and G2 T5 coupled-material evidence separate.",
+  "driver_receipt": {
+    "path": "driver_receipt.json",
+    "sha256": "e5402eda24ea7d8abb3db61236d8ed06ccc355e40ace7b4500858ca1dea070ff"
+  }
+}

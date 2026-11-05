@@ -19,6 +19,9 @@ root = Path(__file__).resolve().parents[1]
 os.environ.update(OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
                   MKL_NUM_THREADS="1", PYTHONIOENCODING="utf-8")
 jobs = [
+    ("e3", "rect", "freeze_1", 60), ("e2", "rect", "rect_96", 8),
+    ("e3", "swept30", "freeze_1", 60), ("e3", "swept30", "freeze_2", 60),
+    ("e3", "elliptic", "freeze_1", 60),
     ("e2", "swept30", "length_5", 8), ("e2", "swept30", "length_10", 8),
     ("e2", "swept30", "length_20", 8), ("e2", "swept30", "streamwise", 8),
     ("e2", "swept30", "spanwise", 8),
@@ -29,7 +32,7 @@ jobs = [
     ("e3", "rect", "smooth", 60),
     ("e2", "elliptic", "length_5", 8), ("e2", "elliptic", "streamwise", 8),
     ("e2", "elliptic", "spanwise", 8),
-    ("e4", "swept30", "", 0), ("e4", "elliptic", "", 0),
+    ("e4", "rect", "", 0), ("e4", "swept30", "", 0), ("e4", "elliptic", "", 0),
 ]
 active, receipts = [], []
 external = set(args.external_pids)

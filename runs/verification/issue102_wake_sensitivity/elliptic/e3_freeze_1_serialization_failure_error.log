@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "D:\3D\Projects\panel\tools\wake_intervention_study.py", line 163, in <module>
+    (out / "history.json").write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
+                                      ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\zyx20\anaconda3\envs\myml\Lib\json\__init__.py", line 242, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "C:\Users\zyx20\anaconda3\envs\myml\Lib\json\encoder.py", line 202, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\zyx20\anaconda3\envs\myml\Lib\json\encoder.py", line 263, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\zyx20\anaconda3\envs\myml\Lib\json\encoder.py", line 182, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type int64 is not JSON serializable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\3D\Projects\panel\tools\wake_intervention_study.py", line 182, in <module>
+    (out / "history.json").write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
+                                      ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\zyx20\anaconda3\envs\myml\Lib\json\__init__.py", line 242, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "C:\Users\zyx20\anaconda3\envs\myml\Lib\json\encoder.py", line 202, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\zyx20\anaconda3\envs\myml\Lib\json\encoder.py", line 263, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\zyx20\anaconda3\envs\myml\Lib\json\encoder.py", line 182, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type int64 is not JSON serializable

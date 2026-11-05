@@ -46,6 +46,11 @@ for case in ("rect", "swept30", "elliptic"):
     offset_norm = np.linalg.norm(offset, axis=1)/mesh.reference_chord
     off_axis = nodes[offset_norm > 1e-10]
     attached_moving = top["attached"][displacement[top["attached"]] > 1e-10]
+    before = group.wake_xyz[group.wake_faces]
+    after = target[group.wake_faces]
+    cross0 = np.cross(before[:, 1]-before[:, 0], before[:, 2]-before[:, 0])
+    cross1 = np.cross(after[:, 1]-after[:, 0], after[:, 2]-after[:, 0])
+    area0, area1 = np.linalg.norm(cross0, axis=1), np.linalg.norm(cross1, axis=1)
     result = dict(
         frozen_initial_state_sha256=manifest["initial_state_sha256"],
         wake_faces=len(group.wake_faces), used_nodes=len(top["used"]),
@@ -55,6 +60,10 @@ for case in ("rect", "swept30", "elliptic"):
         uniform_flow_attachment_max_raw_displacement_chord=float(displacement[top["attached"]].max()),
         uniform_flow_relaxed_attachment_displacement_chord=float(.3*displacement[top["attached"]].max()),
         uniform_flow_identity_passed=bool(displacement[top["used"]].max() <= 1e-10),
+        unrelaxed_target_area_ratio=float(area1.sum()/area0.sum()),
+        unrelaxed_target_degenerate_faces=int(np.count_nonzero(area1 <= 1e-14*mesh.reference_chord**2)),
+        unrelaxed_target_min_reference_jacobian=float(np.min(
+            np.einsum("fi,fi->f", cross1, cross0)/area0**2)),
         off_axis_predecessor_count=len(off_axis), off_axis_predecessor_ids=off_axis.tolist(),
         max_original_crossstream_predecessor_offset_chord=float(offset_norm.max()),
         axial_guard_frozen_ids=frozen,
