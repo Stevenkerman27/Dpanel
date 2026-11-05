@@ -86,11 +86,7 @@ def test_directional_refinement_preserves_p1_potential_operator_and_orientation(
         np.testing.assert_array_equal(operators["J"], baseline["J"])
 
 
-@pytest.mark.parametrize("sweep", [
-    0.,
-    pytest.param(.2, marks=pytest.mark.xfail(
-        strict=True, reason="Known B3 defect: mesh-edge marching loses reference transverse offsets and moves TE attachment")),
-])
+@pytest.mark.parametrize("sweep", [0., .2])
 def test_uniform_axial_flow_preserves_the_flat_reference_wake(sweep):
     wing = make_wing(chord_panels=3, span_panels=4, wake_panels=3)
     wall, wake = wing.xyz.copy(), wing.wake_xyz.copy()
@@ -105,3 +101,33 @@ def test_uniform_axial_flow_preserves_the_flat_reference_wake(sweep):
     assert frozen == []
     np.testing.assert_allclose(target[np.unique(group.wake_faces)],
                                group.wake_xyz[np.unique(group.wake_faces)], atol=1e-12, rtol=0.)
+
+def test_oblique_uniform_flow_has_affine_drift_and_fixed_te_attachments():
+    wing = make_wing(chord_panels=3, span_panels=4, wake_panels=3)
+    wall, wake = wing.xyz.copy(), wing.wake_xyz.copy()
+    wall[:, 0] += .2 * abs(wall[:, 1])
+    wake[:, 0] += .2 * abs(wake[:, 1])
+    mesh = combine_wings([replace(wing, xyz=wall, wake_xyz=wake)])
+    group = mesh.groups[0]
+    material = prepare_wake_material(group)
+    velocity = np.tile([1., .12, -.07], (len(group.wake_xyz), 1))
+    target, frozen = _one_wake_target(group, material, velocity, min_axial=.08, freeze=True)
+    assert frozen == []
+    expected = material.reference_xyz.copy()
+    root_of = {}
+    for node in material.order:
+        node = int(node)
+        parent = int(material.predecessor[node])
+        root = node if parent < 0 else root_of[parent]
+        root_of[node] = root
+        if node not in set(material.attachments.tolist()) and parent >= 0:
+            dx = material.reference_xyz[node, 0] - material.reference_xyz[root, 0]
+            expected[node, 1] += .12 * dx
+            expected[node, 2] -= .07 * dx
+    np.testing.assert_allclose(target[np.unique(group.wake_faces)],
+                               expected[np.unique(group.wake_faces)], atol=1e-12, rtol=0.)
+    np.testing.assert_allclose(target[material.attachments],
+                               material.reference_xyz[material.attachments], atol=0., rtol=0.)
+    free = np.setdiff1d(material.used, material.attachments)
+    assert np.max(np.linalg.norm(target[free]-material.reference_xyz[free], axis=1)) > 0.
+
