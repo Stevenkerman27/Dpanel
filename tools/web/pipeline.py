@@ -224,8 +224,8 @@ def mesh_surface(job, params, size, alpha_deg, ncpu=8):
                          vertices=len(data.get("coordinates") or []))
 
 
-CRASH_HINT = ("求解器（jax/LAPACK, x64）在该网格上偶发崩溃，属已知问题；"
-              "已自动重试，若仍失败可改动网格尺寸、迎角或部件位置。")
+CRASH_HINT = ("求解进程发生原生异常，已自动重试；"
+              "若仍失败，请保留运行日志并检查数值运行库。")
 # Exit codes seen when the solver's native code takes the interpreter down.
 CRASH_CODES = (-1073741819, 3221225477, -1073741571, 3221225725, 139)
 
@@ -265,11 +265,9 @@ def _spawn(job, command, log_path):
 def solve(job, surface, wake, alpha, iterations, reference, attempts=6):
     """Run the solve in a child process, retrying native crashes.
 
-    The solvers link jax/LAPACK; with x64 enabled the interpreter dies with an
-    access violation in roughly half of the runs on this platform (see README,
-    known issues). Isolating the solve keeps the HTTP server alive, and the
-    crash is normally harmless to retry because each attempt starts from the
-    same surface file.
+    Isolation keeps the HTTP server alive when a native dependency crashes.
+    Each retry starts from the same surface file; deterministic runtime defects
+    still require repairing the dependency (see README).
     """
     last = None
     for attempt in range(attempts):

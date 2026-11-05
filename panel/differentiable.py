@@ -43,10 +43,8 @@ def linear_solve(matrix, rhs):
     This is a dense solver, not a matrix-free acceleration claim.
     """
     matrix = jax.lax.stop_gradient(matrix)
-    # jnp.linalg.solve (XLA's LU) instead of jla.lu_factor/lu_solve: on Windows
-    # with jax 0.12.0.1 in x64 mode the host LAPACK callback aborts the whole
-    # interpreter with an access violation once the system is larger than about
-    # 200 unknowns, while the XLA path is stable and solves the same system.
+    # CPU jnp.linalg.solve also lowers to LAPACK. Native access violations need
+    # a runtime fix; changing the solve API does not avoid the OpenBLAS kernel.
     return jax.lax.custom_linear_solve(
         lambda x: matrix @ x, rhs,
         solve=lambda _, b: jnp.linalg.solve(matrix, b),

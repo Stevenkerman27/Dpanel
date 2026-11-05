@@ -128,7 +128,8 @@ field = {vertices: [[x,y,z], ...],   # 半域求解器网格（含尾迹节点�
 
 ## 大网格崩溃的根因与复现（2026-11-05）
 
-本节只记录本机实测结论，**未修改生产求解路径或默认环境变量**。
+本节记录本机实测结论。生产求解路径和默认环境变量未改；根因诊断后已安装本地运行库
+热修复，安装与验收见下方“已安装的运行库热修复”。
 
 ### 原始故障
 
@@ -188,7 +189,7 @@ LU 的内部块形状、调用栈深度和页对齐位置都参与决定何时�
 Sandybridge 作为另一项诊断对照：三种单位矩阵测试也各 3/3 正确，原始机翼网格完成
 （CL=0.5914475754705966、相对线性残差 2.83e-15、约 68.4 秒）。
 这只验证绕行与代数求解，不授予物理精度验收。按用户要求，自动绕行改动已撤回；
-正式修复应处理调参值与内核容量的契约，再独立验收运行库。
+后续修复处理了调参值与内核容量的契约，独立验收记录见下方。
 
 ### 复现命令与证据位置
 
@@ -217,8 +218,10 @@ python -m tools.blas_debug --out runs/verification/native_blas/debug_lu4612.json
 确认，`kernel/setparam-ref.c` 已用 `#ifndef NO_AVX512` 包住 Ryzen 调参，并只允许
 Cooperlake / SkylakeX / SapphireRapids 三类内核应用 Q=512。当前 conda 构建使用
 `NO_AVX512=1`，这个修正会保留 Windows Haswell 原有的 Q=128。
-推荐使用包含此修正并经过本机验证的运行库构建；尚未编译、安装或验收替代 DLL，
-也未确认哪一个已发布 conda 构建包含修正。诊断工具的内存表改写仍只用于实验。
+发布构建应包含此修正并经过本机验证。2026-11-05 查询 conda-forge 包列表，最新的
+Windows pthreads 包仍为 `0.3.34 pthreads_h952cde7_2`；直接加载缓存中的该构建，
+实测仍是 `P=512,Q=512,R=32240`，不能把同版本 build 2 当成已修复版本。
+本机采用下面明确标记的二进制热修复；诊断工具的内存表改写仍只用于实验。
 
 Q 控制 K 方向分块，影响缓存复用、打包次数和微内核调用开销；Q 减半不意味着浮点运算量
 翻倍或速度减半。可接受范围先受微内核缓冲容量限制，其内再按矩阵尺寸和硬件测性能。
@@ -245,3 +248,70 @@ python -m tools.blas_probe --case lu --size 4612 --matrix random --cores Sandybr
 
 上述目录的 `*.log` 保留 `operation_seconds` 和正确性检查，`report.json` 保留
 配置与每次进程退出码。此前单位矩阵探针的总计时包含构造/校验，不用于这张性能表。
+
+### 已安装的运行库热修复（2026-11-05）
+
+当前 myml 的 `Library/bin/openblas.dll` 已安装**本地二进制热修复，不是新版官方包或
+本机重新编译的构建**。本机没有 MSVC/SDK 原生构建工具链；没有用另一种编译器重建整库，
+以免同时改变 Fortran/复数 ABI 和依赖。
+
+`tools.blas_runtime_fix` 只接受上文 build 0 的完整 SHA-256。它在 11 个已编译的内核
+初始化函数中，将 AVX512 条件前的 `JE +0x44` 改为 `JMP +0x44`，共改 11 字节：
+跳过四种精度的 Ryzen P/Q 覆盖，效果对应于当前构建 `NO_AVX512=1` 下上游新增的
+`#ifndef NO_AVX512`。微内核、导出符号和 ABI 不变。新进程自动检测 Haswell，实测
+`P=512,Q=128,R=130544`；R 由剩余初始化代码重新计算，因此比诊断中仅写 Q 更完整。
+
+修复后 SHA-256：
+`e0d23e1c32e26f05719d98d92c9aa26a303a83ba0b66463099677459e48223e8`。
+安装使用临时文件加 `os.replace`，不会原地改写 conda 的缓存硬链接；缓存中的原始 DLL
+实测仍保留原始哈希。若 Windows 有进程映射着旧 DLL，安装会明确失败，需要先结束该进程。
+本次安装没有遇到文件占用，无需重启现有服务器；后续求解子进程会加载新 DLL。
+
+复现顺序（均使用项目规定的 myml Python；无需 `OPENBLAS_CORETYPE` 或 `--gemm-q`）：
+
+```powershell
+python -m tools.blas_runtime_fix --out runs/verification/native_blas/runtime_fix
+python -m tools.blas_probe --dll runs/verification/native_blas/runtime_fix/openblas.dll --case gemm --size 1024 --cores auto Haswell Sandybridge --out runs/verification/native_blas/candidate_gemm
+python -m tools.blas_probe --dll runs/verification/native_blas/runtime_fix/openblas.dll --case lu --size 4612 --matrix random --cores auto --out runs/verification/native_blas/candidate_lu
+python -m tools.blas_runtime_fix --out runs/verification/native_blas/runtime_fix --install
+python -m tools.blas_verify_runtime --out runs/verification/native_blas/fixed_scipy.json
+python -m tools.blas_probe --case lu --size 8192 --matrix random --cores auto --out runs/verification/native_blas/fixed_lu8192
+python -m tools.blas_probe --case lu --size 12000 --matrix random --cores auto --timeout 120 --out runs/verification/native_blas/fixed_lu12000
+python -m tools.blas_probe --case lu --size 12000 --matrix random --cores auto --threads 8 --timeout 120 --out runs/verification/native_blas/fixed_lu12000_threads8
+python -m tools.blas_probe --case jax --size 4612 --cores auto --out runs/verification/native_blas/fixed_jax
+python -m tools.web.solve_runner --surface runs/web/20261105-141850-a135fd/mesh/surface.json --out runs/verification/native_blas/fixed_web --wake fixed
+```
+
+已安装修复后的验收：
+
+| 检查 | 实测 |
+| --- | --- |
+| 候选 DLL，1024 阶 DGEMM | auto / Haswell / Sandybridge 各 3/3 正确 |
+| 候选 DLL，4612 阶随机 LU | 自动 Haswell，3/3 正确 |
+| 8192 / 12000 阶随机 LU，单线程 | 各 3/3 正确 |
+| 12000 阶随机 LU，8 线程 | 3/3 正确 |
+| 4612 阶 JAX solve | 自动 Haswell，3/3 正确 |
+| SciPy 单/双精度实数/复数 | 36/36 正确：K=127/128/129/255/256/257/513/1024 的 GEMM，加 513 阶随机制造解 |
+| 原始 4598 壁面、4612 未知量机翼 | 完成；CL=0.5914475754705973，CD=0.007134760028134315，相对线性残差 2.65e-15 |
+| 全量 pytest | 801 passed / 21 skipped / 11 failed，175.10 秒，无本次进程崩溃；11 项均在此前失败集合内 |
+
+原机翼 runner 实测 65.71 秒，与大矩阵探针有部分同时运行，不作为速度比较。
+全量测试结束后独立测得修复库的 4612 阶随机矩阵单线程纯 LU 三次中位数为
+0.8215 秒（`fixed_lu4612`），与此前诊断 Q=128 的 0.8195 秒接近。
+相对已有 Sandybridge 诊断对照，CL 差 7.77e-16，CD 差 4.16e-17，
+面板 Cp 最大差 8.04e-14。原始故障证据全部保留。安装收据为
+`runs/verification/native_blas/runtime_fix/receipt.json`，验收结果在上述各 `--out` 目录，
+机翼比较为 `fixed_web_comparison.json`。这些是运行库正确性和代数验收，不是物理精度验收。
+全量回归命令为 `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+python -m pytest -q test -p no:cacheprovider`（不设置 `OPENBLAS_CORETYPE`），原始失败输出
+保留在 `fixed_pytest.log`；未修复这些既有的梯度、递归和压力地板测试失败。
+
+**Q=128 可以避免本次越界，即使总未知量继续增加。** GEMM 驱动把 K 切成不大于 Q 的
+块；N 不需要小于 128，N 增大增加的是块数。它不能消除所有大规模限制：稠密矩阵内存
+为 O(N²)，LU 计算量为 O(N³)，一张 12000 阶 double 矩阵约 1.07 GiB，
+20000 阶约 2.98 GiB；实际装配/分解会同时持有多张数组。此次最大实测到 12000 阶随机
+系统，实际机翼只重跑到 4612 阶，不宣称更大完整网格已验收。
+
+热修复不会改变 conda 包版本记录，未来重装/更新 `libopenblas` 可能覆盖它。
+届时优先使用含上述上游修正的正式构建，并重新运行探针；脚本对未知哈希拒绝改写。
+需要恢复原始文件时，可从原 conda 包重装，但 build 0 的原始缺陷也会恢复。

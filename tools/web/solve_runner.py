@@ -1,9 +1,9 @@
 """Run one panel solve in a child process.
 
-The solvers link jax/LAPACK, and on this platform a particular influence matrix
-can take the whole interpreter down with an access violation. Running the solve
-out of process keeps the HTTP server alive and turns the crash into a job error
-that names the exit code.
+The solvers link jax/LAPACK. A faulty native runtime can take the interpreter
+down with an access violation (see README for the OpenBLAS tuning defect).
+Running the solve out of process keeps the HTTP server alive and turns a native
+crash into a job error that names the exit code.
 
   python -m tools.web.solve_runner --surface mesh/surface.json --out solve \
       --wake fixed --alpha 4 --iterations 4 --reference '{"area": 4.5, ...}'
