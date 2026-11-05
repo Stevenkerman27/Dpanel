@@ -121,9 +121,92 @@ field = {vertices: [[x,y,z], ...],   # 半域求解器网格（含尾迹节点�
 - **粗网格可能拓扑失败**：`sections=4` + `size=0.6` 出现过
   `ValueError: Non-manifold right wall edge`（`panel/half_surface_mesh.py`），界面会提示加密网格或增加展向站数。
 - gpu 不可选：两条路径都只暴露 CPU 设备（torch 版 p1 单翼路径才有 GPU）。
-- **求解进程会偶发崩溃（0xC0000005）**：本机 jax（0.12.0.1, x64）在编译/执行约 300 未知量的
-  稠密解时约一半概率直接杀死解释器，与网格和部件位置无关（同一 surface 连续重跑，成功/崩溃随机出现）。
-  `panel/differentiable.py` 的 `linear_solve` 已从 host LAPACK（`jla.lu_factor`）改成
-  `jnp.linalg.solve`（XLA 的 LU），崩溃率下降但没消失；结果数值与原路径逐位一致。
-  因此求解放在子进程里跑，崩了由 `pipeline.solve` 自动重试（最多 6 次，通常 1–2 次内成功），
-  服务器的进程始终不受影响。连续 6 次失败才会把带退出码的错误写进结果表。
+- **大矩阵触发 OpenBLAS 栈缓冲区越界（0xC0000005）**：2026-11-05 已定位到本机
+  OpenBLAS 0.3.34 的 Ryzen 自动调参和 Windows Haswell 内核之间的容量冲突，详见下一节。
+  自动重试只隔离崩溃，不能修复此缺陷。`jnp.linalg.solve` 的 CPU 降低结果仍包含
+  `lapack_dgetrf_ffi`，此前“换成 XLA LU 即可绕开 LAPACK”的解释不成立。
+
+## 大网格崩溃的根因与复现（2026-11-05）
+
+本节只记录本机实测结论，**未修改生产求解路径或默认环境变量**。
+
+### 原始故障
+
+作业 `runs/web/20261105-141850-a135fd`：默认机翼、size=0.1 m、alpha=4°，
+4598 壁面 + 1576 尾迹面板，线性系统 4612 阶。Windows 应用程序错误记录在
+14:20:18、14:21:25 均报告 `openblas.dll + 0xaaa42e`；UI 在等待进程退出后于
+14:20:23、14:21:28 显示重试。这与用户提供的 14:20:24 / 14:21:28 日志吻合。
+
+实测环境：Windows x64，AMD Ryzen 9 9950X，Python 3.13.14，NumPy 2.4.6，
+SciPy 1.18.0，JAX/jaxlib 0.12.0.1；当前单一解释器为
+`C:/Users/zyx20/anaconda3/envs/myml/python.exe`。出错 DLL 属于 conda-forge
+`libopenblas 0.3.34 pthreads_h877e47f_0`，位于该环境的 `Library/bin/openblas.dll`，
+SHA-256 为 `61333f15528c05e0684e1efcdaebc44b4cceb3cae5fcd265f9370a654715289c`。
+NumPy wheel 另外携带 OpenBLAS 0.3.31，不能只看 `numpy.__version__` 判断故障 DLL。
+
+### 为什么面板数增大才触发
+
+1. 壁面/环量未知量变多，CPU LAPACK 的 LU 分解开始使用较大的分块矩阵乘法。
+2. OpenBLAS v0.3.34 的 `kernel/setparam-ref.c:init_parameter` 检测到 AMD、
+   L2=1024 KB、L3 为 32768 KB 的倍数且支持 AVX512 时，将 `dgemm_p/q` 改成 512/512。
+   这台机器实测运行时表为 `P=512,Q=512,R=32240`。
+3. 同版本 `param.h` 原本把 Windows Haswell 的 Q 设为 128。
+   `kernel/x86_64/dgemm_kernel_4x8_haswell.S` 的 Windows 分支也据此只预留
+   `128*8*12+512 = 12800` 字节的局部缓冲空间，再加 128 字节头部和页对齐余量。
+   Ryzen 的运行时调参覆盖了 Q，却没有扩大汇编内核的缓冲区。
+   DLL 反汇编也确认：初始化函数先向 P/Q 写入 512/128，随后在 AVX512 条件分支
+   改写为 512/512；这不是仅根据源码推测运行时行为。
+4. 内核在至少 24 列的路径中，每个 K 向栈缓冲复制 12 个 double，即每轮 96 字节。
+   K=128 需 12288 字节；K=256 需 24576 字节；K=512 需 49152 字节。
+   后两者超过预留空间，即使算上最多 4095 字节的对齐余量也放不下。
+5. 写越界先破坏保存寄存器和返回地址，继续写则碰到线程栈的高地址边界。
+   因此症状可表现为内核写内存失败、函数返回时跳到零地址，或在别的 Python/JAX 操作处才退出；
+   Python 线程栈不一定就是原始故障点。小算例能过也不能证明运行库安全。
+
+反汇编确认原始地址是 `dgemm_kernel_HASWELL + 0x16e`：
+`vmovups [rsi], ymm1`。实际 4612 阶机翼复现的首次异常落在同一复制循环的第三条写指令
+（`+0x177`），当时 `K=256`、还剩 2 轮、已推进 24384 字节，异常写地址恰好等于
+线程 `StackBase`。1024 阶独立矩阵乘法则捕获到 `K=512`，同样写到 `StackBase`。
+这确定了实际的栈越界，不能解释为矩阵病态、几何拓扑失败或普通内存不足。
+
+### 对照证据
+
+所有对照均单线程、独立进程，不导入 torch，不加载网格。
+
+| 输入 | Haswell 原始 Q=512 | 同一 Haswell，仅诊断进程改 Q=128 |
+| --- | --- | --- |
+| 1024 阶单位矩阵 DGEMM | 3/3 访问冲突 | 3/3 正确 |
+| 4612 阶单位矩阵直接 `dgetrf_` | 3/3 访问冲突 | 3/3 正确 |
+| 4612 阶单位矩阵 JAX solve | 3/3 访问冲突 | 3/3 正确 |
+
+直接调用同一微内核，4×24×128 的全 1 输入连续 3 次正确；K=192 已捕获保存寄存器被
+`double(1)` 的位模式 `0x3ff0000000000000` 覆盖，K=256 捕获越界写至 `StackBase`。
+直接 LU 的 128/256/272/320 阶探针此次完成，384 阶返回地址被覆盖后跳到 0，
+512/1024/4612 阶捕获缓冲区越界。因此没有一个与面板数一一对应的通用安全阈值；
+LU 的内部块形状、调用栈深度和页对齐位置都参与决定何时显现。
+
+Sandybridge 作为另一项诊断对照：三种单位矩阵测试也各 3/3 正确，原始机翼网格完成
+（CL=0.5914475754705966、相对线性残差 2.83e-15、约 68.4 秒）。
+这只验证绕行与代数求解，不授予物理精度验收。按用户要求，自动绕行改动已撤回；
+正式修复应处理调参值与内核容量的契约，再独立验收运行库。
+
+### 复现命令与证据位置
+
+```powershell
+# 以下 python 均指项目规定的 myml 解释器。
+python -m tools.blas_probe --case gemm --size 1024 --out runs/verification/native_blas/gemm
+python -m tools.blas_probe --case lu --size 4612 --out runs/verification/native_blas/lu
+python -m tools.blas_probe --case jax --size 4612 --out runs/verification/native_blas/jax
+# 同一 Haswell 内核的因果对照；只改诊断子进程中的 Q，不修改 DLL 文件。
+python -m tools.blas_probe --case lu --size 4612 --cores Haswell --gemm-q 128 --out runs/verification/native_blas/lu_q128
+# 捕获首次原生异常、寄存器及线程栈边界；不需要安装调试器。
+python -m tools.blas_debug --out runs/verification/native_blas/debug_lu4612.json -- -m tools.blas_probe --worker --case lu --size 4612 --out runs/scratch/blas
+```
+
+`tools.blas_probe --gemm-q` 的表偏移写操作受上述 DLL 的 SHA-256 限制，只用于因果实验。
+默认测试与因果对照分别保留在 `runs/verification/native_blas/{gemm,lu,jax}*/report.json`；
+原始 Windows 错误和浏览器日志为同目录下的 `original_windows_events.json`、
+`original_web_job.json`，首次异常为 `debug_web.json`、`debug_gemm.json`、
+`debug_lu*.json`、`debug_kernel*.json`。原始 surface 只引用一次，不复制。
+上游源文件的本机诊断下载位于 `runs/scratch/openblas_setparam.c`、
+`openblas_param.h`、`dgemm_kernel_4x8_haswell.S`，版本均为 v0.3.34。
