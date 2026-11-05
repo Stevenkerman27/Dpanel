@@ -178,6 +178,29 @@ def test_run_refuses_oversized_mesh():
         run(path, max_panels=4)
 
 
+def test_run_assembles_the_current_system_once(monkeypatch):
+    import panel.run_half_groups as entry
+    import panel.shed_groups as groups_module
+
+    _, raw, vertices, faces, tags, groups = two_layer_case(None, 0.4, groups=1)
+    path = _scratch("assembly_reuse") / "surface.json"
+    path.write_text(json.dumps(as_surface_json(raw, vertices, faces, tags, groups)),
+                    encoding="utf-8")
+    original = groups_module.assemble_half_groups
+    calls = []
+
+    def counted(*args, **kwargs):
+        calls.append(1)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(entry, "assemble_half_groups", counted)
+    monkeypatch.setattr(groups_module, "assemble_half_groups", counted)
+    report = run(path, gradient=False, v1_check=False)
+    assert len(calls) == 1
+    assert report["solve"]["linear_residual_relative"] < 1e-12
+    assert all(value >= 0 for value in report["timings"].values())
+
+
 def test_cli_writes_then_refuses_to_overwrite():
     directory = _scratch("cli")
     if (directory / "report.json").exists():

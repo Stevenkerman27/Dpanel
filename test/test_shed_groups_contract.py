@@ -240,6 +240,27 @@ def test_f5_contract_rejections():
         validate_shed_groups(vertices, faces, component_ids, [off])
 
 
+def test_wake_wall_broad_phase_keeps_exact_intersection_and_budget_checks():
+    raw, x, f, tags = _wall_only()
+    baseline = validate_shed_groups(x, f, tags, [_group(raw)])
+    obstacle = np.array([[2., .15, -4.], [2., .9, 4.], [2., .15, 4.]])
+    faces = np.concatenate([f, [[len(x), len(x) + 1, len(x) + 2]]])
+    component_ids = np.append(tags, 20)
+    with pytest.raises(ValueError, match="Group wake intersects a wall panel"):
+        validate_shed_groups(np.concatenate([x, obstacle]), faces, component_ids,
+                             [_group(raw)])
+    clear = obstacle + np.array([0., 0., 10.])
+    topology = validate_shed_groups(np.concatenate([x, clear]), faces, component_ids,
+                                    [_group(raw)])
+    assert (topology.audit["groups"][0]["wake_wall_tests"]
+            == baseline.audit["groups"][0]["wake_wall_tests"])
+    touching = obstacle.copy()
+    touching[0, 2] = 0.
+    with pytest.raises(ValueError, match="Group wake/wall test budget exhausted"):
+        validate_shed_groups(np.concatenate([x, touching]), faces, component_ids,
+                             [_group(raw)], max_wake_wall_tests=0)
+
+
 def test_f6_two_groups_residual_and_rows():
     raw, vertices, faces, wake, tags, groups = _two_group_case()
     out = _solve(raw, vertices, faces, tags, groups)

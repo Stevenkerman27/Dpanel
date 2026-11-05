@@ -18,6 +18,9 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 - 鼠标左键拖动旋转（上下拖动方向反转），滚轮缩放；相机按**壁面几何的世界坐标包围盒**定标（只在换场景时重算），结果视图不把尾迹计入居中与缩放，
   所以任意角度下缩放一致，左右拖动只改偏航、不改俯仰（俯仰夹在 ±85°）。
 - 求解选项里有**设备**下拉框：现在两条求解路径都只有 CPU，选 GPU 会明确回退并在结果表标注。
+- **CPU 线程**默认 `min(8, 逻辑 CPU 数)`，可在 1 到逻辑 CPU 数之间调整；只控制求解子进程，
+  不改变网格阶段的线程设置。求解日志按校验、装配、求解/载荷、结果检查分阶段显示。
+  “求解耗时”显示整个求解子进程的耗时，包含这些阶段，不再只显示部分计算时间。
 
 ## 它做了什么
 
@@ -91,7 +94,7 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 | GET | `/api/schema` | 升力面参数表 `params`、机身参数表 `body_params`、默认值、参考量 |
 | POST | `/api/build` | body `{"parts":[{"kind":"wing","params":{...}},{"kind":"body","params":{...}}]}`，返回 job 名与显示网格 |
 | POST | `/api/mesh` | body `{"job": ..., "alpha": 4, "size": 0.3}`；生成并缓存实际壁面/尾迹网格 |
-| POST | `/api/solve` | body `{"job": ..., "alpha": 4, "wake": "fixed"/"free", "size": 0.3, "iterations": 3}`；只使用匹配迎角和尺寸的已生成网格 |
+| POST | `/api/solve` | body `{"job": ..., "alpha": 4, "wake": "fixed"/"free", "size": 0.3, "iterations": 3, "ncpu": 8}`；只使用匹配迎角和尺寸的已生成网格，线程数越界返回 HTTP 400 |
 | GET | `/api/mesh?id=...` | 返回已生成网格的坐标、壁面三角面与尾迹面板数 |
 | POST | `/api/cancel` | 置取消标志，子进程被杀、worker 线程退出 |
 | GET | `/api/job?id=...` | 状态 `built/meshing/meshed/solving/done/error/cancelled`、日志、结果 |
@@ -125,6 +128,61 @@ field = {vertices: [[x,y,z], ...],   # 半域求解器网格（含尾迹节点�
   OpenBLAS 0.3.34 的 Ryzen 自动调参和 Windows Haswell 内核之间的容量冲突，详见下一节。
   自动重试只隔离崩溃，不能修复此缺陷。`jnp.linalg.solve` 的 CPU 降低结果仍包含
   `lapack_dgetrf_ffi`，此前“换成 XLA LU 即可绕开 LAPACK”的解释不成立。
+
+## 固定尾迹求解性能（2026-11-05）
+
+OpenBLAS 热修复后访问冲突消失，但约 4600 面板的完整求解仍需一分钟。`cProfile` 对原
+4598 壁面网格记录：总计 88.39 秒，其中 `validate_shed_groups` 74.11 秒（约 84%），
+`_triangle_aabb_intersect` 调用 7,025,342 次；矩阵装配两次，原入口的“求解耗时”还漏掉了
+前面的校验、第一次装配和后面的镜像检查。**剖析器有开销，这个 88.39 秒不用于加速比。**
+
+优化保持原来的气动与校验路径：
+
+- 预计算壁面三角形的包围盒，每个尾迹三角形用 NumPy 批量筛选候选，再按原面板顺序
+  执行原来的精确检查。容差、后缘岸/共享节点排除、相交判定和预算限制保留。
+  仍为 O(尾迹面板数 × 壁面面板数) 的 broad phase，没有裁剪气动影响矩阵。
+- 研究入口将已经装配的矩阵传给 `solve_half_groups(..., assembled=...)`，避免重复装配。
+  没有跨几何缓存矩阵；库 API 未提供 `assembled` 时仍自行装配，调用者只能传当前输入的装配。
+- 求解子进程默认 8 线程（受逻辑 CPU 数限制），可用界面/API 的 `ncpu` 或 CLI `--ncpu`
+  调整。线程环境变量在 NumPy/JAX/torch 导入前设置；几何/网格子进程维持原设置。
+- 镜像、质量矩阵、Kutta、残差等检查全部保留；记录同步后的分阶段时间。
+
+原 4598 壁面/4612 未知量网格：优化后单线程 11.79 秒、八线程 10.16 秒。
+用户实际的 4600 壁面/4614 未知量网格，同一份 `surface.json` 的正常子进程记录从
+**62.761 秒降至 9.675 秒，单次前后对照约 6.49 倍**；不是多次中位数基准，也不是与
+上述 cProfile 时间相除。八线程新结果的阶段时间为校验 0.205、装配 4.594、
+求解/载荷 1.243、检查/报告 3.199 秒，另有模块导入等开销。
+与该网格旧结果比较：CL 差 -3.33e-16、CD 差 -1.73e-17、Cp 最大差 2.23e-14、
+Γ 最大差 5.00e-16，相对线性残差 2.60e-15。CPU 占用不要求所有阶段满载，
+线程数增加也不保证总耗时单调下降。
+
+可复现命令：
+
+```powershell
+python -m tools.web.solve_runner --surface runs/web/20261105-153101-076a86/mesh/surface.json --out runs/verification/web_performance/user_mesh_threads8 --wake fixed --ncpu 8
+python -m tools.verify_shed_group_optimization --baseline 5ca04e8 --surface runs/web/20261105-141850-a135fd/mesh/surface.json --out runs/verification/web_performance/equivalence.json
+python -m pytest -q test/test_shed_group_blocks.py test/test_shed_groups_contract.py test/test_shed_group_mass_identity.py test/test_run_half_groups_entry.py test/test_web_solve_threads.py -p no:cacheprovider
+```
+
+第二条命令只从 Git 读取旧源码到内存，不建立第二份工作树。原始大网格及穿壁、接触、
+容差边界、预算耗尽等共八种输入，新旧接受/拒绝、审计计数和精确检查调用顺序完全一致；
+该命令中原始网格校验 49.967 → 0.195 秒。小翼 0°、10° 的 x/y/z 几何缩放梯度与
+旧实现最大差为 0，梯度均有限；这是对旧实现的敏感性等价检查，不是对独立有限差分或
+物理真值的验收。筛选本来就在 NumPy 主机端几何校验中，不进入 JAX 的连续求导图。
+
+**既有判据限制单独保留：**上述额外构造的窄穿壁三角形在旧版和新版均被接受。
+原精确检查遍历中 `np.roll(tri, -1)` 没有指定 `axis=0`，会按展平数组滚动，不能
+视作已经验收的完整三角形相交算法。本轮保留它来保证优化前后判定一致，后续需独立修正
+并补几何判据验收；不能因为新旧结果一致，就宣称所有穿壁输入都会被拒绝。
+
+针对性测试 `47 passed in 9.47s`；完整 `python -m pytest -q test -p no:cacheprovider`
+（`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`，不设置 CORETYPE）
+实测 `11 failed, 807 passed, 21 skipped`，181.49 秒，失败集合与热修复后基线相同，
+无访问冲突。浏览器实测 build → mesh → solve，204 壁面，指定 2 线程实际传到结果；
+非法线程 HTTP 400、日志阶段、显示耗时、桌面输入框布局及无 JS 异常均验证。
+证据在 `runs/verification/web_performance/`：`baseline.pstats`、`equivalence.json`、
+`user_mesh_comparison.json`、`targeted_tests_v3.log`、`full_tests.log`、
+`browser_smoke.json`、`desktop.png`。初期测试夹具失败日志也保留。
 
 ## 大网格崩溃的根因与复现（2026-11-05）
 

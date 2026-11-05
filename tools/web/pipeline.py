@@ -18,6 +18,7 @@ from . import params as params_module
 ROOT = Path(__file__).resolve().parents[2]
 RUNS = ROOT / "runs" / "web"
 ENV = dict(os.environ, OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1")
+SOLVE_THREADS = min(8, os.cpu_count() or 1)
 
 
 class Cancelled(RuntimeError):
@@ -262,7 +263,8 @@ def _spawn(job, command, log_path):
     return code, log_path
 
 
-def solve(job, surface, wake, alpha, iterations, reference, attempts=6):
+def solve(job, surface, wake, alpha, iterations, reference, attempts=6,
+          ncpu=SOLVE_THREADS):
     """Run the solve in a child process, retrying native crashes.
 
     Isolation keeps the HTTP server alive when a native dependency crashes.
@@ -280,9 +282,10 @@ def solve(job, surface, wake, alpha, iterations, reference, attempts=6):
                    "--surface", str(surface), "--out", str(directory),
                    "--wake", wake, "--alpha", "%g" % float(alpha),
                    "--iterations", str(int(iterations)),
-                   "--reference", json.dumps(reference or {})]
+                   "--reference", json.dumps(reference or {}), "--ncpu", str(ncpu)]
         if attempt == 0:
-            job.say("求解进程启动: wake=%s, alpha=%g, 设备=CPU" % (wake, float(alpha)))
+            job.say("求解进程启动: wake=%s, alpha=%g, 设备=CPU, 线程=%d"
+                    % (wake, float(alpha), ncpu))
         code, log_path = _spawn(job, command, log_path)
         result_path = directory / "result.json"
         if code == 0 and result_path.exists():
@@ -340,6 +343,7 @@ def run_job(job, options):
     device = str(options.get("device", "cpu"))
     size = float(options.get("size", 0.3))
     iterations = int(options.get("iterations", 12))
+    ncpu = int(options.get("ncpu", SOLVE_THREADS))
     try:
         surface = job.run_dir / "mesh" / "surface.json"
         if not surface.is_file() or not job.mesh_info or not job.mesh_options:
@@ -351,7 +355,7 @@ def run_job(job, options):
         job.state = "solving"
         reference = (job.build or {}).get("reference") or params_module.reference(
             (job.build or {}).get("params") or params_module.normalise({})[0])
-        result = solve(job, surface, wake, alpha, iterations, reference)
+        result = solve(job, surface, wake, alpha, iterations, reference, ncpu=ncpu)
         result = _plain(result)
         if wake == "free" and not (result.get("converged") and result.get("geometry_stable")):
             history = result.get("history") or []
@@ -365,6 +369,7 @@ def run_job(job, options):
                 result["warning"] = "自由尾迹未收敛：数值仅供诊断。"
             job.say(result["warning"])
         result["options"] = dict(alpha=alpha, wake=wake, size=size, iterations=iterations,
+                                 ncpu=ncpu,
                                  device_requested=device, device_used="cpu")
         if device != "cpu":
             result["device_note"] = ("当前两条求解路径（半域稠密参考解与自由尾迹）"

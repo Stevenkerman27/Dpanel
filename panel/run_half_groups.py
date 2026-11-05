@@ -405,7 +405,7 @@ def check_full_oracle(surface, topology, out, *, max_panels=400):
 # --------------------------------------------------------------------------
 def run(surface_path, *, groups_path=None, full_oracle=False,
         full_oracle_panels=400, gradient=True, v1_check=True,
-        max_panels=4000, contact_cuts=()):
+        max_panels=4000, contact_cuts=(), progress=None):
     """Drive one grouped half solve and return the report dictionary."""
     started = time.perf_counter()
     surface_path, surface = load_surface(surface_path)
@@ -420,15 +420,31 @@ def run(surface_path, *, groups_path=None, full_oracle=False,
     nf = len(surface["faces"])
     if nf > max_panels:
         raise MemoryError(f"Refused: {nf} wall panels above --max-panels={max_panels}")
+    if progress:
+        progress("校验尾迹与壁面", flush=True)
+    stage_started = time.perf_counter()
     topology = validate_shed_groups(surface["vertices"], surface["faces"],
                                     surface["component_ids"], groups)
+    timings = dict(validation_seconds=time.perf_counter() - stage_started)
+    if progress:
+        progress("校验完成 %.2f s；装配影响矩阵" % timings["validation_seconds"], flush=True)
+    stage_started = time.perf_counter()
     assembled = assemble_half_groups(surface["vertices"], topology, surface["freestream"])
+    jax.block_until_ready(assembled)
+    timings["assembly_seconds"] = time.perf_counter() - stage_started
+    if progress:
+        progress("装配完成 %.2f s；求解与载荷恢复" % timings["assembly_seconds"], flush=True)
     started_solve = time.perf_counter()
     out = solve_half_groups(surface["vertices"], topology, surface["freestream"],
                             surface["density"], surface["reference_area"],
                             surface["reference_chord"], surface["reference_point"],
-                            contact_cuts=contact_cuts)
+                            contact_cuts=contact_cuts, assembled=assembled)
+    jax.block_until_ready(out)
     hot = time.perf_counter() - started_solve
+    timings["solve_and_loads_seconds"] = hot
+    if progress:
+        progress("求解与载荷完成 %.2f s；检查残差与镜像算子" % hot, flush=True)
+    stage_started = time.perf_counter()
     residual = np.asarray(out["linear_residual_half"], dtype=float)
     rnorm = float(np.linalg.norm(residual) /
                   max(float(np.linalg.norm(np.asarray(out["rhs_half"], dtype=float))), 1e-300))
@@ -471,7 +487,7 @@ def run(surface_path, *, groups_path=None, full_oracle=False,
                          kutta_residual_rms=r["kutta_residual_rms"],
                          wake_z=r["wake_z"], wake_faces=r["wake_faces"],
                          shed_edges=r["shed_edges"]) for r in out["group_rows"]],
-        checks={},
+        checks={}, timings=timings,
     )
     checks = report["checks"]
     checks["block_dimensions"] = check_block_dimensions(assembled)
@@ -490,6 +506,7 @@ def run(surface_path, *, groups_path=None, full_oracle=False,
                                  reason=("disabled" if not gradient
                                          else "no circulation unknowns: a G=0 pure "
                                               "Dirichlet solve has CL ~ 0")))
+    timings["checks_and_report_seconds"] = time.perf_counter() - stage_started
     report["elapsed_seconds"] = time.perf_counter() - started
     return report
 

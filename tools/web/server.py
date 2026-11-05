@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import threading
 import time
 import traceback
@@ -86,7 +87,9 @@ class Handler(BaseHTTPRequestHandler):
                                  body_defaults=params_module.normalise_body({})[0],
                                  defaults=params_module.normalise({})[0],
                                  reference=params_module.reference(params_module.normalise({})[0]),
-                                 runs=str(pipeline.RUNS), devices=_devices()))
+                                 runs=str(pipeline.RUNS), devices=_devices(),
+                                 solve_threads=pipeline.SOLVE_THREADS,
+                                 cpu_count=os.cpu_count() or 1))
             return
         if path == "/api/job":
             job = _job(parse_qs(parsed.query).get("id", [""])[0])
@@ -158,6 +161,10 @@ class Handler(BaseHTTPRequestHandler):
                     return
                 requested_size = float(body.get("size", 0.3))
                 requested_alpha = float(body.get("alpha", 4.0))
+                ncpu = int(body.get("ncpu", pipeline.SOLVE_THREADS))
+                if not 1 <= ncpu <= (os.cpu_count() or 1):
+                    raise ValueError("CPU 线程数必须在 1 到 %d 之间" % (os.cpu_count() or 1))
+                body["ncpu"] = ncpu
                 if not job.mesh_info or not job.mesh_options:
                     self._send(409, {"error": "请先生成计算网格"})
                     return

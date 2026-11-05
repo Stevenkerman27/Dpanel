@@ -400,7 +400,8 @@ function renderResult() {
   if (!result) { el('resultMode').textContent = ''; el('resultMode').className = 'badge'; return; }
   el('resultMode').textContent = result.mode === 'free' ? '自由尾迹' : '固定尾迹';
   el('resultMode').className = 'badge' + (result.mode === 'free' ? ' free' : '');
-  el('resultTime').textContent = result.seconds_total ? result.seconds_total.toFixed(1) + ' s' : '';
+  const solveSeconds = result.runner_seconds === undefined ? result.seconds : result.runner_seconds;
+  el('resultTime').textContent = solveSeconds ? Number(solveSeconds).toFixed(1) + ' s' : '';
   const fmt = (v, digits) => (v === null || v === undefined ? '-' : Number(v).toFixed(digits === undefined ? 5 : digits));
   setResultRow('CL', fmt(result.CL));
   setResultRow('CD', fmt(result.CD));
@@ -409,13 +410,14 @@ function renderResult() {
   setResultRow('壁面面板', result.panels === undefined ? '-' : String(result.panels));
   setResultRow('未知量', result.unknowns === undefined ? '-' : String(result.unknowns));
   setResultRow('残差', result.residual === undefined || result.residual === null ? '-' : Number(result.residual).toExponential(2));
-  setResultRow('求解耗时', result.seconds ? Number(result.seconds).toFixed(2) + ' s' : '-');
+  setResultRow('求解耗时', solveSeconds ? Number(solveSeconds).toFixed(2) + ' s' : '-');
   const options = result.options || {};
   const used = options.device_used;
   const requested = options.device_requested;
   const deviceText = !used ? '-' : (requested && requested !== used
     ? used + '（请求 ' + requested + '，不可用已回退）' : used);
   setResultRow('设备', deviceText, Boolean(used && requested && requested !== used));
+  if (result.ncpu !== undefined) setResultRow('CPU 线程', String(result.ncpu));
   if (result.warning) setResultRow('', result.warning, true);
   if (result.device_note) setResultRow('', result.device_note, true);
   drawPlot();
@@ -569,6 +571,7 @@ async function doSolve() {
       wake: el('wake').value,
       iterations: Number(el('iterations').value),
       device: el('device').value,
+      ncpu: Number(el('ncpu').value),
     };
     clearLog();
     logLine('求解中：α=' + body.alpha + '°，尾迹=' + (body.wake === 'free' ? '自由' : '固定'));
@@ -713,6 +716,8 @@ async function boot() {
     state.schema = schema.params || [];
     state.bodySchema = schema.body_params || [];
     state.bodyDefaults = schema.body_defaults || {};
+    el('ncpu').value = schema.solve_threads || 8;
+    el('ncpu').max = schema.cpu_count || 128;
     const devices = schema.devices || [{ id: 'cpu', label: 'torch CPU', available: true }];
     const select = el('device');
     select.innerHTML = '';

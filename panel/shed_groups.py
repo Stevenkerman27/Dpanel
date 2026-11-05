@@ -170,6 +170,9 @@ def validate_shed_groups(vertices, wall_faces, component_ids, groups, *,
 
     seen_edges = {}
     reports = []
+    wall_triangles = x[f]
+    wall_lo = wall_triangles.min(axis=1)
+    wall_hi = wall_triangles.max(axis=1) + tol
     for g in groups:
         if g.kind not in GROUP_KINDS:
             raise ValueError(f"Unknown shed group kind {g.kind!r}")
@@ -292,18 +295,22 @@ def validate_shed_groups(vertices, wall_faces, component_ids, groups, *,
         tested = 0
         hits = 0
         banks = set(int(v) for v in up) | set(int(v) for v in lo)
+        eligible = np.ones(len(f), dtype=bool)
+        eligible[list(banks)] = False
         for k in range(len(w)):
             tri = x[w[k]]
-            wnodes = set(int(v) for v in w[k])
-            tested_here = 0
-            for j in range(len(f)):
-                if j in banks or wnodes & set(int(v) for v in f[j]):
-                    continue
-                if not _triangle_aabb_intersect(tri, x[f[j]], tol):
-                    continue
-                tested_here += 1
+            # Batch the broad phase; only overlapping, non-adjacent pairs need
+            # the unchanged segment/triangle test. Keep original face order.
+            candidates = np.flatnonzero(
+                eligible & np.all(tri.min(axis=0) <= wall_hi, axis=1)
+                & np.all(wall_lo <= tri.max(axis=0) + tol, axis=1))
+            shared_node = np.any(f[candidates, :, None] == w[k][None, None, :],
+                                 axis=(1, 2))
+            candidates = candidates[~shared_node]
+            tested_here = len(candidates)
+            for j in candidates:
                 for a, b in zip(tri, np.roll(tri, -1)):
-                    t = _segment_triangle_t(a, b, x[f[j]], tol)
+                    t = _segment_triangle_t(a, b, wall_triangles[j], tol)
                     if t is not None and tol < t < 1.0 - tol:
                         hits += 1
                         break
@@ -479,9 +486,10 @@ def pressure_neighbors(vertices, topology, contact_cuts=(), *, rings=2,
 
 def solve_half_groups(vertices, topology, freestream, density, reference_area,
                       reference_chord, reference_point, *, contact_cuts=(),
-                      solve=None):
-    """Dense reference solve of the v2 system; returns loads and per-group rows."""
-    assembled = assemble_half_groups(vertices, topology, freestream)
+                      solve=None, assembled=None):
+    """Solve and recover loads; the driver may reuse its current assembly."""
+    if assembled is None:
+        assembled = assemble_half_groups(vertices, topology, freestream)
     solver = linear_solve if solve is None else solve
     state = solver(assembled["matrix"], assembled["rhs"])
     nf = assembled["wall_panels"]

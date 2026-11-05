@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -41,7 +42,8 @@ def solve_fixed(surface):
     from panel.run_half_groups import run as run_half
 
     print("稠密参考解（半域, 固定尾迹）", flush=True)
-    report = run_half(surface, gradient=False, v1_check=False, max_panels=20000)
+    report = run_half(surface, gradient=False, v1_check=False, max_panels=20000,
+                      progress=print)
     solve = report["solve"]
     rows = []
     for row in report["group_rows"]:
@@ -66,6 +68,7 @@ def solve_fixed(surface):
                 cp=[solve["Cp_min"], solve["Cp_max"]],
                 residual=solve["linear_residual_relative"],
                 seconds=solve["hot_seconds"], unknowns=solve["unknowns"],
+                timings=report["timings"],
                 panels=solve["wall_panels"], group_rows=rows, history=None,
                 field=field)
 
@@ -126,7 +129,12 @@ def main(argv=None):
     parser.add_argument("--alpha", type=float, default=4.0)
     parser.add_argument("--iterations", type=int, default=12)
     parser.add_argument("--reference", default="{}")
+    parser.add_argument("--ncpu", type=int, default=min(8, os.cpu_count() or 1))
     args = parser.parse_args(argv)
+    if not 1 <= args.ncpu <= (os.cpu_count() or 1):
+        parser.error("--ncpu must be between 1 and the logical CPU count")
+    for key in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+        os.environ[key] = str(args.ncpu)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     started = time.time()
@@ -136,6 +144,7 @@ def main(argv=None):
     else:
         result = solve_fixed(Path(args.surface))
     result["runner_seconds"] = time.time() - started
+    result["ncpu"] = args.ncpu
     (out / "result.json").write_text(json.dumps(_plain(result)), encoding="utf-8")
     print("求解完成: CL=%s" % ("-" if result.get("CL") is None else "%+.6f" % result["CL"]),
           flush=True)
