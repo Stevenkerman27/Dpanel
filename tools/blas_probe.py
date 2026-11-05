@@ -24,6 +24,7 @@ parser.add_argument("--size", type=int, default=4612)
 parser.add_argument("--cores", nargs="+", default=["Haswell", "Sandybridge"])
 parser.add_argument("--repeat", type=int, default=3)
 parser.add_argument("--gemm-q", type=int, help="diagnostic override for the measured DLL only")
+parser.add_argument("--matrix", choices=["identity", "random"], default="identity")
 parser.add_argument("--out", type=Path, required=True)
 parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)
 args = parser.parse_args()
@@ -57,6 +58,7 @@ if args.worker:
                           size=args.size, case=args.case, tuning_before=tuning,
                           gemm_q_override=args.gemm_q)), flush=True)
     started = time.perf_counter()
+    operation_seconds = None
     n = ctypes.c_int(args.size)
     pointer = ctypes.POINTER(ctypes.c_double)
     if args.case == "kernel":
@@ -72,13 +74,25 @@ if args.worker:
                b.ctypes.data_as(pointer), c.ctypes.data_as(pointer), 4)
         correct = np.array_equal(c, np.full(4 * 24, args.size))
     elif args.case == "lu":
-        a = np.eye(args.size, dtype=np.float64, order="F")
+        if args.matrix == "random":
+            a = np.asfortranarray(np.random.default_rng(20261105).standard_normal((args.size, args.size)) / np.sqrt(args.size))
+            a[np.diag_indices(args.size)] += 2.
+        else:
+            a = np.eye(args.size, dtype=np.float64, order="F")
+        rhs = a.sum(axis=1)
         pivots = np.zeros(args.size, dtype=np.int32)
         info = ctypes.c_int()
+        operation_started = time.perf_counter()
         blas.dgetrf_(ctypes.byref(n), ctypes.byref(n), a.ctypes.data_as(pointer),
                      ctypes.byref(n), pivots.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
                      ctypes.byref(info))
-        correct = info.value == 0 and np.array_equal(pivots, np.arange(1, args.size + 1)) and np.array_equal(a, np.eye(args.size))
+        operation_seconds = time.perf_counter() - operation_started
+        factor_info = info.value
+        nrhs = ctypes.c_int(1)
+        blas.dgetrs_(b"N", ctypes.byref(n), ctypes.byref(nrhs), a.ctypes.data_as(pointer),
+                     ctypes.byref(n), pivots.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+                     rhs.ctypes.data_as(pointer), ctypes.byref(n), ctypes.byref(info))
+        correct = factor_info == 0 and info.value == 0 and np.max(np.abs(rhs - 1.)) < 1e-10
     elif args.case == "gemm":
         a = np.eye(args.size, dtype=np.float64, order="F")
         c = np.zeros_like(a, order="F")
@@ -95,12 +109,13 @@ if args.worker:
 
         x = np.asarray(jnp.linalg.solve(jnp.eye(args.size), jnp.ones(args.size)))
         correct = np.array_equal(x, np.ones(args.size))
-    print(json.dumps(dict(correct=bool(correct), seconds=time.perf_counter() - started)), flush=True)
+    print(json.dumps(dict(correct=bool(correct), seconds=time.perf_counter() - started,
+                          operation_seconds=operation_seconds)), flush=True)
     sys.exit(0 if correct else 1)
 
 dll_path = Path(sys.prefix) / "Library" / "bin" / "openblas.dll"
 report = dict(python=sys.version, executable=sys.executable, case=args.case,
-              size=args.size, dll=str(dll_path),
+              size=args.size, matrix=args.matrix, dll=str(dll_path),
               gemm_q_override=args.gemm_q,
               dll_sha256=hashlib.sha256(dll_path.read_bytes()).hexdigest(), runs=[])
 for core in args.cores:
@@ -110,7 +125,7 @@ for core in args.cores:
                    OMP_NUM_THREADS="1", MKL_NUM_THREADS="1", PYTHONIOENCODING="utf-8")
         command = [sys.executable, "-X", "faulthandler", "-m", "tools.blas_probe",
                    "--worker", "--case", args.case, "--size", str(args.size),
-                   "--out", str(args.out)]
+                   "--out", str(args.out), "--matrix", args.matrix]
         if args.gemm_q is not None:
             command.extend(["--gemm-q", str(args.gemm_q)])
         with log.open("w", encoding="utf-8") as stream:

@@ -210,3 +210,38 @@ python -m tools.blas_debug --out runs/verification/native_blas/debug_lu4612.json
 `debug_lu*.json`、`debug_kernel*.json`。原始 surface 只引用一次，不复制。
 上游源文件的本机诊断下载位于 `runs/scratch/openblas_setparam.c`、
 `openblas_param.h`、`dgemm_kernel_4x8_haswell.S`，版本均为 v0.3.34。
+
+### 正式修复方向与分块性能
+
+2026-11-05 读取 OpenBLAS 上游 `develop`（`02f585444a0fba2505cfda77cc6684de008ea477`）
+确认，`kernel/setparam-ref.c` 已用 `#ifndef NO_AVX512` 包住 Ryzen 调参，并只允许
+Cooperlake / SkylakeX / SapphireRapids 三类内核应用 Q=512。当前 conda 构建使用
+`NO_AVX512=1`，这个修正会保留 Windows Haswell 原有的 Q=128。
+推荐使用包含此修正并经过本机验证的运行库构建；尚未编译、安装或验收替代 DLL，
+也未确认哪一个已发布 conda 构建包含修正。诊断工具的内存表改写仍只用于实验。
+
+Q 控制 K 方向分块，影响缓存复用、打包次数和微内核调用开销；Q 减半不意味着浮点运算量
+翻倍或速度减半。可接受范围先受微内核缓冲容量限制，其内再按矩阵尺寸和硬件测性能。
+
+单线程、同种随机矩阵（4612×4612，固定种子 `20261105`，元素为标准正态除以 sqrt(N)，
+对角加 2），每种配置独立启动三次，**只计 `dgetrf_` 本身**：
+
+| 配置 | LU 中位耗时 | 三次制造解检查 |
+| --- | --- | --- |
+| Haswell，诊断进程设 Q=128 | 0.8195 s | 3/3 正确 |
+| Haswell，诊断进程设 Q=64 | 0.8385 s | 3/3 正确 |
+| Sandybridge，原始调参 | 0.9981 s | 3/3 正确 |
+
+制造解为全 1 向量，求解后最大绝对误差要求小于 1e-10。这里 Haswell Q=128 的耗时
+比 Q=64 少约 2.3%，比 Sandybridge 少约 17.9%；不能据此推断与已崩溃的 Haswell
+Q=512 相比损失多少性能，也不代表实际 AIC 或完整 Web 求解的耗时比例。
+该计时不含矩阵生成、分解后的解算/校验、网格、影响矩阵装配或 JAX 编译。
+
+```powershell
+python -m tools.blas_probe --case lu --size 4612 --matrix random --cores Haswell --gemm-q 128 --out runs/verification/native_blas/performance_haswell128
+python -m tools.blas_probe --case lu --size 4612 --matrix random --cores Haswell --gemm-q 64 --out runs/verification/native_blas/performance_haswell64
+python -m tools.blas_probe --case lu --size 4612 --matrix random --cores Sandybridge --out runs/verification/native_blas/performance_sandybridge
+```
+
+上述目录的 `*.log` 保留 `operation_seconds` 和正确性检查，`report.json` 保留
+配置与每次进程退出码。此前单位矩阵探针的总计时包含构造/校验，不用于这张性能表。
