@@ -23,6 +23,16 @@ def test_physical_attachment_is_distinct_from_predecessor_roots_on_swept_wake():
     assert np.all(top["rows"][top["attached"]] == 0)
 
 
+def test_production_material_uses_declared_te_attachment_identity():
+    wing = make_wing(chord_panels=3, span_panels=4, wake_panels=3)
+    mesh = combine_wings([wing])
+    group = mesh.groups[0]
+    material = prepare_wake_material(group)
+    assert set(material.attachments.tolist()) == set(group.wake_attachment_nodes.tolist())
+    assert len(material.attachments) == len(wing.te_geo)
+    assert len(np.setdiff1d(material.attachments, material.roots)) > 0
+
+
 def test_geometry_audit_does_not_treat_aabb_contact_as_penetration():
     mesh = combine_wings([make_wing(chord_panels=3, span_panels=4, wake_panels=3)])
     context = geometry_context(mesh)
