@@ -1,0 +1,8 @@
+potential numpy/24 0.6066062999962014 velocity error 0.0
+potential numpy/96 0.7324705999999424 velocity error 0.0
+potential torch/cpu/256 0.7349943000008352 velocity error 4.2084787260990297e-13
+potential torch/cuda/512 0.0334417999983998 velocity error 2.970956813896919e-13
+analytic loop/cpu 0.668339299998479 error 0.0
+analytic numpy/cpu 0.6585534000041662 error 0.0
+analytic torch/cpu 1.111779300001217 error 1.8041124150158794e-15
+analytic torch/cuda 0.037641299997630995 error 2.398081733190338e-14

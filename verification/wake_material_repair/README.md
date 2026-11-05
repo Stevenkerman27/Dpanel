@@ -94,6 +94,17 @@ These two timing families must not be compared across formulas. Initial
 measurements shared the host with other work; the master checkout rerun
 is recorded separately in `master_velocity_benchmark.json`.
 
+The isolated rerun on master `ec059d9` reproduced the result after all study
+jobs finished (504 targets, three warmed calls, median):
+
+| Computation | Reference | CUDA | Speedup | Maximum velocity difference |
+| --- | ---: | ---: | ---: | ---: |
+| B3 same potential and two-sided differences | 0.606606 s | 0.033442 s | 18.14x | 2.97e-13 |
+| Same analytic-velocity formula | 0.668339 s | 0.037641 s | 17.75x | 2.40e-14 |
+
+The B3 Torch CPU candidate took 0.734994 s, so it was not adopted as a speed
+improvement. These are component measurements, not whole-solver timings.
+
 An actual unrestricted 8-step Swept30 CPU/GPU comparison has maximum CL
 difference 2.79e-14. Its wall times include audits and concurrent host work;
 they are not an isolated whole-solver speedup measurement. NumPy remains
