@@ -1,0 +1,3 @@
+rect input/snapshot hashes and recorded arithmetic verified; replay starting
+rect iteration 0 CL delta=0 passed=True
+rect iteration 1 CL delta=0 passed=True

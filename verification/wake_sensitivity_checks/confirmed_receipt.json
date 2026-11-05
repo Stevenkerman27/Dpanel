@@ -1,0 +1,61 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_sensitivity_verify.py",
+    "--out",
+    "verification/wake_sensitivity_checks/confirmed_receipt.json"
+  ],
+  "head": "5972822bb52a0f5a2367f7f716be1f3f6c7cc4a8",
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "evidence_manifest_sha256": "aa1f39fbf33519dd5f3d20d9582c2b8116dcd28ab73b28bb47ecd09ec83a5345",
+  "verifier_sha256": "fafd537fdbce155ad1e3c694b699590f1a125866eb85daf8e3ab7e78e8e331c6",
+  "scope": "hashes, recorded arithmetic, uniform axial counterexample and fresh 0/1-step solves; not a full E1-E4 rerun",
+  "physical_accuracy_accepted": false,
+  "cases": {
+    "rect": {
+      "snapshot_hashes_verified": 61,
+      "wall_coincident_attachments": 7,
+      "declared_TE_matches": 7,
+      "extra_wall_contact_ids": [],
+      "extra_wall_contact_coordinates": [],
+      "extra_wall_contact_gamma_hat_max": null,
+      "moving_attachments_in_uniform_axial_flow": 0,
+      "moving_declared_TE_matches": 0,
+      "attachment_max_raw_displacement_chord": 0.0,
+      "unrelaxed_degenerate_faces": 0,
+      "E4_max_recorded_eigenpair_residual": 0.0,
+      "note": "E4 arithmetic checked; QR factors and spectra not independently recomputed",
+      "replay": [
+        {
+          "iteration": 0,
+          "CL": 0.2561444508504888,
+          "CL_difference": 0.0,
+          "max_xyz_difference": 0.0,
+          "max_gamma_difference": 0.0,
+          "max_cp_difference": 0.0,
+          "passed": true
+        },
+        {
+          "iteration": 1,
+          "CL": 0.2563074609374016,
+          "CL_difference": 0.0,
+          "max_xyz_difference": 0.0,
+          "max_gamma_difference": 0.0,
+          "max_cp_difference": 0.0,
+          "passed": true
+        }
+      ],
+      "replay_passed": true
+    }
+  },
+  "status": "running",
+  "manifest_files_verified": 139
+}

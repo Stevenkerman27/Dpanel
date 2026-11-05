@@ -1,0 +1,10 @@
+rect input/snapshot hashes and recorded arithmetic verified; replay starting
+rect iteration 0 CL delta=0 passed=True
+rect iteration 1 CL delta=0 passed=True
+swept30 input/snapshot hashes and recorded arithmetic verified; replay starting
+swept30 iteration 0 CL delta=0 passed=True
+swept30 iteration 1 CL delta=0 passed=True
+elliptic input/snapshot hashes and recorded arithmetic verified; replay starting
+elliptic iteration 0 CL delta=0 passed=True
+elliptic iteration 1 CL delta=0 passed=True
+evidence checks and six fresh solves passed; physical accuracy remains unaccepted
