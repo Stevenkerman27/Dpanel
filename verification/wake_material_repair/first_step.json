@@ -1,0 +1,81 @@
+{
+  "head": "1dbd01c1abcb6772e68f44321eb6bd90d17e4f03",
+  "imported_solver": "D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "cases": {
+    "rect": {
+      "frozen_arrays_equal": true,
+      "declared_attachments": 7,
+      "graph_roots": 7,
+      "checks": {
+        "axial": {
+          "completed": true,
+          "frozen_nodes": [],
+          "max_displacement": 0.0
+        },
+        "oblique": {
+          "completed": true,
+          "frozen_nodes": [],
+          "max_displacement": 0.6946221994724904
+        }
+      },
+      "replay": [
+        {
+          "iteration": 0,
+          "CL": 0.2561444508504888,
+          "max_gamma_difference": 0.0,
+          "max_cp_difference": 0.0,
+          "max_wake_difference": 0.0
+        },
+        {
+          "iteration": 1,
+          "CL": 0.2563074609374014,
+          "max_gamma_difference": 2.831068712794149e-15,
+          "max_cp_difference": 1.8474111129762605e-13,
+          "max_wake_difference": 2.7755575615628914e-17
+        }
+      ],
+      "first_step_completed": true
+    },
+    "swept30": {
+      "frozen_arrays_equal": true,
+      "declared_attachments": 63,
+      "graph_roots": 1,
+      "checks": {
+        "axial": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 365, in _one_wake_target\n    integral=_material_line_integrals(replace(g,wake_xyz=original))\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 150, in _material_line_integrals\n    raise ValueError(f'{g.name}: disconnected material ray at wake node {node}')\nValueError: lifting_0: disconnected material ray at wake node 3\n"
+        },
+        "oblique": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 365, in _one_wake_target\n    integral=_material_line_integrals(replace(g,wake_xyz=original))\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 150, in _material_line_integrals\n    raise ValueError(f'{g.name}: disconnected material ray at wake node {node}')\nValueError: lifting_0: disconnected material ray at wake node 3\n"
+        }
+      },
+      "replay": [],
+      "first_step_completed": false,
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 71, in <module>\n    solved = wake.solve_steady_free_wake(mesh, 4., kutta=\"pressure\", iterations=1,\n                                        relaxation=.3, save_callback=save)\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 430, in solve_steady_free_wake\n    t0=time.perf_counter();mat={g.name:prepare_wake_material(g,streamwise=True) for g in mesh.groups}\n                                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 111, in prepare_wake_material\n    integral=_material_line_integrals(g) if streamwise else None\n             ~~~~~~~~~~~~~~~~~~~~~~~~^^^\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 150, in _material_line_integrals\n    raise ValueError(f'{g.name}: disconnected material ray at wake node {node}')\nValueError: lifting_0: disconnected material ray at wake node 3\n"
+    },
+    "elliptic": {
+      "frozen_arrays_equal": true,
+      "declared_attachments": 83,
+      "graph_roots": 2,
+      "checks": {
+        "axial": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 365, in _one_wake_target\n    integral=_material_line_integrals(replace(g,wake_xyz=original))\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 150, in _material_line_integrals\n    raise ValueError(f'{g.name}: disconnected material ray at wake node {node}')\nValueError: lifting_0: disconnected material ray at wake node 4\n"
+        },
+        "oblique": {
+          "completed": false,
+          "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 55, in <module>\n    target, frozen_nodes = wake._one_wake_target(\n                           ~~~~~~~~~~~~~~~~~~~~~^\n        group, material, np.tile(vector, (len(group.wake_xyz), 1)), freeze=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 365, in _one_wake_target\n    integral=_material_line_integrals(replace(g,wake_xyz=original))\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 150, in _material_line_integrals\n    raise ValueError(f'{g.name}: disconnected material ray at wake node {node}')\nValueError: lifting_0: disconnected material ray at wake node 4\n"
+        }
+      },
+      "replay": [],
+      "first_step_completed": false,
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\3D\\Projects\\panel\\tools\\wake_map_review.py\", line 71, in <module>\n    solved = wake.solve_steady_free_wake(mesh, 4., kutta=\"pressure\", iterations=1,\n                                        relaxation=.3, save_callback=save)\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 430, in solve_steady_free_wake\n    t0=time.perf_counter();mat={g.name:prepare_wake_material(g,streamwise=True) for g in mesh.groups}\n                                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 111, in prepare_wake_material\n    integral=_material_line_integrals(g) if streamwise else None\n             ~~~~~~~~~~~~~~~~~~~~~~~~^^^\n  File \"D:\\3D\\Projects\\panel\\panel\\p1_steady_free_wake.py\", line 150, in _material_line_integrals\n    raise ValueError(f'{g.name}: disconnected material ray at wake node {node}')\nValueError: lifting_0: disconnected material ray at wake node 4\n"
+    }
+  },
+  "physical_accuracy_accepted": false,
+  "seconds": 0.2810847759246826,
+  "status": "blocked"
+}

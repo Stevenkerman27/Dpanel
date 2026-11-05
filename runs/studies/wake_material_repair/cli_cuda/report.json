@@ -1,0 +1,543 @@
+{
+  "schema": "dpanel.p1.g2.steady_free_wake.v1",
+  "source_half_surface_sha256": null,
+  "physical_accuracy_accepted": false,
+  "model": "steady material-coordinate streamline-marched doublet wake",
+  "wake_panels": [
+    24,
+    18
+  ],
+  "n_wall_faces": 108,
+  "n_wall_dof": 63,
+  "reference_area": 4.99,
+  "reference_chord": 1.0,
+  "parameters": {
+    "alpha": [
+      5.0
+    ],
+    "kutta": "pressure",
+    "iterations": 2,
+    "relaxation": 0.25,
+    "probe_fraction": 0.055,
+    "step_fraction": 0.009,
+    "geometry_tol": 0.002,
+    "normal_slip_tol": 0.01,
+    "probe_floor_fraction": 0.0,
+    "min_axial": 0.08,
+    "relax_min_abs_y": 0.0,
+    "max_step_chord": 0.0,
+    "slip_gate": 0.0,
+    "wake_potential_backend": "torch",
+    "wake_device": "cuda",
+    "wake_velocity_block": 512
+  },
+  "reports": [
+    {
+      "alpha_deg": 5.0,
+      "iterations": 2,
+      "status": "iteration_limit",
+      "converged": false,
+      "geometry_stable": false,
+      "geometry_tol": 0.002,
+      "normal_slip_tol": 0.01,
+      "seconds": 2.0223251999996137,
+      "initial": {
+        "iteration": 0,
+        "CL": 0.3202799630687883,
+        "CL_gamma": 0.2943313235733297,
+        "CD_pressure": -0.027922677980230688,
+        "CM_y": -0.08148950159399591,
+        "wall_rms": 0.0027618168907491696,
+        "jump_rms": 2.1210781103223382e-16,
+        "pressure_kutta_rms": 2.2645337691250516e-07,
+        "wakes": {
+          "main_wing": {
+            "n_panels": 24,
+            "velocity_max": 1.0000416099913023,
+            "velocity_min_x": 0.9855866094342699,
+            "normal_slip_rms": 0.05196092803791322,
+            "normal_slip_max": 0.09889971978468295,
+            "wake_cp_jump_rms": 0.007650403679892424,
+            "wake_cp_jump_max": 0.023160990784881097,
+            "shortest_edge_median": 1.0,
+            "aspect_p90": 1.9436506316151003,
+            "probe_over_shortest_max": 0.05020790110464023
+          },
+          "raised_tail": {
+            "n_panels": 18,
+            "velocity_max": 0.9945395553930688,
+            "velocity_min_x": 0.9825153130182778,
+            "normal_slip_rms": 0.02104453077880313,
+            "normal_slip_max": 0.030374767048244974,
+            "wake_cp_jump_rms": 0.0007098134116302525,
+            "wake_cp_jump_max": 0.0018387695327587439,
+            "shortest_edge_median": 0.6,
+            "aspect_p90": 1.8259531588383113,
+            "probe_over_shortest_max": 0.048070405541131955
+          }
+        },
+        "groups": [
+          {
+            "name": "main_wing",
+            "CL_pressure": 0.31714753702690796,
+            "CL_gamma": 0.2923496044063031,
+            "gamma": [
+              0.259428724861839,
+              0.2590425920917617,
+              0.21094094604012542
+            ],
+            "gamma_y": [
+              -2.0,
+              -1.0,
+              0.0,
+              1.0,
+              2.0
+            ],
+            "Gamma_integral": 0.7294122629937262,
+            "wall_faces": 60,
+            "wake_triangles": 24
+          },
+          {
+            "name": "raised_tail",
+            "CL_pressure": 0.0031324260418803818,
+            "CL_gamma": 0.0019817191670266233,
+            "gamma": [
+              0.00438650095408466,
+              0.003854147915467715
+            ],
+            "gamma_y": [
+              -0.9,
+              -0.30000000000000004,
+              0.29999999999999993,
+              0.9
+            ],
+            "Gamma_integral": 0.004944389321731425,
+            "wall_faces": 48,
+            "wake_triangles": 18
+          }
+        ],
+        "wake_geometry_change": 0.10163784703804057,
+        "frozen_node_ids": {
+          "main_wing": [],
+          "raised_tail": []
+        },
+        "raw_map_residual": {
+          "main_wing": 0.4065513881521623,
+          "raised_tail": 0.11496279528862054
+        },
+        "attachment_target_displacement": {
+          "main_wing": 0.0,
+          "raised_tail": 0.0
+        },
+        "relaxed_nodes": {
+          "main_wing": 15,
+          "raised_tail": 12
+        },
+        "frozen_nodes": {
+          "main_wing": 0,
+          "raised_tail": 0
+        },
+        "orientation_backtracking": {
+          "attempts": 1,
+          "factor": 1.0,
+          "accepted": true
+        },
+        "field_npz": "alpha_p005.000\\iteration_000.npz"
+      },
+      "final": {
+        "iteration": 2,
+        "CL": 0.3199653451138173,
+        "CL_gamma": 0.29393809840604473,
+        "CD_pressure": -0.027923207098263788,
+        "CM_y": -0.08092576697547811,
+        "wall_rms": 0.0027612939115870742,
+        "jump_rms": 2.0320417812550592e-16,
+        "pressure_kutta_rms": 2.275996980578036e-07,
+        "wakes": {
+          "main_wing": {
+            "n_panels": 24,
+            "velocity_max": 0.999748120337784,
+            "velocity_min_x": 0.9868912373560019,
+            "normal_slip_rms": 0.03528727114452396,
+            "normal_slip_max": 0.06406031921621425,
+            "wake_cp_jump_rms": 0.008050351684026954,
+            "wake_cp_jump_max": 0.02315589993896283,
+            "shortest_edge_median": 1.0,
+            "aspect_p90": 1.9468662961785967,
+            "probe_over_shortest_max": 0.050261710546037945
+          },
+          "raised_tail": {
+            "n_panels": 18,
+            "velocity_max": 0.9955796294914692,
+            "velocity_min_x": 0.9835096487547415,
+            "normal_slip_rms": 0.0108637816201079,
+            "normal_slip_max": 0.015724614977577232,
+            "wake_cp_jump_rms": 0.0007005072592116256,
+            "wake_cp_jump_max": 0.0017316344481796975,
+            "shortest_edge_median": 0.5906667941314301,
+            "aspect_p90": 1.8671594893557864,
+            "probe_over_shortest_max": 0.04914735301778402
+          }
+        },
+        "groups": [
+          {
+            "name": "main_wing",
+            "CL_pressure": 0.3172132260467362,
+            "CL_gamma": 0.2922723255871214,
+            "gamma": [
+              0.25941406993008703,
+              0.25922532496935186,
+              0.21058005744042912
+            ],
+            "gamma_y": [
+              -2.0,
+              -1.0,
+              0.0,
+              1.0,
+              2.0
+            ],
+            "Gamma_integral": 0.729219452339868,
+            "wall_faces": 60,
+            "wake_triangles": 24
+          },
+          {
+            "name": "raised_tail",
+            "CL_pressure": 0.002752119067081122,
+            "CL_gamma": 0.0016657728189233129,
+            "gamma": [
+              0.0037411217444062173,
+              0.0031857168942832264
+            ],
+            "gamma_y": [
+              -0.9,
+              -0.30000000000000004,
+              0.29999999999999993,
+              0.9
+            ],
+            "Gamma_integral": 0.004156103183213666,
+            "wall_faces": 48,
+            "wake_triangles": 18
+          }
+        ],
+        "wake_geometry_change": 0.0761703563506632,
+        "relaxed_nodes": {
+          "main_wing": 15,
+          "raised_tail": 12
+        },
+        "frozen_nodes": {
+          "main_wing": 0,
+          "raised_tail": 0
+        },
+        "field_npz": "alpha_p005.000\\iteration_002.npz"
+      },
+      "history": [
+        {
+          "iteration": 0,
+          "CL": 0.3202799630687883,
+          "CL_gamma": 0.2943313235733297,
+          "CD_pressure": -0.027922677980230688,
+          "CM_y": -0.08148950159399591,
+          "wall_rms": 0.0027618168907491696,
+          "jump_rms": 2.1210781103223382e-16,
+          "pressure_kutta_rms": 2.2645337691250516e-07,
+          "wakes": {
+            "main_wing": {
+              "n_panels": 24,
+              "velocity_max": 1.0000416099913023,
+              "velocity_min_x": 0.9855866094342699,
+              "normal_slip_rms": 0.05196092803791322,
+              "normal_slip_max": 0.09889971978468295,
+              "wake_cp_jump_rms": 0.007650403679892424,
+              "wake_cp_jump_max": 0.023160990784881097,
+              "shortest_edge_median": 1.0,
+              "aspect_p90": 1.9436506316151003,
+              "probe_over_shortest_max": 0.05020790110464023
+            },
+            "raised_tail": {
+              "n_panels": 18,
+              "velocity_max": 0.9945395553930688,
+              "velocity_min_x": 0.9825153130182778,
+              "normal_slip_rms": 0.02104453077880313,
+              "normal_slip_max": 0.030374767048244974,
+              "wake_cp_jump_rms": 0.0007098134116302525,
+              "wake_cp_jump_max": 0.0018387695327587439,
+              "shortest_edge_median": 0.6,
+              "aspect_p90": 1.8259531588383113,
+              "probe_over_shortest_max": 0.048070405541131955
+            }
+          },
+          "groups": [
+            {
+              "name": "main_wing",
+              "CL_pressure": 0.31714753702690796,
+              "CL_gamma": 0.2923496044063031,
+              "gamma": [
+                0.259428724861839,
+                0.2590425920917617,
+                0.21094094604012542
+              ],
+              "gamma_y": [
+                -2.0,
+                -1.0,
+                0.0,
+                1.0,
+                2.0
+              ],
+              "Gamma_integral": 0.7294122629937262,
+              "wall_faces": 60,
+              "wake_triangles": 24
+            },
+            {
+              "name": "raised_tail",
+              "CL_pressure": 0.0031324260418803818,
+              "CL_gamma": 0.0019817191670266233,
+              "gamma": [
+                0.00438650095408466,
+                0.003854147915467715
+              ],
+              "gamma_y": [
+                -0.9,
+                -0.30000000000000004,
+                0.29999999999999993,
+                0.9
+              ],
+              "Gamma_integral": 0.004944389321731425,
+              "wall_faces": 48,
+              "wake_triangles": 18
+            }
+          ],
+          "wake_geometry_change": 0.10163784703804057,
+          "frozen_node_ids": {
+            "main_wing": [],
+            "raised_tail": []
+          },
+          "raw_map_residual": {
+            "main_wing": 0.4065513881521623,
+            "raised_tail": 0.11496279528862054
+          },
+          "attachment_target_displacement": {
+            "main_wing": 0.0,
+            "raised_tail": 0.0
+          },
+          "relaxed_nodes": {
+            "main_wing": 15,
+            "raised_tail": 12
+          },
+          "frozen_nodes": {
+            "main_wing": 0,
+            "raised_tail": 0
+          },
+          "orientation_backtracking": {
+            "attempts": 1,
+            "factor": 1.0,
+            "accepted": true
+          },
+          "field_npz": "alpha_p005.000\\iteration_000.npz"
+        },
+        {
+          "iteration": 1,
+          "CL": 0.32009648119296374,
+          "CL_gamma": 0.29410316458500585,
+          "CD_pressure": -0.027923167591127163,
+          "CM_y": -0.08116469667310093,
+          "wall_rms": 0.0027615098939837166,
+          "jump_rms": 5.551115123125783e-17,
+          "pressure_kutta_rms": 2.2710534090633823e-07,
+          "wakes": {
+            "main_wing": {
+              "n_panels": 24,
+              "velocity_max": 0.9998751337159467,
+              "velocity_min_x": 0.986336753171895,
+              "normal_slip_rms": 0.042170221308330834,
+              "normal_slip_max": 0.07831246086065531,
+              "wake_cp_jump_rms": 0.00790994106288171,
+              "wake_cp_jump_max": 0.02315117110789444,
+              "shortest_edge_median": 0.9998199624695044,
+              "aspect_p90": 1.9451559900235003,
+              "probe_over_shortest_max": 0.0502379694545168
+            },
+            "raised_tail": {
+              "n_panels": 18,
+              "velocity_max": 0.9951190928481664,
+              "velocity_min_x": 0.9830800483140604,
+              "normal_slip_rms": 0.015097741524922288,
+              "normal_slip_max": 0.021824677128907826,
+              "wake_cp_jump_rms": 0.0006989397656398011,
+              "wake_cp_jump_max": 0.0017770849753026008,
+              "shortest_edge_median": 0.5946365493098335,
+              "aspect_p90": 1.849528615685811,
+              "probe_over_shortest_max": 0.048687024752764915
+            }
+          },
+          "groups": [
+            {
+              "name": "main_wing",
+              "CL_pressure": 0.3171827417044542,
+              "CL_gamma": 0.2923031687355483,
+              "gamma": [
+                0.2594169670690277,
+                0.2591464086880901,
+                0.21073303023807521
+              ],
+              "gamma_y": [
+                -2.0,
+                -1.0,
+                0.0,
+                1.0,
+                2.0
+              ],
+              "Gamma_integral": 0.729296405995193,
+              "wall_faces": 60,
+              "wake_triangles": 24
+            },
+            {
+              "name": "raised_tail",
+              "CL_pressure": 0.00291373948850955,
+              "CL_gamma": 0.001799995849457548,
+              "gamma": [
+                0.004016065571802896,
+                0.0034689171688580744
+              ],
+              "gamma_y": [
+                -0.9,
+                -0.30000000000000004,
+                0.29999999999999993,
+                0.9
+              ],
+              "Gamma_integral": 0.004490989644396582,
+              "wall_faces": 48,
+              "wake_triangles": 18
+            }
+          ],
+          "wake_geometry_change": 0.0761703563506632,
+          "frozen_node_ids": {
+            "main_wing": [],
+            "raised_tail": []
+          },
+          "raw_map_residual": {
+            "main_wing": 0.3046814254026528,
+            "raised_tail": 0.08244128544774633
+          },
+          "attachment_target_displacement": {
+            "main_wing": 0.0,
+            "raised_tail": 0.0
+          },
+          "relaxed_nodes": {
+            "main_wing": 15,
+            "raised_tail": 12
+          },
+          "frozen_nodes": {
+            "main_wing": 0,
+            "raised_tail": 0
+          },
+          "orientation_backtracking": {
+            "attempts": 1,
+            "factor": 1.0,
+            "accepted": true
+          },
+          "field_npz": "alpha_p005.000\\iteration_001.npz"
+        },
+        {
+          "iteration": 2,
+          "CL": 0.3199653451138173,
+          "CL_gamma": 0.29393809840604473,
+          "CD_pressure": -0.027923207098263788,
+          "CM_y": -0.08092576697547811,
+          "wall_rms": 0.0027612939115870742,
+          "jump_rms": 2.0320417812550592e-16,
+          "pressure_kutta_rms": 2.275996980578036e-07,
+          "wakes": {
+            "main_wing": {
+              "n_panels": 24,
+              "velocity_max": 0.999748120337784,
+              "velocity_min_x": 0.9868912373560019,
+              "normal_slip_rms": 0.03528727114452396,
+              "normal_slip_max": 0.06406031921621425,
+              "wake_cp_jump_rms": 0.008050351684026954,
+              "wake_cp_jump_max": 0.02315589993896283,
+              "shortest_edge_median": 1.0,
+              "aspect_p90": 1.9468662961785967,
+              "probe_over_shortest_max": 0.050261710546037945
+            },
+            "raised_tail": {
+              "n_panels": 18,
+              "velocity_max": 0.9955796294914692,
+              "velocity_min_x": 0.9835096487547415,
+              "normal_slip_rms": 0.0108637816201079,
+              "normal_slip_max": 0.015724614977577232,
+              "wake_cp_jump_rms": 0.0007005072592116256,
+              "wake_cp_jump_max": 0.0017316344481796975,
+              "shortest_edge_median": 0.5906667941314301,
+              "aspect_p90": 1.8671594893557864,
+              "probe_over_shortest_max": 0.04914735301778402
+            }
+          },
+          "groups": [
+            {
+              "name": "main_wing",
+              "CL_pressure": 0.3172132260467362,
+              "CL_gamma": 0.2922723255871214,
+              "gamma": [
+                0.25941406993008703,
+                0.25922532496935186,
+                0.21058005744042912
+              ],
+              "gamma_y": [
+                -2.0,
+                -1.0,
+                0.0,
+                1.0,
+                2.0
+              ],
+              "Gamma_integral": 0.729219452339868,
+              "wall_faces": 60,
+              "wake_triangles": 24
+            },
+            {
+              "name": "raised_tail",
+              "CL_pressure": 0.002752119067081122,
+              "CL_gamma": 0.0016657728189233129,
+              "gamma": [
+                0.0037411217444062173,
+                0.0031857168942832264
+              ],
+              "gamma_y": [
+                -0.9,
+                -0.30000000000000004,
+                0.29999999999999993,
+                0.9
+              ],
+              "Gamma_integral": 0.004156103183213666,
+              "wall_faces": 48,
+              "wake_triangles": 18
+            }
+          ],
+          "wake_geometry_change": 0.0761703563506632,
+          "relaxed_nodes": {
+            "main_wing": 15,
+            "raised_tail": 12
+          },
+          "frozen_nodes": {
+            "main_wing": 0,
+            "raised_tail": 0
+          },
+          "field_npz": "alpha_p005.000\\iteration_002.npz"
+        }
+      ],
+      "component_names": [
+        "main_wing",
+        "raised_tail"
+      ],
+      "interpretation": "simultaneous mu/Gamma at every geometry update; steady free wake only"
+    }
+  ],
+  "elapsed_seconds": 2.0313846999997622,
+  "limitations": [
+    "fixed mesh connectivity and finite wake length",
+    "velocity principal value via explicit two-sided finite probes",
+    "steady only: no time stepping or Kelvin-history shedding",
+    "geometry-stable is distinct from converged normal-slip",
+    "coarse wake root/tip and local Cp errors remain",
+    "no JAX shape VJP or wake roll-up core yet"
+  ]
+}

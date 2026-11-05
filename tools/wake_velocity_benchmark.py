@@ -30,10 +30,10 @@ torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS","1")))
 spec = json.loads((root/"docs/issue92/b3_cases.json").read_text())["cases"][args.case]
 wing = _wing(spec)
 mesh = combine_wings([wing],reference_chord=spec["cref"],reference_area=spec["sref"])
-snapshot = root/"runs/verification/issue102_wake_sensitivity"/args.case/"iteration_000.npz"
+snapshot = root/"runs/verification/issue102_wake_sensitivity"/args.case/"initial_state.npz"
 with np.load(snapshot) as data:
-    state = dict(mu=data["mu"].copy(), gamma=data["gamma"].copy(), alpha_deg=4.)
-    np.testing.assert_array_equal(mesh.groups[0].wake_xyz, data["wake_xyz"])
+    state = dict(mu=data["state_mu"].copy(), gamma=data["state_gamma"].copy(), alpha_deg=4.)
+    np.testing.assert_array_equal(mesh.groups[0].wake_xyz, data["state_wake_xyz"])
 wm = _wake_mesh(mesh.groups[0])
 ids = np.linspace(0,len(wm.faces)-1,min(len(wm.faces),max(1,args.targets//12)),dtype=int)
 step = .009*np.sqrt(wm.areas[ids])

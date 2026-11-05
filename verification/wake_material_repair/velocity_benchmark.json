@@ -1,0 +1,123 @@
+{
+  "case": "swept30",
+  "head": "1dbd01c1abcb6772e68f44321eb6bd90d17e4f03",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "cuda": "NVIDIA GeForce RTX 5060",
+  "input_sha256": "8bda665c9817e96163a7c0ee251596fa10041d3004139e2af1c3da70a5a17f58",
+  "targets": 504,
+  "repeats": 3,
+  "statistic": "median of warmed complete calls including source setup and transfers",
+  "potential": [
+    {
+      "config": "numpy/24",
+      "seconds": 0.6064830999966944,
+      "samples": [
+        0.6041101000009803,
+        0.6064830999966944,
+        0.6116113000025507
+      ],
+      "max_potential_error": 0.0,
+      "max_velocity_error": 0.0,
+      "parity": true,
+      "speedup": 1.0
+    },
+    {
+      "config": "numpy/96",
+      "seconds": 0.7643813000031514,
+      "samples": [
+        0.772536399999808,
+        0.7613883999947575,
+        0.7643813000031514
+      ],
+      "max_potential_error": 0.0,
+      "max_velocity_error": 0.0,
+      "parity": true,
+      "speedup": 0.7934300590480091
+    },
+    {
+      "config": "torch/cpu/256",
+      "seconds": 0.7517219000001205,
+      "samples": [
+        0.7545891000045231,
+        0.7517219000001205,
+        0.750417399998696
+      ],
+      "max_potential_error": 1.7763568394002505e-15,
+      "max_velocity_error": 4.2084787260990297e-13,
+      "parity": true,
+      "speedup": 0.806791846820742
+    },
+    {
+      "config": "torch/cuda/512",
+      "seconds": 0.03326789999846369,
+      "samples": [
+        0.033262099997955374,
+        0.03369860000384506,
+        0.03326789999846369
+      ],
+      "max_potential_error": 1.7763568394002505e-15,
+      "max_velocity_error": 2.970956813896919e-13,
+      "parity": true,
+      "speedup": 18.230279038493613
+    }
+  ],
+  "analytic_velocity": [
+    {
+      "config": "loop/cpu",
+      "seconds": 0.6884346999941044,
+      "samples": [
+        0.6863492999982554,
+        0.6884346999941044,
+        0.689308399996662
+      ],
+      "max_velocity_error": 0.0,
+      "parity": true,
+      "speedup": 1.0
+    },
+    {
+      "config": "numpy/cpu",
+      "seconds": 0.7485794000021997,
+      "samples": [
+        0.7490652000051341,
+        0.7485794000021997,
+        0.7359403000009479
+      ],
+      "max_velocity_error": 0.0,
+      "parity": true,
+      "speedup": 0.9196548822904844
+    },
+    {
+      "config": "torch/cpu",
+      "seconds": 1.146002800000133,
+      "samples": [
+        1.145518000004813,
+        1.1535204000028898,
+        1.146002800000133
+      ],
+      "max_velocity_error": 1.8041124150158794e-15,
+      "parity": true,
+      "speedup": 0.6007268917615425
+    },
+    {
+      "config": "torch/cuda",
+      "seconds": 0.03652860000147484,
+      "samples": [
+        0.03652860000147484,
+        0.03649419999419479,
+        0.036622100000386126
+      ],
+      "max_velocity_error": 2.398081733190338e-14,
+      "parity": true,
+      "speedup": 18.846457295552224
+    }
+  ],
+  "physical_accuracy_accepted": false
+}

@@ -1,0 +1,2935 @@
+{
+  "runs": {
+    "elliptic_attachment_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 128.87402987480164,
+      "states": 9,
+      "initial_CL": 0.2787569734348489,
+      "final_CL": 0.27661707727202034,
+      "final_CL_gamma": 0.27039671399812343,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": -249.06748882215612,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.10316519984476516,
+      "final_raw_map_residual": {
+        "lifting_0": 60.178842687028315
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2787569734348489,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 1882,
+          "first_self_pairs": [
+            [
+              1,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              2,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              2,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              11,
+              "coplanar_overlap"
+            ],
+            [
+              14,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              14,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              8,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              17,
+              "coplanar_overlap"
+            ],
+            [
+              20,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              7,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              14,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "0dd2e5332beb43e6419294969a1a50b8fb0313128290f6e8d33da250828d0b82"
+        },
+        "1": {
+          "CL": 0.2783320339688746,
+          "signed": 0.6989016502266698,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 26,
+          "first_self_pairs": [
+            [
+              39,
+              26,
+              "coplanar_overlap"
+            ],
+            [
+              44,
+              26,
+              "coplanar_overlap"
+            ],
+            [
+              44,
+              39,
+              "coplanar_overlap"
+            ],
+            [
+              78,
+              75,
+              "coplanar_overlap"
+            ],
+            [
+              128,
+              116,
+              "coplanar_overlap"
+            ],
+            [
+              202,
+              199,
+              "coplanar_overlap"
+            ],
+            [
+              204,
+              201,
+              "coplanar_overlap"
+            ],
+            [
+              278,
+              274,
+              "coplanar_overlap"
+            ],
+            [
+              313,
+              303,
+              "coplanar_overlap"
+            ],
+            [
+              563,
+              548,
+              "coplanar_overlap"
+            ],
+            [
+              567,
+              551,
+              "coplanar_overlap"
+            ],
+            [
+              604,
+              603,
+              "coplanar_overlap"
+            ],
+            [
+              792,
+              772,
+              "coplanar_overlap"
+            ],
+            [
+              795,
+              793,
+              "coplanar_overlap"
+            ],
+            [
+              815,
+              806,
+              "coplanar_overlap"
+            ],
+            [
+              823,
+              59,
+              "coplanar_overlap"
+            ],
+            [
+              834,
+              831,
+              "coplanar_overlap"
+            ],
+            [
+              842,
+              839,
+              "coplanar_overlap"
+            ],
+            [
+              849,
+              843,
+              "coplanar_overlap"
+            ],
+            [
+              918,
+              914,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "b37f7e6480f1880f9986e6018f87659f1a5fb5c2ec778aab199ca6362a5ae85a"
+        },
+        "8": {
+          "CL": 0.27661707727202034,
+          "signed": -176.41668498599384,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 219,
+          "first_self_pairs": [
+            [
+              78,
+              75,
+              "coplanar_overlap"
+            ],
+            [
+              165,
+              156,
+              "coplanar_overlap"
+            ],
+            [
+              604,
+              603,
+              "coplanar_overlap"
+            ],
+            [
+              740,
+              734,
+              "intersection"
+            ],
+            [
+              741,
+              734,
+              "intersection"
+            ],
+            [
+              741,
+              739,
+              "intersection"
+            ],
+            [
+              742,
+              730,
+              "intersection"
+            ],
+            [
+              742,
+              734,
+              "intersection"
+            ],
+            [
+              742,
+              739,
+              "intersection"
+            ],
+            [
+              743,
+              730,
+              "intersection"
+            ],
+            [
+              743,
+              734,
+              "intersection"
+            ],
+            [
+              743,
+              739,
+              "intersection"
+            ],
+            [
+              744,
+              730,
+              "intersection"
+            ],
+            [
+              744,
+              734,
+              "intersection"
+            ],
+            [
+              744,
+              739,
+              "intersection"
+            ],
+            [
+              744,
+              742,
+              "intersection"
+            ],
+            [
+              745,
+              730,
+              "intersection"
+            ],
+            [
+              745,
+              734,
+              "intersection"
+            ],
+            [
+              745,
+              739,
+              "intersection"
+            ],
+            [
+              745,
+              741,
+              "intersection"
+            ]
+          ],
+          "snapshot_sha256": "7e35140b93293855d2aee371f0e2b5916e6101571da8a8dad1a6f7bbb4d28278"
+        }
+      }
+    },
+    "elliptic_both_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 118.59719514846802,
+      "states": 9,
+      "initial_CL": 0.2787569734348489,
+      "final_CL": 0.2774554677013515,
+      "final_CL_gamma": 0.27121797075593085,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": -77.2599851379754,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.06629481203007992,
+      "final_raw_map_residual": {
+        "lifting_0": 27.474345265626887
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2787569734348489,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 1882,
+          "first_self_pairs": [
+            [
+              1,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              2,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              2,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              11,
+              "coplanar_overlap"
+            ],
+            [
+              14,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              14,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              8,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              17,
+              "coplanar_overlap"
+            ],
+            [
+              20,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              7,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              14,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "0dd2e5332beb43e6419294969a1a50b8fb0313128290f6e8d33da250828d0b82"
+        },
+        "1": {
+          "CL": 0.27838612143763886,
+          "signed": 0.9052569951228107,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 26,
+          "first_self_pairs": [
+            [
+              34,
+              25,
+              "coplanar_overlap"
+            ],
+            [
+              37,
+              20,
+              "coplanar_overlap"
+            ],
+            [
+              39,
+              27,
+              "coplanar_overlap"
+            ],
+            [
+              78,
+              75,
+              "coplanar_overlap"
+            ],
+            [
+              85,
+              84,
+              "coplanar_overlap"
+            ],
+            [
+              90,
+              79,
+              "coplanar_overlap"
+            ],
+            [
+              111,
+              110,
+              "coplanar_overlap"
+            ],
+            [
+              112,
+              110,
+              "coplanar_overlap"
+            ],
+            [
+              112,
+              111,
+              "coplanar_overlap"
+            ],
+            [
+              184,
+              183,
+              "coplanar_overlap"
+            ],
+            [
+              202,
+              199,
+              "coplanar_overlap"
+            ],
+            [
+              204,
+              201,
+              "coplanar_overlap"
+            ],
+            [
+              262,
+              252,
+              "coplanar_overlap"
+            ],
+            [
+              278,
+              274,
+              "coplanar_overlap"
+            ],
+            [
+              280,
+              269,
+              "coplanar_overlap"
+            ],
+            [
+              285,
+              251,
+              "coplanar_overlap"
+            ],
+            [
+              361,
+              354,
+              "coplanar_overlap"
+            ],
+            [
+              604,
+              603,
+              "coplanar_overlap"
+            ],
+            [
+              779,
+              773,
+              "coplanar_overlap"
+            ],
+            [
+              795,
+              793,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "eafe160a4a71fb8124a8c955030a1707c4cd32a5135e183be04e94bbdba6ed22"
+        },
+        "8": {
+          "CL": 0.2774554677013515,
+          "signed": -77.2599851379754,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 138,
+          "first_self_pairs": [
+            [
+              61,
+              56,
+              "coplanar_overlap"
+            ],
+            [
+              78,
+              75,
+              "coplanar_overlap"
+            ],
+            [
+              111,
+              110,
+              "coplanar_overlap"
+            ],
+            [
+              112,
+              111,
+              "coplanar_overlap"
+            ],
+            [
+              278,
+              274,
+              "coplanar_overlap"
+            ],
+            [
+              280,
+              269,
+              "coplanar_overlap"
+            ],
+            [
+              604,
+              603,
+              "coplanar_overlap"
+            ],
+            [
+              715,
+              699,
+              "coplanar_overlap"
+            ],
+            [
+              738,
+              734,
+              "intersection"
+            ],
+            [
+              738,
+              735,
+              "intersection"
+            ],
+            [
+              738,
+              736,
+              "intersection"
+            ],
+            [
+              739,
+              735,
+              "intersection"
+            ],
+            [
+              739,
+              736,
+              "intersection"
+            ],
+            [
+              741,
+              739,
+              "intersection"
+            ],
+            [
+              742,
+              730,
+              "intersection"
+            ],
+            [
+              742,
+              732,
+              "intersection"
+            ],
+            [
+              742,
+              739,
+              "intersection"
+            ],
+            [
+              743,
+              730,
+              "intersection"
+            ],
+            [
+              743,
+              732,
+              "intersection"
+            ],
+            [
+              743,
+              739,
+              "intersection"
+            ]
+          ],
+          "snapshot_sha256": "df5f7c9661f1d89fb783f060a70e5cdf5301e7b05714eaed239dadf9e7a2a833"
+        }
+      }
+    },
+    "elliptic_material_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 126.02230262756348,
+      "states": 9,
+      "initial_CL": 0.2787569734348489,
+      "final_CL": 0.2774554677013515,
+      "final_CL_gamma": 0.27121797075593085,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": -77.2599851379754,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.06629481203007992,
+      "final_raw_map_residual": {
+        "lifting_0": 27.474345265626887
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2787569734348489,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 1882,
+          "first_self_pairs": [
+            [
+              1,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              2,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              2,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              11,
+              "coplanar_overlap"
+            ],
+            [
+              14,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              14,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              8,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              17,
+              "coplanar_overlap"
+            ],
+            [
+              20,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              7,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              14,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "0dd2e5332beb43e6419294969a1a50b8fb0313128290f6e8d33da250828d0b82"
+        },
+        "1": {
+          "CL": 0.27838612143763886,
+          "signed": 0.9052569951228107,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 26,
+          "first_self_pairs": [
+            [
+              34,
+              25,
+              "coplanar_overlap"
+            ],
+            [
+              37,
+              20,
+              "coplanar_overlap"
+            ],
+            [
+              39,
+              27,
+              "coplanar_overlap"
+            ],
+            [
+              78,
+              75,
+              "coplanar_overlap"
+            ],
+            [
+              85,
+              84,
+              "coplanar_overlap"
+            ],
+            [
+              90,
+              79,
+              "coplanar_overlap"
+            ],
+            [
+              111,
+              110,
+              "coplanar_overlap"
+            ],
+            [
+              112,
+              110,
+              "coplanar_overlap"
+            ],
+            [
+              112,
+              111,
+              "coplanar_overlap"
+            ],
+            [
+              184,
+              183,
+              "coplanar_overlap"
+            ],
+            [
+              202,
+              199,
+              "coplanar_overlap"
+            ],
+            [
+              204,
+              201,
+              "coplanar_overlap"
+            ],
+            [
+              262,
+              252,
+              "coplanar_overlap"
+            ],
+            [
+              278,
+              274,
+              "coplanar_overlap"
+            ],
+            [
+              280,
+              269,
+              "coplanar_overlap"
+            ],
+            [
+              285,
+              251,
+              "coplanar_overlap"
+            ],
+            [
+              361,
+              354,
+              "coplanar_overlap"
+            ],
+            [
+              604,
+              603,
+              "coplanar_overlap"
+            ],
+            [
+              779,
+              773,
+              "coplanar_overlap"
+            ],
+            [
+              795,
+              793,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "eafe160a4a71fb8124a8c955030a1707c4cd32a5135e183be04e94bbdba6ed22"
+        },
+        "8": {
+          "CL": 0.2774554677013515,
+          "signed": -77.2599851379754,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 138,
+          "first_self_pairs": [
+            [
+              61,
+              56,
+              "coplanar_overlap"
+            ],
+            [
+              78,
+              75,
+              "coplanar_overlap"
+            ],
+            [
+              111,
+              110,
+              "coplanar_overlap"
+            ],
+            [
+              112,
+              111,
+              "coplanar_overlap"
+            ],
+            [
+              278,
+              274,
+              "coplanar_overlap"
+            ],
+            [
+              280,
+              269,
+              "coplanar_overlap"
+            ],
+            [
+              604,
+              603,
+              "coplanar_overlap"
+            ],
+            [
+              715,
+              699,
+              "coplanar_overlap"
+            ],
+            [
+              738,
+              734,
+              "intersection"
+            ],
+            [
+              738,
+              735,
+              "intersection"
+            ],
+            [
+              738,
+              736,
+              "intersection"
+            ],
+            [
+              739,
+              735,
+              "intersection"
+            ],
+            [
+              739,
+              736,
+              "intersection"
+            ],
+            [
+              741,
+              739,
+              "intersection"
+            ],
+            [
+              742,
+              730,
+              "intersection"
+            ],
+            [
+              742,
+              732,
+              "intersection"
+            ],
+            [
+              742,
+              739,
+              "intersection"
+            ],
+            [
+              743,
+              730,
+              "intersection"
+            ],
+            [
+              743,
+              732,
+              "intersection"
+            ],
+            [
+              743,
+              739,
+              "intersection"
+            ]
+          ],
+          "snapshot_sha256": "df5f7c9661f1d89fb783f060a70e5cdf5301e7b05714eaed239dadf9e7a2a833"
+        }
+      }
+    },
+    "elliptic_old_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 133.34393787384033,
+      "states": 9,
+      "initial_CL": 0.2787569734348489,
+      "final_CL": 0.06784569855284056,
+      "final_CL_gamma": 0.06968850279531712,
+      "max_declared_attachment": 2.0327418163844224,
+      "max_wall_contact": 2.0327418163844224,
+      "minimum_signed_jacobian": -52.77317755679763,
+      "original_inner_failures": 2,
+      "strict_floor_failures": 8,
+      "final_normal_slip": 3.052284259742504,
+      "final_raw_map_residual": {
+        "lifting_0": 8.867427766181121
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2787569734348489,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 1882,
+          "first_self_pairs": [
+            [
+              1,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              2,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              2,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              11,
+              "coplanar_overlap"
+            ],
+            [
+              14,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              14,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              8,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              17,
+              "coplanar_overlap"
+            ],
+            [
+              20,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              7,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              14,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "0dd2e5332beb43e6419294969a1a50b8fb0313128290f6e8d33da250828d0b82"
+        },
+        "1": {
+          "CL": 0.08252239474767795,
+          "signed": 0.6950471043172464,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 18,
+          "first_self_pairs": [
+            [
+              30,
+              7,
+              "coplanar_overlap"
+            ],
+            [
+              34,
+              25,
+              "coplanar_overlap"
+            ],
+            [
+              61,
+              56,
+              "coplanar_overlap"
+            ],
+            [
+              78,
+              75,
+              "coplanar_overlap"
+            ],
+            [
+              204,
+              201,
+              "coplanar_overlap"
+            ],
+            [
+              285,
+              251,
+              "coplanar_overlap"
+            ],
+            [
+              345,
+              328,
+              "coplanar_overlap"
+            ],
+            [
+              454,
+              443,
+              "coplanar_overlap"
+            ],
+            [
+              649,
+              610,
+              "coplanar_overlap"
+            ],
+            [
+              779,
+              773,
+              "coplanar_overlap"
+            ],
+            [
+              780,
+              774,
+              "coplanar_overlap"
+            ],
+            [
+              815,
+              806,
+              "coplanar_overlap"
+            ],
+            [
+              816,
+              802,
+              "coplanar_overlap"
+            ],
+            [
+              832,
+              828,
+              "coplanar_overlap"
+            ],
+            [
+              834,
+              831,
+              "coplanar_overlap"
+            ],
+            [
+              902,
+              879,
+              "coplanar_overlap"
+            ],
+            [
+              978,
+              972,
+              "coplanar_overlap"
+            ],
+            [
+              1400,
+              1383,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "97a93cbb10149f8c4e403037a8294f2a88be28f354167965e965c01da9f650d5"
+        },
+        "8": {
+          "CL": 0.06784569855284056,
+          "signed": -29.00349826504045,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 530,
+          "first_self_pairs": [
+            [
+              326,
+              96,
+              "intersection"
+            ],
+            [
+              326,
+              97,
+              "intersection"
+            ],
+            [
+              326,
+              159,
+              "intersection"
+            ],
+            [
+              326,
+              195,
+              "intersection"
+            ],
+            [
+              326,
+              196,
+              "intersection"
+            ],
+            [
+              327,
+              97,
+              "intersection"
+            ],
+            [
+              327,
+              158,
+              "intersection"
+            ],
+            [
+              327,
+              159,
+              "intersection"
+            ],
+            [
+              327,
+              196,
+              "intersection"
+            ],
+            [
+              327,
+              198,
+              "intersection"
+            ],
+            [
+              329,
+              197,
+              "intersection"
+            ],
+            [
+              329,
+              198,
+              "intersection"
+            ],
+            [
+              330,
+              199,
+              "intersection"
+            ],
+            [
+              330,
+              200,
+              "intersection"
+            ],
+            [
+              330,
+              240,
+              "intersection"
+            ],
+            [
+              331,
+              197,
+              "intersection"
+            ],
+            [
+              331,
+              200,
+              "intersection"
+            ],
+            [
+              331,
+              240,
+              "intersection"
+            ],
+            [
+              331,
+              295,
+              "intersection"
+            ],
+            [
+              332,
+              101,
+              "intersection"
+            ]
+          ],
+          "snapshot_sha256": "7dbac6e5095f7f2483819bd9f1010481ea3af342afa1682769abab84c22d7b79"
+        }
+      }
+    },
+    "rect_attachment_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 1.2806367874145508,
+      "states": 9,
+      "initial_CL": 0.2561444508504888,
+      "final_CL": 0.2566798599339656,
+      "final_CL_gamma": 0.2258774971774845,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": 0.9799695622331459,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.013498952332556281,
+      "final_raw_map_residual": {
+        "lifting_0": 0.032990939296440855
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2561444508504888,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 12,
+          "first_self_pairs": [
+            [
+              1,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              3,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              7,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              9,
+              8,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              14,
+              "coplanar_overlap"
+            ],
+            [
+              17,
+              16,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              18,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              20,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              22,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "780af4b085b5a091fc59aa87919291c8dfa9037baf9026964313ab50f08d07a9"
+        },
+        "1": {
+          "CL": 0.25630746093740214,
+          "signed": 0.9983010681285278,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "snapshot_sha256": "2647cd26eac7891de85fa27ab0647dc9942101c33eae1ce396cba240b41628bf"
+        },
+        "8": {
+          "CL": 0.2566798599339656,
+          "signed": 0.9799695622331459,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "snapshot_sha256": "cc86aa414ab428017fea0071d9f80881f3f08c279146b63bf594ba338d89122a"
+        }
+      }
+    },
+    "rect_both_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 1.2072296142578125,
+      "states": 9,
+      "initial_CL": 0.2561444508504888,
+      "final_CL": 0.2566798599339616,
+      "final_CL_gamma": 0.22587749717748073,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": 0.9799695622331264,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.013498952332565197,
+      "final_raw_map_residual": {
+        "lifting_0": 0.032990939296355326
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2561444508504888,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 12,
+          "first_self_pairs": [
+            [
+              1,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              3,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              7,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              9,
+              8,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              14,
+              "coplanar_overlap"
+            ],
+            [
+              17,
+              16,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              18,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              20,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              22,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "780af4b085b5a091fc59aa87919291c8dfa9037baf9026964313ab50f08d07a9"
+        },
+        "1": {
+          "CL": 0.2563074609374013,
+          "signed": 0.9983010681285278,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "snapshot_sha256": "eb39da4731256468d38a59d37c78ce93067e2b6933965291f9e3fbfa7cf426b3"
+        },
+        "8": {
+          "CL": 0.2566798599339616,
+          "signed": 0.9799695622331264,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "snapshot_sha256": "7cfb56960a2ec49c3138c301fd6c88e4ced0a6a5b6cfb9af71f1e2df0d9b3f20"
+        }
+      }
+    },
+    "rect_material_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 1.2620511054992676,
+      "states": 9,
+      "initial_CL": 0.2561444508504888,
+      "final_CL": 0.2566798599339616,
+      "final_CL_gamma": 0.22587749717748073,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": 0.9799695622331264,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.013498952332565197,
+      "final_raw_map_residual": {
+        "lifting_0": 0.032990939296355326
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2561444508504888,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 12,
+          "first_self_pairs": [
+            [
+              1,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              3,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              7,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              9,
+              8,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              14,
+              "coplanar_overlap"
+            ],
+            [
+              17,
+              16,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              18,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              20,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              22,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "780af4b085b5a091fc59aa87919291c8dfa9037baf9026964313ab50f08d07a9"
+        },
+        "1": {
+          "CL": 0.2563074609374013,
+          "signed": 0.9983010681285278,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "snapshot_sha256": "eb39da4731256468d38a59d37c78ce93067e2b6933965291f9e3fbfa7cf426b3"
+        },
+        "8": {
+          "CL": 0.2566798599339616,
+          "signed": 0.9799695622331264,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "snapshot_sha256": "7cfb56960a2ec49c3138c301fd6c88e4ced0a6a5b6cfb9af71f1e2df0d9b3f20"
+        }
+      }
+    },
+    "rect_old_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 1.2285175323486328,
+      "states": 9,
+      "initial_CL": 0.2561444508504888,
+      "final_CL": 0.2566798599339656,
+      "final_CL_gamma": 0.2258774971774845,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": 0.9799695622331459,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.013498952332556281,
+      "final_raw_map_residual": {
+        "lifting_0": 0.032990939296440855
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2561444508504888,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 12,
+          "first_self_pairs": [
+            [
+              1,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              3,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              4,
+              "coplanar_overlap"
+            ],
+            [
+              7,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              9,
+              8,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              15,
+              14,
+              "coplanar_overlap"
+            ],
+            [
+              17,
+              16,
+              "coplanar_overlap"
+            ],
+            [
+              19,
+              18,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              20,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              22,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "780af4b085b5a091fc59aa87919291c8dfa9037baf9026964313ab50f08d07a9"
+        },
+        "1": {
+          "CL": 0.25630746093740214,
+          "signed": 0.9983010681285278,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "snapshot_sha256": "2647cd26eac7891de85fa27ab0647dc9942101c33eae1ce396cba240b41628bf"
+        },
+        "8": {
+          "CL": 0.2566798599339656,
+          "signed": 0.9799695622331459,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "snapshot_sha256": "cc86aa414ab428017fea0071d9f80881f3f08c279146b63bf594ba338d89122a"
+        }
+      }
+    },
+    "swept30_attachment_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 81.36905169487,
+      "states": 9,
+      "initial_CL": 0.4035356379812883,
+      "final_CL": 0.4044639955456526,
+      "final_CL_gamma": 0.3987257237021444,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.06110346339022808,
+      "minimum_signed_jacobian": -46.30035728995878,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 9,
+      "final_normal_slip": 0.1450247745206986,
+      "final_raw_map_residual": {
+        "lifting_0": 21.386045902918028
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.4035356379812883,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 1396,
+          "first_self_pairs": [
+            [
+              4,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              7,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              8,
+              5,
+              "coplanar_overlap"
+            ],
+            [
+              10,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              9,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              12,
+              11,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              14,
+              13,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              5,
+              "coplanar_overlap"
+            ],
+            [
+              25,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              25,
+              23,
+              "coplanar_overlap"
+            ],
+            [
+              26,
+              22,
+              "coplanar_overlap"
+            ],
+            [
+              27,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              27,
+              26,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "88eba3872a49f36f47a6d64e99a2d45a65c40d3de95274e1d84d150db3757b54"
+        },
+        "1": {
+          "CL": 0.4045286109997994,
+          "signed": 0.6967965656007972,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 9,
+          "first_self_pairs": [
+            [
+              95,
+              92,
+              "coplanar_overlap"
+            ],
+            [
+              165,
+              155,
+              "coplanar_overlap"
+            ],
+            [
+              339,
+              338,
+              "coplanar_overlap"
+            ],
+            [
+              352,
+              339,
+              "coplanar_overlap"
+            ],
+            [
+              367,
+              349,
+              "coplanar_overlap"
+            ],
+            [
+              721,
+              718,
+              "coplanar_overlap"
+            ],
+            [
+              827,
+              825,
+              "coplanar_overlap"
+            ],
+            [
+              869,
+              859,
+              "coplanar_overlap"
+            ],
+            [
+              948,
+              942,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "016ea94f587f05ec86ae0ffc1af77f662d8fac62ce6404409829bf18e204663c"
+        },
+        "8": {
+          "CL": 0.4044639955456526,
+          "signed": -32.10222650098978,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 187,
+          "first_self_pairs": [
+            [
+              374,
+              341,
+              "coplanar_overlap"
+            ],
+            [
+              543,
+              541,
+              "intersection"
+            ],
+            [
+              544,
+              539,
+              "intersection"
+            ],
+            [
+              544,
+              540,
+              "intersection"
+            ],
+            [
+              544,
+              541,
+              "intersection"
+            ],
+            [
+              545,
+              539,
+              "intersection"
+            ],
+            [
+              545,
+              540,
+              "intersection"
+            ],
+            [
+              545,
+              541,
+              "intersection"
+            ],
+            [
+              547,
+              539,
+              "intersection"
+            ],
+            [
+              547,
+              540,
+              "intersection"
+            ],
+            [
+              547,
+              541,
+              "intersection"
+            ],
+            [
+              549,
+              539,
+              "intersection"
+            ],
+            [
+              549,
+              540,
+              "intersection"
+            ],
+            [
+              549,
+              541,
+              "intersection"
+            ],
+            [
+              549,
+              545,
+              "intersection"
+            ],
+            [
+              549,
+              547,
+              "intersection"
+            ],
+            [
+              550,
+              545,
+              "intersection"
+            ],
+            [
+              550,
+              546,
+              "intersection"
+            ],
+            [
+              550,
+              547,
+              "intersection"
+            ],
+            [
+              551,
+              546,
+              "intersection"
+            ]
+          ],
+          "snapshot_sha256": "56580f0df7d40fa8c96c754bf9e5a383eca99fe4db6bfcaa0818ab1f1599c5ee"
+        }
+      }
+    },
+    "swept30_both_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 74.15619277954102,
+      "states": 9,
+      "initial_CL": 0.4035356379812883,
+      "final_CL": 0.404563862776217,
+      "final_CL_gamma": 0.3986445462025567,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": -5.802363319602816,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 9,
+      "final_normal_slip": 0.07284306148362817,
+      "final_raw_map_residual": {
+        "lifting_0": 4.677786793905765
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.4035356379812883,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 1396,
+          "first_self_pairs": [
+            [
+              4,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              7,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              8,
+              5,
+              "coplanar_overlap"
+            ],
+            [
+              10,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              9,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              12,
+              11,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              14,
+              13,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              5,
+              "coplanar_overlap"
+            ],
+            [
+              25,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              25,
+              23,
+              "coplanar_overlap"
+            ],
+            [
+              26,
+              22,
+              "coplanar_overlap"
+            ],
+            [
+              27,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              27,
+              26,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "88eba3872a49f36f47a6d64e99a2d45a65c40d3de95274e1d84d150db3757b54"
+        },
+        "1": {
+          "CL": 0.40387753272624877,
+          "signed": 0.9939046792187344,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 12,
+          "first_self_pairs": [
+            [
+              117,
+              113,
+              "coplanar_overlap"
+            ],
+            [
+              121,
+              82,
+              "coplanar_overlap"
+            ],
+            [
+              123,
+              115,
+              "coplanar_overlap"
+            ],
+            [
+              147,
+              137,
+              "coplanar_overlap"
+            ],
+            [
+              164,
+              156,
+              "coplanar_overlap"
+            ],
+            [
+              165,
+              155,
+              "coplanar_overlap"
+            ],
+            [
+              176,
+              173,
+              "coplanar_overlap"
+            ],
+            [
+              229,
+              220,
+              "coplanar_overlap"
+            ],
+            [
+              242,
+              237,
+              "coplanar_overlap"
+            ],
+            [
+              380,
+              377,
+              "coplanar_overlap"
+            ],
+            [
+              702,
+              692,
+              "coplanar_overlap"
+            ],
+            [
+              721,
+              718,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "78042d51298d88091e28c93395cc7b2bddb0ca31633432d8e5531c3ebcabbd85"
+        },
+        "8": {
+          "CL": 0.404563862776217,
+          "signed": -5.802363319602816,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 11,
+          "first_self_pairs": [
+            [
+              147,
+              137,
+              "coplanar_overlap"
+            ],
+            [
+              229,
+              220,
+              "coplanar_overlap"
+            ],
+            [
+              551,
+              549,
+              "intersection"
+            ],
+            [
+              552,
+              549,
+              "intersection"
+            ],
+            [
+              553,
+              549,
+              "intersection"
+            ],
+            [
+              554,
+              549,
+              "intersection"
+            ],
+            [
+              702,
+              692,
+              "coplanar_overlap"
+            ],
+            [
+              1106,
+              1104,
+              "intersection"
+            ],
+            [
+              1107,
+              1104,
+              "intersection"
+            ],
+            [
+              1108,
+              1104,
+              "intersection"
+            ],
+            [
+              1109,
+              1104,
+              "intersection"
+            ]
+          ],
+          "snapshot_sha256": "b59b170863e85795e5f5ead8a3d7820b9c14095ed64cf5674d998331642f460f"
+        }
+      }
+    },
+    "swept30_material_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 75.5578441619873,
+      "states": 9,
+      "initial_CL": 0.4035356379812883,
+      "final_CL": 0.404563862776217,
+      "final_CL_gamma": 0.3986445462025567,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": -5.802363319602816,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 9,
+      "final_normal_slip": 0.07284306148362817,
+      "final_raw_map_residual": {
+        "lifting_0": 4.677786793905765
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.4035356379812883,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 1396,
+          "first_self_pairs": [
+            [
+              4,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              7,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              8,
+              5,
+              "coplanar_overlap"
+            ],
+            [
+              10,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              9,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              12,
+              11,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              14,
+              13,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              5,
+              "coplanar_overlap"
+            ],
+            [
+              25,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              25,
+              23,
+              "coplanar_overlap"
+            ],
+            [
+              26,
+              22,
+              "coplanar_overlap"
+            ],
+            [
+              27,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              27,
+              26,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "88eba3872a49f36f47a6d64e99a2d45a65c40d3de95274e1d84d150db3757b54"
+        },
+        "1": {
+          "CL": 0.40387753272624877,
+          "signed": 0.9939046792187344,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 12,
+          "first_self_pairs": [
+            [
+              117,
+              113,
+              "coplanar_overlap"
+            ],
+            [
+              121,
+              82,
+              "coplanar_overlap"
+            ],
+            [
+              123,
+              115,
+              "coplanar_overlap"
+            ],
+            [
+              147,
+              137,
+              "coplanar_overlap"
+            ],
+            [
+              164,
+              156,
+              "coplanar_overlap"
+            ],
+            [
+              165,
+              155,
+              "coplanar_overlap"
+            ],
+            [
+              176,
+              173,
+              "coplanar_overlap"
+            ],
+            [
+              229,
+              220,
+              "coplanar_overlap"
+            ],
+            [
+              242,
+              237,
+              "coplanar_overlap"
+            ],
+            [
+              380,
+              377,
+              "coplanar_overlap"
+            ],
+            [
+              702,
+              692,
+              "coplanar_overlap"
+            ],
+            [
+              721,
+              718,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "78042d51298d88091e28c93395cc7b2bddb0ca31633432d8e5531c3ebcabbd85"
+        },
+        "8": {
+          "CL": 0.404563862776217,
+          "signed": -5.802363319602816,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 11,
+          "first_self_pairs": [
+            [
+              147,
+              137,
+              "coplanar_overlap"
+            ],
+            [
+              229,
+              220,
+              "coplanar_overlap"
+            ],
+            [
+              551,
+              549,
+              "intersection"
+            ],
+            [
+              552,
+              549,
+              "intersection"
+            ],
+            [
+              553,
+              549,
+              "intersection"
+            ],
+            [
+              554,
+              549,
+              "intersection"
+            ],
+            [
+              702,
+              692,
+              "coplanar_overlap"
+            ],
+            [
+              1106,
+              1104,
+              "intersection"
+            ],
+            [
+              1107,
+              1104,
+              "intersection"
+            ],
+            [
+              1108,
+              1104,
+              "intersection"
+            ],
+            [
+              1109,
+              1104,
+              "intersection"
+            ]
+          ],
+          "snapshot_sha256": "b59b170863e85795e5f5ead8a3d7820b9c14095ed64cf5674d998331642f460f"
+        }
+      }
+    },
+    "swept30_old_raw8": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "converged": false,
+      "seconds": 74.94063687324524,
+      "states": 9,
+      "initial_CL": 0.4035356379812883,
+      "final_CL": 0.08960030583383387,
+      "final_CL_gamma": 0.10069921923686215,
+      "max_declared_attachment": 2.7039768229593215,
+      "max_wall_contact": 2.7637850911298156,
+      "minimum_signed_jacobian": -26.61726490302255,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 9,
+      "final_normal_slip": 0.48783722717820016,
+      "final_raw_map_residual": {
+        "lifting_0": 9.408723394929833
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.4035356379812883,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 1396,
+          "first_self_pairs": [
+            [
+              4,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              5,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              6,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              7,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              8,
+              5,
+              "coplanar_overlap"
+            ],
+            [
+              10,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              9,
+              "coplanar_overlap"
+            ],
+            [
+              11,
+              10,
+              "coplanar_overlap"
+            ],
+            [
+              12,
+              11,
+              "coplanar_overlap"
+            ],
+            [
+              13,
+              0,
+              "coplanar_overlap"
+            ],
+            [
+              14,
+              13,
+              "coplanar_overlap"
+            ],
+            [
+              16,
+              6,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              2,
+              "coplanar_overlap"
+            ],
+            [
+              21,
+              12,
+              "coplanar_overlap"
+            ],
+            [
+              23,
+              5,
+              "coplanar_overlap"
+            ],
+            [
+              25,
+              1,
+              "coplanar_overlap"
+            ],
+            [
+              25,
+              23,
+              "coplanar_overlap"
+            ],
+            [
+              26,
+              22,
+              "coplanar_overlap"
+            ],
+            [
+              27,
+              3,
+              "coplanar_overlap"
+            ],
+            [
+              27,
+              26,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "88eba3872a49f36f47a6d64e99a2d45a65c40d3de95274e1d84d150db3757b54"
+        },
+        "1": {
+          "CL": 0.13098456121663193,
+          "signed": 0.689942391658055,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 9,
+          "first_self_pairs": [
+            [
+              84,
+              70,
+              "coplanar_overlap"
+            ],
+            [
+              147,
+              137,
+              "coplanar_overlap"
+            ],
+            [
+              165,
+              155,
+              "coplanar_overlap"
+            ],
+            [
+              200,
+              199,
+              "coplanar_overlap"
+            ],
+            [
+              315,
+              298,
+              "coplanar_overlap"
+            ],
+            [
+              609,
+              606,
+              "coplanar_overlap"
+            ],
+            [
+              639,
+              625,
+              "coplanar_overlap"
+            ],
+            [
+              702,
+              692,
+              "coplanar_overlap"
+            ],
+            [
+              732,
+              720,
+              "coplanar_overlap"
+            ]
+          ],
+          "snapshot_sha256": "ed7d0e84e506f787c4f4430ff1d2324869fdbab5595f7bfdf4b880ab238c9745"
+        },
+        "8": {
+          "CL": 0.08960030583383387,
+          "signed": -26.61726490302255,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 335,
+          "first_self_pairs": [
+            [
+              16,
+              4,
+              "intersection"
+            ],
+            [
+              24,
+              2,
+              "intersection"
+            ],
+            [
+              24,
+              6,
+              "intersection"
+            ],
+            [
+              30,
+              7,
+              "intersection"
+            ],
+            [
+              36,
+              6,
+              "intersection"
+            ],
+            [
+              37,
+              6,
+              "intersection"
+            ],
+            [
+              38,
+              6,
+              "intersection"
+            ],
+            [
+              73,
+              6,
+              "intersection"
+            ],
+            [
+              75,
+              6,
+              "intersection"
+            ],
+            [
+              75,
+              10,
+              "intersection"
+            ],
+            [
+              77,
+              10,
+              "intersection"
+            ],
+            [
+              117,
+              113,
+              "coplanar_overlap"
+            ],
+            [
+              128,
+              66,
+              "intersection"
+            ],
+            [
+              137,
+              102,
+              "intersection"
+            ],
+            [
+              137,
+              105,
+              "intersection"
+            ],
+            [
+              137,
+              111,
+              "intersection"
+            ],
+            [
+              138,
+              102,
+              "intersection"
+            ],
+            [
+              138,
+              105,
+              "intersection"
+            ],
+            [
+              147,
+              93,
+              "intersection"
+            ],
+            [
+              147,
+              101,
+              "intersection"
+            ]
+          ],
+          "snapshot_sha256": "14d4fa233d7bd914af9efaa2d066711125018a53849e400842a531e2cdbd7306"
+        }
+      }
+    }
+  },
+  "physical_accuracy_accepted": false
+}

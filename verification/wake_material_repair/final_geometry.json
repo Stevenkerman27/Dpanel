@@ -1,0 +1,207 @@
+{
+  "runs": {
+    "elliptic_both_guarded60": {
+      "status": "completed",
+      "solver_status": "blocked_geometry",
+      "head": "0ea2ab8d4863bd3828645660fc84b85dbbc01166",
+      "source_sha256": {
+        "panel/p1_steady_free_wake.py": "ef9ca6e61172259f14acfba102baa5244b93f7a166d95bca2f186948fd2624b7",
+        "panel/p1_lifting_g2.py": "b550f2969f9ffd01c41327a499adf622e7b06aea1d4f3103dadfa58e2bee110b",
+        "tools/wake_material_ablation.py": "e15cecba2a06095fa3c6d166a3f69209405bda2fb2adde0cc4ecfd0e0f035092"
+      },
+      "iterations_requested": 60,
+      "converged": false,
+      "seconds": 168.70711421966553,
+      "states": 13,
+      "initial_CL": 0.2787569734348489,
+      "final_CL": 0.2783244848186222,
+      "final_CL_gamma": 0.2720637332800629,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": 2.489152630341112e-07,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.03130932963013657,
+      "final_raw_map_residual": {
+        "lifting_0": 1.6614361942223674
+      },
+      "backtracked_updates": 12,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2787569734348489,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 490,
+          "snapshot_sha256": "0dd2e5332beb43e6419294969a1a50b8fb0313128290f6e8d33da250828d0b82"
+        },
+        "1": {
+          "CL": 0.27838612143762437,
+          "signed": 0.9052569951228107,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 2,
+          "snapshot_sha256": "3e74de9a1c6945b080b163b0f72888ca26684c56ca0ce80580a4d4d1b2caebd9"
+        },
+        "8": {
+          "CL": 0.278324494104658,
+          "signed": 0.00014364971180815144,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 1,
+          "snapshot_sha256": "92ea3cb16146578a5eca1a62491370b1b30f72260d550b4c8c9cc7e17abe436f"
+        },
+        "12": {
+          "CL": 0.2783244848186222,
+          "signed": 2.489152630341112e-07,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 0,
+          "snapshot_sha256": "f93ea187d0652dcb4c9e7b143d8b5d358bec83e6f78593a4d846a1e9c1ec5e17"
+        }
+      },
+      "wake_faces": 1528,
+      "max_reference_dx": 26.0
+    },
+    "rect_both_guarded60": {
+      "status": "completed",
+      "solver_status": "iteration_limit",
+      "head": "0ea2ab8d4863bd3828645660fc84b85dbbc01166",
+      "source_sha256": {
+        "panel/p1_steady_free_wake.py": "ef9ca6e61172259f14acfba102baa5244b93f7a166d95bca2f186948fd2624b7",
+        "panel/p1_lifting_g2.py": "b550f2969f9ffd01c41327a499adf622e7b06aea1d4f3103dadfa58e2bee110b",
+        "tools/wake_material_ablation.py": "e15cecba2a06095fa3c6d166a3f69209405bda2fb2adde0cc4ecfd0e0f035092"
+      },
+      "iterations_requested": 60,
+      "converged": false,
+      "seconds": 2.3564579486846924,
+      "states": 61,
+      "initial_CL": 0.2561444508504888,
+      "final_CL": 0.25671491870151775,
+      "final_CL_gamma": 0.22589402210364184,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": 0.9745341626768348,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 0,
+      "final_normal_slip": 0.013016943699189288,
+      "final_raw_map_residual": {
+        "lifting_0": 4.843767690791476e-10
+      },
+      "backtracked_updates": 0,
+      "checkpoints": {
+        "0": {
+          "CL": 0.2561444508504888,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 0,
+          "snapshot_sha256": "780af4b085b5a091fc59aa87919291c8dfa9037baf9026964313ab50f08d07a9"
+        },
+        "1": {
+          "CL": 0.2563074609374006,
+          "signed": 0.9983010681285278,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 0,
+          "snapshot_sha256": "b4537e64ff49b8d42711162ba01cc5813a5f8a2f682ce2190a7d2f17efde7b1d"
+        },
+        "8": {
+          "CL": 0.2566798599339701,
+          "signed": 0.9799695622331309,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 0,
+          "snapshot_sha256": "18ac8e900661aa1983750f7dc054269b5d136b61cd29db921d8701786332a0b1"
+        },
+        "60": {
+          "CL": 0.25671491870151775,
+          "signed": 0.9745341626768348,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 0,
+          "snapshot_sha256": "e390fb5c7f28368dfe5cc53e64c45f3979aa57baca0474fd3d8d50a29b56e8bb"
+        }
+      },
+      "wake_faces": 24,
+      "max_reference_dx": 2.5
+    },
+    "swept30_both_guarded60": {
+      "status": "completed",
+      "solver_status": "blocked_geometry",
+      "head": "0ea2ab8d4863bd3828645660fc84b85dbbc01166",
+      "source_sha256": {
+        "panel/p1_steady_free_wake.py": "ef9ca6e61172259f14acfba102baa5244b93f7a166d95bca2f186948fd2624b7",
+        "panel/p1_lifting_g2.py": "b550f2969f9ffd01c41327a499adf622e7b06aea1d4f3103dadfa58e2bee110b",
+        "tools/wake_material_ablation.py": "e15cecba2a06095fa3c6d166a3f69209405bda2fb2adde0cc4ecfd0e0f035092"
+      },
+      "iterations_requested": 60,
+      "converged": false,
+      "seconds": 120.80765843391418,
+      "states": 16,
+      "initial_CL": 0.4035356379812883,
+      "final_CL": 0.40415482572197375,
+      "final_CL_gamma": 0.39837710832919315,
+      "max_declared_attachment": 0.0,
+      "max_wall_contact": 0.0,
+      "minimum_signed_jacobian": 1.8154888236561823e-08,
+      "original_inner_failures": 0,
+      "strict_floor_failures": 16,
+      "final_normal_slip": 0.025401779297103688,
+      "final_raw_map_residual": {
+        "lifting_0": 1.092958167378797
+      },
+      "backtracked_updates": 14,
+      "checkpoints": {
+        "0": {
+          "CL": 0.4035356379812883,
+          "signed": 1.0,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 391,
+          "snapshot_sha256": "88eba3872a49f36f47a6d64e99a2d45a65c40d3de95274e1d84d150db3757b54"
+        },
+        "1": {
+          "CL": 0.4038775327262112,
+          "signed": 0.9939046792187344,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 0,
+          "snapshot_sha256": "3f530c03348fbcea7ead79d06fb693889b9a65d8e21a0663dbd707b57a228325"
+        },
+        "8": {
+          "CL": 0.404154790781595,
+          "signed": 0.00017314869774940264,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 0,
+          "snapshot_sha256": "27c25c64a440182595a4d85312260fba4660e69640fc4ef334a816c58ceda6af"
+        },
+        "15": {
+          "CL": 0.40415482572197375,
+          "signed": 1.8154888236561823e-08,
+          "new_wall_violations": 0,
+          "self_intersection_pairs": 0,
+          "first_self_pairs": [],
+          "coplanar_roundoff_pairs": 0,
+          "snapshot_sha256": "9b412044b5e355d46a17b2c50c1cba0f7c118492ab807404b179405e17ade572"
+        }
+      },
+      "wake_faces": 1110,
+      "max_reference_dx": 26.779700538379252
+    }
+  },
+  "self_audit_controls": "disjoint adjacent triangles, identical area, transverse segment",
+  "physical_accuracy_accepted": false
+}

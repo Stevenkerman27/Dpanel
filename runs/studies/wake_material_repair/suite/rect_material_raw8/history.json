@@ -1,0 +1,799 @@
+{
+  "case": "rect",
+  "mode": "material",
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_material_ablation.py",
+    "--case",
+    "rect",
+    "--mode",
+    "material",
+    "--iterations",
+    "8",
+    "--potential-backend",
+    "torch",
+    "--device",
+    "cuda",
+    "--block",
+    "512",
+    "--out",
+    "runs\\studies\\wake_material_repair\\suite\\rect_material_raw8",
+    "--unguarded"
+  ],
+  "head": "48f30cae718f42e2f47d4dd947ee0b29f317277b",
+  "source_sha256": {
+    "panel/p1_steady_free_wake.py": "b508fb25650e1daf46ee199874d65defcda9b65a45f84cb7458aa28dbd9b53e2",
+    "panel/p1_lifting_g2.py": "b550f2969f9ffd01c41327a499adf622e7b06aea1d4f3103dadfa58e2bee110b",
+    "tools/wake_material_ablation.py": "d4f26504a5ff370e2ed0eee72a549cef491eacf9c4cce5645ecedfae190c143b"
+  },
+  "frozen_sha256": "20141fa1103a80e2c9a5941a8e4139473251e704f6172c669f6d04b344550250",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "relaxation": 0.3,
+  "alpha_deg": 4.0,
+  "kutta": "pressure",
+  "potential_backend": "torch",
+  "device": "cuda",
+  "block": 512,
+  "orientation_backtracking": false,
+  "iterations_requested": 8,
+  "status": "completed",
+  "rows": [
+    {
+      "iteration": 0,
+      "CL": 0.2561444508504888,
+      "CL_gamma": 0.22564372499285917,
+      "wall_rms": 0.0020140693205220835,
+      "jump_rms": 8.599750569898515e-17,
+      "pressure_kutta_rms": 1.1973564323857907e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.0001310511843447946,
+        "optimality": 8.508468188090246e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 8.50840941077997e-12,
+        "gradient_relative": 2.3238397418927158e-12,
+        "residual_norm": 0.01618957592679896,
+        "wall_rms": 0.001529771128124092,
+        "wall_floor_rms": 0.0014724480069924879,
+        "wall_over_floor": 1.0389304891306064,
+        "pressure_rms": 1.1973564323857907e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 1.000808963598966,
+          "velocity_min_x": 0.989841322826322,
+          "normal_slip_rms": 0.044933684973893204,
+          "normal_slip_max": 0.08706297808609037,
+          "wake_cp_jump_rms": 0.002384298375742188,
+          "wake_cp_jump_max": 0.0057287816085637155,
+          "shortest_edge_median": 0.6666666666666666,
+          "aspect_p90": 3.881043674065007,
+          "probe_over_shortest_max": 0.07531185165696036
+        }
+      },
+      "min_signed_jacobian": 1.0,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_000.npz",
+      "snapshot_sha256": "780af4b085b5a091fc59aa87919291c8dfa9037baf9026964313ab50f08d07a9",
+      "seconds": 1.0766968727111816,
+      "geometry": {
+        "min_area2": 1.6666666666666663,
+        "min_reference_signed_jacobian": 1.0,
+        "min_wake_wall_distance": 0.0,
+        "min_nonattachment_vertex_wall_distance": null,
+        "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+        "attachment_max_displacement_chord": 0.0,
+        "attachment_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "prepared_root_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "violation_count": 0,
+        "violations": [],
+        "wall_closed": true,
+        "inside_wall_node_ids": [],
+        "new_inside_wall_node_ids": [],
+        "new_or_deeper_violation_count": 0,
+        "new_or_deeper_violations": [],
+        "pairs_tested": 136,
+        "tolerance": 1e-10,
+        "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+      },
+      "wake_geometry_change": 0.12047431080968515,
+      "raw_map_residual": {
+        "lifting_0": 0.40158103603228384
+      },
+      "attachment_target_displacement": {
+        "lifting_0": 0.0
+      },
+      "relaxed_nodes": {
+        "lifting_0": 14
+      },
+      "frozen_nodes": {
+        "lifting_0": 0
+      },
+      "frozen_node_ids": {
+        "lifting_0": []
+      }
+    },
+    {
+      "iteration": 1,
+      "CL": 0.2563074609374013,
+      "CL_gamma": 0.22571102625673034,
+      "wall_rms": 0.002013442960785299,
+      "jump_rms": 8.599750569898515e-17,
+      "pressure_kutta_rms": 1.1923626873056813e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.00013101298656184514,
+        "optimality": 9.220043877141391e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 9.219979699149044e-12,
+        "gradient_relative": 2.5177300961518016e-12,
+        "residual_norm": 0.016187216348825625,
+        "wall_rms": 0.001529548169005564,
+        "wall_floor_rms": 0.0014725089270295163,
+        "wall_over_floor": 1.0387360924806837,
+        "pressure_rms": 1.1923626873056813e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 1.0005126997828404,
+          "velocity_min_x": 0.9901793381819021,
+          "normal_slip_rms": 0.03316687488860941,
+          "normal_slip_max": 0.0635992208368191,
+          "wake_cp_jump_rms": 0.0025582026553273777,
+          "wake_cp_jump_max": 0.005722825836596335,
+          "shortest_edge_median": 0.6666666666666665,
+          "aspect_p90": 3.884275329407319,
+          "probe_over_shortest_max": 0.07535077109461796
+        }
+      },
+      "min_signed_jacobian": 0.9983010681285278,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_001.npz",
+      "snapshot_sha256": "eb39da4731256468d38a59d37c78ce93067e2b6933965291f9e3fbfa7cf426b3",
+      "seconds": 1.1177988052368164,
+      "geometry": {
+        "min_area2": 1.6650664850144183,
+        "min_reference_signed_jacobian": 0.9983010681285278,
+        "min_wake_wall_distance": 0.0,
+        "min_nonattachment_vertex_wall_distance": null,
+        "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+        "attachment_max_displacement_chord": 0.0,
+        "attachment_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "prepared_root_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "violation_count": 0,
+        "violations": [],
+        "wall_closed": true,
+        "inside_wall_node_ids": [],
+        "new_inside_wall_node_ids": [],
+        "new_or_deeper_violation_count": 0,
+        "new_or_deeper_violations": [],
+        "pairs_tested": 122,
+        "tolerance": 1e-10,
+        "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+      },
+      "wake_geometry_change": 0.08431699338045406,
+      "raw_map_residual": {
+        "lifting_0": 0.2810566446015135
+      },
+      "attachment_target_displacement": {
+        "lifting_0": 0.0
+      },
+      "relaxed_nodes": {
+        "lifting_0": 14
+      },
+      "frozen_nodes": {
+        "lifting_0": 0
+      },
+      "frozen_node_ids": {
+        "lifting_0": []
+      }
+    },
+    {
+      "iteration": 2,
+      "CL": 0.2564256196583048,
+      "CL_gamma": 0.22576202020226166,
+      "wall_rms": 0.0020130065592587824,
+      "jump_rms": 1.85775845048325e-16,
+      "pressure_kutta_rms": 1.1889073025045004e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.0001309864711044118,
+        "optimality": 9.511326771213628e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 9.511352995353675e-12,
+        "gradient_relative": 2.596966725630362e-12,
+        "residual_norm": 0.016185578216697204,
+        "wall_rms": 0.0015293933800984022,
+        "wall_floor_rms": 0.0014725489349881652,
+        "wall_over_floor": 1.038602754556808,
+        "pressure_rms": 1.1889073025045004e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 1.0003037227457605,
+          "velocity_min_x": 0.990415428249771,
+          "normal_slip_rms": 0.025339936536737707,
+          "normal_slip_max": 0.051367569161549165,
+          "wake_cp_jump_rms": 0.002617007049358859,
+          "wake_cp_jump_max": 0.005715482201225974,
+          "shortest_edge_median": 0.6666666666666665,
+          "aspect_p90": 3.886043267396049,
+          "probe_over_shortest_max": 0.07538493092883353
+        }
+      },
+      "min_signed_jacobian": 0.9953347169006754,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_002.npz",
+      "snapshot_sha256": "5e81235267a5f298670f4e58e6794c9c96de41326b93c49f908b8f5c906a9225",
+      "seconds": 1.15641450881958,
+      "wake_geometry_change": 0.058991709628986914,
+      "raw_map_residual": {
+        "lifting_0": 0.19663903209662315
+      },
+      "attachment_target_displacement": {
+        "lifting_0": 0.0
+      },
+      "relaxed_nodes": {
+        "lifting_0": 14
+      },
+      "frozen_nodes": {
+        "lifting_0": 0
+      },
+      "frozen_node_ids": {
+        "lifting_0": []
+      }
+    },
+    {
+      "iteration": 3,
+      "CL": 0.25651036091080426,
+      "CL_gamma": 0.2257996598813984,
+      "wall_rms": 0.0020127019785937264,
+      "jump_rms": 1.719950113979703e-16,
+      "pressure_kutta_rms": 1.1864905366806737e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.00013096799087708392,
+        "optimality": 9.399521200444128e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 9.399528240981985e-12,
+        "gradient_relative": 2.566206515265575e-12,
+        "residual_norm": 0.01618443640520634,
+        "wall_rms": 0.001529285489074381,
+        "wall_floor_rms": 0.0014725762071540107,
+        "wall_over_floor": 1.0385102527426884,
+        "pressure_rms": 1.1864905366806737e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 1.000157600142234,
+          "velocity_min_x": 0.9905803259407282,
+          "normal_slip_rms": 0.02032270932251572,
+          "normal_slip_max": 0.04337361598034671,
+          "wake_cp_jump_rms": 0.002615043913801278,
+          "wake_cp_jump_max": 0.005724487892186936,
+          "shortest_edge_median": 0.6666666666666665,
+          "aspect_p90": 3.885955647513043,
+          "probe_over_shortest_max": 0.07541868223023242
+        }
+      },
+      "min_signed_jacobian": 0.992015676499028,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_003.npz",
+      "snapshot_sha256": "b2fbad020ab09f152f305c7ab7faa4d08a13239fe6c7f012fe2223fe39286c5d",
+      "seconds": 1.16914701461792,
+      "wake_geometry_change": 0.04126842806090682,
+      "raw_map_residual": {
+        "lifting_0": 0.13756142686968942
+      },
+      "attachment_target_displacement": {
+        "lifting_0": 0.0
+      },
+      "relaxed_nodes": {
+        "lifting_0": 14
+      },
+      "frozen_nodes": {
+        "lifting_0": 0
+      },
+      "frozen_node_ids": {
+        "lifting_0": []
+      }
+    },
+    {
+      "iteration": 4,
+      "CL": 0.2565707011003188,
+      "CL_gamma": 0.2258269834470863,
+      "wall_rms": 0.002012489146302891,
+      "jump_rms": 1.3136335981433191e-16,
+      "pressure_kutta_rms": 1.1847877779487715e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.00013095507495522013,
+        "optimality": 9.286328847004591e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 9.286295887258548e-12,
+        "gradient_relative": 2.535135451923176e-12,
+        "residual_norm": 0.016183638339707145,
+        "wall_rms": 0.0015292100789874048,
+        "wall_floor_rms": 0.0014725952760143216,
+        "wall_over_floor": 1.0384455959456254,
+        "pressure_rms": 1.1847877779487715e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 1.0000557719540701,
+          "velocity_min_x": 0.9906955105882206,
+          "normal_slip_rms": 0.017244457311035924,
+          "normal_slip_max": 0.037791403488885086,
+          "wake_cp_jump_rms": 0.0025917444192048423,
+          "wake_cp_jump_max": 0.00573635760325375,
+          "shortest_edge_median": 0.6666666666666669,
+          "aspect_p90": 3.88605389791907,
+          "probe_over_shortest_max": 0.07544922274944289
+        }
+      },
+      "min_signed_jacobian": 0.9888238960935654,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_004.npz",
+      "snapshot_sha256": "057ce548e77204aff8c06abb2c2f8853df315b12d7ad6e75516579a9e450897f",
+      "seconds": 1.1831681728363037,
+      "wake_geometry_change": 0.028871096900334355,
+      "raw_map_residual": {
+        "lifting_0": 0.09623698966778114
+      },
+      "attachment_target_displacement": {
+        "lifting_0": 0.0
+      },
+      "relaxed_nodes": {
+        "lifting_0": 14
+      },
+      "frozen_nodes": {
+        "lifting_0": 0
+      },
+      "frozen_node_ids": {
+        "lifting_0": []
+      }
+    },
+    {
+      "iteration": 5,
+      "CL": 0.25661345505665667,
+      "CL_gamma": 0.2258466014771792,
+      "wall_rms": 0.002012340305632131,
+      "jump_rms": 9.930136612989092e-17,
+      "pressure_kutta_rms": 1.1835823151756565e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.00013094603077752693,
+        "optimality": 9.074543959146364e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 9.074667625956663e-12,
+        "gradient_relative": 2.4772545253514713e-12,
+        "residual_norm": 0.01618307948306052,
+        "wall_rms": 0.001529157272008164,
+        "wall_floor_rms": 0.0014726088290515998,
+        "wall_over_floor": 1.0384001792200193,
+        "pressure_rms": 1.1835823151756565e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 0.9999848936512197,
+          "velocity_min_x": 0.9907759780845311,
+          "normal_slip_rms": 0.015434935884512568,
+          "normal_slip_max": 0.03389393355928616,
+          "wake_cp_jump_rms": 0.002564859585163588,
+          "wake_cp_jump_max": 0.0057131600036023356,
+          "shortest_edge_median": 0.6666666666666669,
+          "aspect_p90": 3.887535287067198,
+          "probe_over_shortest_max": 0.07547588191016708
+        }
+      },
+      "min_signed_jacobian": 0.9859816510337794,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_005.npz",
+      "snapshot_sha256": "9076ea2ac294e4ef711cd26e2c11c79dc04c3aaecfb181ffeca91c345afcea11",
+      "seconds": 1.1957159042358398,
+      "wake_geometry_change": 0.02020106299526145,
+      "raw_map_residual": {
+        "lifting_0": 0.06733687665087155
+      },
+      "attachment_target_displacement": {
+        "lifting_0": 0.0
+      },
+      "relaxed_nodes": {
+        "lifting_0": 14
+      },
+      "frozen_nodes": {
+        "lifting_0": 0
+      },
+      "frozen_node_ids": {
+        "lifting_0": []
+      }
+    },
+    {
+      "iteration": 6,
+      "CL": 0.256643644004654,
+      "CL_gamma": 0.22586058249402358,
+      "wall_rms": 0.0020122361617326305,
+      "jump_rms": 1.6467268631127712e-16,
+      "pressure_kutta_rms": 1.182726255984783e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.00013093968962131437,
+        "optimality": 8.489057513308331e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 8.489095114794926e-12,
+        "gradient_relative": 2.317331914554371e-12,
+        "residual_norm": 0.016182687639654605,
+        "wall_rms": 0.0015291202462938281,
+        "wall_floor_rms": 0.0014726185586115808,
+        "wall_over_floor": 1.038368175758642,
+        "pressure_rms": 1.182726255984783e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 0.9999355744903441,
+          "velocity_min_x": 0.9908321965464726,
+          "normal_slip_rms": 0.014404095809609586,
+          "normal_slip_max": 0.031172605612956115,
+          "wake_cp_jump_rms": 0.0025408817203660815,
+          "wake_cp_jump_max": 0.005704924971366876,
+          "shortest_edge_median": 0.6666666666666667,
+          "aspect_p90": 3.889142419396332,
+          "probe_over_shortest_max": 0.07549846356475735
+        }
+      },
+      "min_signed_jacobian": 0.9835655256830291,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_006.npz",
+      "snapshot_sha256": "d48d005db15f2d520a49785898730a9f00266fde21c0f70e0ae988c06e02a520",
+      "seconds": 1.2083539962768555,
+      "wake_geometry_change": 0.0141378686080288,
+      "raw_map_residual": {
+        "lifting_0": 0.04712622869342937
+      },
+      "attachment_target_displacement": {
+        "lifting_0": 0.0
+      },
+      "relaxed_nodes": {
+        "lifting_0": 14
+      },
+      "frozen_nodes": {
+        "lifting_0": 0
+      },
+      "frozen_node_ids": {
+        "lifting_0": []
+      }
+    },
+    {
+      "iteration": 7,
+      "CL": 0.25666490841943873,
+      "CL_gamma": 0.2258704949374366,
+      "wall_rms": 0.0020121632680953853,
+      "jump_rms": 1.4895204919483638e-16,
+      "pressure_kutta_rms": 1.182117128621771e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.00013093523986572612,
+        "optimality": 8.360554978360801e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 8.360645366940669e-12,
+        "gradient_relative": 2.282220236400007e-12,
+        "residual_norm": 0.016182412667196854,
+        "wall_rms": 0.001529094263843977,
+        "wall_floor_rms": 0.001472625583528737,
+        "wall_over_floor": 1.0383455787722555,
+        "pressure_rms": 1.182117128621771e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 0.9999012593587777,
+          "velocity_min_x": 0.9908714748799643,
+          "normal_slip_rms": 0.013825078181585468,
+          "normal_slip_max": 0.03088168674079164,
+          "wake_cp_jump_rms": 0.0025214852288259573,
+          "wake_cp_jump_max": 0.005705462333556843,
+          "shortest_edge_median": 0.6667136364613653,
+          "aspect_p90": 3.8905726931459066,
+          "probe_over_shortest_max": 0.07551712890907325
+        }
+      },
+      "min_signed_jacobian": 0.9815744132500583,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_007.npz",
+      "snapshot_sha256": "4959e18fc1d13b43c98fa1748451d650f078778c181589e36d196bfb43dfb29e",
+      "seconds": 1.2218518257141113,
+      "wake_geometry_change": 0.009897281788906585,
+      "raw_map_residual": {
+        "lifting_0": 0.032990939296355326
+      },
+      "attachment_target_displacement": {
+        "lifting_0": 0.0
+      },
+      "relaxed_nodes": {
+        "lifting_0": 14
+      },
+      "frozen_nodes": {
+        "lifting_0": 0
+      },
+      "frozen_node_ids": {
+        "lifting_0": []
+      }
+    },
+    {
+      "iteration": 8,
+      "CL": 0.2566798599339616,
+      "CL_gamma": 0.22587749717748073,
+      "wall_rms": 0.002012112237525352,
+      "jump_rms": 1.1102230246251565e-16,
+      "pressure_kutta_rms": 1.1816832311790096e-07,
+      "nonlinear": {
+        "success": true,
+        "message": "ftol termination condition is satisfied",
+        "nfev": 7,
+        "status": 2,
+        "cost": 0.00013093211563359856,
+        "optimality": 9.273789662632773e-12,
+        "floor_method": "torch lstsq of min ||B null(J) z - bw||",
+        "accepted_at_residual_floor": false,
+        "gradient_absolute": 9.273862751411725e-12,
+        "gradient_relative": 2.531465911299818e-12,
+        "residual_norm": 0.016182219602613155,
+        "wall_rms": 0.0015290760209592505,
+        "wall_floor_rms": 0.0014726306706918642,
+        "wall_over_floor": 1.038329603878797,
+        "pressure_rms": 1.1816832311790096e-07,
+        "criteria": {
+          "stationary": true,
+          "wall_at_floor": true,
+          "kutta": true
+        },
+        "tolerances": {
+          "gradient_relative": 1e-06,
+          "pressure_rms": 0.0001,
+          "wall_floor_ratio": 1.05
+        }
+      },
+      "wakes": {
+        "lifting_0": {
+          "n_panels": 24,
+          "velocity_max": 0.9998773847418478,
+          "velocity_min_x": 0.9908989175873895,
+          "normal_slip_rms": 0.013498952332565197,
+          "normal_slip_max": 0.03157040914107453,
+          "wake_cp_jump_rms": 0.0025065210536523042,
+          "wake_cp_jump_max": 0.00570636622957732,
+          "shortest_edge_median": 0.6667897434480068,
+          "aspect_p90": 3.8917971914853187,
+          "probe_over_shortest_max": 0.07553225395009228
+        }
+      },
+      "min_signed_jacobian": 0.9799695622331264,
+      "nonpositive_signed_faces": 0,
+      "finite_gamma": true,
+      "declared_attachment_max": 0.0,
+      "wall_contact_max": 0.0,
+      "snapshot": "iteration_008.npz",
+      "snapshot_sha256": "7cfb56960a2ec49c3138c301fd6c88e4ced0a6a5b6cfb9af71f1e2df0d9b3f20",
+      "seconds": 1.2352855205535889,
+      "geometry": {
+        "min_area2": 1.6636274070004728,
+        "min_reference_signed_jacobian": 0.9799695622331264,
+        "min_wake_wall_distance": 0.0,
+        "min_nonattachment_vertex_wall_distance": null,
+        "distance_definition": "global minimum is certified zero by a retained wall vertex; extra metric is vertex-to-wall-triangle",
+        "attachment_max_displacement_chord": 0.0,
+        "attachment_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "prepared_root_ids": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "violation_count": 0,
+        "violations": [],
+        "wall_closed": true,
+        "inside_wall_node_ids": [],
+        "new_inside_wall_node_ids": [],
+        "new_or_deeper_violation_count": 0,
+        "new_or_deeper_violations": [],
+        "pairs_tested": 130,
+        "tolerance": 1e-10,
+        "collision_method": "six actual segment/triangle tests, coplanar area, and closed-wall solid-angle winding"
+      },
+      "wake_geometry_change": 0.009897281788906585
+    }
+  ],
+  "physical_accuracy_accepted": false,
+  "solver_status": "iteration_limit",
+  "converged": false,
+  "geometry_stable": false,
+  "seconds": 1.2620511054992676
+}

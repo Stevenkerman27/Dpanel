@@ -39,7 +39,13 @@ if args.out.exists():
     raise FileExistsError(args.out)
 root=Path(__file__).resolve().parents[1]
 specs=json.loads((root/"docs/issue92/b3_cases.json").read_text())["cases"]
-report=dict(runs={},physical_accuracy_accepted=False)
+control=np.array([[0.,0.,0.],[1.,0.,0.],[0.,1.,0.]])
+neighbor=np.array([[1.,0.,0.],[1.,1.,0.],[0.,1.,0.]])
+assert overlap_area(control,neighbor,1e-10)<=1e-14
+assert abs(overlap_area(control,control,1e-10)-.5)<1e-14
+assert abs(_segment_triangle_t(np.array([.2,.2,-1.]),np.array([.2,.2,1.]),control,1e-10)-.5)<1e-14
+report=dict(runs={},self_audit_controls="disjoint adjacent triangles, identical area, transverse segment",
+            physical_accuracy_accepted=False)
 for folder in sorted(args.runs.iterdir()):
     if not folder.is_dir() or not (folder/"history.json").exists():
         continue
@@ -48,12 +54,15 @@ for folder in sorted(args.runs.iterdir()):
     history=json.loads((folder/"history.json").read_text())
     rows=history["rows"]
     report["runs"][folder.name]=dict(status=history["status"],solver_status=history.get("solver_status"),
+        head=history["head"],source_sha256=history["source_sha256"],
+        iterations_requested=history["iterations_requested"],
         converged=history.get("converged"),seconds=history["seconds"],states=len(rows),
         initial_CL=rows[0]["CL"],final_CL=rows[-1]["CL"],final_CL_gamma=rows[-1]["CL_gamma"],
         max_declared_attachment=max(r["declared_attachment_max"] for r in rows),
         max_wall_contact=max(r["wall_contact_max"] for r in rows),
         minimum_signed_jacobian=min(r["min_signed_jacobian"] for r in rows),
-        original_inner_failures=sum(not r["nonlinear"]["success"] for r in rows),
+        original_inner_failures=sum(not (r["nonlinear"]["success"] and r["nonlinear"]["criteria"]["stationary"]
+            and r["pressure_kutta_rms"]<=1e-4 and r["jump_rms"]<=1e-10) for r in rows),
         strict_floor_failures=sum(r["nonlinear"]["wall_over_floor"]>1.05 for r in rows),
         final_normal_slip=max(v["normal_slip_rms"] for v in rows[-1]["wakes"].values()),
         final_raw_map_residual=next((r["raw_map_residual"] for r in reversed(rows) if "raw_map_residual" in r),None),

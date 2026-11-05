@@ -1,0 +1,15 @@
+rect_old_raw8 exit 0
+rect_attachment_raw8 exit 0
+rect_material_raw8 exit 0
+rect_both_raw8 exit 0
+swept30_old_raw8 exit 0
+swept30_attachment_raw8 exit 0
+swept30_material_raw8 exit 0
+swept30_both_raw8 exit 0
+elliptic_attachment_raw8 exit 0
+elliptic_old_raw8 exit 0
+rect_both_guarded60 exit 0
+elliptic_material_raw8 exit 0
+elliptic_both_raw8 exit 0
+swept30_both_guarded60 exit 0
+elliptic_both_guarded60 exit 0
