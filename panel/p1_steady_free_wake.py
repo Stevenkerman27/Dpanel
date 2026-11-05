@@ -41,6 +41,22 @@ class WakeMaterial:
     streamwise_integral: object = None
 
 
+@dataclass(frozen=True)
+class MaterialLineIntegral:
+    """Sparse nodal integration weights without a dense node-by-node array."""
+    rows: np.ndarray
+    columns: np.ndarray
+    weights: np.ndarray
+    nodes: int
+
+    def __matmul__(self, values):
+        values=np.asarray(values,float)
+        out=np.zeros((self.nodes,)+values.shape[1:])
+        weight=self.weights.reshape((-1,)+(1,)*(values.ndim-1))
+        np.add.at(out,self.rows,weight*values[self.columns])
+        return out
+
+
 def _wake_mesh(g: LiftingGroup) -> Mesh:
     """Use exactly the same analytic P1 triangle potential as the G1/G2 wall."""
     x=np.asarray(g.wake_xyz,dtype=float)
@@ -117,7 +133,6 @@ def prepare_wake_material(g: LiftingGroup, *, streamwise=False) -> WakeMaterial:
 
 def _material_line_integrals(g):
     """Exact P1 integrals along constant reference-y rays, not mesh edges."""
-    from scipy.sparse import coo_matrix
     xyz=np.asarray(g.wake_xyz,float)
     faces=np.asarray(g.wake_faces,int)
     tri=xyz[faces]
@@ -161,7 +176,8 @@ def _material_line_integrals(g):
         rows.extend(np.full(weights.size,int(node)))
         columns.extend(faces[chosen].ravel())
         values.extend(weights.ravel())
-    return coo_matrix((values,(rows,columns)),shape=(len(xyz),len(xyz))).tocsr()
+    return MaterialLineIntegral(np.asarray(rows,int),np.asarray(columns,int),
+                                np.asarray(values,float),len(xyz))
 
 
 def wake_material_graph_audit(material: WakeMaterial) -> dict:

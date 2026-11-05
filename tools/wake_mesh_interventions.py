@@ -42,7 +42,7 @@ def clip_wake(mesh, length):
         gamma_dofs_unchanged=changed.gamma_hat.shape[1] == group.gamma_hat.shape[1])
 
 
-def refine_wake(mesh, direction):
+def refine_wake(mesh, direction, *, max_projected_edge=None):
     group = mesh.groups[0]
     xyz = list(group.wake_xyz.copy())
     hats = list(group.gamma_hat.copy())
@@ -52,6 +52,8 @@ def refine_wake(mesh, direction):
     for face in group.wake_faces:
         edges = [(int(face[k]), int(face[(k+1) % 3])) for k in range(3)]
         candidates = [edge for edge in edges if not set(edge).issubset(attached)]
+        if max_projected_edge is not None:
+            candidates=[edge for edge in candidates if abs(xyz[edge[1]][axis]-xyz[edge[0]][axis])>max_projected_edge]
         if candidates:
             a, b = max(candidates, key=lambda e: abs(xyz[e[1]][axis]-xyz[e[0]][axis]))
             marked.add(tuple(sorted((a, b))))
@@ -88,4 +90,5 @@ def refine_wake(mesh, direction):
         rule="conforming midpoint split of each face's largest projected edge in the selected axis; attachment edges retained",
         off_axis_note="unstructured diagonal edges have both x/y projections; report both spacing distributions rather than claim a tensor-grid refinement",
         original_vertices_unchanged=True, gamma_basis="exact inherited P1 midpoint values",
+        max_projected_edge=max_projected_edge,
         gamma_dofs_unchanged=changed.gamma_hat.shape[1] == group.gamma_hat.shape[1])

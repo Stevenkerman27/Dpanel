@@ -48,6 +48,7 @@ parser.add_argument("--potential-backend",choices=("numpy","torch"),default="num
 parser.add_argument("--device",choices=("cpu","cuda"),default="cpu")
 parser.add_argument("--block",type=int,default=24)
 parser.add_argument("--unguarded",action="store_true")
+parser.add_argument("--refine-tail-levels",type=int,default=0)
 parser.add_argument("--out",type=Path,required=True)
 args=parser.parse_args()
 if args.out.exists():
@@ -64,6 +65,13 @@ with np.load(frozen) as data:
     for key in ("xyz","faces","wake_xyz","wake_faces","gamma_hat"):
         np.testing.assert_array_equal(getattr(wing,key),data[key])
 group=mesh.groups[0]
+refinements=[]
+if args.refine_tail_levels:
+    from tools.wake_mesh_interventions import refine_wake
+    for level in range(args.refine_tail_levels):
+        mesh,receipt=refine_wake(mesh,"streamwise",max_projected_edge=2.*mesh.reference_chord)
+        refinements.append(receipt)
+    group=mesh.groups[0]
 declared=group.wake_attachment_nodes
 context=geometry_context(mesh)
 initial_audit=audit_geometry(mesh,context,distance=False)
@@ -89,6 +97,7 @@ report=dict(case=args.case,mode=args.mode,command=[sys.executable,*sys.argv],
     torch=torch.__version__,python=sys.version,relaxation=.3,alpha_deg=4.,kutta="pressure",
     potential_backend=args.potential_backend,device=args.device,block=args.block,
     orientation_backtracking=not args.unguarded,
+    refinements=refinements,
     iterations_requested=args.iterations,status="running",rows=[],physical_accuracy_accepted=False)
 records=[]
 initial_cross=context["cross"]
@@ -135,6 +144,8 @@ try:
                 entry[key]=previous[key]
     report.update(status="completed",solver_status=value["status"],converged=value["converged"],
                   geometry_stable=value["geometry_stable"])
+    if "geometry" not in report["rows"][-1]:
+        report["rows"][-1]["geometry"]=audit_geometry(value["mesh"],context,initial_audit,distance=False)
 except Exception:
     report.update(status="failed",traceback=traceback.format_exc())
     raise

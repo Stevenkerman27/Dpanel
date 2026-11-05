@@ -58,6 +58,9 @@ def main(argv=None):
                    help='Maximum per-iteration displacement / reference chord')
     p.add_argument('--normal-slip-tol',type=float,default=.01,
                    help='Wake normal-flow RMS / Uinf')
+    p.add_argument('--wake-potential-backend',choices=('numpy','torch'),default='numpy')
+    p.add_argument('--wake-device',choices=('cpu','cuda'),default='cpu')
+    p.add_argument('--wake-velocity-block',type=int,default=24)
     p.add_argument('--reference-area',type=float,default=None)
     p.add_argument('--out',type=Path,required=True)
     args=p.parse_args(argv)
@@ -102,6 +105,8 @@ def main(argv=None):
             relax_min_abs_y=args.relax_min_y,max_step_chord=args.max_step_chord,
             slip_gate=args.slip_gate,
             geometry_tol=args.geometry_tol,slip_tol=args.normal_slip_tol,
+            wake_potential_backend=args.wake_potential_backend,wake_device=args.wake_device,
+            wake_velocity_block=args.wake_velocity_block,
             save_callback=save)
         log=[]
         for item in value['history']:
@@ -109,7 +114,7 @@ def main(argv=None):
             row['field_npz']=str(Path(tag)/f'iteration_{item["iteration"]:03d}.npz')
             log.append(row)
         final=value['state']
-        report=dict(alpha_deg=alpha,iterations=value['iterations'],
+        report=dict(alpha_deg=alpha,iterations=value['iterations'],status=value['status'],
             converged=value['converged'],geometry_stable=value['geometry_stable'],
             geometry_tol=value['geometry_tol'],normal_slip_tol=value['normal_slip_tol'],
             seconds=value['seconds'],initial=log[0],final=log[-1],history=log,
@@ -118,7 +123,8 @@ def main(argv=None):
         reports.append(report)
         print(f'alpha={alpha:+.2f} deg: CL {log[0]["CL"]:+.6f} -> {log[-1]["CL"]:+.6f}; '
               f'CLgamma {log[0]["CL_gamma"]:+.6f} -> {log[-1]["CL_gamma"]:+.6f}; '
-              f'geometry_stable={value["geometry_stable"]}, normal-flow-converged={value["converged"]}')
+              f'status={value["status"]}, geometry_stable={value["geometry_stable"]}, '
+              f'normal-flow-converged={value["converged"]}')
         for name in report['component_names']:
             print(' ',name,'normal slip RMS',
                   round(log[0]['wakes'][name]['normal_slip_rms'],5),'->',
@@ -136,7 +142,8 @@ def main(argv=None):
             normal_slip_tol=args.normal_slip_tol,
             probe_floor_fraction=args.probe_floor_fraction,min_axial=args.min_axial,
             relax_min_abs_y=args.relax_min_y,max_step_chord=args.max_step_chord,
-            slip_gate=args.slip_gate),
+            slip_gate=args.slip_gate,wake_potential_backend=args.wake_potential_backend,
+            wake_device=args.wake_device,wake_velocity_block=args.wake_velocity_block),
         reports=reports,elapsed_seconds=time.perf_counter()-start,
         limitations=['fixed mesh connectivity and finite wake length',
                      'velocity principal value via explicit two-sided finite probes',
