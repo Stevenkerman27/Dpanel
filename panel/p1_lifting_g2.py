@@ -93,13 +93,15 @@ def combine_wings(wings: Sequence[Wing], *, origins=None, names=None,
         te_nodes=np.asarray(wing.te_geo,int)
         te_points=xyz[te_nodes]
         wake_points=np.asarray(wing.wake_xyz,float)+origin
+        wake_used=np.unique(wing.wake_faces)
         attachment_nodes=[]
         match_tol=1e-10*max(1.,float(wing.chord))
         for point in te_points:
-            distance=np.linalg.norm(wake_points-point,axis=1)
-            node=int(np.argmin(distance))
-            if distance[node] > match_tol:
-                raise ValueError(f"{name}: declared TE node has no coincident wake attachment")
+            distance=np.linalg.norm(wake_points[wake_used]-point,axis=1)
+            matches=wake_used[distance <= match_tol]
+            if len(matches) != 1:
+                raise ValueError(f"{name}: declared TE node needs one coincident used wake attachment")
+            node=int(matches[0])
             if node in attachment_nodes:
                 raise ValueError(f"{name}: duplicate wake node maps to multiple TE nodes")
             attachment_nodes.append(node)

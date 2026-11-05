@@ -37,7 +37,8 @@ class WakeMaterial:
     predecessor: np.ndarray
     reference_xyz: np.ndarray
     panel_area: np.ndarray
-    attachments: np.ndarray
+    attachments: object = None
+    streamwise_integral: object = None
 
 
 def _wake_mesh(g: LiftingGroup) -> Mesh:
@@ -56,12 +57,11 @@ def _wake_mesh(g: LiftingGroup) -> Mesh:
                 dict(diameter=float(np.linalg.norm(np.ptp(x,axis=0)))))
 
 
-def prepare_wake_material(g: LiftingGroup) -> WakeMaterial:
+def prepare_wake_material(g: LiftingGroup, *, streamwise=False) -> WakeMaterial:
     """Find upstream wake-node predecessors by ORIGINAL connectivity/material y.
 
-    This supports regular and locally irregular triangular wake sheets. A node
-    without an upstream connected neighbor is a TE attachment: it is fixed.
-    It deliberately does not move underlying CAD/wet-wall vertices.
+    Graph roots are integration diagnostics, distinct from declared attachments.
+    B3 optionally caches line integrals on the frozen (x, material-y) mesh.
     """
     x=np.asarray(g.wake_xyz,float);f=np.asarray(g.wake_faces,int)
     if x.ndim!=2 or x.shape[1]!=3 or f.ndim!=2 or f.shape[1]!=3:
@@ -108,10 +108,60 @@ def prepare_wake_material(g: LiftingGroup) -> WakeMaterial:
         attachments=np.asarray(declared,int).reshape(-1)
         if len(np.unique(attachments)) != len(attachments) or not np.isin(attachments,used).all():
             raise ValueError(f"{g.name}: invalid declared wake attachment node map")
+    integral=_material_line_integrals(g) if streamwise else None
     return WakeMaterial(g.name,used,roots,used[np.argsort(ref[used,0])],pred,
                         ref,np.linalg.norm(np.cross(ref[f[:,1]]-ref[f[:,0]],
                                                     ref[f[:,2]]-ref[f[:,0]]),axis=1)/2,
-                        attachments)
+                        attachments,integral)
+
+
+def _material_line_integrals(g):
+    """Exact P1 integrals along constant reference-y rays, not mesh edges."""
+    from scipy.sparse import coo_matrix
+    xyz=np.asarray(g.wake_xyz,float)
+    faces=np.asarray(g.wake_faces,int)
+    tri=xyz[faces]
+    area_xy=np.cross(tri[:,1]-tri[:,0],tri[:,2]-tri[:,0])[:,2]
+    scale=max(float(np.ptp(xyz[np.unique(faces),0])),1.)
+    tol=2e-11*scale
+    if np.any(np.abs(area_xy) <= 1e-14*scale**2):
+        raise ValueError(f'{g.name}: B3 material coordinates require nondegenerate (x,y) triangles')
+    # Use local differences so horizontal edges have exactly zero x coefficient.
+    slope=(tri[:,[1,2,0],1]-tri[:,[2,0,1],1])/area_xy[:,None]
+    y_gradient=(tri[:,[2,0,1],0]-tri[:,[1,2,0],0])/area_xy[:,None]
+    rows=[];columns=[];values=[]
+    for node in np.unique(faces):
+        intercept=y_gradient*(xyz[node,1]-tri[:,0,1])[:,None]+np.array([1.,0.,0.])
+        nonzero=np.abs(slope)>1e-13/scale
+        cross=tri[:,0,0,None]+np.divide(-intercept,slope,out=np.zeros_like(slope),where=nonzero)
+        lower=np.max(np.where(nonzero & (slope>0),cross,-np.inf),axis=1)
+        upper=np.min(np.where(nonzero & (slope<0),cross,np.inf),axis=1)
+        upper=np.minimum(upper,xyz[node,0])
+        valid=(upper-lower>tol)&~np.any(~nonzero & (intercept < -1e-10),axis=1)
+        ids=np.flatnonzero(valid)
+        if not len(ids):
+            continue
+        knots=np.sort(np.concatenate((lower[ids],upper[ids])))
+        knots=knots[np.r_[True,np.diff(knots)>tol]]
+        mid=(knots[1:]+knots[:-1])/2
+        length=np.diff(knots)
+        cover=(mid[:,None]>=lower[ids][None]-tol)&(mid[:,None]<=upper[ids][None]+tol)
+        if abs(knots[-1]-xyz[node,0])>tol:
+            # The node itself is a new upstream entry; an earlier disjoint
+            # interval must not supply its displacement.
+            continue
+        # A nonconvex TE can intersect the ray more than once. Start at the
+        # upstream boundary of the connected interval containing this node.
+        gaps=np.flatnonzero(~cover.any(axis=1))
+        first=int(gaps[-1]+1) if len(gaps) else 0
+        cover=cover[first:];mid=mid[first:];length=length[first:]
+        # A ray on a shared triangle edge is integrated once, never twice.
+        chosen=ids[np.argmax(cover,axis=1)]
+        weights=(slope[chosen]*(mid-tri[chosen,0,0])[:,None]+intercept[chosen])*length[:,None]
+        rows.extend(np.full(weights.size,int(node)))
+        columns.extend(faces[chosen].ravel())
+        values.extend(weights.ravel())
+    return coo_matrix((values,(rows,columns)),shape=(len(xyz),len(xyz))).tocsr()
 
 
 def wake_material_graph_audit(material: WakeMaterial) -> dict:
@@ -215,7 +265,8 @@ def _aspect_ratio(mesh: Mesh) -> np.ndarray:
     return e.max(axis=1)/e.min(axis=1)
 
 
-def _potentials_at(mesh, result, targets, *, block=20, cached_wall=None):
+def _potentials_at(mesh, result, targets, *, block=20, cached_wall=None,
+                   backend='numpy', device='cpu'):
     """Total uniform + all P1 wall + ALL P1 wake potential at off-sheet points."""
     points=np.asarray(targets,float)
     if points.ndim!=2 or points.shape[1]!=3:
@@ -232,6 +283,24 @@ def _potentials_at(mesh, result, targets, *, block=20, cached_wall=None):
         gm=_wake_mesh(g)
         gf=g.gamma_hat[g.wake_faces]@gamma[n0:n0+ng]
         slices.append((gm,gf));n0+=ng
+    if backend == 'torch':
+        import torch
+        from .p1_batched_influence import source_invariants, block_rows
+        triangles=np.concatenate([wall.triangles]+[gm.triangles for gm,_ in slices])
+        strength=np.concatenate([mu_faces]+[gf for _,gf in slices])
+        source=source_invariants(triangles,device=device)
+        density=torch.as_tensor(strength,dtype=torch.float64,device=device)
+        for st in range(0,len(points),block):
+            p=torch.as_tensor(points[st:st+block],dtype=torch.float64,device=device)
+            total=torch.zeros(len(p),dtype=torch.float64,device=device)
+            for s in range(0,len(triangles),256):
+                index=torch.arange(s,min(s+256,len(triangles)),device=device)
+                rows=block_rows(p,source,index,torch=torch)
+                total+=torch.einsum('bsa,sa->b',rows,density[index])
+            values[st:st+len(p)]+=total.detach().cpu().numpy()
+        return values
+    if backend != 'numpy' or device != 'cpu':
+        raise ValueError('Potential backend must be numpy/cpu or torch on an explicit device')
     for st in range(0,len(points),block):
         ed=min(st+block,len(points));p=points[st:ed]
         _,_,D=influence_block(p,wall)
@@ -244,7 +313,8 @@ def _potentials_at(mesh, result, targets, *, block=20, cached_wall=None):
 
 def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
                        probe_fraction=0.055, step_fraction=0.009,
-                       probe_floor_fraction=0.0, block=24):
+                       probe_floor_fraction=0.0, block=24,
+                       potential_backend='numpy', device='cpu'):
     """PV approximate velocity at EVERY wake-face centroid from both sheet sides.
 
     Evaluate the complete P1 potential on each side of each sheet then take
@@ -273,7 +343,8 @@ def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
         pts=centers[:,:,:,None,:]+np.array([-1.,1.])[None,None,None,:,None]*step[:,None,None,None,None]*e[None,None,:,None,:]
         # pts shape (face,side,axis,+/- sign,xyz), and pairwise gradient
         f=wm.centers.shape[0]
-        v=_potentials_at(mesh,state,pts.reshape(-1,3),block=block,cached_wall=wall)
+        v=_potentials_at(mesh,state,pts.reshape(-1,3),block=block,cached_wall=wall,
+                         backend=potential_backend,device=device)
         v=v.reshape(f,2,3,2)
         gradients=(v[:,:,:,1]-v[:,:,:,0])/(2*step[:,None,None])
         vavg=gradients.mean(axis=1)
@@ -311,45 +382,32 @@ def _node_velocities(g, face_velocity):
 
 
 def _one_wake_target(g, mat, vel, *, min_axial=0.08, freeze=False):
-    """Integrate transverse velocity drift over frozen material x stations.
-
-    The predecessor graph supplies an upstream integration path only. Its
-    lateral edge offset is never interpreted as streamline displacement:
-    each node retains its own reference (y,z), and integrated drift is
-    accumulated separately. Explicit TE attachments and path roots are fixed.
-    """
+    """Integrate nodal velocity slopes along frozen material-coordinate rays."""
     current=np.asarray(g.wake_xyz,float)
     original=mat.reference_xyz
     velocity=np.asarray(vel,float)
     if velocity.shape != original.shape or not np.isfinite(velocity).all():
         raise ValueError(f'{g.name}: invalid wake-node velocity field')
+    integral=mat.streamwise_integral
+    if integral is None:
+        integral=_material_line_integrals(replace(g,wake_xyz=original))
     target=original.copy()
-    drift=np.zeros_like(original)
-    frozen=[]
     attachment_mask=np.zeros(len(original),bool)
-    attachment_mask[np.asarray(mat.attachments,int)]=True
-    for node in mat.order:
-        node=int(node)
-        predecessor=int(mat.predecessor[node])
-        if attachment_mask[node] or predecessor<0:
-            drift[node]=0.
-            target[node]=original[node]
-            continue
-        v0=velocity[predecessor];v1=velocity[node]
-        if min(v0[0],v1[0])<min_axial:
-            if not freeze:
-                raise ValueError(f'{g.name}: wake streamwise marching requires Vx>0; '
-                                 'reverse flow needs pseudo-time propagation')
-            frozen.append(node)
-            drift[node]=np.zeros(3)
-            target[node]=current[node]
-            continue
-        dx=original[node,0]-original[predecessor,0]
-        drift[node]=drift[predecessor]+0.5*dx*(
-            v0[1:]/v0[0]+v1[1:]/v1[0])
-        target[node,0]=original[node,0]
-        target[node,1:]=original[node,1:]+drift[node]
-    return target,frozen
+    attachments=mat.roots if mat.attachments is None else mat.attachments
+    attachment_mask[np.asarray(attachments,int)]=True
+    stalled=velocity[:,0]<min_axial
+    blocked=(integral @ stalled.astype(float)>1e-12)|stalled
+    free=np.zeros(len(original),bool);free[mat.used]=True
+    free&=~attachment_mask
+    frozen=np.flatnonzero(free & blocked)
+    if len(frozen) and not freeze:
+        raise ValueError(f'{g.name}: wake streamwise marching requires Vx>0; '
+                         'reverse flow needs pseudo-time propagation')
+    denominator=np.where(stalled,1.,velocity[:,0])
+    target[:,1:]+=integral @ (velocity[:,1:]/denominator[:,None])
+    target[frozen]=current[frozen]
+    target[attachment_mask]=original[attachment_mask]
+    return target,frozen.tolist()
 
 def with_wake_xyz(mesh: MultiLiftingMesh, wake_coordinates: dict[str,np.ndarray]):
     """Update wake coordinates ONLY; preserve material gamma_hat, wall, TE and faces."""
@@ -387,7 +445,9 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
                            wake_velocity_block=24, save_callback=None,
                            min_axial=0.08, frozen_guard=True,
                            probe_floor_fraction=0.0, relax_min_abs_y=0.0,
-                           max_step_chord=0.0, slip_gate=0.0):
+                           max_step_chord=0.0, slip_gate=0.0,
+                           wake_potential_backend='numpy', wake_device='cpu',
+                           orientation_backtracking=True):
     """Return final state, relaxed wake mesh, and complete iteration history.
 
     Iteration 0 is ALWAYS the original fixed-wake solution; downstream wake
@@ -397,18 +457,20 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
     if not (isinstance(iterations,int) and 0<=iterations<=100
             and 0<relaxation<=1 and geometry_tol>0 and slip_tol>0):
         raise ValueError('Invalid relaxation/iteration count')
-    t0=time.perf_counter();mat={g.name:prepare_wake_material(g) for g in mesh.groups}
+    t0=time.perf_counter();mat={g.name:prepare_wake_material(g,streamwise=True) for g in mesh.groups}
     fixed=assemble_multi(mesh)
     current=mesh
     history=[]
     state=None
+    blocked_geometry=False
     for i in range(iterations+1):
         ops=reassemble_wake_only(current,fixed) if i else fixed
         state=solve_multi(current,alpha_deg,kutta=kutta,max_nfev=max_nfev,operators=ops)
         panel_velocity,slip=mean_wake_velocity(current,state,
                     probe_fraction=probe_fraction,step_fraction=step_fraction,
                     probe_floor_fraction=probe_floor_fraction,
-                    block=wake_velocity_block)
+                    block=wake_velocity_block,potential_backend=wake_potential_backend,
+                    device=wake_device)
         record=dict(iteration=i,CL=state['CL'],CL_gamma=state['CL_gamma'],
                 CD_pressure=state['CD_pressure'],CM_y=state['CM_y'],
                 wall_rms=state['wall_rms'],jump_rms=state['jump_rms'],
@@ -431,8 +493,14 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             t,frozen_nodes=_one_wake_target(g,m,v,min_axial=min_axial,
                                             freeze=frozen_guard)
             frozen[g.name]=len(frozen_nodes)
+            record.setdefault('frozen_node_ids',{})[g.name]=frozen_nodes
             x_new=g.wake_xyz.copy()
             movable=np.zeros(len(x_new),bool);movable[m.used]=True
+            movable[m.attachments]=False
+            record.setdefault('raw_map_residual',{})[g.name]=float(
+                np.linalg.norm(t[m.used]-g.wake_xyz[m.used],axis=1).max()/mesh.reference_chord)
+            record.setdefault('attachment_target_displacement',{})[g.name]=float(
+                np.linalg.norm(t[m.attachments]-m.reference_xyz[m.attachments],axis=1).max())
             if slip_gate>0:
                 # Relax only where the sheet is already close to a stream
                 # surface. Elsewhere the loop would chase a near-singular
@@ -455,18 +523,45 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
                 length=np.linalg.norm(step,axis=1)
                 scale=np.minimum(1.,limit/np.maximum(length,1e-30))
                 step=step*scale[:,None]
+                record.setdefault('clipped_nodes',{})[g.name]=np.flatnonzero(movable)[scale<1.].tolist()
             x_new[movable]=g.wake_xyz[movable]+step
             # The x-stations and material Gamma basis never move/reinterpolate.
             x_new[m.used,0]=m.reference_xyz[m.used,0]
-            x_new[m.roots]=m.reference_xyz[m.roots]
+            x_new[m.attachments]=m.reference_xyz[m.attachments]
             d=np.linalg.norm(x_new[movable]-g.wake_xyz[movable],axis=1)
             displacement.append(float(d.max()/mesh.reference_chord) if len(d) else 0.)
             record.setdefault('relaxed_nodes',{})[g.name]=int(movable.sum())
             target[g.name]=x_new
         record['wake_geometry_change']=max(displacement)
         record['frozen_nodes']=frozen
+        if orientation_backtracking:
+            for attempt in range(25):
+                factor=2.**(-attempt)
+                candidate={}
+                admissible=True
+                for g in current.groups:
+                    xyz=g.wake_xyz+factor*(target[g.name]-g.wake_xyz)
+                    tri=xyz[g.wake_faces]
+                    reference=mat[g.name].reference_xyz[g.wake_faces]
+                    cross=np.cross(tri[:,1]-tri[:,0],tri[:,2]-tri[:,0])
+                    ref_cross=np.cross(reference[:,1]-reference[:,0],reference[:,2]-reference[:,0])
+                    admissible &= bool(np.all(np.einsum('fi,fi->f',cross,ref_cross)>0.)
+                                       and np.all(np.linalg.norm(cross,axis=1)>1e-14))
+                    candidate[g.name]=xyz
+                if admissible:
+                    break
+            record['orientation_backtracking']=dict(attempts=attempt+1,factor=factor,
+                                                     accepted=admissible)
+            if not admissible:
+                blocked_geometry=True
+                record['wake_geometry_change']=0.
+                break
+            target=candidate
+            record['wake_geometry_change']*=factor
         current=with_wake_xyz(current,target)
         if (record['wake_geometry_change']<geometry_tol and i>1
+                and max(record['raw_map_residual'].values())<geometry_tol
+                and not any(frozen.values())
                 and max(item['normal_slip_rms'] for item in slip.values()) < slip_tol):
             # A separate *final* equilibrium solve on the newly relaxed shape.
             ops=reassemble_wake_only(current,fixed)
@@ -474,7 +569,8 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             _,slip=mean_wake_velocity(current,state,probe_fraction=probe_fraction,
                                       step_fraction=step_fraction,
                                       probe_floor_fraction=probe_floor_fraction,
-                                      block=wake_velocity_block)
+                                      block=wake_velocity_block,potential_backend=wake_potential_backend,
+                                      device=wake_device)
             final=dict(iteration=i+1,CL=state['CL'],CL_gamma=state['CL_gamma'],
                        CD_pressure=state['CD_pressure'],CM_y=state['CM_y'],
                        wall_rms=state['wall_rms'],jump_rms=state['jump_rms'],
@@ -484,13 +580,17 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             history.append(final)
             if save_callback:save_callback(i+1,current,state,final)
             break
-    return dict(mesh=current,state=state,history=history,
-                iterations=len(history)-1,seconds=time.perf_counter()-t0,
-                converged=bool(len(history)>1 and history[-1]['wakes']
+    converged=bool(not blocked_geometry and len(history)>1 and history[-1]['wakes']
                     and history[-1]['wake_geometry_change'] is not None
                     and history[-1]['wake_geometry_change']<geometry_tol
-                    and max(x['normal_slip_rms'] for x in history[-1]['wakes'].values())<slip_tol),
-                geometry_stable=bool(len(history)>1
+                    and max(history[-2].get('raw_map_residual',{'none':float('inf')}).values())<geometry_tol
+                    and not any(history[-2].get('frozen_nodes',{}).values())
+                    and max(x['normal_slip_rms'] for x in history[-1]['wakes'].values())<slip_tol)
+    return dict(mesh=current,state=state,history=history,
+                iterations=len(history)-1,seconds=time.perf_counter()-t0,
+                converged=converged,
+                status='blocked_geometry' if blocked_geometry else 'converged' if converged else 'iteration_limit',
+                geometry_stable=bool(not blocked_geometry and len(history)>1
                     and history[-1]['wake_geometry_change'] is not None
                     and history[-1]['wake_geometry_change']<geometry_tol),
                 geometry_tol=geometry_tol,normal_slip_tol=slip_tol,
