@@ -235,22 +235,21 @@ def build_half_surface(points, wall_faces, wall_tags, wake_faces, *,
         on_te = bool(np.max(diff) <= tol and
                      np.all(abs(v[:, 2]
                                - np.interp(v[:, 1], te[:, 1], te[:, 2])) <= tol))
-        # A trailing-edge cut must have one wall bank above and one below the
-        # local TE height. A smooth wall contact only grazes the wake sheet, so
-        # its banks may sit on one side (this happens at the root of a dihedral
-        # wing, where the level wake leaves the TE at z=0 and runs downstream).
-        # Each bank is measured against the TE height at its own centroid y: a
-        # spanwise TE edge is not level when the wing has dihedral.
-        bank_xz = xyz[wall[adjacent]].mean(axis=1)
-        z = bank_xz[:, 2] - np.interp(bank_xz[:, 1], te[:, 1], te[:, 2])
-        if on_te and not (z.min() < 0 and z.max() > 0):
-            raise ValueError("TE cut must have distinct upper and lower banks")
         cuts.append(list(edge_order))
         cut_kind.append("trailing_edge" if on_te else "smooth_wall_contact")
         if on_te:
+            # Outward wall winding and the outboard TE direction identify the
+            # banks even when twist/camber puts both centroids above the TE.
+            banks = wall[adjacent]
+            forward = np.any((banks == edge_order[0])
+                             & (np.roll(banks, -1, axis=1) == edge_order[1]), axis=1)
+            backward = np.any((banks == edge_order[1])
+                              & (np.roll(banks, -1, axis=1) == edge_order[0]), axis=1)
+            if np.count_nonzero(forward) != 1 or not np.array_equal(backward, ~forward):
+                raise ValueError("TE cut must have oppositely oriented wall banks")
             te_edges.append(list(edge_order))
-            upper.append(adjacent[int(np.argmax(z))])
-            lower.append(adjacent[int(np.argmin(z))])
+            upper.append(adjacent[int(np.flatnonzero(forward)[0])])
+            lower.append(adjacent[int(np.flatnonzero(backward)[0])])
     if not te_edges:
         raise ValueError("No exposed physical TE edge shared with the half wake")
     if len(set(map(tuple, cuts))) != len(cuts):

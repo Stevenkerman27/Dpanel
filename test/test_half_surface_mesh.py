@@ -105,3 +105,24 @@ def test_unsupported_wake_extension_rejected():
     options["wake_end_x"] = 4.
     with pytest.raises(ValueError, match="farther downstream"):
         build_half_surface(**options)
+
+
+@pytest.mark.parametrize("slope", [.4, -.4])
+def test_te_banks_follow_wall_winding_when_both_centroids_are_on_one_side(slope):
+    _, options = surface_from_fixture()
+    original = build_half_surface(**options)
+    points = options["points"].copy()
+    wall_nodes = np.unique(options["wall_faces"])
+    points[wall_nodes, 2] += slope*(1.-points[wall_nodes, 0])
+    options["points"] = points
+    options["wall_faces"] = np.asarray(options["wall_faces"])[:, [0, 2, 1]]
+    result = build_half_surface(**options)
+    assert result["upper_te_faces"] == original["upper_te_faces"]
+    assert result["lower_te_faces"] == original["lower_te_faces"]
+    xyz, faces = np.asarray(result["coordinates"]), np.asarray(result["faces"])
+    upper = xyz[faces[result["upper_te_faces"]]]
+    lower = xyz[faces[result["lower_te_faces"]]]
+    assert np.all(slope*upper.mean(axis=1)[:, 2] > 0)
+    assert np.all(slope*lower.mean(axis=1)[:, 2] > 0)
+    assert np.all(np.cross(upper[:, 1]-upper[:, 0], upper[:, 2]-upper[:, 0])[:, 2] > 0)
+    assert np.all(np.cross(lower[:, 1]-lower[:, 0], lower[:, 2]-lower[:, 0])[:, 2] < 0)

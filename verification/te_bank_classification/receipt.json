@@ -1,0 +1,75 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\te_bank_verify.py",
+    "--case",
+    "verification/te_bank_classification",
+    "--corrected",
+    "runs/verification/te_bank_classification/corrected",
+    "--logs",
+    "runs/verification/te_bank_classification",
+    "--out",
+    "verification/te_bank_classification/receipt.json"
+  ],
+  "baseline": "b12a3ff",
+  "original_exception": "TE cut must have distinct upper and lower banks",
+  "raw_input_sha256": "0cc4c47c939751b9eb6117ba0a19ea69efa76f26e0d9291b62b879a8f11bb4df",
+  "old_source_sha256": "8feee21e2877c893e13a57f0f1b48688da1a5e489bc198610d0d657ad2d12545",
+  "new_source_sha256": "f584764d304aeb4da3497455ac9715371228ba3083ef170c486edc2e4dba4464",
+  "corrected_CLI_fields_identical_to_frozen_mesh_replay": [
+    "coordinates",
+    "faces",
+    "wake_faces",
+    "trailing_edges",
+    "upper_te_faces",
+    "lower_te_faces",
+    "cut_edges",
+    "cut_kind",
+    "gamma_stations",
+    "gamma_station_dof"
+  ],
+  "original_control_dictionary_exactly_unchanged": true,
+  "exported_wall_faces": 932,
+  "exported_te_edges": 32,
+  "physical_accuracy_accepted": false,
+  "regression": {
+    "command": [
+      "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+      "-m",
+      "pytest",
+      "-q",
+      "test",
+      "-p",
+      "no:cacheprovider"
+    ],
+    "summary": "11 failed, 814 passed, 21 skipped, 1 warning in 352.93s (0:05:52)",
+    "failed_ids": [
+      "FAILED test/test_differentiable_panel_fields.py::test_local_force_moment_vjp_to_vertices_and_moving_stations",
+      "FAILED test/test_half_mirror_oracle.py::test_native_half_matches_real_reflection_and_load_vjp",
+      "FAILED test/test_half_native_panel.py::test_half_geometry_and_station_vjp_against_three_central_differences",
+      "FAILED test/test_half_native_panel.py::test_streamed_half_action_does_not_trace_full_square_aic",
+      "FAILED test/test_iterative_panel.py::test_implicit_geometry_gradient_and_station_chain_matches_lu_and_fd[False]",
+      "FAILED test/test_iterative_panel.py::test_implicit_geometry_gradient_and_station_chain_matches_lu_and_fd[True]",
+      "FAILED test/test_iterative_panel.py::test_streamed_primal_has_no_full_wall_aic_array_in_jaxpr",
+      "FAILED test/test_p1_lifting_g2_pressure_floor.py::test_cad_fixture_floor_stop_is_accepted",
+      "FAILED test/test_torch_half_lifting.py::test_torch_half_geometry_and_station_adjoint_vs_jax_and_fd",
+      "FAILED test/test_torch_panel_bridge.py::test_forward_and_all_seven_vjps_match_native_jax",
+      "FAILED test/test_torch_panel_bridge.py::test_torch_geometry_parameters_pass_gradcheck_and_three_step_fd"
+    ],
+    "new_failed_ids": [],
+    "reference_log": "runs/verification/native_blas/fixed_pytest.log",
+    "full_log_sha256": "43a566f09c4637daf44f9c21adac561ec4f56b51d150955252a679461b936fac"
+  },
+  "fixed_solve": {
+    "CL": 0.6653899047735217,
+    "CD": 0.033311788662631375,
+    "CM": [
+      0.0,
+      -0.11960242124466898,
+      0.0
+    ],
+    "panels": 932,
+    "unknowns": 946,
+    "residual": 1.5889455470721332e-15
+  }
+}
