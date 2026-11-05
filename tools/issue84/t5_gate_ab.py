@@ -9,7 +9,7 @@ Conditions:
 from __future__ import annotations
 
 import json
-import sys
+import argparse
 import time
 from pathlib import Path
 
@@ -18,11 +18,19 @@ import numpy as np
 import panel.p1_coupled_material_wake as m
 from tools.issue84.wake_node_rejection import build_case
 
-SURFACE = ["D:/3D/Projects/panel/runs/cases/wingbody/half_cad_wingbody_v1/surface.json"]
-ITERATIONS = int(sys.argv[2]) if len(sys.argv) > 2 else 6
-OUT = Path(sys.argv[3] if len(sys.argv) > 3 else "docs/issue84/t5_gate_ab.json")
-CONDITION = sys.argv[1] if len(sys.argv) > 1 else "new_gate_per_node"
-STEP_FRACTION = float(sys.argv[4]) if len(sys.argv) > 4 else 0.25
+ROOT = Path(__file__).resolve().parents[2]
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("condition", nargs="?", default="new_gate_per_node")
+parser.add_argument("iterations", nargs="?", type=int, default=6)
+parser.add_argument("out", nargs="?", type=Path,
+                    default=Path("runs/studies/wake_material_graph/g2_t5/t5_gate_ab.json"))
+parser.add_argument("step_fraction", nargs="?", type=float, default=.25)
+parser.add_argument("--surface", type=Path,
+                    default=ROOT / "runs/cases/wingbody/half_cad_wingbody_v1/surface.json")
+args = parser.parse_args()
+SURFACE = [args.surface]
+ITERATIONS, OUT = args.iterations, args.out
+CONDITION, STEP_FRACTION = args.condition, args.step_fraction
 
 
 def legacy_audit(mesh, candidates, materials, gates, *, declared=None, step_scale=None):
@@ -124,7 +132,8 @@ def recorder(iteration, current, state, record, arrays):
     update = record.get('outgoing_update') or {}
     gate = update.get('gate') or {}
     contacts = gate.get('contacts') or {}
-    row = dict(iteration=int(iteration), CL=float(state['CL']), CL_gamma=float(state['CL_gamma']),
+    row = dict(iteration=int(iteration), material_graph=record['material_graph'],
+               CL=float(state['CL']), CL_gamma=float(state['CL_gamma']),
                CD_pressure=float(state['CD_pressure']), CM_y=float(state['CM_y']),
                pressure_kutta_rms=float(state.get('pressure_kutta_rms', np.nan)),
                wall_rms=float(state.get('wall_rms', np.nan)),
@@ -193,6 +202,7 @@ result = m.solve_coupled_material_wake(mesh, alpha, kutta='signed_speed', iterat
 payload = dict(schema='dpanel.issue84.t5_gate_ab.v1', condition=CONDITION, case='g2',
                alpha_deg=5.0, kutta='signed_speed', gate_mode='audit', max_backtracks=12,
                iterations=ITERATIONS, truncation_policy=_policy, step_fraction=STEP_FRACTION,
+               material_graph=rows[0]['material_graph'],
                status=result['status'], seconds=float(result['seconds']),
                kinematic_candidate=result['kinematic_candidate'], rows=rows)
 OUT.parent.mkdir(parents=True, exist_ok=True)
