@@ -30,16 +30,16 @@ args = parser.parse_args()
 
 data = json.loads(args.surface.read_text(encoding="utf-8"))
 panels = len(data["faces"])
-# Measured on this machine (2 sections, GRASS fixed topology, 38 variables):
-# 460 faces -> 1.8 GB peak / 3.5 s per evaluation, 1720 faces -> 16 GB / 40 s.
-# The assembly and its graph scale like O(faces * unknowns) with a large constant,
-# so a 0.05 m mesh needs tens of GB and takes the process down before evaluation 1.
-memory_gb = 5.7e-6 * panels * panels
+# Measured on this machine (2 sections, GRASS fixed topology, 38 variables) after the
+# per-block checkpoint fix in panel/p1_assembly_torch.py: 1720 faces -> 1.84 GB peak /
+# 25 s per evaluation, 3400 faces -> 3.85 GB.  Before that fix the same meshes needed
+# 15 GB and 30+ GB and the process died mid-run, which is why the guard exists at all.
+memory_gb = max(0.3, 1.2e-3 * panels - 0.2)
 print("网格 %d 面，预估峰值内存 %.1f GB" % (panels, memory_gb), flush=True)
 if memory_gb > args.max_memory_gb:
     raise SystemExit(
-        "网格 %d 面预估峰值内存 %.1f GB，超过上限 %.1f GB；请把网格尺寸放大到 0.2 m 以上"
-        "（约 460 面）或减少截面后再优化（--max-memory-gb 可强制放开）"
+        "网格 %d 面预估峰值内存 %.1f GB，超过上限 %.1f GB；请放大网格尺寸"
+        "或减少截面后再优化（--max-memory-gb 可强制放开）"
         % (panels, memory_gb, args.max_memory_gb))
 sections0 = data["sections"]
 n = len(sections0["chord"])
@@ -107,7 +107,8 @@ def evaluate(x):
         cache.clear()
         cache.update(x=x.copy(), value=record["objective"], jac=jac_from(values, jac),
                      CL=record["CL"], CD=record["CD"], CDi=record["CDi"],
-                     area=record["area"], area_jac=derivatives[3], ok=True)
+                     area=record["area"], area_jac=derivatives[3],
+                     cl_jac=jac[0].copy(), ok=True)
         if record["objective"] < best["value"]:
             best.update(value=record["objective"], x=x.copy())
         last_good.update(CL=record["CL"], CD=record["CD"], CDi=record["CDi"],
@@ -126,7 +127,8 @@ def evaluate(x):
         cache.update(x=x.copy(), value=last_good["value"] + 10.0 * failures[0],
                      jac=np.zeros_like(x), ok=False, CL=last_good["CL"],
                      CD=last_good["CD"], CDi=last_good["CDi"],
-                     area=last_good["area"], area_jac=np.zeros_like(x))
+                     area=last_good["area"], area_jac=np.zeros_like(x),
+                     cl_jac=np.zeros_like(x))
         return cache
 
 
@@ -153,7 +155,7 @@ if args.cl_min is not None:
     constraints.append(dict(
         type="ineq",
         fun=lambda z: evaluate(to_x(z))["CL"] - args.cl_min,
-        jac=lambda z: evaluate(to_x(z))["jac"][0] * span))
+        jac=lambda z: evaluate(to_x(z))["cl_jac"] * span))
 if args.keep_area:
     constraints.append(dict(
         type="eq",

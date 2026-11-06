@@ -221,54 +221,14 @@ def fixed_wake_surface(path, wall_xz, wake_xz, reference_area, alpha_deg=4., max
     return fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev)
 
 
-def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
-                        include_ideal_drag=False, recompute=None):
-    model, base, mesh, A, W, b, mass, grad = galerkin_operators(
-        wing, xyz, wake_xyz=wake, recompute=recompute)
-    angle = torch.tensor(alpha_deg * np.pi / 180., dtype=xyz.dtype)
+def _coefficients(state, grad, areas, normals, reference_area, angle, wing, xyz,
+                  include_ideal_drag):
+    """Lift/drag coefficients of one reduced solution (explicit in x, quadratic in state)."""
     U = torch.stack((torch.cos(angle), torch.zeros_like(angle), torch.sin(angle)))
-    L = torch.linalg.cholesky(mass)
-    B = torch.linalg.solve_triangular(L, torch.cat((A, W), dim=1), upper=False)
-    rhs = torch.linalg.solve_triangular(L, (b @ U)[:, None], upper=False)[:, 0]
-    J = torch.as_tensor(base["J"])
-    pairs = [p for group in base["te_face_pairs"] for p in group]
-    K = []
-    for top, bottom in pairs:
-        K.append(grad[top, 0].mean(dim=0) - grad[bottom, 0].mean(dim=0))
-    K = torch.cat((torch.stack(K), torch.zeros((len(K), W.shape[1]), dtype=xyz.dtype)), dim=1)
-    with torch.no_grad():
-        linear_basis = null_space(torch.cat((J, K.detach()), dim=0), rcond=1e-11)
-        start = linear_basis @ torch.linalg.lstsq(B.detach() @ linear_basis, rhs.detach()).solution
-        result = solve_pressure_kutta_torch(
-            wall_operator=B.detach(), wall_rhs=rhs.detach(), kutta_operator=J,
-            grad=grad.detach(), te_face_pairs=pairs, x0=start, weight=5., max_nfev=max_nfev)
-        reduction = result.reduction
-    z = result.reduced.detach().requires_grad_(True)
-    pressure = TorchPressureModel(grad, pairs, B.shape[1])
-
-    def objective(value):
-        state = reduction @ value
-        residual = B @ state - rhs
-        p = pressure(state)
-        return (residual @ residual + 25 * (p @ p)) / 2
-
-    stationarity = torch.autograd.grad(objective(z), z, create_graph=True)[0]
-    hessian = _hessian_rows(stationarity, z)
-    stationarity_inf = float(torch.linalg.vector_norm(stationarity.detach(), ord=float("inf")))
-    _, hessian_status = torch.linalg.cholesky_ex(hessian)
-    if (not bool(torch.isfinite(stationarity).all()) or not bool(torch.isfinite(hessian).all())
-            or stationarity_inf > 1e-9 or int(hessian_status) != 0):
-        raise RuntimeError("pressure Kutta is not stationary; implicit gradient is not valid "
-                           "(status=%s, stationarity_inf=%.3g, hessian_status=%d)"
-                           % (result.result.status, stationarity_inf, int(hessian_status)))
-    # Preserve the forward solution while differentiating the stationary equation.
-    correction = torch.linalg.solve(hessian, stationarity)
-    implicit_z = z - correction + correction.detach()
-    state = reduction @ implicit_z
+    lift = torch.stack((-torch.sin(angle), torch.zeros_like(angle), torch.cos(angle)))
     velocity = torch.einsum("fij,j->fi", grad, state[:wing.ndof_mu])
     cp = 1 - (velocity * velocity).sum(dim=1)
-    force = (-(cp * mesh["areas"])[:, None] * mesh["normals"]).sum(dim=0)
-    lift = torch.stack((-torch.sin(angle), torch.zeros_like(angle), torch.cos(angle)))
+    force = (-(cp * areas)[:, None] * normals).sum(dim=0)
     coefficients = torch.stack((force @ lift, force @ U)) / reference_area
     if include_ideal_drag:
         y = xyz[torch.as_tensor(wing.te_geo), 1]
@@ -282,8 +242,136 @@ def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
         downwash = -(logs @ slope) / (4 * torch.pi)
         drag = -((gamma[:-1] + gamma[1:]) * downwash * width).sum() / reference_area
         coefficients = torch.cat((coefficients, drag.reshape(1)))
-    return coefficients, dict(status=result.result.status, success=result.result.success,
-                              stationarity=float(torch.linalg.vector_norm(stationarity.detach())),
-                              stationary_verified=True,
-                              evaluations=result.result.nfev,
-                              physical_accuracy_accepted=False)
+    return coefficients
+
+
+def _stationarity(state, B, rhs, reduction, pressure):
+    """d/dstate of (|B s - rhs|^2 + 25 |p(s)|^2)/2, written out so it stays first order in x."""
+    residual = B @ state - rhs
+    p = pressure(state)
+    return reduction.t() @ (B.t() @ residual + 25. * (pressure.jacobian(state).t() @ p))
+
+
+class _FixedWakeImplicit(torch.autograd.Function):
+    """Pressure-Kutta coefficients with an exact implicit gradient in one assembly pass.
+
+    The forward solve runs under no_grad and stores only the reduced solution, the
+    null-space basis and the (small) Kutta Hessian.  The backward rebuilds the
+    assembly once with gradients and evaluates the adjoint identity
+
+        dJ/dx = dJ/dx|_s - lambda^T dF/dx|_s,   lambda = H^-T (dJ/dz),
+
+    where F is the stationarity residual written in closed form.  Both terms are
+    first order in the coordinates, so no graph of a graph is ever built.  This is
+    necessary for a cheap backward but not sufficient for a small one: the 15 GB
+    peak at 1720 faces came from the assembly checkpoint recomputing every source
+    block at once (see panel/p1_assembly_torch.py:_checkpointed), not from the
+    double graph.
+    """
+
+    @staticmethod
+    def forward(ctx, xyz, wake, reference_area, meta):
+        wing = meta["wing"]
+        alpha_deg = float(meta["alpha_deg"])
+        include_ideal_drag = bool(meta["include_ideal_drag"])
+        max_nfev = int(meta["max_nfev"])
+        recompute = meta["recompute"]
+        wake_xyz = wake if wake.numel() else None
+        with torch.no_grad():
+            model, base, mesh, A, W, b, mass, grad = galerkin_operators(
+                wing, xyz, wake_xyz=wake_xyz, recompute=recompute)
+            angle = torch.tensor(alpha_deg * np.pi / 180., dtype=xyz.dtype)
+            U = torch.stack((torch.cos(angle), torch.zeros_like(angle), torch.sin(angle)))
+            L = torch.linalg.cholesky(mass)
+            B = torch.linalg.solve_triangular(L, torch.cat((A, W), dim=1), upper=False)
+            rhs = torch.linalg.solve_triangular(L, (b @ U)[:, None], upper=False)[:, 0]
+            J = torch.as_tensor(base["J"])
+            pairs = [p for group in base["te_face_pairs"] for p in group]
+            K = torch.stack([grad[top, 0].mean(dim=0) - grad[bottom, 0].mean(dim=0)
+                             for top, bottom in pairs])
+            K = torch.cat((K, torch.zeros((len(pairs), W.shape[1]), dtype=xyz.dtype)), dim=1)
+            linear_basis = null_space(torch.cat((J, K), dim=0), rcond=1e-11)
+            start = linear_basis @ torch.linalg.lstsq(B @ linear_basis, rhs).solution
+            result = solve_pressure_kutta_torch(
+                wall_operator=B, wall_rhs=rhs, kutta_operator=J, grad=grad,
+                te_face_pairs=pairs, x0=start, weight=5., max_nfev=max_nfev)
+            reduction = result.reduction
+            z = result.reduced
+            state = reduction @ z
+            pressure = TorchPressureModel(grad, pairs, B.shape[1])
+            stationarity = _stationarity(state, B, rhs, reduction, pressure)
+            with torch.enable_grad():
+                zt = z.detach().clone().requires_grad_(True)
+                hessian = _hessian_rows(
+                    _stationarity(reduction @ zt, B, rhs, reduction, pressure), zt)
+            stationarity_inf = float(torch.linalg.vector_norm(stationarity, ord=float("inf")))
+            _, hessian_status = torch.linalg.cholesky_ex(hessian)
+            if (not bool(torch.isfinite(stationarity).all())
+                    or not bool(torch.isfinite(hessian).all())
+                    or stationarity_inf > 1e-9 or int(hessian_status) != 0):
+                raise RuntimeError("pressure Kutta is not stationary; implicit gradient is not valid "
+                                   "(status=%s, stationarity_inf=%.3g, hessian_status=%d)"
+                                   % (result.result.status, stationarity_inf, int(hessian_status)))
+            coefficients = _coefficients(state, grad, mesh["areas"], mesh["normals"],
+                                         reference_area, angle, wing, xyz, include_ideal_drag)
+        ctx.save_for_backward(xyz, wake, reference_area, z, reduction, hessian)
+        ctx.meta = meta
+        meta["sink"]["info"] = dict(
+            status=result.result.status, success=result.result.success,
+            stationarity=float(torch.linalg.vector_norm(stationarity)),
+            stationary_verified=True, evaluations=result.result.nfev,
+            physical_accuracy_accepted=False)
+        return coefficients
+
+    @staticmethod
+    def backward(ctx, grad_coef):
+        xyz, wake, reference_area, z, reduction, hessian = ctx.saved_tensors
+        meta = ctx.meta
+        wing = meta["wing"]
+        alpha_deg = float(meta["alpha_deg"])
+        include_ideal_drag = bool(meta["include_ideal_drag"])
+        recompute = meta["recompute"]
+        with torch.enable_grad():
+            xg = xyz.detach().clone().requires_grad_(True)
+            wg = wake.detach().clone().requires_grad_(True) if wake.numel() else wake
+            ag = reference_area.detach().clone().requires_grad_(True)
+            model, base, mesh, A, W, b, mass, grad = galerkin_operators(
+                wing, xg, wake_xyz=(wg if wg.numel() else None), recompute=recompute)
+            angle = torch.tensor(alpha_deg * np.pi / 180., dtype=xyz.dtype)
+            U = torch.stack((torch.cos(angle), torch.zeros_like(angle), torch.sin(angle)))
+            L = torch.linalg.cholesky(mass)
+            B = torch.linalg.solve_triangular(L, torch.cat((A, W), dim=1), upper=False)
+            rhs = torch.linalg.solve_triangular(L, (b @ U)[:, None], upper=False)[:, 0]
+            pairs = [p for group in base["te_face_pairs"] for p in group]
+            pressure = TorchPressureModel(grad, pairs, B.shape[1])
+            state = reduction @ z
+            coef_x = _coefficients(state, grad, mesh["areas"], mesh["normals"], ag,
+                                   angle, wing, xg, include_ideal_drag)
+            residual_x = _stationarity(state, B, rhs, reduction, pressure)
+            zt = z.detach().clone().requires_grad_(True)
+            coef_z = _coefficients(reduction @ zt, grad.detach(), mesh["areas"].detach(),
+                                   mesh["normals"].detach(), ag.detach(), angle, wing,
+                                   xg.detach(), include_ideal_drag)
+            dz = torch.autograd.grad((coef_z * grad_coef).sum(), zt)[0]
+            lam = torch.linalg.solve(hessian.t(), dz).detach()
+            total = (coef_x * grad_coef).sum() - (lam * residual_x).sum()
+            targets = [xg, ag] + ([wg] if wg.numel() else [])
+            grads = torch.autograd.grad(total, targets, allow_unused=True)
+        grad_wake = grads[2] if wg.numel() else None
+        return grads[0], grad_wake, grads[1], None
+
+
+def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
+                        include_ideal_drag=False, recompute=None):
+    """Pressure-Kutta coefficients and the implicit gradient, at the cost of one assembly."""
+    if wake is None:
+        wake = torch.zeros(0, dtype=xyz.dtype)
+    elif not torch.is_tensor(wake):
+        wake = torch.as_tensor(wake, dtype=xyz.dtype)
+    if not torch.is_tensor(reference_area):
+        reference_area = torch.as_tensor(float(reference_area), dtype=xyz.dtype)
+    sink = {}
+    meta = dict(wing=wing, alpha_deg=alpha_deg, include_ideal_drag=include_ideal_drag,
+                max_nfev=max_nfev, recompute=recompute, sink=sink)
+    coefficients = _FixedWakeImplicit.apply(xyz, wake, reference_area, meta)
+    return coefficients, sink["info"]

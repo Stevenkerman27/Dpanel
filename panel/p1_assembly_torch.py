@@ -15,6 +15,8 @@ which is the principal-value limit of the doublet sheet, not a quadrature rule.
 """
 from __future__ import annotations
 
+import functools
+
 import torch
 
 
@@ -42,13 +44,75 @@ def mesh_kernel(xyz, faces, *, device=None, dtype=torch.float64):
                 areas=scale / 2, basis_gradients=gradients)
 
 
+def _doublet_block(t, X, mask):
+    """One source block of the doublet operator: (targets, chunk, 3) rows, pre-scatter."""
+    e1 = t[:, 1] - t[:, 0]
+    e2 = t[:, 2] - t[:, 0]
+    raw = torch.linalg.cross(e1, e2)
+    scale = torch.linalg.vector_norm(raw, dim=1)
+    if bool((scale <= 0).any()):
+        raise ValueError("Zero-area source triangle")
+    normal = raw / scale[:, None]
+    g1 = torch.linalg.cross(e2, normal) / scale[:, None]
+    g2 = torch.linalg.cross(normal, e1) / scale[:, None]
+    G = torch.stack((-g1 - g2, g1, g2), dim=1)
+    ctr = t.mean(dim=1)
+    r = t[None, :, :, :] - X[:, None, None, :]
+    L = torch.linalg.vector_norm(r, dim=3)
+    if bool((L == 0).any()):
+        raise ValueError("Source vertex target")
+    a, b, c = r[:, :, 0], r[:, :, 1], r[:, :, 2]
+    den = (L[:, :, 0] * L[:, :, 1] * L[:, :, 2]
+           + (a * b).sum(dim=2) * L[:, :, 2]
+           + (b * c).sum(dim=2) * L[:, :, 0]
+           + (c * a).sum(dim=2) * L[:, :, 1])
+    D = -2.0 * torch.atan2((a * torch.linalg.cross(b, c)).sum(dim=2), den) / (4.0 * torch.pi)
+    h = ((X[:, None, :] - t[None, :, 0, :]) * normal[None]).sum(dim=2)
+    gd = torch.zeros_like(r[:, :, 0])
+    for k, l in ((0, 1), (1, 2), (2, 0)):
+        edge = t[:, l] - t[:, k]
+        ll = torch.linalg.vector_norm(edge, dim=1)
+        out = torch.linalg.cross(edge / ll[:, None], normal)
+        rk, rl = r[:, :, k], r[:, :, l]
+        dotr = (rk * rl).sum(dim=2)
+        product = L[:, :, k] * L[:, :, l]
+        op = dotr < 0
+        cr = torch.linalg.cross(rk, rl)
+        cr2 = (cr * cr).sum(dim=2)
+        plus = torch.where(op, cr2 / torch.where(op, product - dotr,
+                                                torch.ones_like(product)),
+                           product + dotr)
+        gap = 2.0 * plus / (L[:, :, k] + L[:, :, l] + ll[None])
+        if bool((gap <= 0).any()):
+            raise FloatingPointError("Near-singular edge geometry")
+        gd = gd - out[None] * torch.log1p(2.0 * ll[None] / gap)[:, :, None]
+    M = (X[:, None, :] - ctr[None]) * D[:, :, None] + h[:, :, None] * gd / (4.0 * torch.pi)
+    rows = D[:, :, None] / 3.0 + torch.einsum("tfi,fki->tfk", M, G)
+    if mask is not None:
+        B = 1.0 / 3.0 + torch.einsum("tfk,fik->tfi", X[:, None, :] - ctr[None], G)
+        rows = torch.where(mask[:, :, None], -0.5 * B, rows)
+    return rows
+
+
+def _checkpointed(fn, *args):
+    """Recompute one source block in backward instead of storing its graph.
+
+    Without this each doublet_matrix call is a single checkpoint, so its backward
+    recomputes every source block at once and peaks at ~15 GB on 1720 faces
+    (measured).  Per block the peak is one block's intermediates.
+    """
+    if not torch.is_grad_enabled() or not any(
+            torch.is_tensor(arg) and arg.requires_grad for arg in args):
+        return fn(*args)
+    return torch.utils.checkpoint.checkpoint(fn, *args, use_reentrant=False)
+
 def doublet_matrix(triangles, targets, *, self_faces=None, face_dofs=None, ndof=None,
                    face_chunk=64, device=None, dtype=torch.float64):
     """Analytic P1 doublet operator, batched over source triangles.
 
-    Returns a (len(targets), ndof) tensor whose columns are scattered by `face_dofs`
+    Returns a (len(targets), ndof) tensor whose columns are scattered by face_dofs
     (default: three consecutive DOFs per triangle). Equivalent to the NumPy
-    `_doublet_matrix` including its near-singular edge guard.
+    _doublet_matrix including its near-singular edge guard.
     """
     tri = torch.as_tensor(triangles, dtype=dtype, device=device)
     X = torch.as_tensor(targets, dtype=dtype, device=device)
@@ -71,63 +135,16 @@ def doublet_matrix(triangles, targets, *, self_faces=None, face_dofs=None, ndof=
     A = torch.zeros((n_target, int(ndof)), dtype=dtype, device=tri.device)
     self_index = None if self_faces is None else torch.as_tensor(
         self_faces, dtype=torch.long, device=tri.device)
-    four_pi = 4.0 * torch.pi
     arange_all = torch.arange(n_face, device=tri.device)
     for f0 in range(0, n_face, face_chunk):
         f1 = min(n_face, f0 + face_chunk)
-        t = tri[f0:f1]
-        e1 = t[:, 1] - t[:, 0]
-        e2 = t[:, 2] - t[:, 0]
-        raw = torch.linalg.cross(e1, e2)
-        scale = torch.linalg.vector_norm(raw, dim=1)
-        if bool((scale <= 0).any()):
-            raise ValueError("Zero-area source triangle")
-        normal = raw / scale[:, None]
-        g1 = torch.linalg.cross(e2, normal) / scale[:, None]
-        g2 = torch.linalg.cross(normal, e1) / scale[:, None]
-        G = torch.stack((-g1 - g2, g1, g2), dim=1)
-        ctr = t.mean(dim=1)
-        r = t[None, :, :, :] - X[:, None, None, :]
-        L = torch.linalg.vector_norm(r, dim=3)
-        if bool((L == 0).any()):
-            raise ValueError("Source vertex target")
-        a, b, c = r[:, :, 0], r[:, :, 1], r[:, :, 2]
-        den = (L[:, :, 0] * L[:, :, 1] * L[:, :, 2]
-               + (a * b).sum(dim=2) * L[:, :, 2]
-               + (b * c).sum(dim=2) * L[:, :, 0]
-               + (c * a).sum(dim=2) * L[:, :, 1])
-        D = -2.0 * torch.atan2((a * torch.linalg.cross(b, c)).sum(dim=2), den) / four_pi
-        h = ((X[:, None, :] - t[None, :, 0, :]) * normal[None]).sum(dim=2)
-        gd = torch.zeros_like(r[:, :, 0])
-        for k, l in ((0, 1), (1, 2), (2, 0)):
-            edge = t[:, l] - t[:, k]
-            ll = torch.linalg.vector_norm(edge, dim=1)
-            out = torch.linalg.cross(edge / ll[:, None], normal)
-            rk, rl = r[:, :, k], r[:, :, l]
-            dotr = (rk * rl).sum(dim=2)
-            product = L[:, :, k] * L[:, :, l]
-            op = dotr < 0
-            cr = torch.linalg.cross(rk, rl)
-            cr2 = (cr * cr).sum(dim=2)
-            plus = torch.where(op, cr2 / torch.where(op, product - dotr,
-                                                    torch.ones_like(product)),
-                               product + dotr)
-            gap = 2.0 * plus / (L[:, :, k] + L[:, :, l] + ll[None])
-            if bool((gap <= 0).any()):
-                raise FloatingPointError("Near-singular edge geometry")
-            gd = gd - out[None] * torch.log1p(2.0 * ll[None] / gap)[:, :, None]
-        M = (X[:, None, :] - ctr[None]) * D[:, :, None] + h[:, :, None] * gd / four_pi
-        rows = D[:, :, None] / 3.0 + torch.einsum("tfi,fki->tfk", M, G)
-        if self_index is not None:
-            mask = self_index[:, None] == arange_all[None, f0:f1]
-            B = 1.0 / 3.0 + torch.einsum(
-                "tfk,fik->tfi", X[:, None, :] - ctr[None], G)
-            rows = torch.where(mask[:, :, None], -0.5 * B, rows)
+        mask = None if self_index is None else (
+            self_index[:, None] == arange_all[None, f0:f1])
+        rows = _checkpointed(functools.partial(_doublet_block, mask=mask), tri[f0:f1], X)
         block = dofs[f0:f1]
         for k in range(3):
             A.scatter_add_(1, block[:, k][None, :].expand(n_target, f1 - f0), rows[:, :, k])
     return A
-
 
 def gradient_map(faces, dof_face, basis_gradients, *, ndof=None, device=None,
                  dtype=torch.float64):
@@ -198,17 +215,3 @@ def loads(*, grad, mu, areas, normals, centers, reference_point, reference_area,
     total = torch.zeros((), dtype=dtype)
     for values, stations in group_gamma:
         total = total + _trapezoid(values, stations, dtype=dtype)
-    return dict(CL=float(net @ lift / reference_area),
-                CL_gamma=float(2.0 * total / reference_area),
-                CD_pressure=float(net @ U / reference_area),
-                CM_y=float(moment[1] / (reference_area * reference_chord)),
-                cp=cp)
-
-
-def _trapezoid(values, stations, *, dtype):
-    v = torch.as_tensor(values, dtype=dtype)
-    s = torch.as_tensor(stations, dtype=dtype)
-    if v.ndim != 1 or s.shape != v.shape:
-        raise ValueError("trapezoid needs matching 1-D values and stations")
-    return ((v[1:] + v[:-1]) * 0.5 * (s[1:] - s[:-1])).sum()
-
