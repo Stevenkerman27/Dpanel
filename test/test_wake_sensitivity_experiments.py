@@ -1,5 +1,8 @@
 from dataclasses import replace
 import json
+import os
+import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -9,6 +12,21 @@ from panel.p1_lifting_g2 import assemble_multi, combine_wings
 from panel.p1_steady_free_wake import _one_wake_target, prepare_wake_material, with_wake_xyz
 from tools.wake_mesh_interventions import clip_wake, refine_wake
 from tools.wake_sensitivity_geometry import attachment_rows, audit_geometry, geometry_context
+
+
+def test_fixed_free_length_study_smoke(tmp_path):
+    output=tmp_path/"study.json"
+    env=dict(os.environ,OPENBLAS_NUM_THREADS="1",OMP_NUM_THREADS="1",MKL_NUM_THREADS="1")
+    result=subprocess.run([sys.executable,"-m","tools.wake_fixed_free_length_study",
+        "--out",str(output),"--chord-panels","3","--span-panels","4",
+        "--wake-panels","2","--lengths","5,10","--free-length","5",
+        "--iterations","1","--order","2"],env=env,capture_output=True,text=True,timeout=60)
+    assert result.returncode==0,result.stderr
+    report=json.loads(output.read_text(encoding="utf-8"))
+    assert [row["mode"] for row in report["records"]]==["fixed","fixed","free"]
+    assert report["wall_formulation"]=="galerkin"
+    assert report["records"][-1]["history"][0]["CL"]==pytest.approx(report["records"][0]["CL"],abs=1e-10)
+    assert not report["records"][-1]["converged"]
 
 
 def test_physical_attachment_is_distinct_from_predecessor_roots_on_swept_wake():

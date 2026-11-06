@@ -498,7 +498,7 @@ def assemble(wing, *, backend='numpy'):
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
-          pressure_solver=None, backend=None, device='cpu'):
+          pressure_solver=None, backend=None, device='cpu',wall_formulation='galerkin'):
     """Solve one lifting surface as the single group of the G2 solver.
 
     One wing is not a separate equation set: it is solve_multi with exactly one
@@ -511,9 +511,8 @@ def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
     numpy-path-frozen-s8 with its recorded answers in docs/issue92/references/.
 
     wall_weight and jump_weight belonged to that retired single-wing weighting. The
-    merged kernel weighs every wall row by sqrt(area/mean_area) and every Kutta row by
-    kutta_weight, so any other value is rejected rather than silently ignored. seed is
-    unused because the pressure solve is deterministic.
+    Any other legacy wall/jump weight is rejected rather than silently ignored.
+    seed is unused because the pressure solve is deterministic.
     """
     if float(wall_weight)!=1. or float(jump_weight)!=6.:
         raise ValueError(
@@ -522,7 +521,8 @@ def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
     from .p1_lifting_g2 import combine_wings, solve_multi
     out=solve_multi(combine_wings([wing]),alpha_deg,kutta=kutta,
                     kut_weight=kutta_weight,max_nfev=max_nfev,
-                    pressure_solver=pressure_solver,backend=backend,device=device)
+                    pressure_solver=pressure_solver,backend=backend,device=device,
+                    wall_formulation=wall_formulation)
     out['constrained_rank']=int(out['linear_constrained_rank'])
     # The multi kernel reports only the smallest singular value of the constrained
     # least-squares operator; keep a one-element spectrum under the legacy name.
@@ -540,12 +540,20 @@ def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
     return out
 
 
-def alpha_sensitivity(wing, alpha_deg=5.):
+def alpha_sensitivity(wing, alpha_deg=5., *, wall_formulation='galerkin'):
     """Analytic d(CL, CL_gamma, CM_y)/d(alpha_rad) for linear signed-speed Kutta.
 
     Fixed geometry, fixed wake, no finite-difference step or autodiff magic.
     Shape VJP and nonlinear pressure-Kutta implicit differentiation are separate.
     """
+    if wall_formulation=='galerkin':
+        from .p1_lifting_g2 import combine_wings, alpha_sensitivity_multi
+        result=alpha_sensitivity_multi(combine_wings([wing]),alpha_deg)
+        result.update(meaning='fixed-geometry exact linear-system sensitivity',
+                      physical_accuracy_accepted=False)
+        return result
+    if wall_formulation!='collocation':
+        raise ValueError("wall_formulation must be collocation or galerkin")
     ops=assemble(wing)
     A,W,C,K,GH=ops['A'],ops['W'],ops['C'],ops['K'],ops['GH']
     ng=W.shape[1];nm=A.shape[1]

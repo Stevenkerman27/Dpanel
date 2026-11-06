@@ -144,7 +144,7 @@ def test_production_multi_assembly_and_solve_accept_the_torch_backend():
         scale = max(1.0, float(np.max(np.abs(reference[key]))))
         assert float(np.max(np.abs(other[key] - reference[key]))) <= 1e-13 * scale, key
     alpha, kutta = entry["meta"]["alpha_deg"], entry["meta"]["kutta"]
-    base = solve_multi(mesh, alpha, kutta=kutta)
+    base = solve_multi(mesh, alpha, kutta=kutta,wall_formulation="collocation")
     fast = solve_multi(mesh, alpha, kutta=kutta, operators=other)
     for key in ("CL", "CL_gamma", "CD_pressure", "CM_y"):
         assert abs(float(fast[key]) - float(base[key])) <= 1e-10 * max(1.0, abs(float(base[key]))), key

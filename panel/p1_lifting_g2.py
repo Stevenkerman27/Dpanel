@@ -314,7 +314,7 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
                 max_nfev=80,operators=None,pressure_solver=None,
-                backend=None, device='cpu', wall_formulation='collocation',
+                backend=None, device='cpu', wall_formulation=None,
                 galerkin_order=3):
     """Solve wall P1 mu and ALL independent wake Gamma simultaneously, on torch.
 
@@ -324,11 +324,16 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
     trust-region solver and is rejected here on purpose.
     """
     backend,backend_source=resolve_backend(backend)
+    if wall_formulation is None:
+        wall_formulation=(operators.get('wall_formulation','collocation')
+                          if operators is not None else 'galerkin')
     if wall_formulation not in ('collocation','galerkin'):
         raise ValueError("wall_formulation must be collocation or galerkin")
     if operators is None and wall_formulation=='galerkin':
         from .p1_galerkin_wall import assemble_galerkin_multi
         operators=assemble_galerkin_multi(mesh,order=galerkin_order)
+    elif operators is None:
+        operators=assemble_multi(mesh)
     if operators is not None and (operators.get('wall_formulation','collocation') != wall_formulation):
         raise ValueError("operators do not match wall_formulation")
     if kutta=='pressure' and pressure_solver not in (None,'structured'):
@@ -353,15 +358,25 @@ def alpha_sensitivity_multi(mesh,alpha_deg=5.,*,operators=None):
     solve both freestream directions in a single factorization. This is not
     geometry VJP or the derivative of nonlinear pressure Kutta.
     """
-    ops=assemble_multi(mesh) if operators is None else operators
+    if operators is None:
+        from .p1_galerkin_wall import assemble_galerkin_multi
+        ops=assemble_galerkin_multi(mesh)
+    else:
+        ops=operators
     A,W,J,K=ops['A'],ops['W'],ops['J'],ops['K'];ms=ops['mesh']
     nm=A.shape[1];theta=np.deg2rad(alpha_deg)
     U=np.array([np.cos(theta),0.,np.sin(theta)])
     dU=np.array([-np.sin(theta),0.,np.cos(theta)])
-    weights=np.sqrt(ms.areas/ms.areas.mean())
     N=_torch_null_space(np.vstack((J,K)),rcond=1e-11)
-    B=(weights[:,None]*np.column_stack((A,W)))@N
-    RHS=-weights[:,None]*ms.centers
+    if ops.get('wall_formulation')=='galerkin':
+        import torch
+        L=torch.linalg.cholesky(torch.as_tensor(ops['M'],dtype=torch.float64))
+        B=torch.linalg.solve_triangular(L,torch.as_tensor(np.column_stack((A,W)),dtype=torch.float64),upper=False).numpy()@N
+        RHS=torch.linalg.solve_triangular(L,torch.as_tensor(ops['b_xyz'],dtype=torch.float64),upper=False).numpy()
+    else:
+        weights=np.sqrt(ms.areas/ms.areas.mean())
+        B=(weights[:,None]*np.column_stack((A,W)))@N
+        RHS=-weights[:,None]*ms.centers
     coeff=_torch_lstsq(B,np.column_stack((RHS@U,RHS@dU)))
     X=N@coeff;mu,dmu=X[:nm,0],X[:nm,1]
     dg=X[nm:,1]

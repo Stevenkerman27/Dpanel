@@ -404,6 +404,7 @@ function renderResult() {
   el('resultTime').textContent = solveSeconds ? Number(solveSeconds).toFixed(1) + ' s' : '';
   const fmt = (v, digits) => (v === null || v === undefined ? '-' : Number(v).toFixed(digits === undefined ? 5 : digits));
   setResultRow('CL', fmt(result.CL));
+  if (result.wall_formulation) setResultRow('壁面离散', result.wall_formulation === 'galerkin' ? 'P1 弱形式' : 'P1 配点');
   setResultRow('CD', fmt(result.CD));
   if (Array.isArray(result.CM)) setResultRow('CM_y', fmt(result.CM[1]));
   else setResultRow('CM_y', fmt(result.CM));
@@ -569,6 +570,7 @@ async function doSolve() {
       alpha: Number(el('alpha').value),
       size: Number(el('size').value),
       wake: el('wake').value,
+      wall_formulation: el('wallFormulation').value,
       iterations: Number(el('iterations').value),
       device: el('device').value,
       ncpu: Number(el('ncpu').value),

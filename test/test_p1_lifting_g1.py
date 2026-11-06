@@ -7,8 +7,8 @@ from panel.p1_lifting_g1 import make_wing,from_dpanel_half_surface,solve,alpha_s
 
 def test_g1_picks_circulation_at_nonzero_incidence_without_hardcoded_cl():
     wing=make_wing(chord_panels=4,span_panels=4,wake_panels=2)
-    zero=solve(wing,0.,kutta='pressure')
-    positive=solve(wing,5.,kutta='pressure')
+    zero=solve(wing,0.,kutta='pressure',wall_formulation='collocation')
+    positive=solve(wing,5.,kutta='pressure',wall_formulation='collocation')
     assert abs(zero['CL'])<1e-10 and abs(zero['CL_gamma'])<1e-10
     assert positive['CL']>.15 and positive['CL_gamma']>.15
     assert positive['jump_rms']<1e-10

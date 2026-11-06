@@ -264,7 +264,7 @@ def _spawn(job, command, log_path):
 
 
 def solve(job, surface, wake, alpha, iterations, reference, attempts=6,
-          ncpu=SOLVE_THREADS):
+          ncpu=SOLVE_THREADS, wall_formulation="galerkin"):
     """Run the solve in a child process, retrying native crashes.
 
     Isolation keeps the HTTP server alive when a native dependency crashes.
@@ -282,7 +282,8 @@ def solve(job, surface, wake, alpha, iterations, reference, attempts=6,
                    "--surface", str(surface), "--out", str(directory),
                    "--wake", wake, "--alpha", "%g" % float(alpha),
                    "--iterations", str(int(iterations)),
-                   "--reference", json.dumps(reference or {}), "--ncpu", str(ncpu)]
+                   "--reference", json.dumps(reference or {}),
+                   "--wall-formulation", wall_formulation, "--ncpu", str(ncpu)]
         if attempt == 0:
             job.say("求解进程启动: wake=%s, alpha=%g, 设备=CPU, 线程=%d"
                     % (wake, float(alpha), ncpu))
@@ -340,11 +341,14 @@ def run_job(job, options):
     """Solve using the previously generated mesh."""
     alpha = float(options.get("alpha", 4.0))
     wake = str(options.get("wake", "fixed"))
+    wall_formulation = str(options.get("wall_formulation", "galerkin"))
     device = str(options.get("device", "cpu"))
     size = float(options.get("size", 0.3))
     iterations = int(options.get("iterations", 12))
     ncpu = int(options.get("ncpu", SOLVE_THREADS))
     try:
+        if wall_formulation not in ("galerkin", "collocation"):
+            raise ValueError("未知壁面离散方法")
         surface = job.run_dir / "mesh" / "surface.json"
         if not surface.is_file() or not job.mesh_info or not job.mesh_options:
             raise ValueError("请先生成计算网格")
@@ -355,7 +359,8 @@ def run_job(job, options):
         job.state = "solving"
         reference = (job.build or {}).get("reference") or params_module.reference(
             (job.build or {}).get("params") or params_module.normalise({})[0])
-        result = solve(job, surface, wake, alpha, iterations, reference, ncpu=ncpu)
+        result = solve(job, surface, wake, alpha, iterations, reference, ncpu=ncpu,
+                       wall_formulation=wall_formulation)
         result = _plain(result)
         if wake == "free" and not (result.get("converged") and result.get("geometry_stable")):
             history = result.get("history") or []
@@ -368,12 +373,12 @@ def run_job(job, options):
             else:
                 result["warning"] = "自由尾迹未收敛：数值仅供诊断。"
             job.say(result["warning"])
-        result["options"] = dict(alpha=alpha, wake=wake, size=size, iterations=iterations,
+        result["options"] = dict(alpha=alpha, wake=wake, wall_formulation=wall_formulation,
+                                 size=size, iterations=iterations,
                                  ncpu=ncpu,
                                  device_requested=device, device_used="cpu")
         if device != "cpu":
-            result["device_note"] = ("当前两条求解路径（半域稠密参考解与自由尾迹）"
-                                     "只暴露 CPU 设备; GPU 仅在 p1 单翼 torch 路径可选。")
+            result["device_note"] = "Web 固定和自由尾迹求解目前均使用 CPU。"
         result["mesh_info"] = mesh_info
         result["alpha"] = alpha
         result["seconds_total"] = time.time() - job.started

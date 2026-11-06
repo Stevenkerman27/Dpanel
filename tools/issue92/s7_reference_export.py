@@ -89,7 +89,8 @@ def _solve(system, pressure_solver="reference", backend="numpy", device="cpu"):
         rank = out.get("linear_constrained_rank")
     else:
         out = g1.solve(system["wing"], system["alpha_deg"], kutta="pressure",
-                       pressure_solver=pressure_solver, backend=backend, device=device)
+                       pressure_solver=pressure_solver, backend=backend, device=device,
+                       wall_formulation="collocation")
         rank = out.get("constrained_rank")
     return out, rank
 

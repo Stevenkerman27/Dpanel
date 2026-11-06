@@ -1,10 +1,75 @@
-# Fixed-wake grid study: comparison blocked
+# Fixed/free wake and length study
+
+## Weak-form comparison, 2026-11-06
+
+Windows `myml` Python 3.13 / NumPy 2.4.6 / Torch 2.13, CPU,
+`OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=MKL_NUM_THREADS=1`. Full-span
+NACA0012 rectangular wing, span 4c, alpha 4 degrees, pressure Kutta,
+quarter-chord moment reference, target quadrature order 3. The 30x32
+cosine-chord/uniform-span wall/Gamma grid passed the preceding two-step
+3% joint-refinement screen at a fixed 5c wake; this is not an independently
+refined wall, circulation, streamwise wake or quadrature study. The reference
+for `CD_trefftz` below is a Gamma-only straight-sheet diagnostic, not a
+far-field integration of the relaxed wake.
+
+| Fixed length | Wake x panels | CL | CL Gamma | CD pressure | CD Trefftz | CM y |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2c | 2 | 0.252226 | 0.255473 | 0.005840 | 0.004972 | 0.004505 |
+| 5c | 2 | 0.262728 | 0.265795 | 0.005853 | 0.005381 | 0.003843 |
+| 10c | 2 | 0.264818 | 0.267870 | 0.005828 | 0.005465 | 0.003787 |
+| 20c | 2 | 0.265393 | 0.268444 | 0.005817 | 0.005489 | 0.003782 |
+
+2c->5c changes CL 3.997%, CL Gamma 3.883%, CD pressure 0.217%,
+CD Trefftz 7.598% and CM y 17.230%, relative to the later value.
+All five changes are below 3% on both 5c->10c and 10c->20c.
+At 5c and 10c, increasing streamwise wake panels from 2 to 8 changes
+each displayed fixed coefficient by less than `1e-9` absolute. This is
+expected only for this straight wake and strength representation; it is
+not evidence that two segments suffice for a curved free wake.
+
+On the same 5c grid, two streamwise wake panels give initial fixed
+CL `0.262728` and after four free updates `0.262921`. Extending the run
+ends at update 13 with `blocked_geometry`, CL `0.262931`, normal-slip
+RMS `0.014740`, and raw map residual `0.172764c`. The orientation
+backtracking factor shrinks from 1 to `5.96e-8`, then no admissible step
+is found. A nearly stationary CL therefore does not establish wake
+equilibrium. With eight streamwise panels, after eight updates CL is
+`0.262603`, slip RMS `0.017649`, preceding raw map residual `0.134355c`,
+and backtracking factor `6.10e-5`; status is `iteration_limit`, not
+converged. Both runs keep `physical_accuracy_accepted=false`.
+
+At 10c with eight streamwise panels and four updates, the fixed/free CL
+is `0.264818/0.264814`; the last slip RMS is `0.018979`, and the prior
+raw map residual and backtracking factor are `0.473872c` and `0.001953`.
+At the same update count, 5c free CL is `0.262600`. Both are
+`iteration_limit`; their difference is an iteration diagnostic, not a
+converged free-wake length effect.
+
+For the coarse 4x4 symmetric wing at zero incidence, order-3 quadrature
+gives CL `0.000859`; order 5 gives `0.000059`. This is small for the
+current study and does not block it, but documents quadrature sensitivity.
+
+Data: `weak_fixed_free_length_30x32.json`,
+`weak_free_iterations_30x32.json`, `weak_free_streamwise8_30x32.json`,
+`weak_free_length10_streamwise8_30x32.json`.
+These outputs record iteration diagnostics and coefficients, not per-node
+final wake snapshots. Timings are not benchmarks because other tests ran
+concurrently.
+
+```powershell
+python -m tools.wake_fixed_free_length_study --out <fresh.json> --chord-panels 30 --span-panels 32 --wake-panels 2 --lengths 2,5,10,20 --free-length 5 --iterations 4 --order 3
+python -m tools.wake_fixed_free_length_study --out <fresh.json> --chord-panels 30 --span-panels 32 --wake-panels 2 --lengths 5 --free-length 5 --iterations 16 --order 3
+python -m tools.wake_fixed_free_length_study --out <fresh.json> --chord-panels 30 --span-panels 32 --wake-panels 8 --lengths 5,10 --free-length 5 --iterations 8 --order 3
+python -m tools.wake_fixed_free_length_study --out <fresh.json> --chord-panels 30 --span-panels 32 --wake-panels 8 --lengths 10 --free-length 10 --iterations 4 --order 3
+```
+
+## Earlier collocation grid study
 
 Update 2026-11-06: the collocation result below remains a negative result.
 The restored optional weak-wall path subsequently passed the specified 3%
 joint-refinement screen on the same test family; see
 `verification/wake_galerkin_revival/README.md` for the new runs and their
-limitations. The fixed/free and wake-length comparisons still remain to be run.
+limitations. The subsequent fixed/free and wake-length comparisons are recorded above.
 
 2026-11-06. Windows / Python 3.13 / NumPy 2.4.6 / Torch 2.13, single-thread
 OpenBLAS, OMP and MKL. These are P1 `combine_wings` / `solve_multi` results,
@@ -69,7 +134,7 @@ underlying cause has not been independently established here.
 
 ## Outcome and Reproduction
 
-The prerequisite did not pass, so **no grid was selected as a 3%-converged
+In this earlier collocation study, the prerequisite did not pass, so **no grid was selected as a 3%-converged
 baseline** and the requested fixed/free and wake-length comparisons were not
 run. In particular, 5c is just the initial setting, not an accepted length.
 Investigate the fixed-wake chordwise behavior first, then repeat the grid
@@ -79,9 +144,9 @@ In PowerShell, set `OPENBLAS_NUM_THREADS`, `OMP_NUM_THREADS` and
 `MKL_NUM_THREADS` to `1`; use `C:/Users/zyx20/anaconda3/envs/myml/python.exe`:
 
 ```powershell
-python -m tools.wake_grid_length_study --mode grid --out <fresh-grid.json>
-python -m tools.wake_grid_length_study --mode grid --levels 4x8,6x8,8x8,10x8,12x8,14x8 --condition --out <fresh-chord.json>
-python -m tools.wake_grid_length_study --mode grid --levels 6x4,6x6,6x8,6x10,6x12,6x14 --out <fresh-span.json>
+python -m tools.wake_grid_length_study --wall-method collocation --mode grid --out <fresh-grid.json>
+python -m tools.wake_grid_length_study --wall-method collocation --mode grid --levels 4x8,6x8,8x8,10x8,12x8,14x8 --condition --out <fresh-chord.json>
+python -m tools.wake_grid_length_study --wall-method collocation --mode grid --levels 6x4,6x6,6x8,6x10,6x12,6x14 --out <fresh-span.json>
 ```
 
 `grid.json`, `chord.json`, `chord_condition.json` and `span.json` retain the

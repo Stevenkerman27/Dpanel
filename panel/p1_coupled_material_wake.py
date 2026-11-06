@@ -908,7 +908,8 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
                                  analytic_chunk=64, solve_backend=None,
                                  solve_device="cpu", pressure_solver=None,
                                  rm_backend="numpy", rm_device="cpu",
-                                 save_callback=None):
+                                 save_callback=None, wall_formulation="galerkin",
+                                 galerkin_order=3):
     """Coupled B2 experiment; callback(iteration, mesh, state, record, arrays).
 
     The returned `converged` is deliberately False: a kinematic candidate is
@@ -998,7 +999,13 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     # Identity comes from shared vertex ids, never from coordinate proximity.
     declared = declared_contact_pairs([g.wake_faces for g in mesh.groups], mesh.faces,
                                       group_labels=[g.name for g in mesh.groups])
-    static = assemble_multi(mesh)
+    if wall_formulation == "galerkin":
+        from .p1_galerkin_wall import assemble_galerkin_multi
+        static = assemble_galerkin_multi(mesh,order=galerkin_order)
+    elif wall_formulation == "collocation":
+        static = assemble_multi(mesh)
+    else:
+        raise ValueError("wall_formulation must be galerkin or collocation")
     fixed = _solve(mesh, static)
     current, history, incoming = mesh, [], None
     status = 'iteration_limit'

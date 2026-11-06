@@ -18,6 +18,10 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 - 鼠标左键拖动旋转（上下拖动方向反转），滚轮缩放；相机按**壁面几何的世界坐标包围盒**定标（只在换场景时重算），结果视图不把尾迹计入居中与缩放，
   所以任意角度下缩放一致，左右拖动只改偏航、不改俯仰（俯仰夹在 ±85°）。
 - 求解选项里有**设备**下拉框：现在两条求解路径都只有 CPU，选 GPU 会明确回退并在结果表标注。
+- 固定和自由尾迹默认使用 P1 Galerkin 弱壁面形式；“P1 配点”可用于快速试算和对照。
+  固定尾迹使用镜像的全翼 P1 网格，比原半域 P0 求解更耗内存与时间；
+  结果不应与原 P0 模型当作同一种离散化直接比较。
+  原 P0 半域固定尾迹仍可通过 `python -m tools.web.solve_runner --surface <surface.json> --out <new-directory> --wake fixed --wall-formulation p0` 使用。
 - **CPU 线程**默认 `min(8, 逻辑 CPU 数)`，可在 1 到逻辑 CPU 数之间调整；只控制求解子进程，
   不改变网格阶段的线程设置。求解日志按校验、装配、求解/载荷、结果检查分阶段显示。
   “求解耗时”显示整个求解子进程的耗时，包含这些阶段，不再只显示部分计算时间。
@@ -28,7 +32,7 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 | --- | --- | --- |
 | 建体 | 子进程 `python -m tools.web.step_builder`（gmsh + OCC 放样） | `wing.step`、`body.step`（有机身时）、`trailing_edge.json`、`build.json` |
 | 网格 | 子进程 `python -m panel.cad_half` | `mesh/surface.json`、`mesh/manifest.json`、`mesh.log` |
-| 求解 | 子进程 `python -m tools.web.solve_runner`（jax 半域稠密解 / 自由尾迹） | `summary.json`、`job.log` |
+| 求解 | 子进程 `python -m tools.web.solve_runner`（镜像全翼 P1 弱形式 / 配点对照） | `summary.json`、`job.log` |
 
 两次子进程都是为了绕开本机限制：gmsh 只能在主线程 `initialize()`（HTTP 线程里会抛
 `signal only works in main thread`），而且沙箱禁止管道 stdio，所以子进程 stdout 一律写 `*.log` 文件，

@@ -33,6 +33,8 @@ def main(argv=None):
     parser.add_argument('--wake-panels',type=int,default=2)
     parser.add_argument('--alpha',type=float,nargs='+',default=[0.,5.])
     parser.add_argument('--kutta',choices=('signed_speed','pressure'),default='pressure')
+    parser.add_argument('--wall-formulation',choices=('galerkin','collocation'),default='galerkin')
+    parser.add_argument('--galerkin-order',type=int,default=3)
     parser.add_argument('--reference-area',type=float,default=None,
                         help='Optional fixed aircraft Sref; default is main + tail reference areas')
     parser.add_argument('--out',type=Path,required=True)
@@ -55,7 +57,11 @@ def main(argv=None):
         reference_area=(arg.reference_area if arg.reference_area is not None
                         else main_wing.reference_area+tail.reference_area),
         reference_point=main_wing.reference_point)
-    ops=assemble_multi(model)
+    if arg.wall_formulation=='galerkin':
+        from .p1_galerkin_wall import assemble_galerkin_multi
+        ops=assemble_galerkin_multi(model,order=arg.galerkin_order)
+    else:
+        ops=assemble_multi(model)
     arg.out.mkdir(parents=True,exist_ok=False)
     meshes=dict(xyz=model.xyz,faces=model.faces,dof_face=model.dof_face,
         face_bank=model.face_bank,face_group=model.face_group)
@@ -66,7 +72,8 @@ def main(argv=None):
     np.savez_compressed(arg.out/'mesh.npz',**meshes)
     entries=[]
     for alpha in arg.alpha:
-        result=solve_multi(model,alpha,kutta=arg.kutta,operators=ops)
+        result=solve_multi(model,alpha,kutta=arg.kutta,operators=ops,
+                           wall_formulation=arg.wall_formulation)
         tag=f'alpha_{alpha:+08.3f}'.replace('+','p').replace('-','m')
         np.savez_compressed(arg.out/f'{tag}.npz',mu=result['mu'],gamma=result['gamma'],cp=result['cp'])
         derivative=(alpha_sensitivity_multi(model,alpha,operators=ops)
@@ -85,7 +92,8 @@ def main(argv=None):
                          reference_area=g.reference_area) for g in model.groups],
         n_wall_faces=len(model.faces),n_wall_dofs=model.ndof_mu,
         reference_area=model.reference_area,reference_chord=model.reference_chord,
-        kutta=arg.kutta,alpha=entries,elapsed_seconds=time.perf_counter()-started,
+        kutta=arg.kutta,wall_formulation=arg.wall_formulation,alpha=entries,
+        elapsed_seconds=time.perf_counter()-started,
         interpretation='coupled P1 doublet wall, independent Gamma sheet/Kutta per lifting component',
         limitations=['research mode','no viscous drag','fixed planar wakes',
                      'G2 is not an experimentally validated aircraft','no JAX shape VJP yet'])

@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import pytest
 import torch
@@ -86,3 +88,39 @@ def test_live_fixed_wake_chord_refinement():
         values.append(state["CL"])
     assert all(.2 < value < .3 for value in values)
     assert abs(values[1]-values[0])/abs(values[1]) < .03
+
+
+def test_defaults_and_zero_incidence_quadrature_sensitivity():
+    wing=make_wing(chord_panels=4,span_panels=4,wake_panels=2)
+    mesh=combine_wings([wing])
+    default=solve_multi(mesh,0.)
+    fine=solve_multi(mesh,0.,galerkin_order=5)
+    assert default["wall_formulation"]=="galerkin"
+    assert abs(default["CL"]) < .001
+    assert abs(fine["CL"]) < abs(default["CL"])/5
+    assert solve_multi(mesh,5.,wall_formulation="collocation")["wall_formulation"]=="collocation"
+
+
+def test_web_fixed_and_free_start_on_same_weak_model(tmp_path):
+    from tools.web.solve_runner import solve_fixed, solve_free
+    wing=make_wing(chord_panels=3,span_panels=4,wake_panels=2)
+    xyz=np.vstack([wing.xyz,wing.wake_xyz])
+    wake=wing.wake_faces+len(wing.xyz)
+    wall_half=wing.faces[wing.xyz[wing.faces][:,:,1].mean(axis=1)>1e-9]
+    wake_half=wake[xyz[wake][:,:,1].mean(axis=1)>1e-9]
+    used=np.unique(np.r_[wall_half.ravel(),wake_half.ravel(),wing.te_geo[2:]])
+    indices={int(v):k for k,v in enumerate(used)}
+    def remap(a):
+        return np.vectorize(indices.__getitem__)(a).tolist()
+    te=np.stack((wing.te_geo[2:],wing.te_geo[2:]),axis=1)
+    surface=tmp_path/"surface.json"
+    surface.write_text(json.dumps(dict(coordinates=xyz[used].tolist(),faces=remap(wall_half),
+        wake_faces=remap(wake_half),trailing_edges=remap(te),
+        gamma_stations=wing.gamma_y[2:].tolist(),reference_chord=wing.chord,
+        reference_area=wing.reference_area,reference_point=[0,0,0])))
+    reference=dict(area=wing.reference_area,chord=wing.chord,point=[0,0,0])
+    fixed=solve_fixed(surface,4.,reference)
+    free=solve_free(surface,4.,0,reference)
+    assert fixed["wall_formulation"]==free["wall_formulation"]=="galerkin"
+    np.testing.assert_allclose(fixed["CL"],free["CL"],rtol=1e-12,atol=1e-12)
+    assert len(fixed["field"]["cp"])==len(wall_half)

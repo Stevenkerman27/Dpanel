@@ -13,7 +13,8 @@ No time stepping, no Kelvin-history shedding, no VLM substitution.
 The numerical +normal/-normal velocity probes are a *principal-value
 regularization* for a discrete doublet sheet, not a physical vortex core or
 viscous diffusion model. Report sensitivity to probe offset when interpreting
-roll-up and far wake. Wall P0 production code is unaffected.
+roll-up and far wake. Galerkin is the default; collocation is an explicit
+comparison option.
 """
 from __future__ import annotations
 
@@ -467,7 +468,7 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
                            probe_floor_fraction=0.0, relax_min_abs_y=0.0,
                            max_step_chord=0.0, slip_gate=0.0,
                            wake_potential_backend='numpy', wake_device='cpu',
-                           orientation_backtracking=True, wall_formulation='collocation',
+                           orientation_backtracking=True, wall_formulation='galerkin',
                            galerkin_order=3):
     """Return final state, relaxed wake mesh, and complete iteration history.
 

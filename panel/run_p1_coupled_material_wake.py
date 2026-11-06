@@ -41,6 +41,8 @@ def main(argv=None):
     parser.add_argument('--main-half-surface', type=Path)
     parser.add_argument('--alpha', type=float, default=5.)
     parser.add_argument('--kutta', choices=('pressure', 'signed_speed'), default='pressure')
+    parser.add_argument('--wall-formulation', choices=('galerkin', 'collocation'), default='galerkin')
+    parser.add_argument('--galerkin-order', type=int, default=3)
     parser.add_argument('--chord-panels', type=int, default=4)
     parser.add_argument('--span-panels', type=int, default=4)
     parser.add_argument('--wake-panels', type=int, default=3)
@@ -225,6 +227,7 @@ def main(argv=None):
                                              state_sha256=record['state_sha256']))
             _write_json(args.out/'receipt.json', receipt)
         result = solve_coupled_material_wake(mesh, args.alpha, kutta=args.kutta,
+                   wall_formulation=args.wall_formulation, galerkin_order=args.galerkin_order,
                    iterations=args.iterations, relaxation=args.relaxation,
                    eps_fraction=args.eps_fraction, ladder=args.ladder,
                    order=args.quadrature_order, epsilon_tol=args.epsilon_tol,

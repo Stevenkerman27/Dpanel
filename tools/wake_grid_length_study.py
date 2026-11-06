@@ -22,7 +22,7 @@ parser.add_argument("--out", type=Path, required=True)
 parser.add_argument("--levels", default="4x6,6x8,8x10,10x12,12x14,14x16")
 parser.add_argument("--length", type=float, default=5.0)
 parser.add_argument("--mode", choices=("grid",), default="grid")
-parser.add_argument("--wall-method", choices=("collocation", "galerkin"), default="collocation")
+parser.add_argument("--wall-method", choices=("collocation", "galerkin"), default="galerkin")
 parser.add_argument("--order", type=int, default=3)
 parser.add_argument("--condition", action="store_true")
 args = parser.parse_args()
@@ -71,7 +71,7 @@ for nc, ns in levels:
                 from panel.p1_galerkin_solver import solve_galerkin_multi
                 state = solve_galerkin_multi(mesh, 4., kutta="pressure", order=args.order)
             else:
-                state = solve_multi(mesh, 4., kutta="pressure")
+                state = solve_multi(mesh, 4., kutta="pressure",wall_formulation="collocation")
             cd, _ = trefftz_cd_full(np.asarray(wing.gamma_y), np.r_[0., state["gamma"], 0.], area=4.)
             row.update(status="completed", CL=float(state["CL"]), CL_gamma=float(state["CL_gamma"]),
                        CD_pressure=float(state["CD_pressure"]), CD_trefftz=float(cd),

@@ -6,8 +6,8 @@ nonlinear acceptance classification and the load integration. The module imports
 neither numpy nor scipy. Results are CPU torch tensors and Python floats; the host
 caller may convert the tensors with numpy.asarray without touching LAPACK.
 
-Operator assembly is still taken from the host (assemble_multi is elementwise and
-calls no LAPACK); moving it onto the torch assembler is the B2 step.
+Operator assembly is performed on the host; the default weak wall uses a
+Torch-generated target quadrature and no NumPy/SciPy LAPACK.
 """
 
 import math
@@ -79,8 +79,8 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
         raise ValueError("max_nfev must be a positive integer")
     start = time.perf_counter()
     if operators is None:
-        from .p1_lifting_g2 import assemble_multi
-        operators = assemble_multi(mesh)
+        from .p1_galerkin_wall import assemble_galerkin_multi
+        operators = assemble_galerkin_multi(mesh)
     A = _t(operators["A"], device)
     W = _t(operators["W"], device)
     J = _t(operators["J"], device)

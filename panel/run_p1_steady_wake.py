@@ -38,7 +38,7 @@ def main(argv=None):
     p.add_argument('--wake-panels',type=int,default=6)
     p.add_argument('--alpha',type=float,nargs='+',default=[5.])
     p.add_argument('--kutta',choices=['pressure','signed_speed'],default='pressure')
-    p.add_argument('--wall-formulation',choices=['collocation','galerkin'],default='collocation')
+    p.add_argument('--wall-formulation',choices=['collocation','galerkin'],default='galerkin')
     p.add_argument('--galerkin-order',type=int,default=3)
     p.add_argument('--iterations',type=int,default=16)
     p.add_argument('--relaxation',type=float,default=.25)

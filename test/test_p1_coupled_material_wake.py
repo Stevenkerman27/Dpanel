@@ -333,6 +333,8 @@ def mock_coupling(monkeypatch, field):
     g2 = types.ModuleType('panel.p1_lifting_g2')
     g2.assemble_multi = lambda model: ops
     g2.solve_multi = solve
+    weak = types.ModuleType('panel.p1_galerkin_wall')
+    weak.assemble_galerkin_multi = lambda model, order: ops
     old = types.ModuleType('panel.p1_steady_free_wake')
     old.prepare_wake_material = lambda group: mats[group.name]
     old.reassemble_wake_only = lambda model, static: dict(static)
@@ -345,6 +347,7 @@ def mock_coupling(monkeypatch, field):
     old.with_wake_xyz = with_xyz
     old.wake_material_graph_audit = wake_material_graph_audit
     monkeypatch.setitem(sys.modules, 'panel.p1_lifting_g2', g2)
+    monkeypatch.setitem(sys.modules, 'panel.p1_galerkin_wall', weak)
     monkeypatch.setitem(sys.modules, 'panel.p1_steady_free_wake', old)
     monkeypatch.setattr(b2, 'TotalVelocity', lambda model, state, **kw: field)
     return mesh, calls

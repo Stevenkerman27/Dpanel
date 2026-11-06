@@ -134,4 +134,4 @@ def test_fixed_wake_chord_refinement_retains_positive_lift():
     assert all(row["nonlinear"]["success"] and row["jump_rms"] < 1e-9 for row in results)
     assert all(.2 < row["CL"] < .3 for row in results)
     assert abs(results[1]["CL"] - results[0]["CL"]) / abs(results[1]["CL"]) < .03
-    assert solve_multi(mesh, 4., kutta="pressure")["CL"] < 0.
+    assert solve_multi(mesh, 4., kutta="pressure",wall_formulation="collocation")["CL"] < 0.

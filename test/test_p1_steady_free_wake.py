@@ -33,7 +33,8 @@ def test_only_wake_reassembly_reproduces_original_g2_operator():
 
 def test_real_coupled_state_recomputed_after_both_wakes_relax():
     model=make_conventional_fixture(wake_panels=3)
-    a=solve_steady_free_wake(model,5,kutta='pressure',iterations=3,relaxation=.2)
+    a=solve_steady_free_wake(model,5,kutta='pressure',iterations=3,relaxation=.2,
+                             wall_formulation='collocation')
     assert len(a['history'])==4
     assert abs(a['history'][0]['CL']-.3654723)<.001
     assert a['history'][0]['jump_rms']<1e-12

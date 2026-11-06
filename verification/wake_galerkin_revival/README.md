@@ -2,9 +2,9 @@
 
 2026-11-06. Windows 11, Python 3.13.14 in `myml`, NumPy 2.4.6,
 Torch 2.13, single-thread OpenBLAS/OMP/MKL for the P1 scans.
-The restored Galerkin implementation uses SciPy and remains an independent
-optional research path. It has not been connected to the Web default fixed
-solver, the free-wake outer iteration, or a geometry-AD path.
+The original SciPy solver remains an independent reference. The Torch
+Galerkin implementation is now the P1 and Web default, but is not a
+geometry-AD path.
 Physical accuracy is not accepted.
 
 ## Why restore it
@@ -88,8 +88,8 @@ python -m pytest -q test/test_p1_galerkin_wall.py test/test_p1_galerkin_solver.p
 # 正式 P1 接入（2026-11-06）
 
 弱壁面算子现在可通过 `panel.p1_lifting_g2.solve_multi(...,
-wall_formulation="galerkin", galerkin_order=3)` 使用；默认仍为
-`collocation`。求解和质量矩阵 Cholesky 均使用 Torch；弱形式矩阵组装使用
+wall_formulation="galerkin", galerkin_order=3)` 使用，且是默认值；
+`collocation` 可显式选择作为对照。求解和质量矩阵 Cholesky 均使用 Torch；弱形式矩阵组装使用
 NumPy 解析核，不依赖 SciPy LAPACK。历史 `solve_galerkin_multi` 仍是独立
 SciPy 求解对照，两者共享弱算子组装。`wall_rms` 是未缩放的弱残差，
 `wall_dual_rms` 是质量矩阵对偶范数对应的 RMS，不能直接与配点 `wall_rms`
@@ -115,7 +115,7 @@ Windows myml，三种 BLAS 线程变量均为 1：该命令退出 0，CL
 最后改动后上面的 30 项针对性测试重新通过。修改原因是 NumPy `leggauss`
 间接调用 NumPy LAPACK，而静态导入检查不能检测该内部调用。
 
-Web 固定尾迹调用半域 P0 稠密求解，Web 自由尾迹调用 P1 配点稳态外循环；
-它们是活动路径，但不是同一离散模型，Web 尚未选择弱形式。弱形式目前
+Web 固定和自由尾迹默认调用镜像全翼 P1 弱形式，也可切换到 P1 配点；
+原半域 P0 固定尾迹保留为单独的参考路径。弱形式目前
 不是几何自动微分路径，矩阵组装和返回结果经过 NumPy，不能据此宣称
 几何敏感性可用；自由尾迹、独立网格/尾迹长度与物理精度仍待验收。

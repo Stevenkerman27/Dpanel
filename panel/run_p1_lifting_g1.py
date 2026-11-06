@@ -26,6 +26,7 @@ def main(argv=None):
     p.add_argument('--chord',type=float,default=1.)
     p.add_argument('--alpha',type=float,nargs='+',default=[0.,5.])
     p.add_argument('--kutta',choices=('signed_speed','pressure'),default='pressure')
+    p.add_argument('--wall-formulation',choices=('galerkin','collocation'),default='galerkin')
     p.add_argument('--out',type=Path,required=True)
     args=p.parse_args(argv)
     began=time.perf_counter()
@@ -45,10 +46,10 @@ def main(argv=None):
                         te_pairs=wing.te_pairs,te_pair_y=wing.te_pair_y)
     entries=[]
     for alpha in args.alpha:
-        r=solve(wing,float(alpha),kutta=args.kutta)
+        r=solve(wing,float(alpha),kutta=args.kutta,wall_formulation=args.wall_formulation)
         tag=f'alpha_{alpha:+08.3f}'.replace('+','p').replace('-','m')
         np.savez_compressed(args.out/f'{tag}.npz',mu=r['mu'],gamma=r['gamma'],cp=r['cp'])
-        if args.kutta=='signed_speed': derivative=alpha_sensitivity(wing,float(alpha))
+        if args.kutta=='signed_speed': derivative=alpha_sensitivity(wing,float(alpha),wall_formulation=args.wall_formulation)
         else: derivative=None
         entries.append(dict(alpha_deg=alpha,CL=r['CL'],CL_gamma=r['CL_gamma'],
                             CD_pressure=r['CD_pressure'],CM_y=r['CM_y'],
@@ -61,7 +62,7 @@ def main(argv=None):
               f'CDp={r["CD_pressure"]:+.6f} jump={r["jump_rms"]:.2e}')
     report=dict(schema='dpanel.p1_lifting_g1.research.v1',
                 physical_accuracy_accepted=False,source=wing.section,
-                source_sha256=input_sha,method=args.kutta,
+                source_sha256=input_sha,method=args.kutta,wall_formulation=args.wall_formulation,
                 n_wall_faces=len(wing.faces),n_wall_nodes=wing.ndof_mu,
                 n_wake_triangles=len(wing.wake_faces),n_gamma=len(wing.gamma_y)-2,
                 n_kutta_pairs=len(wing.te_pairs),reference_area=wing.reference_area,

@@ -37,7 +37,7 @@ def _plain(value):
     return number if number == number and abs(number) != float("inf") else None
 
 
-def solve_fixed(surface):
+def solve_fixed_p0(surface):
     """Server-side dense reference solve: one half domain, fixed flat wake."""
     from panel.run_half_groups import run as run_half
 
@@ -73,7 +73,43 @@ def solve_fixed(surface):
                 field=field)
 
 
-def solve_free(surface, alpha, iterations, reference):
+def solve_fixed(surface, alpha, reference, wall_formulation="galerkin"):
+    """Fixed wake with the same full-span P1 model as the free-wake solver."""
+    from panel.p1_lifting_g1 import from_dpanel_half_surface
+    from panel.p1_lifting_g2 import combine_wings, solve_multi
+
+    wing = from_dpanel_half_surface(surface)
+    model = combine_wings([wing], reference_area=reference.get("area", wing.reference_area),
+                          reference_chord=reference.get("chord", wing.chord),
+                          reference_point=tuple(reference.get("point", wing.reference_point)))
+    print("P1 %s 固定尾迹（半翼镜像为全翼）" % wall_formulation, flush=True)
+    state = solve_multi(model, alpha, kutta="pressure", wall_formulation=wall_formulation)
+    data = json.loads(Path(surface).read_text(encoding="utf-8"))
+    faces = data.get("faces") or []
+    cp = state["cp"][:len(faces)]
+    field = dict(vertices=data["coordinates"], faces=faces, cp=cp.tolist(),
+                 wake_faces=data.get("wake_faces") or [], chord=data.get("reference_chord"))
+    rows = []
+    for group in state["group_results"]:
+        gamma = group["gamma"]
+        n = len(gamma)
+        rows.append(dict(group=group["name"],
+                         gamma=[[i / max(n - 1, 1), float(g)] for i, g in enumerate(gamma)],
+                         gamma_sum=group["Gamma_integral"], CL_gamma=group["CL_gamma"]))
+    nonlinear = state.get("nonlinear") or {}
+    warning = None if nonlinear.get("success") else "压力 Kutta 求解未通过数值终止条件，结果仅供诊断。"
+    return dict(mode="fixed", wall_formulation=state["wall_formulation"],
+                CL=state["CL"], CD=state["CD_pressure"], CM=state["CM_y"],
+                cp=[float(cp.min()), float(cp.max())],
+                residual=(state["wall_dual_rms"] if state["wall_formulation"]=="galerkin"
+                          else state["wall_rms"]),
+                nonlinear=nonlinear, warning=warning, seconds=state["solve_seconds"],
+                unknowns=len(state["mu"])+len(state["gamma"]), panels=len(faces),
+                group_rows=rows, history=None, field=field,
+                physical_accuracy_accepted=False)
+
+
+def solve_free(surface, alpha, iterations, reference, wall_formulation="galerkin"):
     """Steady free wake: the wake shape and mu/Gamma are solved together."""
     from panel.p1_lifting_g1 import from_dpanel_half_surface
     from panel.p1_lifting_g2 import combine_wings
@@ -81,9 +117,9 @@ def solve_free(surface, alpha, iterations, reference):
 
     print("装载半域面板", flush=True)
     wing = from_dpanel_half_surface(surface)
-    model = combine_wings([wing], reference_area=reference["area"],
-                          reference_chord=reference["chord"],
-                          reference_point=tuple(reference["point"]))
+    model = combine_wings([wing], reference_area=reference.get("area", wing.reference_area),
+                          reference_chord=reference.get("chord", wing.chord),
+                          reference_point=tuple(reference.get("point", wing.reference_point)))
     print("自由尾迹: alpha=%g, iterations=%d, 每轮同时重解 mu/Gamma" % (alpha, iterations),
           flush=True)
 
@@ -97,6 +133,7 @@ def solve_free(surface, alpha, iterations, reference):
 
     value = solve_steady_free_wake(model, alpha, kutta="pressure",
                                    iterations=int(iterations), relaxation=0.25,
+                                   wall_formulation=wall_formulation,
                                    save_callback=save)
     history = []
     for row in value["history"]:
@@ -112,7 +149,8 @@ def solve_free(surface, alpha, iterations, reference):
                          gamma_sum=result.get("Gamma_integral"),
                          CL_gamma=result.get("CL_gamma")))
     last = history[-1] if history else {}
-    return dict(mode="free", CL=last.get("CL"), CD=last.get("CD"),
+    return dict(mode="free", wall_formulation=final["wall_formulation"],
+                CL=last.get("CL"), CD=last.get("CD"),
                 CM=final.get("CM_y"), cp=None, residual=None,
                 seconds=value.get("seconds"),
                 converged=bool(value.get("converged")),
@@ -126,6 +164,8 @@ def main(argv=None):
     parser.add_argument("--surface", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--wake", default="fixed", choices=["fixed", "free"])
+    parser.add_argument("--wall-formulation", default="galerkin",
+                        choices=["galerkin", "collocation", "p0"])
     parser.add_argument("--alpha", type=float, default=4.0)
     parser.add_argument("--iterations", type=int, default=12)
     parser.add_argument("--reference", default="{}")
@@ -139,10 +179,15 @@ def main(argv=None):
     out.mkdir(parents=True, exist_ok=True)
     started = time.time()
     if args.wake == "free":
+        if args.wall_formulation == "p0":
+            parser.error("p0 is only available for a fixed wake")
         result = solve_free(Path(args.surface), args.alpha, args.iterations,
-                            json.loads(args.reference))
+                            json.loads(args.reference), args.wall_formulation)
+    elif args.wall_formulation == "p0":
+        result = solve_fixed_p0(Path(args.surface))
     else:
-        result = solve_fixed(Path(args.surface))
+        result = solve_fixed(Path(args.surface), args.alpha, json.loads(args.reference),
+                             args.wall_formulation)
     result["runner_seconds"] = time.time() - started
     result["ncpu"] = args.ncpu
     (out / "result.json").write_text(json.dumps(_plain(result)), encoding="utf-8")
