@@ -1,6 +1,6 @@
 # 项目状态
 
-更新：2026-11-05。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
+更新：2026-11-06。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
 
 ## 一句话
 
@@ -8,6 +8,7 @@ JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾
 
 ## 代码基线
 
+- 固定尾迹网格前置检查（2026-11-06）：myml Python 3.13、Windows、BLAS/OMP/MKL 单线程，NACA0012 矩形翼、4°、5c 固定尾迹、pressure Kutta，弦向余弦节点/展向均匀；`python -m tools.wake_grid_length_study --mode grid --out <fresh.json>` 的 4×6 至 14×16 联合壁面/Gamma 加密，CL 从 0.256144 变至 -0.148308，未达到连续两级五项系数变化均小于 3% 的预先筛选标准；除最粗档外 wall/floor 均未通过 1.05。固定展向单独加密弦向同样出现 CL 翻号，固定弦向的展向扫描未出现该翻号；与历史 #71 现象相似但原因未复核。按用户要求，不在此基础上冒称已收敛或执行正式固定/自由尾迹及长度对比。下一步先查固定尾迹弦向离散和 Kutta/壁面误差，再重复网格门槛；自由尾迹仍需独立研究取样距离、网格和更新稳定性。完整数据及命令见 [网格检查](verification/wake_grid_length/README.md)。当前 CAD 入口未接入历史特征线尺寸策略且关闭曲率尺寸控制，规则机翼已有前后缘余弦聚集，详见 [网格特征说明](docs/MESH_FEATURE_SIZE.md)。`python -m pytest -q test/test_p1_lifting_g1.py test/test_mesh_feature_size.py -p no:cacheprovider`：19 passed；物理精度未验收。
 - master 同模型提速复测（2026-11-05，`ec059d9`，其余研究作业结束后运行）：`python -m tools.wake_velocity_benchmark --case swept30 --out verification/wake_material_repair/master_velocity_benchmark.json`，固定真实初始 mu/Gamma/几何，504 点、预热后三次中位数。B3 势函数及原双侧差分 NumPy/24 `0.606606 s` → Torch/CUDA/512 `0.033442 s`（`18.14x`），速度最大差 `2.97e-13`；另一个独立解析速度公式的逐点/批量对照为 `17.75x`、差 `2.40e-14`。B3 Torch CPU `0.734994 s` 没有收益，未改默认后端；不得把求值器倍率当作整个外循环倍率。代码和证据已在本机合入 master；未与云端协作。
 - PR #114 本机接续修复（2026-11-05，核心 `0ea2ab8`，不再请求云端评审）：修正维度/构造兼容性和夹具；以固定参考材料 y 线的 P1 稀疏积分替代任意前驱边积分，声明后缘在松弛/限步后保持不动；增加保守朝向回溯与 `blocked_geometry` 状态，原始残差/冻结节点/滑移仍参与收敛判定。三例四路 8 步消融完成：后掠旧/组合 CL `0.089600/0.404564`，椭圆 `0.067846/0.277455`，但组合仍有 8/124 对自交，保载荷不是物理验收。最终 60 步预算：矩形跑满 60 步、滑移 `0.013017`；后掠/椭圆在 15/12 次更新后几何阻塞，CL `0.404155/0.278324`，原始残差 `1.093c/1.661c`、滑移 `0.025402/0.031309`。三个最终运行的附着及壁面接触点位移均为零，独立检查点无新增穿壁/自交；后掠仍未过 1.05 地板。椭圆远尾迹保持边界和 Gamma 基函数的 3811/10553 面片细分反而使 8 步滑移增至 `1.208/2.701`，不能把 26c 长边当成唯一原因，探针距离同时变化，尚非网格收敛证明。最终全量 `11 failed, 825 passed, 21 skipped` / 226.52 s，失败 ID 与既有基线 11 项完全一致；耦合/制造解 `62 passed`，稀疏/门禁/LAPACK 契约 `35 passed`，CLI/文档 `16 passed`。同模型提速复用已有批量 doublet 核，保留 B3 原双侧差分；CPU/GPU 8 步 CL 最大差 `2.79e-14`，GPU 后端显式开启、NumPy 默认不变。完整命令、失败过程和结果见 [本机验收](verification/wake_material_repair/README.md)。未更换 G2 T5 更新算法，未建立外循环形状导数，物理精度仍未验收；下一步需独立研究速度极限/探针与远尾迹离散的相容性，不能关闭 #113。
 - PR #114 本机验收（2026-11-05，固定审阅头 `febedcca`，未合并）：myml、CPU、BLAS/OMP/MKL 单线程，定向测试 `6 failed, 7 passed`，同组基线 `10 passed, 1 xfailed`；全量 `25 failed, 803 passed, 22 skipped` / 210.77 s。发现三类问题：B3 map 三维 drift 与二维横向速度相加，均匀轴向/斜向及实际首步直接报维度错误；新增必填 `WakeMaterial.attachments` 未同步旧构造调用，7 个步长测试报 TypeError；矩形夹具错误要求 attachments 不属于 roots。另跑基线 guards/step-scale 为 `12 passed`。全量中 10 个失败与旧基线 ID 相同，原第 11 个 CAD floor 测试因隔离目录缺输入跳过，指定原仓库输入后仍失败。原 #113 三例几何数组逐值一致、iteration-0 的 Gamma/Cp/尾迹坐标均与保存值零差，但全部无法完成第一次更新，因此未进入 8/60 步四路消融，不能宣称修复塌陷。证据与命令见 [PR #114 验收](verification/wake_map_pr114/README.md)。下一步修复上述阻断，再做运动学和长迭代验收；物理精度仍未验收。
