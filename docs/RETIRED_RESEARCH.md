@@ -2,9 +2,31 @@
 
 **2026-11-06 更新：** 用户要求重新研究弦向加密不收敛后，
 `p1_galerkin_wall.py`、`p1_galerkin_solver.py`、`p1_solution_status.py`
-及其基础测试已从归档恢复，用作可运行的可选弱形式研究路径。
-下表这三项的“已移除”状态不再适用；它们尚未接入 Web 默认或自由尾迹
-外循环，也尚未完成当前环境的物理精度验收。
+及其基础测试已从归档恢复。弱形式现已作为正式 P1 求解器和自由尾迹
+外循环的可选壁面离散接入；历史 SciPy 求解器仍用于独立对照。
+下表这三项的“已移除”状态不再适用。Web 默认仍采用原来的求解路径，
+弱形式尚未完成自由尾迹或物理精度验收。
+
+### 2026-11-06 退役项复查
+
+- `p1_rank_aware_kutta.py`：真实 CAD 上未发现方案所需的可分离弱模态
+  或壁面零空间，不是已解决问题的替代算法；见
+  [后缘迹审计](archive/issue/ISSUE71_P1_GALERKIN_TE_TRACE_AUDIT.md)。
+- `p1_rank_gauge.py`：得到的结论是当时的算子不应随意钉住自由度，
+  属于约束设计证据，不是可直接恢复的修复方案；
+  见 [秩与规范](archive/issue/ISSUE56_RANK_GAUGE.md)。
+- `manufactured_surface_recovery.py`、`analytic_sphere.py` 及门禁、后缘迹、
+  跳跃与边缘指数审计：有独立基准和诊断价值，适合后续恢复并适配，
+  但它们不直接修复活动求解器。制造势结果使用精确输入并非真实流动真值，
+  见 [本地验收](archive/pr/PR36_LOCAL_ACCEPTANCE.md)。
+- `affine_consistent_recovery.py` 和压力重构探针是不同恢复方法的研究候选；
+  历史证据不足以认定它们全面解决真实流动中的压力误差。
+  见 [压力探针](archive/pr/PRESSURE_RECONSTRUCTION_PROBE.md)。
+- `relax_wake.py` 相关早期线/面更新改善过法向残差，却恶化近尾迹压力跳跃，
+  且未收敛，不能当作自由尾迹已解决的实现；见
+  [尾迹精度记录](archive/notes/WAKE_ACCURACY.md)。
+
+此复查基于该清单及相关归档，不能证明其他全部历史分支都没有可用成果。
 
 `research-p1-line-archive` 是下表所列模块仍位于
 `panel/` 下的最后一个提交。S12 把它们从活动树中移除。这里没有任何结论被推翻：它们

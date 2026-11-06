@@ -38,6 +38,8 @@ def main(argv=None):
     p.add_argument('--wake-panels',type=int,default=6)
     p.add_argument('--alpha',type=float,nargs='+',default=[5.])
     p.add_argument('--kutta',choices=['pressure','signed_speed'],default='pressure')
+    p.add_argument('--wall-formulation',choices=['collocation','galerkin'],default='collocation')
+    p.add_argument('--galerkin-order',type=int,default=3)
     p.add_argument('--iterations',type=int,default=16)
     p.add_argument('--relaxation',type=float,default=.25)
     p.add_argument('--probe-fraction',type=float,default=.055)
@@ -98,6 +100,7 @@ def main(argv=None):
                                f'gamma_y_{gi}':g.gamma_y})
             np.savez_compressed(subdir/f'iteration_{it:03d}.npz',**arrays)
         value=solve_steady_free_wake(model,alpha,kutta=args.kutta,
+            wall_formulation=args.wall_formulation,galerkin_order=args.galerkin_order,
             iterations=args.iterations,relaxation=args.relaxation,
             probe_fraction=args.probe_fraction,step_fraction=args.step_fraction,
             probe_floor_fraction=args.probe_floor_fraction,
@@ -137,6 +140,7 @@ def main(argv=None):
         n_wall_faces=len(model.faces),n_wall_dof=model.ndof_mu,
         reference_area=model.reference_area,reference_chord=model.reference_chord,
         parameters=dict(alpha=args.alpha,kutta=args.kutta,iterations=args.iterations,
+            wall_formulation=args.wall_formulation,galerkin_order=args.galerkin_order,
             relaxation=args.relaxation,probe_fraction=args.probe_fraction,
             step_fraction=args.step_fraction,geometry_tol=args.geometry_tol,
             normal_slip_tol=args.normal_slip_tol,

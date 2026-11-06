@@ -85,3 +85,37 @@ python -m tools.wake_grid_length_study --wall-method galerkin --order 5 --levels
 python -m tools.web_nose_check --size 0.05 --alpha 5 --ncpu 2 --out <fresh-web-directory>
 python -m pytest -q test/test_p1_galerkin_wall.py test/test_p1_galerkin_solver.py test/test_web_step_leading_edge.py -p no:cacheprovider
 ```
+# 正式 P1 接入（2026-11-06）
+
+弱壁面算子现在可通过 `panel.p1_lifting_g2.solve_multi(...,
+wall_formulation="galerkin", galerkin_order=3)` 使用；默认仍为
+`collocation`。求解和质量矩阵 Cholesky 均使用 Torch；弱形式矩阵组装使用
+NumPy 解析核，不依赖 SciPy LAPACK。历史 `solve_galerkin_multi` 仍是独立
+SciPy 求解对照，两者共享弱算子组装。`wall_rms` 是未缩放的弱残差，
+`wall_dual_rms` 是质量矩阵对偶范数对应的 RMS，不能直接与配点 `wall_rms`
+比较。压力 Kutta 权重仍以对偶范数构造的壁面残差为准。
+
+稳态自由尾迹同样支持 `wall_formulation="galerkin"`，每步缓存壁面矩阵、
+质量矩阵和约束，仅重新积分当前尾迹矩阵。CLI 示例：
+
+```powershell
+python -m panel.run_p1_steady_wake --wall-formulation galerkin --galerkin-order 2 --kutta signed_speed --iterations 1 --main-chord-panels 3 --main-span-panels 3 --tail-chord-panels 3 --tail-span-panels 3 --wake-panels 2 --out runs/scratch/galerkin_cli_20261106
+```
+
+Windows myml，三种 BLAS 线程变量均为 1：该命令退出 0，CL
+`0.245367 -> 0.245135`，`iteration_limit`，未收敛。实际运行
+`python -m pytest -q test/test_p1_galerkin_live.py test/test_p1_galerkin_wall.py test/test_p1_galerkin_solver.py test/test_p1_steady_free_wake.py test/test_live_path_has_no_numpy_lapack.py -p no:cacheprovider`：
+30 passed。覆盖 CPU/CUDA、两种 Kutta 与 SciPy 对照、单/双翼变形尾迹的
+缓存与全重装配、自由尾迹初始步和固定尾迹 8/12 弦向加密。
+`python -m pytest -q test/test_p1_galerkin_live.py test/test_p1_galerkin_solver.py test/test_p1_lifting_g1.py test/test_p1_lifting_g2.py test/test_p1_solve_torch.py test/test_p1_wake_contact.py test/test_p1_steady_free_wake.py test/test_live_path_has_no_numpy_lapack.py -p no:cacheprovider`：
+53 passed、3 skipped（在添加最后一项加密测试前）。
+全量 `python -m pytest -q test -p no:cacheprovider --tb=no` 为 11 failed、
+850 passed、21 skipped，失败 ID 与 `runs/verification/native_blas/fixed_pytest.log`
+一致。全量测试启动于最终将 `leggauss` 改成 Torch 特征分解之前；
+最后改动后上面的 30 项针对性测试重新通过。修改原因是 NumPy `leggauss`
+间接调用 NumPy LAPACK，而静态导入检查不能检测该内部调用。
+
+Web 固定尾迹调用半域 P0 稠密求解，Web 自由尾迹调用 P1 配点稳态外循环；
+它们是活动路径，但不是同一离散模型，Web 尚未选择弱形式。弱形式目前
+不是几何自动微分路径，矩阵组装和返回结果经过 NumPy，不能据此宣称
+几何敏感性可用；自由尾迹、独立网格/尾迹长度与物理精度仍待验收。

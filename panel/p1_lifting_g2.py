@@ -314,7 +314,8 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
                 max_nfev=80,operators=None,pressure_solver=None,
-                backend=None, device='cpu'):
+                backend=None, device='cpu', wall_formulation='collocation',
+                galerkin_order=3):
     """Solve wall P1 mu and ALL independent wake Gamma simultaneously, on torch.
 
     The NumPy/SciPy implementation of this equation set was retired in S9; it is
@@ -323,6 +324,13 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
     trust-region solver and is rejected here on purpose.
     """
     backend,backend_source=resolve_backend(backend)
+    if wall_formulation not in ('collocation','galerkin'):
+        raise ValueError("wall_formulation must be collocation or galerkin")
+    if operators is None and wall_formulation=='galerkin':
+        from .p1_galerkin_wall import assemble_galerkin_multi
+        operators=assemble_galerkin_multi(mesh,order=galerkin_order)
+    if operators is not None and (operators.get('wall_formulation','collocation') != wall_formulation):
+        raise ValueError("operators do not match wall_formulation")
     if kutta=='pressure' and pressure_solver not in (None,'structured'):
         raise ValueError(
             "pressure_solver=%r was retired with the NumPy chain; its recorded answers "

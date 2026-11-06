@@ -438,6 +438,10 @@ def with_wake_xyz(mesh: MultiLiftingMesh, wake_coordinates: dict[str,np.ndarray]
 
 def reassemble_wake_only(mesh: MultiLiftingMesh, static):
     """Cache A/J/K/grad/face geometry; replace ONLY wake influence columns W."""
+    if static.get('wall_formulation')=='galerkin':
+        from .p1_galerkin_wall import assemble_galerkin_multi
+        return assemble_galerkin_multi(mesh,order=static['order'],block=static['block'],
+                                       target_face_batch=static['target_face_batch'],static=static)
     centers=static['mesh'].centers
     parts=[]
     for g in mesh.groups:
@@ -463,7 +467,8 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
                            probe_floor_fraction=0.0, relax_min_abs_y=0.0,
                            max_step_chord=0.0, slip_gate=0.0,
                            wake_potential_backend='numpy', wake_device='cpu',
-                           orientation_backtracking=True):
+                           orientation_backtracking=True, wall_formulation='collocation',
+                           galerkin_order=3):
     """Return final state, relaxed wake mesh, and complete iteration history.
 
     Iteration 0 is ALWAYS the original fixed-wake solution; downstream wake
@@ -474,14 +479,21 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             and 0<relaxation<=1 and geometry_tol>0 and slip_tol>0):
         raise ValueError('Invalid relaxation/iteration count')
     t0=time.perf_counter();mat={g.name:prepare_wake_material(g,streamwise=True) for g in mesh.groups}
-    fixed=assemble_multi(mesh)
+    if wall_formulation=='galerkin':
+        from .p1_galerkin_wall import assemble_galerkin_multi
+        fixed=assemble_galerkin_multi(mesh,order=galerkin_order)
+    elif wall_formulation=='collocation':
+        fixed=assemble_multi(mesh)
+    else:
+        raise ValueError("wall_formulation must be collocation or galerkin")
     current=mesh
     history=[]
     state=None
     blocked_geometry=False
     for i in range(iterations+1):
         ops=reassemble_wake_only(current,fixed) if i else fixed
-        state=solve_multi(current,alpha_deg,kutta=kutta,max_nfev=max_nfev,operators=ops)
+        state=solve_multi(current,alpha_deg,kutta=kutta,max_nfev=max_nfev,operators=ops,
+                          wall_formulation=wall_formulation)
         panel_velocity,slip=mean_wake_velocity(current,state,
                     probe_fraction=probe_fraction,step_fraction=step_fraction,
                     probe_floor_fraction=probe_floor_fraction,
@@ -490,6 +502,7 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
         record=dict(iteration=i,CL=state['CL'],CL_gamma=state['CL_gamma'],
                 CD_pressure=state['CD_pressure'],CM_y=state['CM_y'],
                 wall_rms=state['wall_rms'],jump_rms=state['jump_rms'],
+                wall_formulation=state['wall_formulation'],wall_dual_rms=state['wall_dual_rms'],
                 pressure_kutta_rms=state['pressure_kutta_rms'],
                 wakes=slip,groups=state['group_results'],
                 wake_geometry_change=None)
@@ -581,7 +594,8 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
                 and max(item['normal_slip_rms'] for item in slip.values()) < slip_tol):
             # A separate *final* equilibrium solve on the newly relaxed shape.
             ops=reassemble_wake_only(current,fixed)
-            state=solve_multi(current,alpha_deg,kutta=kutta,max_nfev=max_nfev,operators=ops)
+            state=solve_multi(current,alpha_deg,kutta=kutta,max_nfev=max_nfev,operators=ops,
+                              wall_formulation=wall_formulation)
             _,slip=mean_wake_velocity(current,state,probe_fraction=probe_fraction,
                                       step_fraction=step_fraction,
                                       probe_floor_fraction=probe_floor_fraction,
@@ -590,6 +604,7 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             final=dict(iteration=i+1,CL=state['CL'],CL_gamma=state['CL_gamma'],
                        CD_pressure=state['CD_pressure'],CM_y=state['CM_y'],
                        wall_rms=state['wall_rms'],jump_rms=state['jump_rms'],
+                       wall_formulation=state['wall_formulation'],wall_dual_rms=state['wall_dual_rms'],
                        pressure_kutta_rms=state['pressure_kutta_rms'],wakes=slip,
                        groups=state['group_results'],
                        wake_geometry_change=record['wake_geometry_change'])

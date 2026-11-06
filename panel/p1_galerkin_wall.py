@@ -7,7 +7,7 @@ than once per target face. The collocation assembler remains available for A/B.
 """
 from __future__ import annotations
 import numpy as np
-from numpy.polynomial.legendre import leggauss
+import torch
 
 from .p1_lifting_g1 import _doublet_matrix, _mesh_as_kernel
 
@@ -15,7 +15,12 @@ from .p1_lifting_g1 import _doublet_matrix, _mesh_as_kernel
 def _duffy_rule(order):
     if not isinstance(order, int) or order < 2:
         raise ValueError("Duffy quadrature order must be an integer >= 2")
-    q,w=leggauss(order);q,w=(q+1.)/2.,w/2.
+    k=torch.arange(1,order,dtype=torch.float64)
+    off=k/torch.sqrt(4*k*k-1)
+    jacobi=torch.diag(off,1)+torch.diag(off,-1)
+    nodes,vectors=torch.linalg.eigh(jacobi)
+    q=((nodes+1.)/2.).numpy()
+    w=(vectors[0]**2).numpy()
     u,v=np.meshgrid(q,q,indexing="ij")
     wu,wv=np.meshgrid(w,w,indexing="ij")
     weights=(wu*wv*(1.-u)).reshape(-1)
@@ -36,13 +41,13 @@ def p1_mass_matrix(wing):
 def _assemble_batched(tris, dof_face, areas, centers, xyz, ndof, U,
                       bary, qweights, *, wake_tris=None, wake_dofs=None,
                       wake_basis=None, nwake=0, target_face_batch=64,
-                      kernel_block=2048):
+                      kernel_block=2048, wake_only=False):
     """Shared target-batched P1 weak assembly; source integration is analytic."""
     nface=len(tris);nq=len(qweights)
-    A=np.zeros((ndof,ndof))
+    A=None if wake_only else np.zeros((ndof,ndof))
     n_gamma=0 if wake_basis is None else wake_basis.shape[1]
     W=np.zeros((ndof,n_gamma))
-    b=np.zeros((ndof,3))
+    b=None if wake_only else np.zeros((ndof,3))
     for start in range(0,nface,target_face_batch):
         stop=min(start+target_face_batch,nface)
         face_ids=np.arange(start,stop)
@@ -50,9 +55,10 @@ def _assemble_batched(tris, dof_face, areas, centers, xyz, ndof, U,
         weights=2.*areas[face_ids,None]*qweights[None,:]
         flat=points.reshape(-1,3)
         self_faces=np.repeat(face_ids,nq)
-        Dw=_doublet_matrix(tris,flat,self_faces=self_faces,
-                           face_dofs=dof_face,ndof=ndof,block=kernel_block)
-        Dw=Dw.reshape(stop-start,nq,ndof)
+        if not wake_only:
+            Dw=_doublet_matrix(tris,flat,self_faces=self_faces,
+                               face_dofs=dof_face,ndof=ndof,block=kernel_block)
+            Dw=Dw.reshape(stop-start,nq,ndof)
         Dgamma=None
         if wake_tris is not None and n_gamma:
             Dnodes=_doublet_matrix(wake_tris,flat,face_dofs=wake_dofs,
@@ -60,14 +66,49 @@ def _assemble_batched(tris, dof_face, areas, centers, xyz, ndof, U,
             Dgamma=(Dnodes@wake_basis).reshape(stop-start,nq,n_gamma)
         for k in range(3):
             test_weights=weights*bary[None,:,k]
-            contrib=np.einsum("fq,fqj->fj",test_weights,Dw,optimize=True)
-            np.add.at(A,dof_face[face_ids,k],contrib)
-            bcontrib=-np.einsum("fq,fqj->fj",test_weights,points,optimize=True)
-            np.add.at(b,dof_face[face_ids,k],bcontrib)
+            if not wake_only:
+                contrib=np.einsum("fq,fqj->fj",test_weights,Dw,optimize=True)
+                np.add.at(A,dof_face[face_ids,k],contrib)
+                bcontrib=-np.einsum("fq,fqj->fj",test_weights,points,optimize=True)
+                np.add.at(b,dof_face[face_ids,k],bcontrib)
             if Dgamma is not None:
                 gcontrib=np.einsum("fq,fqg->fg",test_weights,Dgamma,optimize=True)
                 np.add.at(W,dof_face[face_ids,k],gcontrib)
     return A,W,b
+
+
+def assemble_galerkin_multi(mesh, *, order=3, block=2048, target_face_batch=64,
+                            static=None):
+    """Assemble the P1 weak operators, or update only W for a changed wake."""
+    from .p1_lifting_g2 import assemble_multi
+    if not isinstance(block,int) or block<1 or not isinstance(target_face_batch,int) or target_face_batch<1:
+        raise ValueError("block and target_face_batch must be positive integers")
+    bary,qweights=_duffy_rule(order)
+    base=assemble_multi(mesh) if static is None else static
+    ms=base["mesh"]; tris=ms.triangles; nm=int(mesh.ndof_mu)
+    ng=sum(int(g.gamma_hat.shape[1]) for g in mesh.groups)
+    H=np.zeros((sum(len(g.wake_xyz) for g in mesh.groups),ng))
+    wake_tris=[]; wake_dofs=[]; node_offset=0
+    for g in mesh.groups:
+        xyz=np.asarray(g.wake_xyz,float); faces=np.asarray(g.wake_faces,int)
+        wake_tris.append(xyz[faces]); wake_dofs.append(faces+node_offset)
+        H[node_offset:node_offset+len(xyz),base["slices"][g.name]]=np.asarray(g.gamma_hat,float)
+        node_offset+=len(xyz)
+    A,W,bxyz=_assemble_batched(
+        tris,np.asarray(mesh.dof_face,int),ms.areas,ms.centers,tris,nm,
+        np.zeros(3),bary,qweights,wake_tris=np.concatenate(wake_tris),
+        wake_dofs=np.concatenate(wake_dofs),wake_basis=H,nwake=node_offset,
+        target_face_batch=target_face_batch,kernel_block=block,wake_only=static is not None)
+    result=dict(base)
+    result["W"]=W
+    if static is None:
+        M=np.zeros((nm,nm))
+        local=np.array([[2.,1.,1.],[1.,2.,1.],[1.,1.,2.]])
+        for f,dofs in enumerate(np.asarray(mesh.dof_face,int)):
+            M[np.ix_(dofs,dofs)]+=(ms.areas[f]/12.)*local
+        result.update(A=A,M=M,b_xyz=bxyz,order=order,block=block,
+                      target_face_batch=target_face_batch,wall_formulation="galerkin")
+    return result
 
 
 def assemble_galerkin_wall(wing,freestream=(1.,0.,0.),order=3,

@@ -102,10 +102,17 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
     U = torch.tensor([math.cos(alpha), 0., math.sin(alpha)], dtype=DTYPE, device=device)
     centers, areas = _t(ms.centers, device), _t(ms.areas, device)
     normals = _t(ms.normals, device)
-    rhs = -(centers @ U)
-    weights = torch.sqrt(areas/areas.mean())
-    B = weights.unsqueeze(-1)*torch.hstack((A, W))
-    bw = weights*rhs
+    weak = operators.get("wall_formulation") == "galerkin"
+    if weak:
+        rhs = _t(operators["b_xyz"], device) @ U
+        L = torch.linalg.cholesky(_t(operators["M"], device))
+        B = torch.linalg.solve_triangular(L, torch.hstack((A, W)), upper=False)
+        bw = torch.linalg.solve_triangular(L, rhs[:, None], upper=False)[:, 0]
+    else:
+        rhs = -(centers @ U)
+        weights = torch.sqrt(areas/areas.mean())
+        B = weights.unsqueeze(-1)*torch.hstack((A, W))
+        bw = weights*rhs
     constraint = torch.vstack((J, K))
     basis = null_space(constraint, rcond=1e-11, device=device)
     if int(basis.shape[1]) == 0:
@@ -182,6 +189,9 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
                                  /math.sqrt(int(K.shape[0]))),
         wall_rms=float(torch.linalg.vector_norm(A @ mu + W @ gamma - rhs)
                        /math.sqrt(int(rhs.shape[0]))),
+        wall_dual_rms=(float(torch.linalg.vector_norm(B @ x - bw)/math.sqrt(int(rhs.shape[0])))
+                       if weak else None),
+        wall_formulation="galerkin" if weak else "collocation",
         linear_constrained_rank=rank,
         linear_singular_min=float(singular[-1]) if len(singular) else float("nan"),
         nonlinear=nonlinear, physical_accuracy_accepted=False,
