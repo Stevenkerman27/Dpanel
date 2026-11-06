@@ -139,6 +139,8 @@ def write_step(path, p, count=41):
     """Loft the sections into one closed OCC solid and write it as STEP."""
     import gmsh
 
+    if not isinstance(count, int) or count < 4:
+        raise ValueError("STEP section requires at least four points per side")
     stations = params_module.full_stations(p)
     gmsh.initialize()
     try:
@@ -152,6 +154,12 @@ def write_step(path, p, count=41):
             # a 3.5-minute STEP import, while two splines give one face per span
             # segment and keep the trailing edge sharp (both splines end on it).
             upper, lower = section_curves(s, count)
+            x1 = 0.5 * (1.0 - math.cos(math.pi / (count - 1.0)))
+            t1 = _half_thickness(x1, s["tc"])
+            place = _placement(s)
+            # B-spline endpoint tangents follow their first control-polygon edge.
+            upper[1] = place(0.0, t1)
+            lower[-2] = place(0.0, -t1)
             upper_tags = [occ.addPoint(x, y, z, tag=-1, meshSize=0.0) for x, y, z in upper]
             lower_tags = [occ.addPoint(x, y, z, tag=-1, meshSize=0.0) for x, y, z in lower]
             wires.append(occ.addCurveLoop([occ.addBSpline(upper_tags),

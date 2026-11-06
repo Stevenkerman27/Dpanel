@@ -1,5 +1,11 @@
 # Fixed-wake grid study: comparison blocked
 
+Update 2026-11-06: the collocation result below remains a negative result.
+The restored optional weak-wall path subsequently passed the specified 3%
+joint-refinement screen on the same test family; see
+`verification/wake_galerkin_revival/README.md` for the new runs and their
+limitations. The fixed/free and wake-length comparisons still remain to be run.
+
 2026-11-06. Windows / Python 3.13 / NumPy 2.4.6 / Torch 2.13, single-thread
 OpenBLAS, OMP and MKL. These are P1 `combine_wings` / `solve_multi` results,
 not the archived P0 grid study. Physical accuracy is not accepted.

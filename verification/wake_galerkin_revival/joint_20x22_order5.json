@@ -1,0 +1,59 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_grid_length_study.py",
+    "--mode",
+    "grid",
+    "--wall-method",
+    "galerkin",
+    "--order",
+    "5",
+    "--levels",
+    "20x22",
+    "--out",
+    "runs/scratch/wake_galerkin_joint_order5_20261106.json"
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "cuda": "NVIDIA GeForce RTX 5060",
+  "mode": "grid",
+  "alpha_deg": 4.0,
+  "kutta": "pressure",
+  "wall_method": "galerkin",
+  "quadrature_order": 5,
+  "chord_spacing": "cosine; clustered at both leading and trailing edges",
+  "span_spacing": "uniform",
+  "wake_panels": 2,
+  "comparison": "Successive relative change <= 3% for CL, CL_gamma, CD_pressure, CD_trefftz and CM_y; if both absolute values < 1e-3 require absolute change <= 3e-5. Two successive transitions required. This is joint wall/Gamma refinement, not physical validation.",
+  "records": [
+    {
+      "chord_panels": 20,
+      "span_panels": 22,
+      "length_c": 5.0,
+      "status": "completed",
+      "wall_faces": 1840,
+      "wall_dof": 943,
+      "gamma_dof": 21,
+      "wake_faces": 88,
+      "CL": 0.2603547596061745,
+      "CL_gamma": 0.26349023203628996,
+      "CD_pressure": 0.00606802781409325,
+      "CD_trefftz": 0.0052043585674268365,
+      "CM_y": 0.004656019044063181,
+      "wall_rms": 1.974763642229081e-10,
+      "jump_rms": 1.4332917616497527e-16,
+      "pressure_kutta_rms": 7.534667892637528e-14,
+      "linear_singular_min": 1.0443464633893822e-05,
+      "wall_dual_rms": 1.2271344624108826e-08,
+      "solution_status": "solver_success",
+      "nonlinear": {
+        "success": true,
+        "message": "`xtol` termination condition is satisfied.",
+        "nfev": 4
+      },
+      "seconds": 36.523981399999684
+    }
+  ]
+}

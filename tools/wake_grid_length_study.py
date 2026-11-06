@@ -22,6 +22,8 @@ parser.add_argument("--out", type=Path, required=True)
 parser.add_argument("--levels", default="4x6,6x8,8x10,10x12,12x14,14x16")
 parser.add_argument("--length", type=float, default=5.0)
 parser.add_argument("--mode", choices=("grid",), default="grid")
+parser.add_argument("--wall-method", choices=("collocation", "galerkin"), default="collocation")
+parser.add_argument("--order", type=int, default=3)
 parser.add_argument("--condition", action="store_true")
 args = parser.parse_args()
 if args.out.exists():
@@ -32,6 +34,7 @@ report = dict(command=[sys.executable, *sys.argv], platform=platform.platform(),
               python=sys.version, numpy=np.__version__, torch=torch.__version__,
               cuda=torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
               mode=args.mode, alpha_deg=4.0, kutta="pressure",
+              wall_method=args.wall_method, quadrature_order=args.order if args.wall_method == "galerkin" else None,
               chord_spacing="cosine; clustered at both leading and trailing edges",
               span_spacing="uniform", wake_panels=2,
               comparison="Successive relative change <= 3% for CL, CL_gamma, CD_pressure, CD_trefftz and CM_y; if both absolute values < 1e-3 require absolute change <= 3e-5. Two successive transitions required. This is joint wall/Gamma refinement, not physical validation.",
@@ -50,6 +53,8 @@ for nc, ns in levels:
                                  reference_point=np.array([.25, 0., 0.]))
             row.update(wall_faces=len(wing.faces), wall_dof=wing.ndof_mu,
                        gamma_dof=wing.gamma_hat.shape[1], wake_faces=len(wing.wake_faces))
+            if args.condition and args.wall_method != "collocation":
+                raise ValueError("--condition currently diagnoses collocation only")
             if args.condition:
                 ops = assemble_multi(mesh)
                 weights = torch.as_tensor(np.sqrt(ops["mesh"].areas / ops["mesh"].areas.mean()), dtype=torch.float64)
@@ -62,7 +67,11 @@ for nc, ns in levels:
                     row[label+"_wall_singular_max"] = float(singular[0])
                     row[label+"_wall_singular_min"] = float(singular[-1])
                     row[label+"_wall_condition"] = float(singular[0] / singular[-1])
-            state = solve_multi(mesh, 4., kutta="pressure")
+            if args.wall_method == "galerkin":
+                from panel.p1_galerkin_solver import solve_galerkin_multi
+                state = solve_galerkin_multi(mesh, 4., kutta="pressure", order=args.order)
+            else:
+                state = solve_multi(mesh, 4., kutta="pressure")
             cd, _ = trefftz_cd_full(np.asarray(wing.gamma_y), np.r_[0., state["gamma"], 0.], area=4.)
             row.update(status="completed", CL=float(state["CL"]), CL_gamma=float(state["CL_gamma"]),
                        CD_pressure=float(state["CD_pressure"]), CD_trefftz=float(cd),
@@ -70,9 +79,11 @@ for nc, ns in levels:
                        jump_rms=float(state["jump_rms"]),
                        pressure_kutta_rms=float(state["pressure_kutta_rms"]),
                        linear_singular_min=float(state["linear_singular_min"]),
+                       wall_dual_rms=state.get("wall_dual_rms"),
+                       solution_status=state.get("solution_status"),
                        nonlinear=state.get("nonlinear"))
         except Exception:
             row.update(status="failed", traceback=traceback.format_exc())
         row["seconds"] = time.perf_counter()-started
         args.out.write_text(json.dumps(report, indent=2, default=lambda x: x.tolist() if hasattr(x, "tolist") else x.item()), encoding="utf-8")
-        print(json.dumps({k: row.get(k) for k in ("chord_panels", "span_panels", "length_c", "status", "solver_status", "CL", "CL_gamma", "CD_pressure", "CD_trefftz", "CM_y", "seconds")}), flush=True)
+        print(json.dumps({k: row.get(k) for k in ("chord_panels", "span_panels", "length_c", "status", "solution_status", "CL", "CL_gamma", "CD_pressure", "CD_trefftz", "CM_y", "seconds")}), flush=True)

@@ -1,0 +1,34 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\web_nose_check.py",
+    "--out",
+    "runs/scratch/web_nose_final_005_20261106",
+    "--size",
+    ".05",
+    "--alpha",
+    "5",
+    "--ncpu",
+    "2"
+  ],
+  "size_m": 0.05,
+  "alpha_deg": 5.0,
+  "ncpu": 2,
+  "mesh": {
+    "panels": 4594,
+    "wake_panels": 1578,
+    "vertices": 3097
+  },
+  "CL": 0.6773520378314359,
+  "CD_pressure": 0.014276001250758973,
+  "CM": [
+    0.0,
+    -0.17983288426378388,
+    0.0
+  ],
+  "linear_residual_relative": 2.842485450845241e-15,
+  "unknowns": 4608,
+  "solver_seconds": 1.6297772999996596,
+  "elapsed_seconds": 14.430328499999632,
+  "physical_accuracy_accepted": false
+}
