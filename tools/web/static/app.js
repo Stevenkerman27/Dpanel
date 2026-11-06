@@ -107,19 +107,28 @@ function renderEditor() {
 }
 
 /* ---------------- section editor ---------------- */
-function numberField(labelText, value, step, onInput, options) {
+function numberField(labelText, get, set, step, options) {
   const label = document.createElement('label');
   label.textContent = labelText;
   const input = document.createElement('input');
   input.type = 'number';
   input.step = step;
-  input.value = formatNumber(value);
+  input.value = formatNumber(get());
   if (options && options.disabled) { input.disabled = true; label.title = options.title || ''; }
-  input.addEventListener('input', () => {
-    const next = Number(input.value);
-    if (!Number.isFinite(next)) return;
-    onInput(next, input);
-  });
+  // 输入过程中只在值合法时立刻生效；清空、半截数字或非法值都不动文本，
+  // 等 change（回车/失焦）才回退。否则删一个字符就 Number('')===0 被判非法，
+  // 光标被踢回末尾，前缘 y 这类带递增校验的框根本改不动。
+  const commit = (final) => {
+    const raw = String(input.value).trim();
+    const next = Number(raw);
+    const result = (raw !== '' && Number.isFinite(next)) ? set(next) : { ok: false };
+    if (result === undefined || result.ok !== false) return;
+    if (!final) return;
+    input.value = formatNumber(get());
+    if (result.message) logLine('[提示] ' + result.message);
+  };
+  input.addEventListener('input', () => commit(false));
+  input.addEventListener('change', () => commit(true));
   label.appendChild(input);
   return label;
 }
@@ -137,12 +146,14 @@ function cstGroup(title, weightStart, box) {
   const grid = document.createElement('div');
   grid.className = 'cst-grid';
   for (let k = 0; k < 8; k += 1) {
-    grid.appendChild(numberField('w' + k, state.sections.cst[state.sectionIndex][weightStart + k], 0.005,
+    grid.appendChild(numberField('w' + k,
+      () => state.sections.cst[state.sectionIndex][weightStart + k],
       (value) => {
         state.sections.cst[state.sectionIndex][weightStart + k] = value;
         markDirty();
         drawSectionView();
-      }));
+        return { ok: true };
+      }, 0.005));
   }
   box.appendChild(grid);
 }
@@ -178,46 +189,51 @@ function renderSectionEditor(box) {
   fields.className = 'editor-fields';
   box.appendChild(fields);
 
-  const le = sections.leading_edge_xyz[index];
   const locked = index === 0;
   ['前缘 x (m)', '前缘 y (m)', '前缘 z (m)'].forEach((label, axis) => {
-    fields.appendChild(numberField(label, le[axis], 0.01, (value, input) => {
-      if (!setLeadingEdge(index, axis, value, input)) return;
+    fields.appendChild(numberField(label,
+      () => sections.leading_edge_xyz[index][axis],
+      (value) => setLeadingEdge(index, axis, value),
+      0.01, locked ? { disabled: true, title: '根部前缘固定在原点' } : null));
+  });
+  fields.appendChild(numberField('弦长 (m)',
+    () => sections.chord[index],
+    (value) => {
+      if (!(value > 0.01)) return { ok: false, message: '弦长必须大于 0.01 m' };
+      sections.chord[index] = value;
       markDirty();
       drawSectionView();
       refreshSectionTabs();
-    }, locked ? { disabled: true, title: '根部前缘固定在原点' } : null));
-  });
-  fields.appendChild(numberField('弦长 (m)', sections.chord[index], 0.01, (value, input) => {
-    if (!(value > 0.01)) { input.value = formatNumber(sections.chord[index]); return; }
-    sections.chord[index] = value;
-    markDirty();
-    drawSectionView();
-    refreshSectionTabs();
-  }));
-  fields.appendChild(numberField('扭转 (°)', sections.twist_radians[index] * 180 / Math.PI, 0.1,
+      return { ok: true };
+    }, 0.01));
+  fields.appendChild(numberField('扭转 (°)',
+    () => sections.twist_radians[index] * 180 / Math.PI,
     (value) => {
       sections.twist_radians[index] = value * Math.PI / 180;
       markDirty();
       drawSectionView();
-    }));
+      return { ok: true };
+    }, 0.1));
 
   cstGroup('上表面 CST 权重', 0, box);
   cstGroup('下表面 CST 权重', 8, box);
   const leadingWeight = document.createElement('div');
   leadingWeight.className = 'cst-grid single';
-  leadingWeight.appendChild(numberField('前缘权重', sections.cst[index][16], 0.005, (value) => {
-    sections.cst[index][16] = value;
-    markDirty();
-    drawSectionView();
-  }));
+  leadingWeight.appendChild(numberField('前缘权重',
+    () => sections.cst[index][16],
+    (value) => {
+      sections.cst[index][16] = value;
+      markDirty();
+      drawSectionView();
+      return { ok: true };
+    }, 0.005));
   box.appendChild(leadingWeight);
 
   const note = document.createElement('p');
   note.className = 'note';
   note.textContent = locked
-    ? '根部前缘固定在原点；尾缘厚度固定为 0（尖尾缘）。'
-    : '前缘按 y 严格递增排列；尾缘厚度固定为 0（尖尾缘）。';
+    ? '根部前缘固定在原点（改展长请切到截面 2 改前缘 y）；尾缘厚度固定为 0（尖尾缘）。'
+    : '前缘 y 必须严格递增；尾缘厚度固定为 0（尖尾缘）。';
   box.appendChild(note);
 
   const row = document.createElement('div');
@@ -236,22 +252,23 @@ function renderSectionEditor(box) {
   box.appendChild(row);
 }
 
-function setLeadingEdge(index, axis, value, input) {
+function setLeadingEdge(index, axis, value) {
   const sections = state.sections;
-  if (index === 0) return false;
+  if (index === 0) return { ok: false, message: '根部前缘固定在原点' };
   if (axis === 1) {
     const lower = sections.leading_edge_xyz[index - 1][1] + 1e-3;
     const upper = index + 1 < sections.chord.length
       ? sections.leading_edge_xyz[index + 1][1] - 1e-3 : Infinity;
-    if (value <= lower || value >= upper) {
-      logLine('[提示] 前缘 y 必须严格递增：可用区间 (' + lower.toFixed(3) + ', ' +
-              (Number.isFinite(upper) ? upper.toFixed(3) : '∞') + ')');
-      if (input) input.value = formatNumber(sections.leading_edge_xyz[index][axis]);
-      return false;
+    if (!(value > lower && value < upper)) {
+      return { ok: false, message: '前缘 y 必须严格递增，可用区间 (' + lower.toFixed(3) + ', ' +
+        (Number.isFinite(upper) ? upper.toFixed(3) : '∞') + ')' };
     }
   }
   sections.leading_edge_xyz[index][axis] = value;
-  return true;
+  markDirty();
+  drawSectionView();
+  refreshSectionTabs();
+  return { ok: true };
 }
 
 function refreshSectionTabs() {
