@@ -25,9 +25,22 @@ parser.add_argument("--objective", choices=("pressure", "induced", "lift"),
 parser.add_argument("--cl-min", type=float, default=None)
 parser.add_argument("--keep-area", action="store_true")
 parser.add_argument("--iterations", type=int, default=20)
+parser.add_argument("--max-memory-gb", type=float, default=10.0)
 args = parser.parse_args()
 
 data = json.loads(args.surface.read_text(encoding="utf-8"))
+panels = len(data["faces"])
+# Measured on this machine (2 sections, GRASS fixed topology, 38 variables):
+# 460 faces -> 1.8 GB peak / 3.5 s per evaluation, 1720 faces -> 16 GB / 40 s.
+# The assembly and its graph scale like O(faces * unknowns) with a large constant,
+# so a 0.05 m mesh needs tens of GB and takes the process down before evaluation 1.
+memory_gb = 5.7e-6 * panels * panels
+print("网格 %d 面，预估峰值内存 %.1f GB" % (panels, memory_gb), flush=True)
+if memory_gb > args.max_memory_gb:
+    raise SystemExit(
+        "网格 %d 面预估峰值内存 %.1f GB，超过上限 %.1f GB；请把网格尺寸放大到 0.2 m 以上"
+        "（约 460 面）或减少截面后再优化（--max-memory-gb 可强制放开）"
+        % (panels, memory_gb, args.max_memory_gb))
 sections0 = data["sections"]
 n = len(sections0["chord"])
 chord_panels = int(data["chord_panels"])
@@ -152,6 +165,9 @@ if args.keep_area:
     constraint_text += "，参考面积固定"
 print("设计变量 %d 个（%d 截面 × 弦长/扭转/17 个 CST），目标=%s，约束=%s，迭代=%d" %
       (len(x0), n, args.objective, constraint_text, args.iterations), flush=True)
+if args.objective != "lift" and args.cl_min is None:
+    print("警告：目标是最小阻力但没有升力下限，最优解会退化为零升力"
+          "（实测 0.1 m 网格 CL 0.349 → 0.060）；建议设置升力下限", flush=True)
 baseline = dict(evaluate(x0))
 base_value = baseline["value"]
 result = minimize(fun, np.zeros_like(x0), jac=fun_jac, bounds=[(-1.0, 1.0)] * len(x0),
