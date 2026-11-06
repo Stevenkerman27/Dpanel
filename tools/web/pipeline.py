@@ -135,7 +135,7 @@ def build(job, payload, count=41):
     payload["clamped"] = clamped or payload.get("clamped") or []
     info = payload["step"]
     job.say("STEP 已写出: 体积 %.4f m^3, %d 个截面" % (info["volume"], info["sections"]))
-    mesh = geometry.display_mesh(params, count=count)
+    mesh = payload.get("mesh") or geometry.display_mesh(params, count=count)
     if bodies:
         body_mesh = geometry.body_display_mesh(bodies)
         offset = len(mesh["vertices"])
@@ -173,8 +173,23 @@ def mesh_surface(job, params, size, alpha_deg, ncpu=8):
     out = job.run_dir / "mesh"
     if out.exists():
         shutil.rmtree(out)
+    if "grass_sections" in params and not (job.run_dir / "body.step").exists():
+        out.mkdir(parents=True)
+        source = job.run_dir / "grass_mesh_input.json"
+        source.write_text(json.dumps(params, allow_nan=False), encoding="utf-8")
+        surface = out / "surface.json"
+        command = [sys.executable, "-m", "tools.web.grass_mesh_runner",
+                   "--input", str(source), "--out", str(surface), "--size", str(size)]
+        job.say("GRASS 固定拓扑网格: size=%g m，前缘余弦加密" % float(size))
+        code, log = _spawn(job, command, job.run_dir / "mesh.log")
+        if code != 0 or not surface.is_file():
+            lines = log.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+            raise RuntimeError("GRASS 网格失败: " + " | ".join(lines[-6:]))
+        data = json.loads(surface.read_text(encoding="utf-8"))
+        return surface, dict(panels=len(data["faces"]), wake_panels=len(data["wake_faces"]),
+                             vertices=len(data["coordinates"]), mesh_type="grass_fixed_topology")
     chord = params_module.reference(params)["chord"]
-    te = params_module.trailing_edge_points(params)
+    te = (job.build or {}).get("trailing_edge") or geometry.trailing_edge_points(params)
     reach = max(max(abs(point[0]), abs(point[1])) for point in te)
     size_norm = float(size) / chord
     radius_norm = 1.5 * reach + 4.0 * size_norm
@@ -182,9 +197,10 @@ def mesh_surface(job, params, size, alpha_deg, ncpu=8):
     command = [sys.executable, "-m", "panel.cad_half",
                "--wing-cad", str(job.run_dir / "wing.step"),
                "--trailing-edge", str(job.run_dir / "trailing_edge.json"),
+               "--mesh-features", str(job.run_dir / "mesh_features.json"),
                "--out", str(out), "--size", "%g" % size_norm,
                "--far-size", "%g" % far_norm, "--radius", "%g" % radius_norm,
-               "--wake-length", "30",
+               "--wake-length", "10",
                "--alpha-deg", "%g" % float(alpha_deg), "--ncpu", str(int(ncpu))]
     body_step = job.run_dir / "body.step"
     if body_step.exists():
@@ -192,6 +208,7 @@ def mesh_surface(job, params, size, alpha_deg, ncpu=8):
             "--body-cad", str(body_step)]
     job.say("网格划分: size=%g m (%g 弦), alpha=%g, 远场半径=%g 弦"
             % (float(size), size_norm, float(alpha_deg), radius_norm))
+    job.say("前缘局部加密: 目标尺寸 0.5 倍，影响半径 0.12c")
     # 子进程的 stdout 必须落到文件: 本机沙箱禁止管道 stdio（spawn 会 EPERM）。
     log_path = job.run_dir / "mesh.log"
     emitted = [0]
@@ -337,6 +354,99 @@ def run_mesh(job, options):
             job.proc = None
 
 
+def run_grass(job, options):
+    """Differentiate the current production fixed-topology mesh in a child."""
+    try:
+        job.state = "solving"
+        source = job.run_dir / "mesh" / "surface.json"
+        if not source.is_file() or not job.mesh_info or not job.mesh_options:
+            raise ValueError("请先生成当前 GRASS 计算网格")
+        if job.mesh_info.get("mesh_type") != "grass_fixed_topology":
+            raise ValueError("当前网格不是 GRASS 固定拓扑网格，机身/CAD 网格暂不支持此梯度")
+        if float(options.get("alpha", 4.)) != job.mesh_options["alpha"]:
+            raise ValueError("迎角已变化，请重新生成网格")
+        job.say("使用当前正式求解网格计算 GRASS 固定尾迹梯度")
+        output = job.run_dir / "grass_result.json"
+        code, log = _spawn(job, [sys.executable, "-m", "tools.web.grass_runner",
+                                 "--input", str(source), "--out", str(output),
+                                 "--alpha", str(job.mesh_options["alpha"])],
+                           job.run_dir / "grass.log")
+        if code != 0 or not output.is_file():
+            lines = log.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+            raise RuntimeError("GRASS 截面求解失败: " + " | ".join(lines[-5:]))
+        job.result = json.loads(output.read_text(encoding="utf-8"))
+        job.state = "done"
+        job.say("梯度求解完成；结果仅作离散验证，气动精度尚未验收")
+    except Cancelled as exc:
+        job.state = "cancelled"
+        job.say(str(exc))
+    except Exception as exc:
+        job.state = "error"
+        job.error = "%s: %s" % (type(exc).__name__, exc)
+        job.say(job.error)
+    finally:
+        job.finished = time.time()
+
+
+def run_optimize(job, options):
+    """Run the SLSQP section optimization on the current fixed-topology mesh."""
+    try:
+        source = job.run_dir / "mesh" / "surface.json"
+        if not source.is_file() or not job.mesh_info or not job.mesh_options:
+            raise ValueError("请先生成当前 GRASS 计算网格")
+        if job.mesh_info.get("mesh_type") != "grass_fixed_topology":
+            raise ValueError("当前网格不是 GRASS 固定拓扑网格，机身/CAD 网格暂不支持截面优化")
+        alpha = float(job.mesh_options["alpha"])
+        if float(options.get("alpha", alpha)) != alpha:
+            raise ValueError("迎角已变化，请重新生成网格")
+        objective = str(options.get("objective", "induced"))
+        if objective not in ("induced", "pressure", "lift"):
+            raise ValueError("未知优化目标")
+        iterations = int(options.get("iterations", 20))
+        if not 1 <= iterations <= 200:
+            raise ValueError("迭代次数必须在 1 到 200 之间")
+        command = [sys.executable, "-m", "tools.web.optimize_runner",
+                   "--surface", str(source), "--out", str(job.run_dir / "opt_result.json"),
+                   "--alpha", "%g" % alpha, "--objective", objective,
+                   "--iterations", str(iterations)]
+        cl_min = options.get("cl_min")
+        if cl_min not in (None, ""):
+            cl_min = float(cl_min)
+            if not -2.0 < cl_min < 4.0:
+                raise ValueError("升力约束超出合理范围")
+            command += ["--cl-min", "%g" % cl_min]
+        if options.get("keep_area"):
+            command.append("--keep-area")
+        job.state = "solving"
+        job.say("截面优化启动: 目标=%s, 迭代=%d, CL约束=%s, 保面积=%s"
+                % (objective, iterations, "-" if cl_min in (None, "") else "%g" % cl_min,
+                   "是" if options.get("keep_area") else "否"))
+        output = job.run_dir / "opt_result.json"
+        code, log = _spawn(job, command, job.run_dir / "opt.log")
+        if code != 0 or not output.is_file():
+            lines = log.read_text(encoding="utf-8", errors="replace").strip().splitlines()
+            raise RuntimeError("截面优化失败: " + " | ".join(lines[-5:]))
+        report = json.loads(output.read_text(encoding="utf-8"))
+        report["mesh_size"] = job.mesh_options.get("size")
+        report["alpha"] = alpha
+        (job.run_dir / "opt_summary.json").write_text(json.dumps(report), encoding="utf-8")
+        job.result = report
+        job.state = "done"
+        job.say("优化结束: %s，目标 %s → %s"
+                % (report.get("message", ""),
+                   "%.6f" % report.get("initial", {}).get("objective", float("nan")),
+                   "%.6f" % report.get("final", {}).get("objective", float("nan"))))
+    except Cancelled as exc:
+        job.state = "cancelled"
+        job.say(str(exc))
+    except Exception as exc:  # noqa: BLE001 - reported to the browser
+        job.state = "error"
+        job.error = "%s: %s" % (type(exc).__name__, exc)
+        job.say(job.error)
+    finally:
+        job.finished = time.time()
+
+
 def run_job(job, options):
     """Solve using the previously generated mesh."""
     alpha = float(options.get("alpha", 4.0))
@@ -347,8 +457,12 @@ def run_job(job, options):
     iterations = int(options.get("iterations", 12))
     ncpu = int(options.get("ncpu", SOLVE_THREADS))
     try:
+        if wake not in ("fixed", "free", "free_filament"):
+            raise ValueError("未知尾迹方法")
         if wall_formulation not in ("galerkin", "collocation"):
             raise ValueError("未知壁面离散方法")
+        if wake == "free_filament" and wall_formulation != "galerkin":
+            raise ValueError("涡线自由尾迹目前只支持 P1 弱形式壁面")
         surface = job.run_dir / "mesh" / "surface.json"
         if not surface.is_file() or not job.mesh_info or not job.mesh_options:
             raise ValueError("请先生成计算网格")
@@ -362,14 +476,14 @@ def run_job(job, options):
         result = solve(job, surface, wake, alpha, iterations, reference, ncpu=ncpu,
                        wall_formulation=wall_formulation)
         result = _plain(result)
-        if wake == "free" and not (result.get("converged") and result.get("geometry_stable")):
+        if wake in ("free", "free_filament") and (not result.get("converged") or result.get("geometry_stable") is False):
             history = result.get("history") or []
             first = history[0]["CL"] if history else None
             last = result.get("CL")
             if first is not None and last is not None:
-                result["warning"] = ("自由尾迹未收敛（几何不稳定）：CL 由 %+.3f 降到 %+.3f。"
-                                     "这是已知的尾迹塌陷问题，数值仅供诊断，不可当作气动结论。"
-                                     % (first, last))
+                result["warning"] = ("自由尾迹未收敛（状态：%s）：CL 从 %+.3f 变化至 %+.3f。"
+                                     "结果仅供诊断，不可作为已验收的气动结论。"
+                                     % (result.get("status","未知"), first, last))
             else:
                 result["warning"] = "自由尾迹未收敛：数值仅供诊断。"
             job.say(result["warning"])

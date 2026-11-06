@@ -1,6 +1,6 @@
 # 浏览器工作台（tools/web）
 
-本地网页版 DPanel：改参数 → 生成 OCC 实体 → 划分半域面元网格 → 求解 → 看图看数。
+本地网页版 DPanel：改参数 → 生成几何 → 划分计算网格 → 求解 → 看图看数。
 它只是现有求解器的入口，**不引入新的气动实现**。
 
 ```bash
@@ -10,10 +10,10 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 ## 界面
 
 - 左侧上半是视口，三个标签页：**几何**（参数化显示网格）、**网格**（求解器实际壁面三角网格）与**结果**（在求解器网格上按 Cp 着色，
-  尾迹片半透明蓝）。半域网格在结果页按 y=0 镜像成完整翼，着色是**逐面板 Cp**，不是插值。
+  尾迹片半透明蓝）。CAD 半域网格按 y=0 镜像；GRASS 固定拓扑网格本身是全翼。着色是**逐面板 Cp**，不是插值。
 - 左侧下半是结果表（CL/CD/CM、面板数、未知量、残差、耗时、黄色警告）、Γ 展向曲线或自由尾迹 CL 迭代曲线、运行日志。
-- 右侧上半是**部件列表**（升力面 + 若干机身，点击选中、删除），下半按选中部件生成参数表单。
-- 右侧最下是求解选项（迎角、网格尺寸、固定/自由尾迹、迭代次数）与「生成几何 / 生成网格 / 求解 / 取消」。网格尺寸以米为单位，尺寸越小通常面板越密；面板数由几何和网格尺寸共同决定，没有直接指定面板总数的输入项。先生成网格，再单独求解；实际壁面/尾迹面板数显示在网格标签页。改变几何、尺寸或迎角后需要重新生成网格。
+- 右侧从上到下：**部件列表**（升力面 + 若干机身，点击选中、删除）→ **部件参数**（选中升力面时按截面上参数：截面标签、前缘 xyz、弦长、扭转、两组 8 个 CST 权重与前缘权重，可增删 2–4 个截面；选中机身时是机身参数）→ **截面视图**（沿展向侧视，各截面翼型叠画，当前编辑截面高亮）→ **求解** → **截面优化 · SLSQP** → **GRASS 截面梯度**。
+- 求解选项（迎角、网格尺寸、固定/自由尾迹、迭代次数）与「生成几何 / 生成网格 / 求解 / 取消」。网格尺寸以米为单位，尺寸越小通常面板越密；面板数由几何和网格尺寸共同决定，没有直接指定面板总数的输入项。先生成网格，再单独求解；实际壁面/尾迹面板数显示在网格标签页。改变几何、尺寸或迎角后需要重新生成网格。
 - 左下角有 xyz 坐标轴（X 红 / Y 绿 / Z 蓝，与视图同一旋转矩阵）。
 - 鼠标左键拖动旋转（上下拖动方向反转），滚轮缩放；相机按**壁面几何的世界坐标包围盒**定标（只在换场景时重算），结果视图不把尾迹计入居中与缩放，
   所以任意角度下缩放一致，左右拖动只改偏航、不改俯仰（俯仰夹在 ±85°）。
@@ -22,6 +22,10 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
   固定尾迹使用镜像的全翼 P1 网格，比原半域 P0 求解更耗内存与时间；
   结果不应与原 P0 模型当作同一种离散化直接比较。
   原 P0 半域固定尾迹仍可通过 `python -m tools.web.solve_runner --surface <surface.json> --out <new-directory> --wake fixed --wall-formulation p0` 使用。
+- 尾迹可选择固定、自由（面元）或自由（涡线）。两种自由尾迹按指定次数更新，几何保护受阻时可以提前停止；达到次数不等于收敛或物理精度验收。涡线方法仅支持弱壁面，以及无尾迹与机身接触约束、沿 x 拉伸且下游边界平齐的 CAD 尾迹；不支持时明确报错。它重建为流向 8 段，使用 0.05c 涡核、每个展向区间 2 条涡带、0.25 松弛，并开启非邻接面自交保护。该保护不检查共节点面、穿壁或组间交叉，不能作为完整几何有效性证明。
+- STEP 使用光顺截面前缘。无机身 GRASS 计算网格使用弦向余弦分布加密前缘；CAD/Gmsh 路径沿橙色前缘特征线请求 `0.5 × size`、`0.12c` 影响半径，实际尺寸以生成网格为准。不能由加密本身推断气动网格收敛。
+- 主翼使用同一组 GRASS `leading_edge_xyz`、`chord`、`twist_radians`、18 维 `cst` 截面数组驱动显示、STEP 和计算网格。界面上这些量是逐截面的数字输入框（不再是整段 JSON 文本框）；每个输入框直接写回内存中的截面数组，非法输入（前缘 y 不递增、弦长 ≤ 0.01 m）会退回原值并在日志里说明。截面视图用与 `GRASS-plane/wing_geometry_encoder.py:wing_section_points` 相同的截面框架（相对扭转 + 平均上反角 + 根扭转）把各截面投影到 x–z 平面，纯前端计算，不需要先建几何。需要相邻的 `GRASS-plane` 检出，直接使用其 CST 和截面坐标变换。输入为 2 至 4 个截面；根前缘为零、y 递增、弦长为正、各截面尾缘厚度为零。固定的根前缘及尾缘厚度梯度以 `null` 标记。
+- **单翼固定尾迹梯度使用当前正式求解网格**：无机身 GRASS 案例生成固定拓扑全翼网格并保存于 `mesh/surface.json`；Web 网格显示和正式 P1 求解读取此网格，梯度使用相同节点、面元、尾迹和自由度，并校验持久化网格与计算图一致。重新生成网格会改变离散拓扑；梯度及其中心差分固定当前拓扑。梯度限固定尾迹、P1 弱形式；不设面板数硬上限，但稠密计算消耗大量内存，未验证大网格和气动精度。机身/旧 CAD 路径使用 Gmsh 网格，不支持该梯度，明确报错。STEP 为光顺 B 样条近似，不是此固定拓扑求解网格的来源。验证范围见 [CST 梯度](../../verification/cst_gradient/README.md)。
 - **CPU 线程**默认 `min(8, 逻辑 CPU 数)`，可在 1 到逻辑 CPU 数之间调整；只控制求解子进程，
   不改变网格阶段的线程设置。求解日志按校验、装配、求解/载荷、结果检查分阶段显示。
   “求解耗时”显示整个求解子进程的耗时，包含这些阶段，不再只显示部分计算时间。
@@ -31,8 +35,10 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 | 步骤 | 真正的执行者 | 产物（`runs/web/<时间戳>-<hex6>/`） |
 | --- | --- | --- |
 | 建体 | 子进程 `python -m tools.web.step_builder`（gmsh + OCC 放样） | `wing.step`、`body.step`（有机身时）、`trailing_edge.json`、`build.json` |
-| 网格 | 子进程 `python -m panel.cad_half` | `mesh/surface.json`、`mesh/manifest.json`、`mesh.log` |
-| 求解 | 子进程 `python -m tools.web.solve_runner`（镜像全翼 P1 弱形式 / 配点对照） | `summary.json`、`job.log` |
+| 网格 | 无机身 GRASS：`python -m tools.web.grass_mesh_runner`；CAD/机身：`python -m panel.cad_half` | `mesh/surface.json`、`mesh.log`（CAD 路径另有 manifest） |
+| 求解 | 子进程 `python -m tools.web.solve_runner`（全翼 P1 弱形式 / 配点对照） | `summary.json`、`job.log` |
+| 梯度 | 子进程 `python -m tools.web.grass_runner`（当前固定拓扑网格） | `grass_result.json`、`grass.log` |
+| 优化 | 子进程 `python -m tools.web.optimize_runner`（同一固定拓扑网格上的 SLSQP） | `opt_result.json`、`opt_summary.json`、`history.jsonl`、`opt.log` |
 
 两次子进程都是为了绕开本机限制：gmsh 只能在主线程 `initialize()`（HTTP 线程里会抛
 `signal only works in main thread`），而且沙箱禁止管道 stdio，所以子进程 stdout 一律写 `*.log` 文件，
@@ -42,15 +48,19 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 
 求解器只有**一套尾迹系统**，所以部件列表强制：
 
-- **升力面恰好一个**（`kind="wing"`）：参数见 `params.SCHEMA`，后缘折线就是 Kutta 条件的作用线。
+- **升力面恰好一个**（`kind="wing"`）：Web 参数为 GRASS 截面数组，后缘折线就是 Kutta 条件的作用线。旧 `params.SCHEMA` 输入仍供旧 API 兼容。
 - **机身任意多个**（`kind="body"`）：椭球，参数 `length / diameter / center_x / center_z`
   （绝对位置，y 恒为 0，因为半域以 y=0 为对称面）。机身壁面以 `--body-cad` 交给
   `panel/cad_half.py`，被归为**非升力壁面**：有速度势与 Cp，但不参与环量/尾迹。
-- 升力面的 `origin_x` 是**根前缘的绝对 x**；没有 y 偏移（对称面）。z 由 `dihedral_deg` 给出：
+- 旧 API 的 `origin_x` 是**根前缘的绝对 x**；没有 y 偏移（对称面）。z 由 `dihedral_deg` 给出：
   每个剖面绕自己的后缘点滚转，后缘高度 `te_z = |y|·tan(dihedral)`，根部后缘恒在 z=0。
   所以后缘是一条**任意三维折线**（上反角把展向抬起来），不再限制在 z=0。
 
 多加一个升力面需要多套尾迹与多条后缘，当前离散做不到（`pipeline.split_parts` 会直接报错）。
+
+GRASS 截面坐标为米，x 向后、y 为展向、z 向上，扭转为弧度，采用 GRASS 自身截面框架；右半翼由输入生成，左半翼关于 y=0 镜像。参考面积为输入截面弦长对 y 的梯形积分再乘二，参考弦为根弦。受截面旋转影响，实际翼尖和后缘的 y 不一定等于输入前缘的 y；尾迹采用变换后的实际后缘，要求其 y 严格递增。
+
+Windows/myml 的统一链路 HTTP 记录在 `runs/web/20261106-210317-9c3bab`：0.7 m、84 全翼壁面，正式求解 CL/CD `0.315205822239367/0.00323794651736206`，同网格梯度前向 `0.315205822239373/0.00323794651736288`。`runs/web/20261106-210510-241e26` 为默认 0.35 m、156 全翼壁面。单个粗网格并非气动验收；此前 CAD 路径的后缘及 STEP 近似测试保留，但不是当前无机身 GRASS 网格。
 
 ## 几何契约（三条硬约束，改动前先读）
 
@@ -113,6 +123,27 @@ python -m tools.web.server --port 8811     # 然后开 http://127.0.0.1:8811/
 原厚翼对照的完整导出字典与旧版完全一致；新增正负扭转的分岸回归。
 Web 下一次生成网格会启动新导出进程，无需重启服务。
 
+## 截面优化（SLSQP，2026-11-06）
+
+- 入口：界面「截面优化 · SLSQP」卡片；也可以直接跑
+  `python -m tools.web.optimize_runner --surface runs/web/<job>/mesh/surface.json --out <dir>/opt_result.json --alpha 4 --objective induced --cl-min 0.3 --keep-area --iterations 20`。
+- 变量：每个截面的弦长、扭转（弧度）和 17 个 CST 权重；前缘 xyz 与第 18 个 CST 值（尾缘厚度，固定 0）不动，
+  所以拓扑不变，结果可以按同一份 `surface.json` 的节点/面元编号解释，不需要重新划网格。
+- 界在缩放变量上：`x = x0 + z·span`，`z∈[-1,1]`，`span` = 25% 弦长 / 3° / 0.04。
+  直接在米·弧度·CST 混合变量上跑 SLSQP 会在 CL 0.25–0.87 之间振荡并报 `Inequality constraints incompatible`；缩放后同一算例稳定下降。
+- 目标：CDi（诱导）、CD（压差；粗网格上可能为负，只作参考）、−CL。约束：CL ≥ `cl_min`（可选）、
+  参考面积 = 初始面积（可选，等式）。界面只暴露这三项；其它约束要改 `tools/web/optimize_runner.py`。
+- 每次评估都重建可微模型（`grass_section_geometry` + `fixed_wake_geometry`，`torch.autograd` 对 CL/CD/CDi/面积求 19n 个偏导），
+  同一 z 上的 fun/jac 共用一次求值（SLSQP 会先问目标再问梯度）。
+- 遇到失败点（压力 Kutta 非驻定、几何退化）不中断：用上一个可行点的目标值加 10×连续失败次数、梯度置零，
+  连续 5 次失败才抛错，单个坏点不会把整轮优化带走。
+- 记录数据（2026-11-06，myml 环境，默认 2 截面，size 0.5，alpha 4，CL ≥ 0.3，面积固定，3 次迭代）：
+  CDi 0.006042 → 0.004475（−26%），CL 0.3419 → 0.2930（贴在升力约束上），面积 3.6000 不变，
+  15 次评估，SLSQP 报 `Iteration limit reached`（迭代上限，不是收敛）。
+- **这不是气动验收**：结果只表示“在这张离散网格上目标值下降”，`physical_accuracy_accepted` 恒为 false；
+  粗网格上压差阻力甚至可能为负。应用最优截面后必须重新建几何、重新划网格、重新求解才能比较。
+- `tools/grass_section_optimize.py` 是同一套 SLSQP 的离线版本（4 截面、固定前缘权重、CL 与面积约束），
+  Web 入口把它参数化，并接到当前作业的固定拓扑网格上。
 ## HTTP 接口
 
 | 方法 | 路径 | 说明 |
@@ -121,6 +152,7 @@ Web 下一次生成网格会启动新导出进程，无需重启服务。
 | POST | `/api/build` | body `{"parts":[{"kind":"wing","params":{...}},{"kind":"body","params":{...}}]}`，返回 job 名与显示网格 |
 | POST | `/api/mesh` | body `{"job": ..., "alpha": 4, "size": 0.3}`；生成并缓存实际壁面/尾迹网格 |
 | POST | `/api/solve` | body `{"job": ..., "alpha": 4, "wake": "fixed"/"free", "size": 0.3, "iterations": 3, "ncpu": 8}`；只使用匹配迎角和尺寸的已生成网格，线程数越界返回 HTTP 400 |
+| POST | `/api/optimize` | body `{"job": ..., "alpha": 4, "objective": "induced"/"pressure"/"lift", "cl_min": 0.3 或 null, "keep_area": true, "iterations": 20}`；在该作业的固定拓扑网格上跑 SLSQP，结果进 `job.result`，`sections_final` 可直接回填几何 |
 | GET | `/api/mesh?id=...` | 返回已生成网格的坐标、壁面三角面与尾迹面板数 |
 | POST | `/api/cancel` | 置取消标志，子进程被杀、worker 线程退出 |
 | GET | `/api/job?id=...` | 状态 `built/meshing/meshed/solving/done/error/cancelled`、日志、结果 |

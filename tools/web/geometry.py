@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
+import sys
 
 from . import params as params_module
 
@@ -85,17 +86,71 @@ def section_xyz(station, count=41):
     return list(section_loop(station, count))
 
 
+def grass_curves(p, count=41):
+    """GRASS physical section frames, mirrored for the full-span ruled loft."""
+    import torch
+    grass = Path(__file__).resolve().parents[3] / "GRASS-plane"
+    if str(grass) not in sys.path:
+        sys.path.insert(0, str(grass))
+    from cst_airfoil_codec import cst_surfaces_at_x
+    from wing_geometry_encoder import wing_section_points
+
+    data = p["grass_sections"]
+    g = {key: torch.tensor(data[key], dtype=torch.float64) for key in
+         ("leading_edge_xyz", "chord", "twist_radians", "cst")}
+    xi = (1 - torch.cos(torch.linspace(0, torch.pi, count, dtype=torch.float64))) / 2
+    upper, lower = cst_surfaces_at_x(g["cst"], xi)
+    if bool((upper[:, 1:-1] <= lower[:, 1:-1]).any()):
+        raise ValueError("CST 上表面必须位于下表面之上")
+    chord = g["chord"][:, None]
+    place = torch.zeros(3, dtype=torch.float64)
+    up = wing_section_points(g, chord * xi, chord * upper, place).detach().numpy()
+    lo = wing_section_points(g, chord * xi, chord * lower, place).detach().numpy()
+    zero = torch.zeros((len(chord), 1), dtype=torch.float64)
+    up_control = wing_section_points(g, zero, chord * upper[:, 1:2], place)[:, 0].detach().numpy()
+    lo_control = wing_section_points(g, zero, chord * lower[:, 1:2], place)[:, 0].detach().numpy()
+    positive = [dict(upper=up[i].tolist(), lower=lo[i][::-1].tolist(),
+                     upper_control=up_control[i].tolist(), lower_control=lo_control[i].tolist())
+                for i in range(len(chord))]
+    negative = []
+    for section in reversed(positive[1:]):
+        negative.append({key: ([[v[0], -v[1], v[2]] for v in value]
+                               if key in ("upper", "lower") else [value[0], -value[1], value[2]])
+                         for key, value in section.items()})
+    return negative + positive
+
+
+def section_data(p, count=41):
+    if "grass_sections" in p:
+        return grass_curves(p, count)
+    data = []
+    for station in params_module.full_stations(p):
+        upper, lower = section_curves(station, count)
+        x1 = .5 * (1. - math.cos(math.pi / (count - 1.)))
+        t1 = _half_thickness(x1, station["tc"])
+        place = _placement(station)
+        data.append(dict(upper=upper, lower=lower, upper_control=place(0., t1),
+                         lower_control=place(0., -t1)))
+    return data
+
+
+def trailing_edge_points(p):
+    if "grass_sections" in p:
+        points = [s["upper"][-1] for s in section_data(p)]
+        if any(points[i + 1][1] <= points[i][1] for i in range(len(points) - 1)):
+            raise ValueError("GRASS 后缘在机体 y 方向必须严格递增")
+        return points
+    return params_module.trailing_edge_points(p)
+
+
 def display_mesh(p, sections=None, count=41):
     """Triangulated full-span surface for the viewer (no CAD kernel involved)."""
-    st = params_module.full_stations(p)
-    n_sections = int(sections or max(12, 2 * int(p["sections"])))
-    picked = []
-    if n_sections <= len(st):
+    st = section_data(p, count)
+    n_sections = int(sections or len(st))
+    if n_sections < len(st):
         step = (len(st) - 1) / (n_sections - 1.0)
-        picked = [st[int(round(i * step))] for i in range(n_sections)]
-    else:
-        picked = st
-    loops = [section_xyz(s, count) for s in picked]
+        st = [st[int(round(i * step))] for i in range(n_sections)]
+    loops = [s["upper"] + s["lower"][1:-1] for s in st]
     n_pts = len(loops[0])
     vertices = []
     for loop in loops:
@@ -128,9 +183,18 @@ def display_mesh(p, sections=None, count=41):
 def write_trailing_edge(path, p):
     """TE declaration consumed by `panel.cad_half`."""
     ref = params_module.reference(p)
-    data = dict(points=params_module.trailing_edge_points(p),
+    data = dict(points=trailing_edge_points(p),
                 chord=ref["chord"], reference_area=ref["area"],
                 origin=[0.0, 0.0, 0.0])
+    Path(path).write_text(json.dumps(data, indent=1), encoding="utf-8")
+    return data
+
+
+def write_mesh_features(path, p):
+    """Use the actual ruled-loft section leading-edge endpoints."""
+    points = [list(s["upper"][0]) for s in section_data(p)]
+    data = dict(schema="dpanel.mesh_features.v1", units="m", features=[
+        dict(name="leading_edge", points=points, target_ratio=.5, radius_chords=.12)])
     Path(path).write_text(json.dumps(data, indent=1), encoding="utf-8")
     return data
 
@@ -141,7 +205,7 @@ def write_step(path, p, count=41):
 
     if not isinstance(count, int) or count < 4:
         raise ValueError("STEP section requires at least four points per side")
-    stations = params_module.full_stations(p)
+    stations = section_data(p, count)
     gmsh.initialize()
     try:
         gmsh.option.setNumber("General.Terminal", 0)
@@ -153,13 +217,10 @@ def write_step(path, p, count=41):
             # sample point: a 41-point polyline loft produced ~2000 OCC faces and
             # a 3.5-minute STEP import, while two splines give one face per span
             # segment and keep the trailing edge sharp (both splines end on it).
-            upper, lower = section_curves(s, count)
-            x1 = 0.5 * (1.0 - math.cos(math.pi / (count - 1.0)))
-            t1 = _half_thickness(x1, s["tc"])
-            place = _placement(s)
+            upper, lower = list(s["upper"]), list(s["lower"])
             # B-spline endpoint tangents follow their first control-polygon edge.
-            upper[1] = place(0.0, t1)
-            lower[-2] = place(0.0, -t1)
+            upper[1] = s["upper_control"]
+            lower[-2] = s["lower_control"]
             upper_tags = [occ.addPoint(x, y, z, tag=-1, meshSize=0.0) for x, y, z in upper]
             lower_tags = [occ.addPoint(x, y, z, tag=-1, meshSize=0.0) for x, y, z in lower]
             wires.append(occ.addCurveLoop([occ.addBSpline(upper_tags),
@@ -179,7 +240,7 @@ def write_step(path, p, count=41):
             raise RuntimeError("loft produced a non-positive volume")
         gmsh.write(str(path))
         return dict(volume=float(volume), sections=len(stations),
-                    points_per_section=len(section_loop(stations[0], count)))
+                    points_per_section=2 * count - 2)
     finally:
         gmsh.finalize()
 

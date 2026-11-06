@@ -56,12 +56,18 @@
       <div id="editor" class="editor"></div>
     </section>
     <section class="card">
+      <div class="card-head">截面视图 <span id="sectionCount" class="muted"></span></div>
+      <div class="section-view"><canvas id="sectionView"></canvas></div>
+      <p class="note">沿展向侧视：各截面翼型叠画，当前编辑截面高亮。</p>
+    </section>
+    <section class="card">
       <div class="card-head">求解</div>
+      <p class="note">橙线：前缘特征线；单翼 GRASS 网格在前缘采用余弦分布。</p>
       <div class="grid2">
         <label>迎角 α<input id="alpha" type="number" value="4" step="0.5"></label>
         <label>网格尺寸 m<input id="size" type="number" value="0.35" step="0.05" min="0.05"></label>
         <label>尾迹
-          <select id="wake"><option value="fixed">固定</option><option value="free">自由</option></select>
+          <select id="wake"><option value="fixed">固定</option><option value="free">自由（面元）</option><option value="free_filament">自由（涡线）</option></select>
         </label>
         <label>壁面离散
           <select id="wallFormulation"><option value="galerkin">P1 弱形式</option><option value="collocation">P1 配点（对照）</option></select>
@@ -78,6 +84,33 @@
         <button id="solve" class="primary">求解</button>
         <button id="cancel" class="danger">取消</button>
       </div>
+    </section>
+    <section class="card">
+      <div class="card-head">截面优化 · SLSQP</div>
+      <div class="grid2">
+        <label>优化目标
+          <select id="optObjective">
+            <option value="induced">最小化诱导阻力 CDi</option>
+            <option value="pressure">最小化压差阻力 CD</option>
+            <option value="lift">最大化升力 CL</option>
+          </select>
+        </label>
+        <label>迭代次数<input id="optIterations" type="number" value="20" step="1" min="1" max="200"></label>
+        <label class="wide">升力约束 CL ≥<input id="optClMin" type="number" step="0.001" placeholder="留空 = 不加约束"></label>
+      </div>
+      <label class="check"><input id="optKeepArea" type="checkbox" checked> 保持参考面积不变</label>
+      <div class="row">
+        <button id="optRun" class="primary">运行优化</button>
+        <button id="optApply" disabled>应用最优截面</button>
+      </div>
+      <pre id="optResult" class="grass-result"></pre>
+      <p class="note">变量：各截面弦长 ±25%、扭转 ±3°、CST 权重 ±0.04；前缘坐标与尾缘厚度固定。需要先按当前参数生成网格，优化沿用该网格拓扑。</p>
+    </section>
+    <section class="card">
+      <div class="card-head">GRASS 截面梯度 · 固定尾迹</div>
+      <p class="note">使用当前计算网格和 P1 弱形式；气动精度尚未验收。</p>
+      <div class="row"><button id="grassSolve" class="primary">计算截面梯度</button></div>
+      <pre id="grassResult" class="grass-result"></pre>
     </section>
   </aside>
 </main>

@@ -33,15 +33,19 @@ def main(argv=None):
     info = geometry.write_step(out / "wing.step", params, args.count)
     body_info = geometry.write_body_step(out / "body.step", bodies) if bodies else None
     geometry.write_trailing_edge(out / "trailing_edge.json", params)
+    features = geometry.write_mesh_features(out / "mesh_features.json", params)
     files = dict(step=str(out / "wing.step"),
-                 trailing_edge=str(out / "trailing_edge.json"))
+                 trailing_edge=str(out / "trailing_edge.json"),
+                 mesh_features=str(out / "mesh_features.json"))
     if body_info:
         files["body"] = str(out / "body.step")
     payload = dict(params=params, bodies=bodies, clamped=clamped,
                    reference=params_module.reference(params),
-                   stations=params_module.full_stations(params),
-                   trailing_edge=params_module.trailing_edge_points(params),
-                   step=info, body=body_info, files=files)
+                   stations=(params["grass_sections"] if "grass_sections" in params
+                             else params_module.full_stations(params)),
+                   trailing_edge=geometry.trailing_edge_points(params),
+                   step=info, body=body_info, files=files, mesh_features=features,
+                   mesh=geometry.display_mesh(params, count=args.count))
     (out / "build.json").write_text(json.dumps(payload), encoding="utf-8")
     print(json.dumps(dict(volume=info["volume"], sections=info["sections"])))
     return 0

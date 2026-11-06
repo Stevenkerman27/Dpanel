@@ -83,6 +83,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/schema":
             self._send(200, dict(params=params_module.SCHEMA,
+                                 grass_defaults=params_module.GRASS_DEFAULTS,
                                  body_params=params_module.BODY_SCHEMA,
                                  body_defaults=params_module.normalise_body({})[0],
                                  defaults=params_module.normalise({})[0],
@@ -115,6 +116,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, dict(coordinates=data.get("coordinates") or [],
                                  faces=data.get("faces") or [],
                                  wake_panels=len(data.get("wake_faces") or []),
+                                 mirror=data.get("mirror", True),
                                  size=(job.mesh_options or {}).get("size"),
                                  alpha=(job.mesh_options or {}).get("alpha")))
             return
@@ -135,6 +137,34 @@ class Handler(BaseHTTPRequestHandler):
                 with LOCK:
                     JOBS[job.run_dir.name] = job
                 self._send(200, dict(job=job.run_dir.name, **payload))
+                return
+            if path == "/api/grass-gradient":
+                job = _job(str(body.get("job", "")))
+                if job is None:
+                    self._send(404, {"error": "unknown job"})
+                    return
+                if job.state in ("meshing", "solving"):
+                    self._send(409, {"error": "job already running"})
+                    return
+                job.cancel.clear()
+                job.error = None
+                job.state = "solving"
+                threading.Thread(target=pipeline.run_grass, args=(job, body), daemon=True).start()
+                self._send(200, dict(job=job.run_dir.name, state=job.state))
+                return
+            if path == "/api/optimize":
+                job = _job(str(body.get("job", "")))
+                if job is None:
+                    self._send(404, {"error": "unknown job"})
+                    return
+                if job.state in ("meshing", "solving"):
+                    self._send(409, {"error": "job already running"})
+                    return
+                job.cancel.clear()
+                job.error = None
+                threading.Thread(target=pipeline.run_optimize, args=(job, body),
+                                 daemon=True).start()
+                self._send(200, dict(job=job.run_dir.name, state=job.state))
                 return
             if path == "/api/mesh":
                 job = _job(str(body.get("job", "")))

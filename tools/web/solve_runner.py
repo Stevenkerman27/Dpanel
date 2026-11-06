@@ -78,17 +78,28 @@ def solve_fixed(surface, alpha, reference, wall_formulation="galerkin"):
     from panel.p1_lifting_g1 import from_dpanel_half_surface
     from panel.p1_lifting_g2 import combine_wings, solve_multi
 
-    wing = from_dpanel_half_surface(surface)
+    data = json.loads(Path(surface).read_text(encoding="utf-8"))
+    structured = data.get("schema") == "dpanel.grass_fixed_topology.v1"
+    if structured:
+        from panel.grass_mesh import load_grass_wing
+        wing = load_grass_wing(data)
+    else:
+        wing = from_dpanel_half_surface(surface)
     model = combine_wings([wing], reference_area=reference.get("area", wing.reference_area),
                           reference_chord=reference.get("chord", wing.chord),
                           reference_point=tuple(reference.get("point", wing.reference_point)))
     print("P1 %s 固定尾迹（半翼镜像为全翼）" % wall_formulation, flush=True)
     state = solve_multi(model, alpha, kutta="pressure", wall_formulation=wall_formulation)
-    data = json.loads(Path(surface).read_text(encoding="utf-8"))
     faces = data.get("faces") or []
     cp = state["cp"][:len(faces)]
-    field = dict(vertices=data["coordinates"], faces=faces, cp=cp.tolist(),
-                 wake_faces=data.get("wake_faces") or [], chord=data.get("reference_chord"))
+    vertices = data["coordinates"]
+    wake_faces = data.get("wake_faces") or []
+    if structured:
+        offset = len(vertices)
+        vertices = vertices + wing.wake_xyz.tolist()
+        wake_faces = (wing.wake_faces + offset).tolist()
+    field = dict(vertices=vertices, faces=faces, cp=cp.tolist(),
+                 wake_faces=wake_faces, chord=wing.chord, mirror=not structured)
     rows = []
     for group in state["group_results"]:
         gamma = group["gamma"]
@@ -109,18 +120,24 @@ def solve_fixed(surface, alpha, reference, wall_formulation="galerkin"):
                 physical_accuracy_accepted=False)
 
 
-def solve_free(surface, alpha, iterations, reference, wall_formulation="galerkin"):
+def solve_free(surface, alpha, iterations, reference, wall_formulation="galerkin",
+               wake_method="sheet"):
     """Steady free wake: the wake shape and mu/Gamma are solved together."""
     from panel.p1_lifting_g1 import from_dpanel_half_surface
     from panel.p1_lifting_g2 import combine_wings
     from panel.p1_steady_free_wake import solve_steady_free_wake
 
     print("装载半域面板", flush=True)
-    wing = from_dpanel_half_surface(surface)
+    data = json.loads(Path(surface).read_text(encoding="utf-8"))
+    if data.get("schema") == "dpanel.grass_fixed_topology.v1":
+        from panel.grass_mesh import load_grass_wing
+        wing = load_grass_wing(data)
+    else:
+        wing = from_dpanel_half_surface(surface)
     model = combine_wings([wing], reference_area=reference.get("area", wing.reference_area),
                           reference_chord=reference.get("chord", wing.chord),
                           reference_point=tuple(reference.get("point", wing.reference_point)))
-    print("自由尾迹: alpha=%g, iterations=%d, 每轮同时重解 mu/Gamma" % (alpha, iterations),
+    print("自由尾迹: method=%s, alpha=%g, iterations=%d, 每轮同时重解 mu/Gamma" % (wake_method, alpha, iterations),
           flush=True)
 
     def save(iteration, mesh, state, record):
@@ -131,10 +148,26 @@ def solve_free(surface, alpha, iterations, reference, wall_formulation="galerkin
             "-" if cl is None else "%+.6f" % float(cl),
             "-" if jump is None else "%.2e" % float(jump)), flush=True)
 
-    value = solve_steady_free_wake(model, alpha, kutta="pressure",
-                                   iterations=int(iterations), relaxation=0.25,
-                                   wall_formulation=wall_formulation,
-                                   save_callback=save)
+    if wake_method == "filament":
+        if wall_formulation != "galerkin":
+            raise ValueError("涡线自由尾迹目前只支持 P1 弱形式壁面")
+        from panel.p1_filament_free_wake import (resample_structured_wake, structure_cad_wake,
+                                                 solve_filament_free_wake)
+        if data.get("schema") == "dpanel.grass_fixed_topology.v1":
+            model = resample_structured_wake(model, wake_panels=8)
+        else:
+            model = structure_cad_wake(model, wake_panels=8)
+        print("涡线尾迹: 重建为 8 段结构化尾迹，涡核=0.05c，展向细分=2", flush=True)
+        value = solve_filament_free_wake(model, alpha, iterations=int(iterations),
+                    relaxation=0.25, core_radius=0.05*model.reference_chord,
+                    subdivisions=2, intersection_guard=True, save_callback=save)
+    elif wake_method == "sheet":
+        value = solve_steady_free_wake(model, alpha, kutta="pressure",
+                                       iterations=int(iterations), relaxation=0.25,
+                                       wall_formulation=wall_formulation,
+                                       save_callback=save)
+    else:
+        raise ValueError("未知自由尾迹方法")
     history = []
     for row in value["history"]:
         history.append(dict(iteration=row.get("iteration"), CL=row.get("CL"),
@@ -149,21 +182,23 @@ def solve_free(surface, alpha, iterations, reference, wall_formulation="galerkin
                          gamma_sum=result.get("Gamma_integral"),
                          CL_gamma=result.get("CL_gamma")))
     last = history[-1] if history else {}
-    return dict(mode="free", wall_formulation=final["wall_formulation"],
+    return dict(mode="free", wake_method=wake_method, wall_formulation=final["wall_formulation"],
                 CL=last.get("CL"), CD=last.get("CD"),
                 CM=final.get("CM_y"), cp=None, residual=None,
                 seconds=value.get("seconds"),
                 converged=bool(value.get("converged")),
-                geometry_stable=bool(value.get("geometry_stable")),
-                iterations=value.get("iterations"), history=history,
-                group_rows=rows, group_results=_plain(final.get("group_results")))
+                geometry_stable=(bool(value["geometry_stable"])
+                                 if "geometry_stable" in value else None),
+                status=value.get("status"), iterations=len(history)-1, history=history,
+                group_rows=rows, group_results=_plain(final.get("group_results")),
+                physical_accuracy_accepted=False)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="one in-process panel solve")
     parser.add_argument("--surface", required=True)
     parser.add_argument("--out", required=True)
-    parser.add_argument("--wake", default="fixed", choices=["fixed", "free"])
+    parser.add_argument("--wake", default="fixed", choices=["fixed", "free", "free_filament"])
     parser.add_argument("--wall-formulation", default="galerkin",
                         choices=["galerkin", "collocation", "p0"])
     parser.add_argument("--alpha", type=float, default=4.0)
@@ -178,11 +213,12 @@ def main(argv=None):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     started = time.time()
-    if args.wake == "free":
+    if args.wake in ("free", "free_filament"):
         if args.wall_formulation == "p0":
             parser.error("p0 is only available for a fixed wake")
         result = solve_free(Path(args.surface), args.alpha, args.iterations,
-                            json.loads(args.reference), args.wall_formulation)
+                            json.loads(args.reference), args.wall_formulation,
+                            wake_method="filament" if args.wake=="free_filament" else "sheet")
     elif args.wall_formulation == "p0":
         result = solve_fixed_p0(Path(args.surface))
     else:

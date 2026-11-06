@@ -35,6 +35,10 @@ SCHEMA = [
     dict(key="sections", label="展向站数", unit="-", default=8, min=3, max=24, step=1),
 ]
 INT_KEYS = frozenset(["sections"])
+GRASS_DEFAULTS = dict(
+    leading_edge_xyz=[[0., 0., 0.], [.2, 2., .2]],
+    chord=[1., .8], twist_radians=[0., .04],
+    cst=[[.17] * 8 + [-.17] * 8 + [0., 0.] for _ in range(2)])
 
 # Non-lifting bodies (fuselages) are separate parts; panel/cad_half.py takes
 # them through --body-cad and treats their wall faces as wetted but not lifting,
@@ -77,6 +81,30 @@ def normalise_body(raw):
 def normalise(raw):
     """Return the parameter dictionary with defaults filled and values clamped."""
     raw = raw or {}
+    if "grass_sections" in raw:
+        data = raw["grass_sections"]
+        if not isinstance(data, dict):
+            raise ValueError("GRASS 截面必须是对象")
+        try:
+            xyz = [[float(v) for v in row] for row in data["leading_edge_xyz"]]
+            chord = [float(v) for v in data["chord"]]
+            twist = [float(v) for v in data["twist_radians"]]
+            cst = [[float(v) for v in row] for row in data["cst"]]
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("GRASS 截面需要数值型前缘坐标、弦长、扭转和 CST") from exc
+        n = len(chord)
+        if (not 2 <= n <= 4 or len(xyz) != n or len(twist) != n or len(cst) != n
+                or any(len(row) != 3 for row in xyz)
+                or any(len(row) != 18 for row in cst)):
+            raise ValueError("GRASS 截面需要 2 至 4 组，每组 3 个前缘坐标和 18 个 CST 值")
+        if (not all(math.isfinite(v) for row in xyz + cst for v in row)
+                or not all(math.isfinite(v) for v in chord + twist)
+                or xyz[0] != [0., 0., 0.]
+                or any(xyz[i + 1][1] <= xyz[i][1] for i in range(n - 1))
+                or any(v <= 0 for v in chord) or any(row[17] != 0 for row in cst)):
+            raise ValueError("GRASS 截面要求有限数、根前缘为零、展向递增、弦长为正且尾缘闭合")
+        return dict(grass_sections=dict(leading_edge_xyz=xyz, chord=chord,
+                                        twist_radians=twist, cst=cst)), []
     out = {}
     clamped = []
     for item in SCHEMA:
@@ -155,6 +183,12 @@ def trailing_edge_points(p):
 
 def reference(p):
     """Reference area / chord / moment point declared to the solver."""
+    if "grass_sections" in p:
+        data = p["grass_sections"]
+        xyz, chord = data["leading_edge_xyz"], data["chord"]
+        area = sum((chord[i] + chord[i + 1]) * (xyz[i + 1][1] - xyz[i][1])
+                   for i in range(len(chord) - 1))
+        return dict(area=area, chord=chord[0], point=[.25 * chord[0], 0., 0.])
     mean_chord = 0.5 * (p["root_chord"] + p["tip_chord"])
     return dict(area=float(mean_chord * p["span"]),
                 chord=float(p["root_chord"]),

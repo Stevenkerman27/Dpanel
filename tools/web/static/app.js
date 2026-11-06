@@ -5,8 +5,16 @@ const state = {
   schema: [], bodySchema: [], bodyDefaults: {},
   parts: [], selected: 0,
   build: null, result: null, mesh: null, meshLoading: false, jobId: null,
-  tab: 'geom', busy: false, dirty: true, poll: null,
+  tab: 'geom', busy: false, dirty: true, poll: null, grassJobId: null,
+  sections: null, sectionIndex: 0, optJobId: null, optResult: null,
 };
+const SECTION_FIELDS = ['leading_edge_xyz', 'chord', 'twist_radians', 'cst'];
+function deepClone(value) { return JSON.parse(JSON.stringify(value)); }
+function cloneSections(source) {
+  const copy = {};
+  SECTION_FIELDS.forEach((key) => { copy[key] = deepClone(source[key]); });
+  return copy;
+}
 
 /* ---------------- API ---------------- */
 async function api(path, body) {
@@ -28,9 +36,7 @@ function clearLog() { el('log').textContent = ''; }
 
 /* ---------------- parts ---------------- */
 function wingDefaults() {
-  const out = {};
-  state.schema.forEach((item) => { out[item.key] = item.default; });
-  return out;
+  return { grass_sections: cloneSections(state.sections) };
 }
 function addPart(kind) {
   if (kind === 'wing' && state.parts.some((p) => p.kind === 'wing')) return;
@@ -40,6 +46,7 @@ function addPart(kind) {
   state.selected = state.parts.length - 1;
   renderParts();
   renderEditor();
+  drawSectionView();
   markDirty();
 }
 function renderParts() {
@@ -55,7 +62,9 @@ function renderParts() {
     kind.textContent = part.kind === 'wing' ? '升力面' : '机身';
     li.appendChild(label);
     li.appendChild(kind);
-    li.addEventListener('click', () => { state.selected = index; renderParts(); renderEditor(); });
+    li.addEventListener('click', () => {
+      state.selected = index; renderParts(); renderEditor(); drawSectionView();
+    });
     list.appendChild(li);
   });
   el('addWing').disabled = state.parts.some((p) => p.kind === 'wing');
@@ -74,6 +83,10 @@ function renderEditor() {
   box.innerHTML = '';
   if (!part) { el('editorTitle').textContent = '部件参数'; return; }
   el('editorTitle').textContent = part.name + ' · ' + (part.kind === 'wing' ? '升力面' : '机身');
+  if (part.kind === 'wing') {
+    renderSectionEditor(box);
+    return;
+  }
   const schema = part.kind === 'wing' ? state.schema : state.bodySchema;
   schema.forEach((item) => {
     const label = document.createElement('label');
@@ -91,6 +104,338 @@ function renderEditor() {
     label.appendChild(input);
     box.appendChild(label);
   });
+}
+
+/* ---------------- section editor ---------------- */
+function numberField(labelText, value, step, onInput, options) {
+  const label = document.createElement('label');
+  label.textContent = labelText;
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.step = step;
+  input.value = formatNumber(value);
+  if (options && options.disabled) { input.disabled = true; label.title = options.title || ''; }
+  input.addEventListener('input', () => {
+    const next = Number(input.value);
+    if (!Number.isFinite(next)) return;
+    onInput(next, input);
+  });
+  label.appendChild(input);
+  return label;
+}
+
+function formatNumber(value) {
+  if (!Number.isFinite(value)) return '';
+  return String(Number(value.toFixed(6)));
+}
+
+function cstGroup(title, weightStart, box) {
+  const head = document.createElement('div');
+  head.className = 'cst-head';
+  head.textContent = title;
+  box.appendChild(head);
+  const grid = document.createElement('div');
+  grid.className = 'cst-grid';
+  for (let k = 0; k < 8; k += 1) {
+    grid.appendChild(numberField('w' + k, state.sections.cst[state.sectionIndex][weightStart + k], 0.005,
+      (value) => {
+        state.sections.cst[state.sectionIndex][weightStart + k] = value;
+        markDirty();
+        drawSectionView();
+      }));
+  }
+  box.appendChild(grid);
+}
+
+function renderSectionEditor(box) {
+  const sections = state.sections;
+  const count = sections.chord.length;
+  state.sectionIndex = Math.max(0, Math.min(state.sectionIndex, count - 1));
+  const index = state.sectionIndex;
+
+  const tabs = document.createElement('div');
+  tabs.className = 'sectabs';
+  for (let i = 0; i < count; i += 1) {
+    const button = document.createElement('button');
+    button.className = 'sectab' + (i === index ? ' active' : '');
+    const name = document.createElement('b');
+    name.textContent = '截面 ' + (i + 1);
+    const meta = document.createElement('span');
+    meta.textContent = 'y=' + formatNumber(sections.leading_edge_xyz[i][1]) + ' · c=' +
+      formatNumber(sections.chord[i]);
+    button.appendChild(name);
+    button.appendChild(meta);
+    button.addEventListener('click', () => {
+      state.sectionIndex = i;
+      renderEditor();
+      drawSectionView();
+    });
+    tabs.appendChild(button);
+  }
+  box.appendChild(tabs);
+
+  const fields = document.createElement('div');
+  fields.className = 'editor-fields';
+  box.appendChild(fields);
+
+  const le = sections.leading_edge_xyz[index];
+  const locked = index === 0;
+  ['前缘 x (m)', '前缘 y (m)', '前缘 z (m)'].forEach((label, axis) => {
+    fields.appendChild(numberField(label, le[axis], 0.01, (value, input) => {
+      if (!setLeadingEdge(index, axis, value, input)) return;
+      markDirty();
+      drawSectionView();
+      refreshSectionTabs();
+    }, locked ? { disabled: true, title: '根部前缘固定在原点' } : null));
+  });
+  fields.appendChild(numberField('弦长 (m)', sections.chord[index], 0.01, (value, input) => {
+    if (!(value > 0.01)) { input.value = formatNumber(sections.chord[index]); return; }
+    sections.chord[index] = value;
+    markDirty();
+    drawSectionView();
+    refreshSectionTabs();
+  }));
+  fields.appendChild(numberField('扭转 (°)', sections.twist_radians[index] * 180 / Math.PI, 0.1,
+    (value) => {
+      sections.twist_radians[index] = value * Math.PI / 180;
+      markDirty();
+      drawSectionView();
+    }));
+
+  cstGroup('上表面 CST 权重', 0, box);
+  cstGroup('下表面 CST 权重', 8, box);
+  const leadingWeight = document.createElement('div');
+  leadingWeight.className = 'cst-grid single';
+  leadingWeight.appendChild(numberField('前缘权重', sections.cst[index][16], 0.005, (value) => {
+    sections.cst[index][16] = value;
+    markDirty();
+    drawSectionView();
+  }));
+  box.appendChild(leadingWeight);
+
+  const note = document.createElement('p');
+  note.className = 'note';
+  note.textContent = locked
+    ? '根部前缘固定在原点；尾缘厚度固定为 0（尖尾缘）。'
+    : '前缘按 y 严格递增排列；尾缘厚度固定为 0（尖尾缘）。';
+  box.appendChild(note);
+
+  const row = document.createElement('div');
+  row.className = 'row';
+  const add = document.createElement('button');
+  add.textContent = '+ 截面';
+  add.disabled = count >= 4;
+  add.addEventListener('click', () => mutateSectionCount(1));
+  const remove = document.createElement('button');
+  remove.className = 'danger';
+  remove.textContent = '− 截面';
+  remove.disabled = count <= 2;
+  remove.addEventListener('click', () => mutateSectionCount(-1));
+  row.appendChild(add);
+  row.appendChild(remove);
+  box.appendChild(row);
+}
+
+function setLeadingEdge(index, axis, value, input) {
+  const sections = state.sections;
+  if (index === 0) return false;
+  if (axis === 1) {
+    const lower = sections.leading_edge_xyz[index - 1][1] + 1e-3;
+    const upper = index + 1 < sections.chord.length
+      ? sections.leading_edge_xyz[index + 1][1] - 1e-3 : Infinity;
+    if (value <= lower || value >= upper) {
+      logLine('[提示] 前缘 y 必须严格递增：可用区间 (' + lower.toFixed(3) + ', ' +
+              (Number.isFinite(upper) ? upper.toFixed(3) : '∞') + ')');
+      if (input) input.value = formatNumber(sections.leading_edge_xyz[index][axis]);
+      return false;
+    }
+  }
+  sections.leading_edge_xyz[index][axis] = value;
+  return true;
+}
+
+function refreshSectionTabs() {
+  const nodes = document.querySelectorAll('#editor .sectab');
+  nodes.forEach((node, i) => {
+    const meta = node.querySelector('span');
+    if (!meta) return;
+    meta.textContent = 'y=' + formatNumber(state.sections.leading_edge_xyz[i][1]) + ' · c=' +
+      formatNumber(state.sections.chord[i]);
+  });
+}
+
+function mutateSectionCount(delta) {
+  const sections = state.sections;
+  const count = sections.chord.length;
+  if (delta > 0) {
+    if (count >= 4) return;
+    const last = count - 1;
+    sections.leading_edge_xyz.push([sections.leading_edge_xyz[last][0],
+      sections.leading_edge_xyz[last][1] + 1, sections.leading_edge_xyz[last][2]]);
+    sections.chord.push(sections.chord[last]);
+    sections.twist_radians.push(sections.twist_radians[last]);
+    sections.cst.push(deepClone(sections.cst[last]));
+    state.sectionIndex = count;
+  } else {
+    if (count <= 2) return;
+    sections.leading_edge_xyz.splice(state.sectionIndex, 1);
+    sections.chord.splice(state.sectionIndex, 1);
+    sections.twist_radians.splice(state.sectionIndex, 1);
+    sections.cst.splice(state.sectionIndex, 1);
+    state.sectionIndex = Math.max(0, state.sectionIndex - 1);
+  }
+  markDirty();
+  renderEditor();
+  drawSectionView();
+}
+
+/* ---------------- section side view ---------------- */
+const cstView = el('sectionView');
+const cstCtx = cstView.getContext('2d');
+
+function cstValue(weights, leadingWeight, teThickness, x, sign) {
+  let bernstein = 0;
+  const y = 1 - x;
+  let binomial = 1;
+  for (let k = 0; k < 8; k += 1) {
+    if (k > 0) binomial = binomial * (7 - (k - 1)) / k;
+    bernstein += binomial * Math.pow(x, k) * Math.pow(y, 7 - k) * weights[k];
+  }
+  const shape = Math.sqrt(Math.max(x, 0)) * y * bernstein;
+  const leading = leadingWeight * x * Math.pow(y, 7.5);
+  return shape + leading + sign * x * teThickness / 2;
+}
+
+/* Section frames follow GRASS-plane/wing_geometry_encoder.py: the airfoil is
+   rotated by (twist - root twist), the section z is rotated by the mean
+   dihedral, and the whole wing is rotated by the root twist about the span axis.
+   The side view drops the span coordinate and keeps (x, z). */
+function sectionFrames(sections) {
+  const le = sections.leading_edge_xyz;
+  const count = sections.chord.length;
+  const dihedral = [];
+  const cumZ = [0];
+  let y = 0;
+  let z = 0;
+  for (let i = 1; i < count; i += 1) {
+    const span = le[i][1] - le[i - 1][1];
+    const angle = Math.atan2(le[i][2] - le[i - 1][2], span);
+    dihedral.push(angle);
+    y += span * Math.cos(angle);
+    z += span * Math.sin(angle);
+    cumZ.push(z);
+  }
+  const frame = [0];
+  for (let i = 1; i < count - 1; i += 1) frame.push((dihedral[i - 1] + dihedral[i]) / 2);
+  if (count > 1) frame.push(dihedral[dihedral.length - 1]);
+  return { frame, cumZ, rootTwist: sections.twist_radians[0] };
+}
+
+function projectSection(sections, frames, index, xLocal, zLocal) {
+  const relative = sections.twist_radians[index] - frames.rootTwist;
+  const cosR = Math.cos(relative);
+  const sinR = Math.sin(relative);
+  const localX = cosR * xLocal + sinR * zLocal;
+  const localZ = -sinR * xLocal + cosR * zLocal;
+  const x1 = sections.leading_edge_xyz[index][0] + localX;
+  const z1 = frames.cumZ[index] + Math.cos(frames.frame[index]) * localZ;
+  const cosT = Math.cos(frames.rootTwist);
+  const sinT = Math.sin(frames.rootTwist);
+  return [cosT * x1 + sinT * z1, -sinT * x1 + cosT * z1];
+}
+
+function sectionOutline(sections, frames, index, count) {
+  const code = sections.cst[index];
+  const chord = sections.chord[index];
+  const upper = [];
+  const lower = [];
+  for (let i = 0; i <= count; i += 1) {
+    const x = 0.5 * (1 - Math.cos(Math.PI * i / count));
+    const yu = cstValue(code.slice(0, 8), code[16], code[17], x, 1);
+    const yl = cstValue(code.slice(8, 16), code[16], code[17], x, -1);
+    upper.push(projectSection(sections, frames, index, chord * x, chord * yu));
+    lower.push(projectSection(sections, frames, index, chord * x, chord * yl));
+  }
+  return { upper, lower, leading: projectSection(sections, frames, index, 0, 0) };
+}
+
+function drawSectionView() {
+  const part = state.parts[state.selected];
+  const ratio = window.devicePixelRatio || 1;
+  const width = cstView.clientWidth || 360;
+  const height = cstView.clientHeight || 180;
+  if (cstView.width !== Math.round(width * ratio) || cstView.height !== Math.round(height * ratio)) {
+    cstView.width = Math.round(width * ratio);
+    cstView.height = Math.round(height * ratio);
+  }
+  cstCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  cstCtx.clearRect(0, 0, width, height);
+  cstCtx.fillStyle = '#0d1116';
+  cstCtx.fillRect(0, 0, width, height);
+  if (!part || part.kind !== 'wing' || !state.sections) {
+    el('sectionCount').textContent = '';
+    return;
+  }
+  const sections = state.sections;
+  const count = sections.chord.length;
+  const frames = sectionFrames(sections);
+  const outlines = [];
+  for (let i = 0; i < count; i += 1) outlines.push(sectionOutline(sections, frames, i, 61));
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  outlines.forEach((outline) => {
+    outline.upper.concat(outline.lower).forEach((point) => {
+      minX = Math.min(minX, point[0]); maxX = Math.max(maxX, point[0]);
+      minZ = Math.min(minZ, point[1]); maxZ = Math.max(maxZ, point[1]);
+    });
+  });
+  const pad = 14;
+  const spanX = Math.max(maxX - minX, 1e-6);
+  const spanZ = Math.max(maxZ - minZ, 1e-6);
+  const scale = Math.min((width - 2 * pad) / spanX, (height - 2 * pad) / spanZ);
+  const originX = pad + (width - 2 * pad - spanX * scale) / 2;
+  const originY = pad + (height - 2 * pad - spanZ * scale) / 2;
+  const map = (point) => [originX + (point[0] - minX) * scale, originY + (maxZ - point[1]) * scale];
+
+  cstCtx.strokeStyle = 'rgba(90,110,135,.5)';
+  cstCtx.setLineDash([3, 4]);
+  cstCtx.beginPath();
+  const [ax0, ay0] = map([minX, 0]);
+  const [ax1, ay1] = map([maxX, 0]);
+  cstCtx.moveTo(ax0, ay0); cstCtx.lineTo(ax1, ay1);
+  cstCtx.stroke();
+  cstCtx.setLineDash([]);
+
+  outlines.forEach((outline, i) => {
+    const current = i === state.sectionIndex;
+    cstCtx.beginPath();
+    outline.upper.forEach((point, k) => {
+      const [x, y] = map(point);
+      if (k === 0) cstCtx.moveTo(x, y); else cstCtx.lineTo(x, y);
+    });
+    for (let k = outline.lower.length - 1; k >= 0; k -= 1) {
+      const [x, y] = map(outline.lower[k]);
+      cstCtx.lineTo(x, y);
+    }
+    cstCtx.closePath();
+    if (current) {
+      cstCtx.fillStyle = 'rgba(79,195,247,.16)';
+      cstCtx.fill();
+      cstCtx.strokeStyle = '#4fc3f7';
+      cstCtx.lineWidth = 2;
+    } else {
+      cstCtx.strokeStyle = 'rgba(150,166,186,.55)';
+      cstCtx.lineWidth = 1;
+    }
+    cstCtx.stroke();
+    const [lx, ly] = map(outline.leading);
+    cstCtx.fillStyle = current ? '#8fdcff' : 'rgba(150,166,186,.75)';
+    cstCtx.font = '10px Consolas, monospace';
+    cstCtx.fillText(String(i + 1), lx - 2, ly + (i % 2 ? 12 : -6));
+  });
+
+  el('sectionCount').textContent = '共 ' + count + ' 个截面 · 当前 ' + (state.sectionIndex + 1) +
+    ' · 弦长 ' + formatNumber(sections.chord[state.sectionIndex]) + ' m · 扭转 ' +
+    formatNumber(sections.twist_radians[state.sectionIndex] * 180 / Math.PI) + '°';
 }
 
 function markDirty() { state.dirty = true; updateHint(); }
@@ -186,7 +531,7 @@ function resize() {
   view.height = Math.max(1, Math.round(box.height * ratio));
   draw();
 }
-window.addEventListener('resize', resize);
+window.addEventListener('resize', () => { resize(); drawSectionView(); });
 
 let dragging = null;
 view.addEventListener('mousedown', (event) => { dragging = { x: event.clientX, y: event.clientY }; });
@@ -247,13 +592,13 @@ function sceneGeometry() {
 function sceneMesh() {
   if (!state.mesh) return null;
   return { vertices: state.mesh.coordinates, faces: state.mesh.faces,
-           mode: 'mesh', mirror: true, fitFacesOnly: true };
+           mode: 'mesh', mirror: state.mesh.mirror !== false, fitFacesOnly: true };
 }
 function sceneField() {
   const field = state.result && state.result.field;
   if (!field || !field.cp || !field.cp.length) return null;
   return { vertices: field.vertices, faces: field.faces, cp: field.cp,
-           wake: field.wake_faces || [], mode: 'cp', mirror: true, fitFacesOnly: true };
+           wake: field.wake_faces || [], mode: 'cp', mirror: field.mirror !== false, fitFacesOnly: true };
 }
 
 function draw() {
@@ -370,6 +715,21 @@ function renderScene(scene, width, height) {
     }
     ctx.restore();
   }
+  if (state.tab !== 'result' && state.build && state.build.mesh_features) {
+    const features = state.build.mesh_features.features || [];
+    for (const feature of features) {
+      const points = feature.points.map((point) => toScreen(viewMatrix(toLocal(point))));
+      if (points.length < 2) continue;
+      ctx.save();
+      ctx.strokeStyle = '#ffb454';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < points.length; i += 1) ctx.lineTo(points[i][0], points[i][1]);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
 }
 
 /* ---------------- results ---------------- */
@@ -398,7 +758,8 @@ function renderResult() {
   table.innerHTML = '';
   const result = state.result;
   if (!result) { el('resultMode').textContent = ''; el('resultMode').className = 'badge'; return; }
-  el('resultMode').textContent = result.mode === 'free' ? '自由尾迹' : '固定尾迹';
+  el('resultMode').textContent = result.mode === 'free'
+    ? (result.wake_method === 'filament' ? '涡线自由尾迹' : '面元自由尾迹') : '固定尾迹';
   el('resultMode').className = 'badge' + (result.mode === 'free' ? ' free' : '');
   const solveSeconds = result.runner_seconds === undefined ? result.seconds : result.runner_seconds;
   el('resultTime').textContent = solveSeconds ? Number(solveSeconds).toFixed(1) + ' s' : '';
@@ -489,17 +850,20 @@ function drawPlot() {
 /* ---------------- build / solve ---------------- */
 function setBusy(value) {
   state.busy = value;
-  ['build', 'mesh', 'solve', 'addWing', 'addBody', 'delPart'].forEach((id) => { el(id).disabled = value; });
+  ['build', 'mesh', 'solve', 'grassSolve', 'optRun', 'optApply', 'addWing', 'addBody', 'delPart'].forEach((id) => { el(id).disabled = value; });
   if (!value) {
     renderParts();
     el('addWing').disabled = state.parts.some((p) => p.kind === 'wing');
+    el('optApply').disabled = !state.optResult;
   }
   updateHint();
 }
 
 async function buildGeometry() {
   try {
-    const payload = { parts: state.parts.map((p) => ({ kind: p.kind, params: p.params })) };
+    const payload = { parts: state.parts.map((p) => ({
+      kind: p.kind, params: p.kind === 'wing' ? wingDefaults() : p.params,
+    })) };
     const data = await api('/api/build', payload);
     state.build = data;
     state.jobId = data.job;
@@ -576,7 +940,8 @@ async function doSolve() {
       ncpu: Number(el('ncpu').value),
     };
     clearLog();
-    logLine('求解中：α=' + body.alpha + '°，尾迹=' + (body.wake === 'free' ? '自由' : '固定'));
+    const wakeLabel = {fixed: '固定', free: '自由（面元）', free_filament: '自由（涡线）'};
+    logLine('求解中：α=' + body.alpha + '°，尾迹=' + (wakeLabel[body.wake] || body.wake));
     await api('/api/solve', body);
     await pollJob();
   } catch (error) {
@@ -676,14 +1041,152 @@ function renderLog(lines) {
 }
 
 async function doCancel() {
-  if (!state.jobId) return;
+  const job = state.optJobId || state.grassJobId || state.jobId;
+  if (!job) return;
   try {
-    await api('/api/cancel', { job: state.jobId });
+    await api('/api/cancel', { job });
     logLine('已请求取消…');
   } catch (error) {
     logLine('[错误] ' + error.message);
   }
 }
+
+el('grassSolve').addEventListener('click', async () => {
+  if (!state.mesh || state.dirty || state.mesh.size !== Number(el('size').value) ||
+      state.mesh.alpha !== Number(el('alpha').value)) {
+    logLine('[错误] 请先为当前参数、网格尺寸和迎角生成网格');
+    return;
+  }
+  if (el('wake').value !== 'fixed' || el('wallFormulation').value !== 'galerkin') {
+    logLine('[错误] GRASS 梯度目前要求固定尾迹和 P1 弱形式');
+    return;
+  }
+  setBusy(true);
+  el('grassResult').textContent = '计算中…';
+  try {
+    const data = {job: state.jobId, alpha: Number(el('alpha').value)};
+    const started = await api('/api/grass-gradient', data);
+    state.grassJobId = started.job;
+    while (true) {
+      const job = await api('/api/job?id=' + encodeURIComponent(started.job));
+      if (job.state === 'done') {
+        el('grassResult').textContent = JSON.stringify({
+          CL: job.result.CL, CD: job.result.CD, gradients: job.result.gradients,
+          solver_success: job.result.success, solver_status: job.result.status,
+          stationarity: job.result.stationarity, stationary_verified: job.result.stationary_verified,
+          constraints: job.result.gradient_constraints,
+        }, null, 2);
+        break;
+      }
+      if (job.state === 'error' || job.state === 'cancelled') {
+        throw new Error(job.error || '已取消');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    }
+  } catch (error) {
+    el('grassResult').textContent = '错误：' + error.message;
+  } finally {
+    state.grassJobId = null;
+    setBusy(false);
+  }
+});
+
+/* ---------------- section optimization ---------------- */
+function optimizationReport(report) {
+  const initial = report.initial || {};
+  const final = report.final || {};
+  const fmt = (value) => (value === null || value === undefined || !Number.isFinite(Number(value)))
+    ? '-' : Number(value).toFixed(6);
+  const change = (a, b) => {
+    if (!Number.isFinite(Number(a)) || !Number.isFinite(Number(b)) || Number(a) === 0) return '';
+    const ratio = (Number(b) - Number(a)) / Math.abs(Number(a));
+    return ' (' + (ratio >= 0 ? '+' : '') + (100 * ratio).toFixed(1) + '%)';
+  };
+  const labels = { induced: '诱导阻力 CDi', pressure: '压差阻力 CD', lift: '升力 CL（最大化）' };
+  const lines = [];
+  lines.push('状态: ' + (report.success ? '收敛' : '未收敛') + ' — ' + (report.message || ''));
+  lines.push('目标: ' + (labels[report.objective] || report.objective) + ' ' +
+             fmt(initial.objective) + ' → ' + fmt(final.objective) +
+             change(initial.objective, final.objective));
+  lines.push('CL ' + fmt(initial.CL) + ' → ' + fmt(final.CL) +
+             '   CD ' + fmt(initial.CD) + ' → ' + fmt(final.CD));
+  lines.push('CDi ' + fmt(initial.CDi) + ' → ' + fmt(final.CDi) +
+             '   参考面积 ' + fmt(initial.area) + ' → ' + fmt(final.area));
+  lines.push('评估 ' + (report.evaluations || 0) + ' 次 · SLSQP 迭代 ' +
+             (report.iterations || 0) + ' · 面板 ' + (report.panel_count || '-'));
+  lines.push('气动精度尚未验收：结果只表示在当前离散网格上的改进量。');
+  return lines.join('\n');
+}
+
+async function runOptimize() {
+  if (!state.mesh || state.dirty || state.mesh.size !== Number(el('size').value) ||
+      state.mesh.alpha !== Number(el('alpha').value)) {
+    el('optResult').textContent = '请先为当前参数、网格尺寸和迎角生成网格';
+    return;
+  }
+  const clText = el('optClMin').value.trim();
+  const body = {
+    job: state.jobId,
+    alpha: Number(el('alpha').value),
+    objective: el('optObjective').value,
+    cl_min: clText === '' ? null : Number(clText),
+    keep_area: el('optKeepArea').checked,
+    iterations: Number(el('optIterations').value),
+  };
+  if (clText !== '' && !Number.isFinite(body.cl_min)) {
+    el('optResult').textContent = '升力约束必须是数值';
+    return;
+  }
+  if (!(body.iterations >= 1)) {
+    el('optResult').textContent = '迭代次数至少为 1';
+    return;
+  }
+  state.optResult = null;
+  setBusy(true);
+  el('optResult').textContent = '启动优化…';
+  try {
+    const started = await api('/api/optimize', body);
+    state.optJobId = started.job;
+    let last = -1;
+    while (true) {
+      const job = await api('/api/job?id=' + encodeURIComponent(started.job));
+      renderLog(job.log || []);
+      if ((job.log || []).length !== last) {
+        last = (job.log || []).length;
+        const tail = (job.log || []).slice(-1)[0];
+        if (tail) el('optResult').textContent = tail;
+      }
+      if (job.state === 'done') {
+        state.optResult = job.result;
+        el('optResult').textContent = optimizationReport(job.result);
+        el('optApply').disabled = false;
+        break;
+      }
+      if (job.state === 'error' || job.state === 'cancelled') {
+        throw new Error(job.error || '已取消');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    }
+  } catch (error) {
+    el('optResult').textContent = '错误：' + error.message;
+  } finally {
+    state.optJobId = null;
+    setBusy(false);
+  }
+}
+
+el('optRun').addEventListener('click', runOptimize);
+el('optApply').addEventListener('click', () => {
+  if (!state.optResult || !state.optResult.sections_final) return;
+  state.sections = cloneSections(state.optResult.sections_final);
+  state.sectionIndex = Math.min(state.sectionIndex, state.sections.chord.length - 1);
+  state.optResult = null;
+  el('optApply').disabled = true;
+  markDirty();
+  renderEditor();
+  drawSectionView();
+  logLine('已载入优化截面：请重新生成几何与网格后再求解');
+});
 
 /* ---------------- tabs ---------------- */
 document.querySelectorAll('.tab').forEach((button) => {
@@ -704,7 +1207,7 @@ el('delPart').addEventListener('click', () => {
   if (part.kind === 'wing') { logLine('升力面是求解器必需部件，不能删除'); return; }
   state.parts.splice(state.selected, 1);
   state.selected = Math.max(0, Math.min(state.selected, state.parts.length - 1));
-  renderParts(); renderEditor(); markDirty();
+  renderParts(); renderEditor(); drawSectionView(); markDirty();
 });
 el('build').addEventListener('click', () => doBuild());
 el('mesh').addEventListener('click', () => doMesh());
@@ -716,6 +1219,7 @@ async function boot() {
   try {
     const schema = await api('/api/schema');
     state.schema = schema.params || [];
+    state.sections = cloneSections(schema.grass_defaults);
     state.bodySchema = schema.body_params || [];
     state.bodyDefaults = schema.body_defaults || {};
     el('ncpu').value = schema.solve_threads || 8;
@@ -733,7 +1237,7 @@ async function boot() {
     select.value = (devices.filter((item) => item.available)[0] || { id: 'cpu' }).id;
     state.parts = [{ kind: 'wing', name: '主翼', params: wingDefaults() }];
     state.selected = 0;
-    renderParts(); renderEditor();
+    renderParts(); renderEditor(); drawSectionView();
     el('server').textContent = '就绪 · runs: ' + (schema.runs || '').split(/[\\/]/).slice(-2).join('/');
     el('server').className = 'status ok';
     resize();
