@@ -261,6 +261,60 @@ ndof 维 Hessian，0.05 m 上快一倍多。0.5/0.35 m 的 3% 差异不是实现
   `raise RuntimeError`（2026-11-07 加的守卫），但没有 fallback。pressure 的 `max_nfev` + 罚项
   路径在这种情形下更耐操。
 
+## 8. 尖端后缘掠角与闭包条件数（2026-11-08）
+
+### 8.1 现象
+
+椭圆平面形按 θ 均匀截到 0.97·π/2（13 段、chord_panels 8、每段 8 个展向面板、6176 面）时，
+`potential_jump` 的 γ(y) 在全展向光滑，但在 +y 尖端 y≈3.90 处猛刺：γ 从 +0.5 跳到 −2.13，
+全展向 12 次变号，|dγ/dy| 最大 181，Trefftz 展向效率 e=12.96。同网格 `pressure` 光滑
+（2 次变号，自身 Kutta 残差 4.84e−14），矩形翼同密度（1056/2080/3104 面）也是 0 次变号。
+
+网格质量不是原因：细网格 min_edge 3.6e−3、min_area 1.58e−5、max_aspect 15.0（粗网格 16.3）。
+
+### 8.2 机制
+
+尖端弦长 0.094、后缘与来流夹角 77°，尾迹在这最后 5 cm 内是 7 条 0.007 宽 × 20 弦长的条带
+（纵横比约 2900）。闭包 Jacobian `dp/dγ` 里相邻的跳变行因此近共线，系统近奇异；Newton 仍然
+收敛（残差 3e−15），但解里带着一个任意大小的近零方向分量。
+
+诊断办法：monkeypatch `torch.linalg.solve`，对 pj Newton 的方阵取 `torch.linalg.svdvals`
+算条件数，同时记录每步最大修正落在哪个 γ 索引。实测（同一 6176 面网格，只改尖端）：
+
+| 尖端 | 后缘掠角 | cond(dp/dγ) | γ 变号 | CL |
+|---|---|---|---|---|
+| 矩形翼（96 个展向面板） | 0° | 1.1e2 | 0 | 0.276199 |
+| 椭圆到 0.85 展长 + 线性收尖到 0.24 | 54° | 4.5e4 | 0 | 0.302000 |
+| 椭圆到 0.90 展长 + 线性收尖到 0.12 | 62° | 7.1e5 | 0 | 0.303038 |
+| 纯椭圆截到 0.97 展长 | 77° | 7.3e6 | 12（γ→−2.13） | 0.253478 |
+
+结论：**残差小不等于解唯一**。这一档的 `stationarity_inf` 是 3e−15，如果只看残差门禁，
+它会以「收敛」的姿态进入梯度与优化。
+
+### 8.3 门禁
+
+`panel/p1_potential_jump_torch.py`：
+
+* `_condition(matrix)`：`svdvals` 首末之比，最小值为 0 时返回 inf；ng>2048 跳过（SVD 是 O(ng³)）。
+* `potential_jump_newton` 返回 7 元组，末项是循环中见到的最大 condition。
+* `solve_potential_jump(..., condition_limit=1e6)` 在残差门禁之外再查条件数，超限抛
+  `RuntimeError("potential-jump Kutta is ill-conditioned: cond(dp/dgamma)=… exceeds …, so the
+  trailing-edge circulation is not unique …")`，并把 `condition`/`condition_limit` 写进 diagnostics。
+* `panel/p1_cst_gradient.py` 的 `_PotentialJumpImplicit.forward` 加同一道门禁：近奇异的
+  状态上的隐式梯度同样是任意的。
+
+阈值取 1e6 的依据就是 8.2 的表：放行 4.5e4 的有界尖端，拒掉 1.25e6 的 0.90 尖端
+（它已有 2 次变号、|dγ/dy| 177）与 7.3e6 的纯 0.97 尖端。cond 不是完美预测器——
+N11 c6 sps6 只有 6.4e4 却有 8 次变号，N13 c8 sps4 只有 6.8e2 却有 3 次——门禁只挡极端档，
+小振幅的展向锯齿仍需靠 γ 变号/斜率这类诊断看。
+
+### 8.4 对锚点的影响
+
+椭圆锚点改用有界尖端（0.85 展长 + 线性收尖到弦 0.24，后缘掠角 54°）：1560 面 e=0.9265、
+CL_alpha 4.4341（提升线 4.518），同展长同面积矩形 0.8678；细化到 6176 面 e=0.9884，趋近椭圆
+最优。证据与断言在 `test/test_physics_anchors.py`，门禁用例用最便宜的复现（9 段 c6 sps8、
+3096 面、cond 1.63e6）。
+
 ### 7.3 建议顺序（2026-11-07 修订）
 
 第 1 步原计划「直接升默认」，执行到一半被 §7.4 的反证否决，顺序改成：
