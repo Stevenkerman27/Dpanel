@@ -451,13 +451,23 @@ class _PotentialJumpImplicit(torch.autograd.Function):
             gamma, state, p, evaluations, scale = _potential_jump_newton(
                 pressure, mu_base, mapping, linear[nt:], nt, max_nfev=max_nfev)
             p_inf = float(p.abs().max())
+            # The Newton system is square, so a converged p is ~1e-15 by construction; that
+            # makes |p| useless as an absolute gate.  Compare it with the pressure scale of
+            # the initial linear-closure state instead, and never hand back a non-stationary
+            # point whose implicit gradient would be silently wrong.
+            relative_p = p_inf / max(scale, 1.0)
+            if not bool(torch.isfinite(p).all()) or relative_p > 1e-10:
+                raise RuntimeError(
+                    "potential-jump Kutta did not converge; implicit gradient is not valid "
+                    "(evaluations=%d, stationarity_inf=%.3g, relative=%.3g, max_nfev=%d)"
+                    % (evaluations, p_inf, relative_p, max_nfev))
             coefficients = _coefficients(state, grad, mesh["areas"], mesh["normals"],
                                          reference_area, angle, wing, xyz, include_ideal_drag)
         ctx.save_for_backward(xyz, wake, reference_area, gamma)
         ctx.meta = meta
         meta["sink"]["info"] = dict(
-            status=0, success=bool(p_inf <= 1e-9), kutta="potential_jump",
-            stationarity=p_inf, stationarity_scale=scale, relative_step=p_inf / scale,
+            status=0, success=True, kutta="potential_jump",
+            stationarity=p_inf, stationarity_scale=scale, relative_step=relative_p,
             evaluations=evaluations, stationary_verified=True,
             physical_accuracy_accepted=False)
         return coefficients
