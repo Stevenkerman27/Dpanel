@@ -20,9 +20,16 @@ def test_fixed_free_length_study_smoke(tmp_path):
     result=subprocess.run([sys.executable,"-m","tools.wake_fixed_free_length_study",
         "--out",str(output),"--chord-panels","3","--span-panels","4",
         "--wake-panels","2","--lengths","5,10","--free-length","5",
-        "--iterations","1","--order","2"],env=env,capture_output=True,text=True,timeout=60)
+        "--iterations","1","--order","2","--fixed-span","--snapshots",str(tmp_path/"snapshots"),
+        "--final-snapshot",str(tmp_path/"final.npz")],
+        env=env,capture_output=True,text=True,timeout=60)
     assert result.returncode==0,result.stderr
     report=json.loads(output.read_text(encoding="utf-8"))
+    with np.load(tmp_path/"snapshots"/"step_000.npz") as snapshot:
+        assert {"mu","gamma","xyz_0","faces_0","velocity_0"} <= set(snapshot.files)
+    with np.load(tmp_path/"final.npz") as snapshot:
+        assert {"mu","gamma","xyz","faces","gamma_hat"} <= set(snapshot.files)
+    assert report["fixed_span"]
     assert [row["mode"] for row in report["records"]]==["fixed","fixed","free"]
     assert report["wall_formulation"]=="galerkin"
     assert report["records"][-1]["history"][0]["CL"]==pytest.approx(report["records"][0]["CL"],abs=1e-10)
@@ -239,6 +246,22 @@ def test_orientation_backtracking_cannot_turn_a_large_map_residual_into_converge
     cross1 = np.cross(after[:,1]-after[:,0],after[:,2]-after[:,0])
     assert np.all(np.einsum("fi,fi->f",cross0,cross1)>0)
     assert result["history"][0]["orientation_backtracking"]["factor"] < 1.
+    diagnostic = result["history"][0]["orientation_diagnostics"]["lifting_0"]
+    assert diagnostic["trial_ratio"] < 0.
+    assert len(diagnostic["nodes"]) == 3
     assert max(result["history"][0]["raw_map_residual"].values()) > 1.
     assert not result["converged"]
+
+
+def test_fixed_span_target_preserves_an_oblique_stream_surface():
+    from panel.p1_steady_free_wake import _one_wake_target, prepare_wake_material
+    group = combine_wings([make_wing(chord_panels=3,span_panels=4,wake_panels=3)]).groups[0]
+    xyz = group.wake_xyz.copy()
+    xyz[:,2] = .5*xyz[:,1]
+    group = replace(group,wake_xyz=xyz)
+    material = prepare_wake_material(group,streamwise=True)
+    velocity = np.tile([1.,.2,.1],(len(xyz),1))
+    target,frozen = _one_wake_target(group,material,velocity,fixed_span=True)
+    np.testing.assert_allclose(target,xyz,atol=1e-12)
+    assert frozen == []
 

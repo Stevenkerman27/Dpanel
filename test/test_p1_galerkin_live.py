@@ -121,6 +121,14 @@ def test_web_fixed_and_free_start_on_same_weak_model(tmp_path):
     reference=dict(area=wing.reference_area,chord=wing.chord,point=[0,0,0])
     fixed=solve_fixed(surface,4.,reference)
     free=solve_free(surface,4.,0,reference)
+    filament=solve_free(surface,4.,1,reference,wake_method="filament")
     assert fixed["wall_formulation"]==free["wall_formulation"]=="galerkin"
     np.testing.assert_allclose(fixed["CL"],free["CL"],rtol=1e-12,atol=1e-12)
+    np.testing.assert_allclose(fixed["CL"],filament["history"][0]["CL"],rtol=1e-10,atol=1e-10)
+    assert filament["wake_method"]=="filament"
+    assert filament["geometry_stable"] is None
+    assert filament["iterations"]==1
+    assert filament["physical_accuracy_accepted"] is False
+    with pytest.raises(ValueError,match="只支持"):
+        solve_free(surface,4.,1,reference,wall_formulation="collocation",wake_method="filament")
     assert len(fixed["field"]["cp"])==len(wall_half)

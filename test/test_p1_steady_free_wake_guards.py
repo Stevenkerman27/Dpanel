@@ -26,7 +26,9 @@ def test_shortest_edge_scales_the_two_sided_probe():
     for name in base:
         assert base[name]['probe_over_shortest_max'] > 0.0
         assert floored[name]['probe_over_shortest_max'] >= base[name]['probe_over_shortest_max']
-        assert floored[name]['probe_over_shortest_max'] >= 2.0 - 1e-9
+        assert floored[name]['requested_probe_over_shortest_max'] >= 2.0 - 1e-9
+        assert floored[name]['probe_over_shortest_max'] <= floored[name]['requested_probe_over_shortest_max']
+        assert floored[name]['probe_adjusted_faces'] > 0
         assert floored[name]['aspect_p90'] >= 1.0
 
 

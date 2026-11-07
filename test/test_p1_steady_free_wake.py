@@ -5,8 +5,48 @@ import pytest
 from panel.p1_lifting_g2 import make_conventional_fixture,assemble_multi,combine_wings
 from panel.p1_lifting_g1 import make_wing
 from panel.p1_steady_free_wake import (
-    _potentials_at,mean_wake_velocity,prepare_wake_material,
+    _potentials_at,_probe_segment_crosses_triangle,_safe_probe_scales,mean_wake_velocity,prepare_wake_material,
     reassemble_wake_only,solve_steady_free_wake)
+
+
+def test_probe_stencil_shrinks_when_difference_crosses_another_face():
+    centers=np.array([[0.,0.,0.]])
+    normals=np.array([[0.,0.,1.]])
+    own=np.array([[-1.,-1.,0.],[1.,-1.,0.],[0.,1.,0.]])
+    other=np.array([[.01,-1.,-.5],[.01,1.,-.5],[.01,0.,.5]])
+    h,step,halvings=_safe_probe_scales(centers,normals,np.array([.1]),
+                                       np.array([.02]),np.array([own,other]),
+                                       np.array([0]),1.)
+    assert halvings[0]==2
+    assert h[0]==pytest.approx(.025)
+    assert step[0]==pytest.approx(.005)
+
+
+def test_probe_path_shrinks_when_another_sheet_lies_between_traces():
+    own=np.array([[-1.,-1.,0.],[1.,-1.,0.],[0.,1.,0.]])
+    h,step,halvings=_safe_probe_scales(np.array([[0.,0.,0.]]),
+        np.array([[0.,0.,1.]]),np.array([.1]),np.array([.02]),
+        np.array([own,own+np.array([0.,0.,.05])]),np.array([0]),1.)
+    assert halvings[0]==2
+    assert h[0]==pytest.approx(.025)
+    assert step[0]==pytest.approx(.005)
+
+
+def test_probe_fails_when_surface_cannot_be_separated():
+    centers=np.array([[0.,0.,0.]])
+    normals=np.array([[0.,0.,1.]])
+    own=np.array([[-1.,-1.,0.],[1.,-1.,0.],[0.,1.,0.]])
+    other=np.array([[0.,-1.,-.5],[0.,1.,-.5],[0.,0.,.5]])
+    with pytest.raises(ValueError,match="probe intersects another surface"):
+        _safe_probe_scales(centers,normals,np.array([.1]),np.array([.02]),
+                           np.array([own,other]),np.array([0]),1.,max_halvings=2)
+
+
+def test_probe_intersection_is_scale_independent():
+    triangle=np.array([[0.,-1.,-1.],[0.,1.,-1.],[0.,0.,1.]])
+    for scale in (1.,1e-5,1e-9):
+        assert _probe_segment_crosses_triangle(
+            scale*np.array([-1.,0.,0.]),scale*np.array([1.,0.,0.]),scale*triangle)
 
 
 def test_full_velocity_of_zero_doublet_state_is_exact_uniform_flow():
@@ -32,7 +72,7 @@ def test_only_wake_reassembly_reproduces_original_g2_operator():
 
 
 def test_real_coupled_state_recomputed_after_both_wakes_relax():
-    model=make_conventional_fixture(wake_panels=3)
+    model=make_conventional_fixture(wake_panels=3,wake_length=5.)
     a=solve_steady_free_wake(model,5,kutta='pressure',iterations=3,relaxation=.2,
                              wall_formulation='collocation')
     assert len(a['history'])==4
@@ -50,6 +90,15 @@ def test_real_coupled_state_recomputed_after_both_wakes_relax():
                                       new.wake_xyz[material.roots])
         assert np.max(abs(original.wake_xyz-new.wake_xyz))>1e-4
         assert a['history'][-1]['wakes'][original.name]['normal_slip_rms'] < a['history'][0]['wakes'][original.name]['normal_slip_rms']
+
+
+def test_sheet_runs_full_budget_even_when_tolerances_already_met():
+    mesh=combine_wings([make_wing(chord_panels=3,span_panels=4,wake_panels=2)])
+    result=solve_steady_free_wake(mesh,4.,iterations=3,geometry_tol=100.,slip_tol=100.)
+    assert result["status"]=="completed"
+    assert result["converged"]
+    assert [row["iteration"] for row in result["history"]]==[0,1,2,3]
+    assert "raw_map_residual" in result["history"][-1]
 
 
 def test_single_group_steady_wake_and_cli_result(tmp_path):

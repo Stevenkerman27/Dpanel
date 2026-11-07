@@ -328,6 +328,65 @@ def _potentials_at(mesh, result, targets, *, block=20, cached_wall=None,
     return values
 
 
+def _probe_segment_crosses_triangle(start, end, tri):
+    edge1=tri[1]-tri[0]; edge2=tri[2]-tri[0]; direction=end-start
+    cross=np.cross(direction,edge2)
+    determinant=float(np.dot(edge1,cross))
+    scale=np.linalg.norm(edge1)*np.linalg.norm(edge2)*np.linalg.norm(direction)
+    if abs(determinant)<=32*np.finfo(float).eps*scale:
+        return False
+    offset=start-tri[0]
+    u=float(np.dot(offset,cross)/determinant)
+    other=np.cross(offset,edge1)
+    v=float(np.dot(direction,other)/determinant)
+    t=float(np.dot(edge2,other)/determinant)
+    return bool(u>=-1e-10 and v>=-1e-10 and u+v<=1+1e-10
+                and -1e-10<=t<=1+1e-10)
+
+
+def _safe_probe_scales(centers, normals, heights, steps, triangles, own_faces,
+                       reference_chord, max_halvings=16):
+    """Shrink stencils that cross another sheet or wall triangle."""
+    heights=np.asarray(heights,float).copy()
+    steps=np.asarray(steps,float).copy()
+    low=triangles.min(axis=1); high=triangles.max(axis=1)
+    halvings=np.zeros(len(centers),dtype=int)
+    tol=1e-10*reference_chord
+    eye=np.eye(3)
+    for face,center in enumerate(centers):
+        for attempt in range(max_halvings+1):
+            h=heights[face]; step=steps[face]
+            extent=h*np.abs(normals[face])+step
+            candidates=np.flatnonzero(np.all(low<=center+extent+tol,axis=1)
+                                       & np.all(high>=center-extent-tol,axis=1))
+            candidates=candidates[candidates!=own_faces[face]]
+            blocked=False
+            for side in (-1.,1.):
+                probe=center+side*h*normals[face]
+                segments=[(center,probe)]
+                segments.extend((probe-step*axis,probe+step*axis) for axis in eye)
+                for start,end in segments:
+                    segment_candidates=candidates[
+                        np.all(low[candidates]<=np.maximum(start,end)+tol,axis=1)
+                        & np.all(high[candidates]>=np.minimum(start,end)-tol,axis=1)]
+                    for index in segment_candidates:
+                        if _probe_segment_crosses_triangle(start,end,triangles[index]):
+                            blocked=True
+                            break
+                    if blocked:
+                        break
+                if blocked:
+                    break
+            if not blocked:
+                break
+            if attempt==max_halvings:
+                raise ValueError(f'wake face {face}: probe intersects another surface after {max_halvings} halvings')
+            heights[face]*=.5
+            steps[face]*=.5
+            halvings[face]+=1
+    return heights,steps,halvings
+
+
 def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
                        probe_fraction=0.055, step_fraction=0.009,
                        probe_floor_fraction=0.0, block=24,
@@ -343,6 +402,8 @@ def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
         raise ValueError('Require positive gradient step << wake-side probe height')
     wall=_mesh(mesh)
     output={};summary={}
+    triangles=np.concatenate([wall.triangles]+[_wake_mesh(g).triangles for g in mesh.groups])
+    wake_start=len(wall.triangles)
     for g in mesh.groups:
         wm=_wake_mesh(g)
         length=np.sqrt(wm.areas)
@@ -354,6 +415,11 @@ def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
             # field. Floor the height by the short edge instead.
             h=np.maximum(h,probe_floor_fraction*shortest)
         step=step_fraction*length
+        requested_h=h.copy()
+        h,step,halvings=_safe_probe_scales(wm.centers,wm.normals,h,step,triangles,
+                                           wake_start+np.arange(len(wm.faces)),
+                                           mesh.reference_chord)
+        wake_start+=len(wm.faces)
         e=np.eye(3)
         centers=wm.centers[:,None,None,:]+(np.array([-1.,1.])[None,:,None,None]
                                *h[:,None,None,None]*wm.normals[:,None,None,:])
@@ -383,7 +449,10 @@ def mean_wake_velocity(mesh: MultiLiftingMesh, state, *,
                 wake_cp_jump_max=float(np.max(np.abs(cp_difference))),
                 shortest_edge_median=float(np.median(shortest)),
                 aspect_p90=float(np.percentile(_aspect_ratio(wm),90)),
-                probe_over_shortest_max=float(np.max(h/shortest)))
+                probe_over_shortest_max=float(np.max(h/shortest)),
+                requested_probe_over_shortest_max=float(np.max(requested_h/shortest)),
+                probe_adjusted_faces=int(np.count_nonzero(halvings)),
+                probe_max_halvings=int(np.max(halvings)))
     return output,summary
 
 
@@ -398,13 +467,19 @@ def _node_velocities(g, face_velocity):
     return total
 
 
-def _one_wake_target(g, mat, vel, *, min_axial=0.08, freeze=False):
+def _one_wake_target(g, mat, vel, *, min_axial=0.08, freeze=False, fixed_span=False):
     """Integrate nodal velocity slopes along frozen material-coordinate rays."""
     current=np.asarray(g.wake_xyz,float)
     original=mat.reference_xyz
-    velocity=np.asarray(vel,float)
+    velocity=np.asarray(vel,float).copy()
     if velocity.shape != original.shape or not np.isfinite(velocity).all():
         raise ValueError(f'{g.name}: invalid wake-node velocity field')
+    if fixed_span:
+        normals=_node_velocities(g,_wake_mesh(g).normals)
+        if np.any(np.abs(normals[mat.used,2])<1e-8):
+            raise ValueError(f'{g.name}: fixed-span wake requires a single-valued z(x,y) surface')
+        velocity[:,2]+=velocity[:,1]*normals[:,1]/np.where(np.abs(normals[:,2])<1e-8,1.,normals[:,2])
+        velocity[:,1]=0.
     integral=mat.streamwise_integral
     if integral is None:
         integral=_material_line_integrals(replace(g,wake_xyz=original))
@@ -469,12 +544,16 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
                            max_step_chord=0.0, slip_gate=0.0,
                            wake_potential_backend='numpy', wake_device='cpu',
                            orientation_backtracking=True, wall_formulation='galerkin',
-                           galerkin_order=3):
+                           galerkin_order=3, fixed_span=False):
     """Return final state, relaxed wake mesh, and complete iteration history.
 
     Iteration 0 is ALWAYS the original fixed-wake solution; downstream wake
     vertices are then convected in x as a material sheet (y and z drift).
     Gamma is recomputed in the current wake geometry at EVERY iteration.
+    Run the requested number of updates unless a geometry guard blocks one;
+    convergence is reported on the final state and does not stop updates.
+    fixed_span is experimental: it holds y fixed and corrects the z slope
+    using the sheet normal, but does not transport Gamma along drifting rays.
     """
     if not (isinstance(iterations,int) and 0<=iterations<=100
             and 0<relaxation<=1 and geometry_tol>0 and slip_tol>0):
@@ -502,6 +581,7 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
                     device=wake_device)
         record=dict(iteration=i,CL=state['CL'],CL_gamma=state['CL_gamma'],
                 CD_pressure=state['CD_pressure'],CM_y=state['CM_y'],
+                elapsed_seconds=time.perf_counter()-t0,
                 wall_rms=state['wall_rms'],jump_rms=state['jump_rms'],
                 wall_formulation=state['wall_formulation'],wall_dual_rms=state['wall_dual_rms'],
                 pressure_kutta_rms=state['pressure_kutta_rms'],
@@ -510,18 +590,12 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
         if save_callback:
             save_callback(i,current,state,record)
         history.append(record)
-        if i==iterations:
-            if i>0:
-                record['wake_geometry_change']=history[-2]['wake_geometry_change']
-                record['relaxed_nodes']=history[-2]['relaxed_nodes']
-                record['frozen_nodes']=history[-2]['frozen_nodes']
-            break
         target={};displacement=[];frozen={}
         for g in current.groups:
             m=mat[g.name]
             v=_node_velocities(g,panel_velocity[g.name])
             t,frozen_nodes=_one_wake_target(g,m,v,min_axial=min_axial,
-                                            freeze=frozen_guard)
+                                            freeze=frozen_guard,fixed_span=fixed_span)
             frozen[g.name]=len(frozen_nodes)
             record.setdefault('frozen_node_ids',{})[g.name]=frozen_nodes
             x_new=g.wake_xyz.copy()
@@ -564,7 +638,30 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             target[g.name]=x_new
         record['wake_geometry_change']=max(displacement)
         record['frozen_nodes']=frozen
+        if i==iterations:
+            record['proposed_geometry_change']=record['wake_geometry_change']
+            record['wake_geometry_change']=history[-2]['wake_geometry_change'] if i>0 else None
+            break
         if orientation_backtracking:
+            record['orientation_diagnostics']={}
+            for g in current.groups:
+                faces=g.wake_faces
+                reference=mat[g.name].reference_xyz[faces]
+                ref_cross=np.cross(reference[:,1]-reference[:,0],reference[:,2]-reference[:,0])
+                tri=g.wake_xyz[faces]
+                cross=np.cross(tri[:,1]-tri[:,0],tri[:,2]-tri[:,0])
+                trial=target[g.name][faces]
+                trial_cross=np.cross(trial[:,1]-trial[:,0],trial[:,2]-trial[:,0])
+                area2=np.einsum('fi,fi->f',ref_cross,ref_cross)
+                ratio=np.einsum('fi,fi->f',cross,ref_cross)/area2
+                trial_ratio=np.einsum('fi,fi->f',trial_cross,ref_cross)/area2
+                face=int(np.argmin(trial_ratio))
+                record['orientation_diagnostics'][g.name]=dict(
+                    face=face,nodes=faces[face].tolist(),
+                    centroid=tri[face].mean(axis=0).tolist(),
+                    velocity=panel_velocity[g.name][face].tolist(),
+                    current_ratio=float(ratio[face]),trial_ratio=float(trial_ratio[face]),
+                    minimum_current_ratio=float(ratio.min()))
             for attempt in range(25):
                 factor=2.**(-attempt)
                 candidate={}
@@ -589,39 +686,16 @@ def solve_steady_free_wake(mesh: MultiLiftingMesh, alpha_deg=5., *,
             target=candidate
             record['wake_geometry_change']*=factor
         current=with_wake_xyz(current,target)
-        if (record['wake_geometry_change']<geometry_tol and i>1
-                and max(record['raw_map_residual'].values())<geometry_tol
-                and not any(frozen.values())
-                and max(item['normal_slip_rms'] for item in slip.values()) < slip_tol):
-            # A separate *final* equilibrium solve on the newly relaxed shape.
-            ops=reassemble_wake_only(current,fixed)
-            state=solve_multi(current,alpha_deg,kutta=kutta,max_nfev=max_nfev,operators=ops,
-                              wall_formulation=wall_formulation)
-            _,slip=mean_wake_velocity(current,state,probe_fraction=probe_fraction,
-                                      step_fraction=step_fraction,
-                                      probe_floor_fraction=probe_floor_fraction,
-                                      block=wake_velocity_block,potential_backend=wake_potential_backend,
-                                      device=wake_device)
-            final=dict(iteration=i+1,CL=state['CL'],CL_gamma=state['CL_gamma'],
-                       CD_pressure=state['CD_pressure'],CM_y=state['CM_y'],
-                       wall_rms=state['wall_rms'],jump_rms=state['jump_rms'],
-                       wall_formulation=state['wall_formulation'],wall_dual_rms=state['wall_dual_rms'],
-                       pressure_kutta_rms=state['pressure_kutta_rms'],wakes=slip,
-                       groups=state['group_results'],
-                       wake_geometry_change=record['wake_geometry_change'])
-            history.append(final)
-            if save_callback:save_callback(i+1,current,state,final)
-            break
     converged=bool(not blocked_geometry and len(history)>1 and history[-1]['wakes']
                     and history[-1]['wake_geometry_change'] is not None
                     and history[-1]['wake_geometry_change']<geometry_tol
-                    and max(history[-2].get('raw_map_residual',{'none':float('inf')}).values())<geometry_tol
-                    and not any(history[-2].get('frozen_nodes',{}).values())
+                    and max(history[-1].get('raw_map_residual',{'none':float('inf')}).values())<geometry_tol
+                    and not any(history[-1].get('frozen_nodes',{}).values())
                     and max(x['normal_slip_rms'] for x in history[-1]['wakes'].values())<slip_tol)
     return dict(mesh=current,state=state,history=history,
                 iterations=len(history)-1,seconds=time.perf_counter()-t0,
                 converged=converged,
-                status='blocked_geometry' if blocked_geometry else 'converged' if converged else 'iteration_limit',
+                status='blocked_geometry' if blocked_geometry else 'completed',
                 geometry_stable=bool(not blocked_geometry and len(history)>1
                     and history[-1]['wake_geometry_change'] is not None
                     and history[-1]['wake_geometry_change']<geometry_tol),
