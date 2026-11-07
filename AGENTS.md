@@ -43,6 +43,14 @@ git地址为https://github.com/Stevenkerman27/Dpanel.git，使用192.168.3.9:789
 2. 必须后台的：`run_in_background: true` 起完立刻去做别的独立工作，最后统一收（`job_output` 不带 `wait`，或只给 5–15 秒探一次）。
 3. 要看进度的：让作业把日志写进文件，需要时读文件尾部，而不是反复 `job_output`。
 
+### 推送：提权 + 仓库内 token（沙箱内 TLS 后端不可用）
+
+沙箱内 git 连匿名 `git ls-remote` 都失败：schannel 报 `SEC_E_NO_CREDENTIALS`，openssl 后端被报 unavailable；把 `.agents/github_token` 拼进 URL 也不管用（失败发生在 TLS 初始化，不是认证）。可用路径只有一条：
+
+    ops_bash(command="bash tools/push_github.sh", sandbox_permissions="danger-full-access", justification="...")
+
+`tools/push_github.sh` 从 `.agents/github_token`（93 字符 PAT）拼 `https://x-access-token:<tok>@github.com/Stevenkerman27/Dpanel.git` 后直接 `git push <url> HEAD:master`（可传分支名作参数），不写进 git config、不进 remote。token 不要打印、不要进 commit 或文档。`runs/` 被 gitignore，所以推送脚本放 `tools/` 而不是 `runs/scratch_opt/`。
+
 ### 每步开工前的自检三问
 
 1. 这一步的结论会改变我下一步吗？不会 → 合并。
