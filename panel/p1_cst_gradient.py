@@ -394,9 +394,9 @@ def _affine_state(B, rhs, J, nt, ng):
 
 def _potential_jump_newton(pressure, mu_base, mapping, gamma, nt, max_nfev=12, tol=1e-12):
     """Newton on p(gamma) = 0; the shared implementation also returns the relative residual."""
-    gamma, state, p, evaluations, scale, _relative = potential_jump_newton(
+    gamma, state, p, evaluations, scale, _relative, condition = potential_jump_newton(
         pressure, mu_base, mapping, gamma, nt, max_nfev=max_nfev, tol=tol)
-    return gamma, state, p, evaluations, scale
+    return gamma, state, p, evaluations, scale, condition
 
 
 class _PotentialJumpImplicit(torch.autograd.Function):
@@ -435,7 +435,7 @@ class _PotentialJumpImplicit(torch.autograd.Function):
             K = torch.cat((K, torch.zeros((len(pairs), ng), dtype=xyz.dtype)), dim=1)
             basis = null_space(torch.cat((J, K), dim=0), rcond=1e-11)
             linear = basis @ torch.linalg.lstsq(B @ basis, rhs).solution
-            gamma, state, p, evaluations, scale = _potential_jump_newton(
+            gamma, state, p, evaluations, scale, condition = _potential_jump_newton(
                 pressure, mu_base, mapping, linear[nt:], nt, max_nfev=max_nfev)
             p_inf = float(p.abs().max())
             # The Newton system is square, so a converged p is ~1e-15 by construction; that
@@ -448,6 +448,15 @@ class _PotentialJumpImplicit(torch.autograd.Function):
                     "potential-jump Kutta did not converge; implicit gradient is not valid "
                     "(evaluations=%d, stationarity_inf=%.3g, relative=%.3g, max_nfev=%d)"
                     % (evaluations, p_inf, relative_p, max_nfev))
+            # A converged residual does not make gamma unique; a near-null Jacobian direction
+            # (trailing edge swept into the stream direction at a tip) would make the implicit
+            # gradient just as arbitrary, so refuse it here too.
+            if condition is not None and condition > 1e6:
+                raise RuntimeError(
+                    "potential-jump Kutta is ill-conditioned: cond(dp/dgamma)=%.3g exceeds "
+                    "1e+06, so the trailing-edge circulation is not unique and the implicit "
+                    "gradient is not valid (evaluations=%d, stationarity_inf=%.3g)"
+                    % (condition, evaluations, p_inf))
             coefficients = _coefficients(state, grad, mesh["areas"], mesh["normals"],
                                          reference_area, angle, wing, xyz, include_ideal_drag)
         ctx.save_for_backward(xyz, wake, reference_area, gamma)
@@ -455,7 +464,7 @@ class _PotentialJumpImplicit(torch.autograd.Function):
         meta["sink"]["info"] = dict(
             status=0, success=True, kutta="potential_jump",
             stationarity=p_inf, stationarity_scale=scale, relative_step=relative_p,
-            evaluations=evaluations, stationary_verified=True,
+            evaluations=evaluations, stationary_verified=True, condition=condition,
             physical_accuracy_accepted=False)
         return coefficients
 
