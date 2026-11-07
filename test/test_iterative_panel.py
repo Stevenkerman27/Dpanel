@@ -8,6 +8,7 @@ from panel.differentiable import solve_fields
 from panel.iterative import (PanelOperator,make_plan,validate_plan,solve_state,
                              solve_fields_iterative)
 from iterative_fixture import wing_inputs
+from jaxpr_shapes import traced_shapes
 jax.config.update('jax_enable_x64',True)
 
 
@@ -94,6 +95,12 @@ def test_implicit_geometry_gradient_and_station_chain_matches_lu_and_fd(half):
     ad=jax.jit(jax.grad(lambda a:loss(a,True)))(jnp.array(0.))
     reference=jax.grad(lambda a:loss(a,False))(jnp.array(0.))
     np.testing.assert_allclose(ad,reference,rtol=2e-8,atol=1e-9)
+    # Pin the absolute value against a central difference: comparing the two AD
+    # paths alone would pass even if both dropped the same geometry term, which
+    # is exactly what a stop_gradient on the dense matrix once did (7.086%).
+    h=1e-4
+    fd=(loss(h,False)-loss(-h,False))/(2*h)
+    np.testing.assert_allclose(ad,fd,rtol=1e-6,atol=0)
     value=jax.jit(lambda a:loss(a,True))
     for h in (1e-3,1e-4,1e-5):
         fd=(value(h)-value(-h))/(2*h)
@@ -113,21 +120,7 @@ def test_half_rejects_asymmetry_and_failed_gmres_is_not_accepted():
 def test_streamed_primal_has_no_full_wall_aic_array_in_jaxpr():
     inp,plan,op=build(False)
     program=jax.make_jaxpr(op.matvec)(jnp.zeros(plan.shape[0]))
-    shapes=[]
-    def visit(value):
-        if hasattr(value,'jaxpr'):
-            visit(value.jaxpr)
-        elif hasattr(value,'eqns'):
-            for eqn in value.eqns:
-                for var in eqn.outvars:
-                    aval=getattr(var,'aval',None)
-                    if aval is not None and hasattr(aval,'shape'):shapes.append(tuple(aval.shape))
-                for parameter in eqn.params.values():visit(parameter)
-        elif isinstance(value,(tuple,list)):
-            for item in value:visit(item)
-        elif isinstance(value,dict):
-            for item in value.values():visit(item)
-    visit(program)
+    shapes=traced_shapes(program)
     assert (op.nf,op.nf) not in shapes
     assert plan.shape not in shapes
     # This is a traced-shape regression, NOT a peak-RSS/GPU-memory measurement.

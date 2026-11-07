@@ -39,10 +39,16 @@ class PanelTopology(NamedTuple):
 def linear_solve(matrix, rhs):
     """Dense LU reused for implicit forward and transposed solves.
 
-    Differentiation acts on matvec's matrix, NOT on pivots/LU operations.
-    This is a dense solver, not a matrix-free acceleration claim.
+    custom_linear_solve differentiates through matvec, so the geometry enters the
+    gradient through the -lambda @ (dA/dtheta) x term; the pivots and the LU
+    factorization are never differentiated. This is a dense solver, not a
+    matrix-free acceleration claim.
+
+    Do not wrap matrix in stop_gradient: that silently drops the dA/dtheta term.
+    On the test/test_iterative_panel.py fixture it moved d(loss)/da from
+    0.0156432 (central difference, and the iterative VJP) to 0.0146080, a 7.086%
+    error, while the primal stayed identical to 6.1e-14.
     """
-    matrix = jax.lax.stop_gradient(matrix)
     # CPU jnp.linalg.solve also lowers to LAPACK. Native access violations need
     # a runtime fix; changing the solve API does not avoid the OpenBLAS kernel.
     return jax.lax.custom_linear_solve(

@@ -8,6 +8,7 @@ import pytest
 import jax
 import jax.numpy as jnp
 
+from jaxpr_shapes import traced_shapes
 from panel.kernel import triangle_potential
 from panel.half_native import (
     prepare_half_topology, validate_half_configuration,
@@ -292,25 +293,7 @@ def test_streamed_half_action_does_not_trace_full_square_aic():
     op = HalfPanelOperator(inputs["vertices"], inputs["station_y"],
                            inputs["topology"], inputs["freestream"], block_size=7)
     traced = jax.make_jaxpr(op.matvec)(jnp.zeros(op.state_size))
-    shapes = []
-    def scan(value):
-        if hasattr(value, "jaxpr"):
-            scan(value.jaxpr)
-        elif hasattr(value, "eqns"):
-            for eqn in value.eqns:
-                for var in eqn.outvars:
-                    aval = getattr(var, "aval", None)
-                    if hasattr(aval, "shape"):
-                        shapes.append(tuple(aval.shape))
-                for item in eqn.params.values():
-                    scan(item)
-        elif isinstance(value, (tuple, list)):
-            for item in value:
-                scan(item)
-        elif isinstance(value, dict):
-            for item in value.values():
-                scan(item)
-    scan(traced)
+    shapes = traced_shapes(traced)
     assert (op.nf, op.nf) not in shapes
     assert (2*op.nf, 2*op.nf) not in shapes
     # Traced-shape absence is NOT a GPU/CPU peak-memory measurement.
