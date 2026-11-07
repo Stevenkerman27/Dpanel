@@ -1,10 +1,14 @@
-"""Replay the frozen reference bundles against the torch backend (issue #92, S9 and S10).
+"""Replay the eight regression-reference bundles against the torch backend (issue #92, S9/S10).
 
 The bundles in docs/issue92/references/ hold the production default solve of eight frozen
 fixtures, recorded on the NumPy/SciPy chain before the default moved to torch, and S10
-retired that chain. They are now the only oracle the torch path has, so this module says
-exactly what they certify and at which bound - per quantity, because one bound does not
-survive a change of NumPy build:
+retired that chain. They are a REGRESSION REFERENCE, not an oracle: they record what our
+own previous code answered, so the only claim they support is "this path still returns the
+same numbers", never "these numbers are right" - STATUS.md still carries
+physical_accuracy_accepted=false. They also pin one configuration on purpose: _solve passes
+kutta="pressure" and wall_formulation="collocation" explicitly, so changing a solver default
+cannot silently rewrite what a bundle means. This module states exactly what they certify
+and at which bound - per quantity, because one bound does not survive a change of NumPy build:
 
 * CL and CL_gamma relative 5e-7;
 * CD_pressure relative 2e-6;

@@ -9,9 +9,10 @@ Two layers:
   PANEL_TORCH_PARITY=1 because the torch path leaves the process unable to call
   NumPy LAPACK afterwards (section 6f of the phase-1 doc).
 
-The frozen reference (docs/issue92/s5_reference_g2.npz) holds the operators and
+The regression reference (docs/issue92/s5_reference_g2.npz) holds the operators and
 the loads of one NumPy structured solve on the g2_conventional fixture, written by
-tools.issue92.s5_loop_parity bundle in a separate process.
+tools.issue92.s5_loop_parity bundle in a separate process. It is a continuity check on
+the retired chain's own answer, not a statement that those numbers are physically right.
 
     PANEL_TORCH_PARITY=1 python -m pytest test/test_p1_solve_torch.py
 """
