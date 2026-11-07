@@ -32,7 +32,11 @@ def _i(value, device):
 def _acceptance_torch(*, result, fun, jac, z, wall_operator, wall_rhs,
                       pressure_residual, gradient_tolerance=1e-6,
                       pressure_tolerance=1e-4, wall_floor_ratio=1.05):
-    """pressure_kutta_acceptance with torch linear algebra. Same predicates."""
+    """pressure_kutta_acceptance with torch linear algebra. Same predicates.
+
+    Pressure closure only; the potential-jump closure is a square Newton solve and must not be
+    classified by these least-squares-floor predicates (docs/KUTTA_CONDITION.md section 7.4).
+    """
     rows = int(wall_operator.shape[0])
     residual = fun(z)
     jf = jac(z)

@@ -142,13 +142,13 @@ def combine_wings(wings: Sequence[Wing], *, origins=None, names=None,
 
 def make_conventional_fixture(*, main=(4,6,4.,1.,.02),
                               tail=(4,4,1.8,.55,0.),
-                              tail_origin=(1.6,0.,.35),wake_panels=2):
+                              tail_origin=(1.6,0.,.35),wake_panels=2,wake_length=10.):
     """A real 3-D lifting main wing + raised horizontal tail, each with own wake."""
     def create(a):
         chord_panels,span_panels,span,chord,camber=a
         return make_wing(chord_panels=chord_panels,span_panels=span_panels,
                          span=span,chord=chord,camber=camber,
-                         wake_panels=wake_panels)
+                         wake_panels=wake_panels,wake_length=wake_length)
     return combine_wings([create(main),create(tail)],
                          origins=[(0.,0.,0.),tail_origin],
                          names=['main_wing','raised_tail'])
@@ -280,6 +280,12 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
     residual is stationary relative to the operator scale (relative projected
     gradient), the Kutta rows are satisfied, and the wall residual sits on the
     floor of the linear subproblem. Nothing else is relaxed.
+
+    Scope: this classifies stops of the *pressure* closure only (an overdetermined
+    least-squares problem, where a residual floor is information). It is not a general
+    Kutta-convergence criterion: the potential-jump closure is a square Newton solve whose
+    |p| -> 1e-15 is constructed, so the same predicates would accept or reject for the wrong
+    reasons. See docs/KUTTA_CONDITION.md section 7.4.
     """
     rows=int(wall_operator.shape[0])
     residual=np.asarray(fun(z),float)
