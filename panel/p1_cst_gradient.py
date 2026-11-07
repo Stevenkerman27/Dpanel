@@ -192,17 +192,25 @@ def galerkin_operators(wing, xyz, order=3, wake_xyz=None, recompute=None):
 
 
 def fixed_wake_cst(code, alpha_deg=4., chord_panels=4, span_panels=4,
-                   span=4., wake_panels=2, max_nfev=160):
-    """Small sharp-TE wing, pressure Kutta, exact stationary implicit gradient."""
+                   span=4., wake_panels=2, max_nfev=160, kutta="pressure"):
+    """Small sharp-TE wing, exact stationary implicit gradient.
+
+    The default closure stays "pressure" because the production solver
+    (panel/p1_lifting_g2.py:solve_multi, kutta="pressure") is what this path is verified
+    against: on the 3x3 CST wing the two agree to 5e-15 in CL, while "potential_jump"
+    differs by 2.9e-4.  See docs/KUTTA_CONDITION.md section 7.
+    """
     wing, xyz = cst_geometry(code, chord_panels, span_panels, span, wake_panels)
-    return fixed_wake_geometry(wing, xyz, None, wing.reference_area, alpha_deg, max_nfev)
+    return fixed_wake_geometry(wing, xyz, None, wing.reference_area, alpha_deg, max_nfev,
+                               kutta=kutta)
 
 
 def fixed_wake_sections(geometry, alpha_deg=4., chord_panels=4,
-                        span_panels_per_segment=2, wake_panels=2, max_nfev=160):
+                        span_panels_per_segment=2, wake_panels=2, max_nfev=160,
+                        kutta="pressure"):
     wing, xyz, wake, area = grass_section_geometry(
         geometry, chord_panels, span_panels_per_segment, wake_panels)
-    return fixed_wake_geometry(wing, xyz, wake, area, alpha_deg, max_nfev)
+    return fixed_wake_geometry(wing, xyz, wake, area, alpha_deg, max_nfev, kutta=kutta)
 
 
 def fixed_wake_surface(path, wall_xz, wake_xz, reference_area, alpha_deg=4., max_nfev=160):
@@ -502,12 +510,16 @@ class _PotentialJumpImplicit(torch.autograd.Function):
                                  wing, xg, include_ideal_drag)
             jp = pressure.jacobian(state)
             dpdg = jp[:, :nt] @ mapping
-            lam = []
+            # The adjoint is one vector, not one per coefficient: dJ/dx = dJ/dx|_gamma
+            # - lambda^T dp/dx with dp/dgamma^T lambda = dJ/dgamma.  Summing the per-coefficient
+            # adjoints *unweighted* is only correct when every upstream weight is one (the
+            # trap that made the first FD check of this closure pass).
+            lam = torch.zeros(dpdg.shape[0], dtype=dpdg.dtype)
             for k in range(coef.numel()):
                 dz = torch.autograd.grad(coef[k], state, retain_graph=True)[0]
                 target = mapping.t() @ dz[:nt] + dz[nt:]
-                lam.append(torch.linalg.solve(dpdg.t(), target).detach())
-            total = (coef * grad_coef).sum() - sum((l * p).sum() for l in lam)
+                lam = lam + grad_coef[k] * torch.linalg.solve(dpdg.t(), target).detach()
+            total = (coef * grad_coef).sum() - (lam * p).sum()
             targets = [xg, ag] + ([wg] if wg.numel() else [])
             grads = torch.autograd.grad(total, targets, allow_unused=True)
         grad_wake = grads[2] if wg.numel() else None

@@ -171,13 +171,33 @@ CST 梯度相对差 6.9e−9 / 8.9e−9，与改前相同。
 3. 反向 ng 维伴随：`lambda = (dp/dgamma)^-T (dJ/dgamma)`，
    `dJ/dx = dJ/dx|_gamma - lambda^T dp/dx|_gamma`，全程一阶图，没有 ndof×ndof 的 Hessian。
 
-梯度校验（`runs/scratch_opt/pj_grad_check.py`，132 面，中心差分 h=1e−6）：
+梯度校验（中心差分 h=1e−6）。**2026-11-07 更正：这里的第一次校验是瞎的。**
 
-| 变量 | 解析 | 差分 | 相对差 |
-|---|---|---|---|
-| cst[0,3] | 2.26214948e−1 | 2.26214947e−1 | 6.3e−9 |
-| cst[1,16] | −3.43108044e−2 | −3.43108042e−2 | 6.4e−9 |
-| cst[1,5] | 4.95254855e−2 | 4.95254741e−2 | 2.3e−7 |
+原先的 `runs/scratch_opt/pj_grad_check.py` 对 `coef.sum()` 求导、差分也是 `c2.sum()`，
+权重恰好全为 1，于是掩盖了反向里的一个真 bug：它把每个系数各自的伴随向量**不加权**地全部减掉
+（`sum((l * p).sum() for l in lam)`），而不是按上游权重合并成一个伴随向量。只要目标是单个系数
+（`dCL` 单独、或优化器里的 `dCDi`），梯度就会错几个百分点。修法是
+`lam = Σ_k grad_coef[k] · solve(dpdg^T, target_k)`，`total = (coef·grad_coef).sum() − (lam·p).sum()`。
+
+当时的错误幅度（3×3 CST 翼，`runs/scratch_opt/pj_xyz_fd.py`）：xyz(5,2) 的 CL 解析 1.094184
+对差分 1.023763，CD 解析 +0.9615 对差分 −0.1752；而数值 IFT 恒等式
+（`runs/scratch_opt/pj_ift_probe3.py`）给出 1.023763 / −0.175181，证明形式没错、实现错。
+
+修好后逐系数校验（`runs/scratch_opt/pj_grad_check_percoef.py`，4 弦向 × 2 展向网格，
+CL=0.290587122 CD=0.001793706 CDi=0.004122875）：
+
+| 变量 | 分量 | 解析 | 差分 | 相对差 |
+|---|---|---|---|---|
+| cst[0,3] | CL | 2.06107877e−1 | 2.06107876e−1 | 5.9e−9 |
+| cst[0,3] | CD | 1.33821109e−2 | 1.33821106e−2 | 2.2e−8 |
+| cst[0,3] | CDi | 6.72496021e−3 | 6.72496027e−3 | 7.6e−9 |
+| cst[1,16] | CL | −1.62430629e−2 | −1.62430652e−2 | 1.4e−7 |
+| cst[1,16] | CDi | 1.93345135e−5 | 1.93344720e−5 | 2.1e−6 |
+| cst[1,5] | CL | 4.30979504e−2 | 4.30979450e−2 | 1.3e−7 |
+
+回归测试：`test/test_p1_cst_gradient.py::test_potential_jump_gradient_matches_central_difference`
+（index 0/8/16，逐系数、逐分量）。教训：伴随实现里任何一个「全 1 权重」的校验都可能是瞎的，
+校验必须按输出分量拆开做。
 
 ### 6.3 两种闭包的 A/B
 
@@ -241,10 +261,29 @@ ndof 维 Hessian，0.05 m 上快一倍多。0.5/0.35 m 的 3% 差异不是实现
   `raise RuntimeError`（2026-11-07 加的守卫），但没有 fallback。pressure 的 `max_nfev` + 罚项
   路径在这种情形下更耐操。
 
-### 7.3 建议顺序
+### 7.3 建议顺序（2026-11-07 修订）
 
-1. 把 `kutta="potential_jump"` 升为**新算例的默认**，保留 `kutta="pressure"` 作为「复现历史数字」的
-   显式选项（一个 commit，附冻结样例重跑）；
+第 1 步原计划「直接升默认」，执行到一半被 §7.4 的反证否决，顺序改成：
+
+1. 把势跳变闭包移植进**生产求解器**（`panel/p1_lifting_g2.py:315 solve_multi`）之后，才谈升默认；
+   在那之前 `fixed_wake_cst` / `fixed_wake_sections` 保留 `kutta=` 参数、默认 `pressure`；
 2. `ISSUE84` 的 `pressure_kutta_acceptance()` 在文档里标注为 pressure 专用，不再当通用判据；
 3. 主求解器的 `signed_speed` 另行评估——它是 §7.2 第 2 条，与本结论不共享代码。
+
+### 7.4 为什么默认仍然是 pressure（升默认被否决）
+
+`kutta="potential_jump"` 是 2026-11-07 新增的 opt-in 路径，`pressure` 仍是默认。
+原因不是数值，而是一条验收性质：
+
+* `panel/p1_lifting_g2.py:315`：`solve_multi(mesh, alpha_deg=5., *, kutta='pressure', ...)`
+  —— 生产 P1 求解器的默认闭包**也是 pressure**。
+* `test/test_p1_cst_gradient.py::test_cst_weak_operators_match_production` 断言可微路径与
+  生产求解器的 CL/CD 差 ≤2e−9。
+* `runs/scratch_opt/production_vs_closures.py`（`cst_geometry(code, 3, 3)`，
+  `code=[.17]*8+[-.17]*8+[0,0]`，α=4°）实测：production CL=0.207708175686、
+  CD=−0.005696693980；pressure 差 **−4.41e−15 / −1.73e−16**；potential_jump
+  CL=0.207419222138（差 −2.89e−4）、CD 差 −1.70e−5。
+
+所以「升默认」不是改一个 kwarg，而是要把 pj 移植进 `solve_multi` / `p1_lifting_g2` 整条线，
+并重跑生产验收。在那之前把默认换掉会直接破坏「可微路径 = 生产 P1」这条性质。
 
