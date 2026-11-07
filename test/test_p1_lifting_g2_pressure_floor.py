@@ -132,7 +132,11 @@ def test_cad_fixture_floor_stop_is_accepted():
     mesh = combine_wings([main, tail], names=['main_wing', 'raised_tail'],
                          origins=[(0., 0., 0.), (1.6, 0., .35)],
                          reference_chord=main.chord, reference_point=main.reference_point)
-    state = solve_multi(mesh, 5., kutta='pressure', max_nfev=80)
+    # The recorded floor numbers belong to the collocation wall; solve_multi's default
+    # became 'galerkin' (816eb9b), which gives wall_over_floor 2.0 and pressure_rms 2.4e-3
+    # here. Pin the formulation this classification rule was measured on.
+    state = solve_multi(mesh, 5., kutta='pressure', max_nfev=80,
+                        wall_formulation='collocation')
     nl = state['nonlinear']
     assert nl['success'] is True
     assert nl['accepted_at_residual_floor'] is True
