@@ -20,6 +20,16 @@ import functools
 import torch
 
 
+def _trapezoid(values, stations, dtype=torch.float64):
+    """Trapezoidal integral of values over stations, in dtype.
+
+    torch.trapezoid replaced the removed torch.trapz; this wrapper keeps the call site's
+    (values, stations, dtype) shape and casts so a float32 input cannot silently promote.
+    """
+    return torch.trapezoid(torch.as_tensor(values, dtype=dtype),
+                           torch.as_tensor(stations, dtype=dtype))
+
+
 def _require_tensor(name, value):
     if not torch.is_tensor(value):
         raise TypeError("%s must be a torch tensor" % name)
