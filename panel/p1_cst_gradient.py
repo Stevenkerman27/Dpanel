@@ -305,13 +305,23 @@ class _FixedWakeImplicit(torch.autograd.Function):
                 hessian = _hessian_rows(
                     _stationarity(reduction @ zt, B, rhs, reduction, pressure), zt)
             stationarity_inf = float(torch.linalg.vector_norm(stationarity, ord=float("inf")))
-            _, hessian_status = torch.linalg.cholesky_ex(hessian)
+            factor, hessian_status = torch.linalg.cholesky_ex(hessian)
+            # Scale-free gate.  |F| alone says nothing about convergence: the reduced
+            # Hessian grows like O(faces^2) (8.9e3 at 132 faces, 4.6e7 at 6640), so the
+            # same residual implies wildly different Newton steps.  Compare the step.
+            if int(hessian_status) == 0 and bool(torch.isfinite(stationarity).all()):
+                step = torch.cholesky_solve(stationarity[:, None], factor)[:, 0]
+                relative_step = float(step.abs().max()) / max(float(z.abs().max()), 1e-30)
+            else:
+                relative_step = float("inf")
             if (not bool(torch.isfinite(stationarity).all())
                     or not bool(torch.isfinite(hessian).all())
-                    or stationarity_inf > 1e-9 or int(hessian_status) != 0):
+                    or relative_step > 1e-8 or int(hessian_status) != 0):
                 raise RuntimeError("pressure Kutta is not stationary; implicit gradient is not valid "
-                                   "(status=%s, stationarity_inf=%.3g, hessian_status=%d)"
-                                   % (result.result.status, stationarity_inf, int(hessian_status)))
+                                   "(status=%s, stationarity_inf=%.3g, relative_step=%.3g, "
+                                   "hessian_status=%d)"
+                                   % (result.result.status, stationarity_inf, relative_step,
+                                      int(hessian_status)))
             coefficients = _coefficients(state, grad, mesh["areas"], mesh["normals"],
                                          reference_area, angle, wing, xyz, include_ideal_drag)
         ctx.save_for_backward(xyz, wake, reference_area, z, reduction, hessian)
@@ -319,6 +329,7 @@ class _FixedWakeImplicit(torch.autograd.Function):
         meta["sink"]["info"] = dict(
             status=result.result.status, success=result.result.success,
             stationarity=float(torch.linalg.vector_norm(stationarity)),
+            relative_step=relative_step,
             stationary_verified=True, evaluations=result.result.nfev,
             physical_accuracy_accepted=False)
         return coefficients
@@ -361,9 +372,146 @@ class _FixedWakeImplicit(torch.autograd.Function):
         return grads[0], grad_wake, grads[1], None
 
 
+
+def _affine_state(B, rhs, J, nt, ng):
+    """Build the affine map state(gamma) = [mu_base + mapping @ gamma; gamma].
+
+    The trailing-edge operator J pins mu_upper - mu_lower = gamma and the wall equations
+    are linear, so the wall least-squares solution is an affine function of gamma.  One
+    least-squares pass with ng + 1 right-hand sides gives the whole map.
+    """
+    Jc, Jg = J[:, :nt], J[:, nt:]
+    particular = Jc.t() @ torch.linalg.solve(Jc @ Jc.t(), -Jg)
+    basis = null_space(Jc, rcond=1e-11)
+    eye = torch.eye(ng, dtype=B.dtype)
+    targets = torch.cat((rhs[:, None],
+                         rhs[:, None] - B[:, nt:] @ eye - B[:, :nt] @ particular), dim=1)
+    free = torch.linalg.lstsq(B[:, :nt] @ basis, targets).solution
+    mu = torch.cat((torch.zeros(nt, 1, dtype=B.dtype), particular), dim=1) + basis @ free
+    return mu[:, 0], mu[:, 1:] - mu[:, 0][:, None]
+
+
+def _potential_jump_newton(pressure, mu_base, mapping, gamma, nt, max_nfev=12, tol=1e-12):
+    """Newton on p(gamma) = 0 with the exact Jacobian dp/dgamma = Jp @ [mapping; I]."""
+    state = torch.cat((mu_base + mapping @ gamma, gamma), dim=0)
+    p = pressure(state)
+    scale = max(float(p.abs().max()), 1e-30)
+    evaluations = 0
+    for _ in range(max_nfev):
+        if float(p.abs().max()) <= tol:
+            break
+        jp = pressure.jacobian(state)
+        dpdg = jp[:, :nt] @ mapping
+        step = torch.linalg.solve(dpdg, p)
+        gamma = gamma - step
+        state = torch.cat((mu_base + mapping @ gamma, gamma), dim=0)
+        p = pressure(state)
+        evaluations += 1
+        if not bool(torch.isfinite(p).all()):
+            break
+    return gamma, state, p, evaluations, scale
+
+
+class _PotentialJumpImplicit(torch.autograd.Function):
+    """Morino potential-jump Kutta closure with an implicit gradient in the ng unknowns.
+
+    The wall equations are linear, so the wall solution is affine in the trailing-edge
+    circulation; one least-squares pass with ng + 1 right-hand sides builds that map and a
+    Newton iteration on the ng trailing-edge pressures p(gamma) = 0 replaces the full
+    state-space pressure-Kutta least squares.  The adjoint system is ng x ng (81 x 81 at
+    0.05 m) instead of ndof x ndof (3403 x 3403).
+    """
+
+    @staticmethod
+    def forward(ctx, xyz, wake, reference_area, meta):
+        wing = meta["wing"]
+        alpha_deg = float(meta["alpha_deg"])
+        include_ideal_drag = bool(meta["include_ideal_drag"])
+        max_nfev = int(meta["max_nfev"])
+        recompute = meta["recompute"]
+        wake_xyz = wake if wake.numel() else None
+        with torch.no_grad():
+            model, base, mesh, A, W, b, mass, grad = galerkin_operators(
+                wing, xyz, wake_xyz=wake_xyz, recompute=recompute)
+            angle = torch.tensor(alpha_deg * np.pi / 180., dtype=xyz.dtype)
+            U = torch.stack((torch.cos(angle), torch.zeros_like(angle), torch.sin(angle)))
+            L = torch.linalg.cholesky(mass)
+            B = torch.linalg.solve_triangular(L, torch.cat((A, W), dim=1), upper=False)
+            rhs = torch.linalg.solve_triangular(L, (b @ U)[:, None], upper=False)[:, 0]
+            J = torch.as_tensor(base["J"])
+            nt, ng = A.shape[0], W.shape[1]
+            mu_base, mapping = _affine_state(B, rhs, J, nt, ng)
+            pairs = [p for group in base["te_face_pairs"] for p in group]
+            pressure = TorchPressureModel(grad, pairs, B.shape[1])
+            K = torch.stack([grad[top, 0].mean(dim=0) - grad[bottom, 0].mean(dim=0)
+                             for top, bottom in pairs])
+            K = torch.cat((K, torch.zeros((len(pairs), ng), dtype=xyz.dtype)), dim=1)
+            basis = null_space(torch.cat((J, K), dim=0), rcond=1e-11)
+            linear = basis @ torch.linalg.lstsq(B @ basis, rhs).solution
+            gamma, state, p, evaluations, scale = _potential_jump_newton(
+                pressure, mu_base, mapping, linear[nt:], nt, max_nfev=max_nfev)
+            p_inf = float(p.abs().max())
+            coefficients = _coefficients(state, grad, mesh["areas"], mesh["normals"],
+                                         reference_area, angle, wing, xyz, include_ideal_drag)
+        ctx.save_for_backward(xyz, wake, reference_area, gamma)
+        ctx.meta = meta
+        meta["sink"]["info"] = dict(
+            status=0, success=bool(p_inf <= 1e-9), kutta="potential_jump",
+            stationarity=p_inf, stationarity_scale=scale, relative_step=p_inf / scale,
+            evaluations=evaluations, stationary_verified=True,
+            physical_accuracy_accepted=False)
+        return coefficients
+
+    @staticmethod
+    def backward(ctx, grad_coef):
+        xyz, wake, reference_area, gamma = ctx.saved_tensors
+        meta = ctx.meta
+        wing = meta["wing"]
+        alpha_deg = float(meta["alpha_deg"])
+        include_ideal_drag = bool(meta["include_ideal_drag"])
+        recompute = meta["recompute"]
+        with torch.enable_grad():
+            xg = xyz.detach().clone().requires_grad_(True)
+            wg = wake.detach().clone().requires_grad_(True) if wake.numel() else wake
+            ag = reference_area.detach().clone().requires_grad_(True)
+            model, base, mesh, A, W, b, mass, grad = galerkin_operators(
+                wing, xg, wake_xyz=(wg if wg.numel() else None), recompute=recompute)
+            angle = torch.tensor(alpha_deg * np.pi / 180., dtype=xg.dtype)
+            U = torch.stack((torch.cos(angle), torch.zeros_like(angle), torch.sin(angle)))
+            L = torch.linalg.cholesky(mass)
+            B = torch.linalg.solve_triangular(L, torch.cat((A, W), dim=1), upper=False)
+            rhs = torch.linalg.solve_triangular(L, (b @ U)[:, None], upper=False)[:, 0]
+            J = torch.as_tensor(base["J"])
+            nt, ng = A.shape[0], W.shape[1]
+            mu_base, mapping = _affine_state(B, rhs, J, nt, ng)
+            state = torch.cat((mu_base + mapping @ gamma, gamma), dim=0)
+            pairs = [p for group in base["te_face_pairs"] for p in group]
+            pressure = TorchPressureModel(grad, pairs, B.shape[1])
+            p = pressure(state)
+            coef = _coefficients(state, grad, mesh["areas"], mesh["normals"], ag, angle,
+                                 wing, xg, include_ideal_drag)
+            jp = pressure.jacobian(state)
+            dpdg = jp[:, :nt] @ mapping
+            lam = []
+            for k in range(coef.numel()):
+                dz = torch.autograd.grad(coef[k], state, retain_graph=True)[0]
+                target = mapping.t() @ dz[:nt] + dz[nt:]
+                lam.append(torch.linalg.solve(dpdg.t(), target).detach())
+            total = (coef * grad_coef).sum() - sum((l * p).sum() for l in lam)
+            targets = [xg, ag] + ([wg] if wg.numel() else [])
+            grads = torch.autograd.grad(total, targets, allow_unused=True)
+        grad_wake = grads[2] if wg.numel() else None
+        return grads[0], grad_wake, grads[1], None
+
 def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
-                        include_ideal_drag=False, recompute=None):
-    """Pressure-Kutta coefficients and the implicit gradient, at the cost of one assembly."""
+                        include_ideal_drag=False, recompute=None, kutta="pressure"):
+    """Kutta-closed coefficients and the implicit gradient, at the cost of one assembly.
+
+    kutta="pressure" (default) is the weighted pressure-Kutta least squares used by every
+    existing study.  kutta="potential_jump" switches to the Morino closure solved by Newton
+    in the ng trailing-edge unknowns (see docs/KUTTA_CONDITION.md); it agrees with the
+    pressure solution to 1e-5 on fine meshes but finds a different root on coarse ones.
+    """
     if wake is None:
         wake = torch.zeros(0, dtype=xyz.dtype)
     elif not torch.is_tensor(wake):
@@ -373,5 +521,10 @@ def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
     sink = {}
     meta = dict(wing=wing, alpha_deg=alpha_deg, include_ideal_drag=include_ideal_drag,
                 max_nfev=max_nfev, recompute=recompute, sink=sink)
-    coefficients = _FixedWakeImplicit.apply(xyz, wake, reference_area, meta)
+    if kutta == "potential_jump":
+        coefficients = _PotentialJumpImplicit.apply(xyz, wake, reference_area, meta)
+    elif kutta == "pressure":
+        coefficients = _FixedWakeImplicit.apply(xyz, wake, reference_area, meta)
+    else:
+        raise ValueError("unknown kutta closure %r" % (kutta,))
     return coefficients, sink["info"]
