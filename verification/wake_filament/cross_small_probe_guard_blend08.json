@@ -1,0 +1,114 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_velocity_crosscheck.py",
+    "--snapshot",
+    "verification/wake_filament/filament_small_guard.npz",
+    "--blend",
+    "0.8",
+    "--out",
+    "verification/wake_filament/cross_small_probe_guard_blend08.json",
+    "--probes",
+    "0.055",
+    "0.0275",
+    "0.01375",
+    "--cores",
+    "0.05",
+    "--subdivisions",
+    "2",
+    "--audit-stencils",
+    "--compare-unguarded"
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "state_source": "recomputed Galerkin wall and pressure Kutta",
+  "geometry_blend": 0.8,
+  "targets": 192,
+  "recomputed_gamma_max_difference": 3.5418489511246376e-05,
+  "sheet": [
+    {
+      "probe_fraction": 0.055,
+      "seconds": 0.8073226999986218,
+      "slip_rms": 0.028645597433356575,
+      "slip_max": 0.189320775028249,
+      "slip_p95": 0.04486721711083148,
+      "max_slip_face": 189,
+      "probe_adjusted_faces": 6,
+      "probe_max_halvings": 12,
+      "unguarded_slip_rms": 0.7319582933992451,
+      "unguarded_slip_max": 10.135392105220195,
+      "requested_stencil_crossings": [
+        [
+          190,
+          189,
+          -1,
+          1
+        ],
+        [
+          190,
+          189,
+          -1,
+          2
+        ]
+      ]
+    },
+    {
+      "probe_fraction": 0.0275,
+      "seconds": 0.5281304000018281,
+      "slip_rms": 0.028343703857336762,
+      "slip_max": 0.189320775028249,
+      "slip_p95": 0.045748183379608544,
+      "max_slip_face": 189,
+      "probe_adjusted_faces": 5,
+      "probe_max_halvings": 11,
+      "unguarded_slip_rms": 1.524921725074051,
+      "unguarded_slip_max": 21.126588806954743,
+      "requested_stencil_crossings": [
+        [
+          168,
+          170,
+          1,
+          1
+        ],
+        [
+          168,
+          170,
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "probe_fraction": 0.01375,
+      "seconds": 0.5723082000004069,
+      "slip_rms": 0.028279097874798827,
+      "slip_max": 0.189320775028249,
+      "slip_p95": 0.04597261944101304,
+      "max_slip_face": 189,
+      "probe_adjusted_faces": 3,
+      "probe_max_halvings": 10,
+      "unguarded_slip_rms": 0.02722532632055085,
+      "unguarded_slip_max": 0.15842270645908207,
+      "requested_stencil_crossings": []
+    }
+  ],
+  "ribbons": [
+    {
+      "core": 0.05,
+      "subdivisions": 2,
+      "seconds": 0.19802839999829303,
+      "slip_rms": 0.0208673362105388,
+      "slip_max": 0.09966042918364272,
+      "slip_difference_rms": 0.013752233939992404,
+      "velocity_difference_rms": 0.029434961801861576
+    }
+  ],
+  "note": "Same geometry, wall state, face centers and normals; ribbon differences use the first listed sheet probe. Differing near-sheet models, one cold timing per evaluator. Not an accuracy or full-solver benchmark."
+}

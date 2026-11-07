@@ -1,0 +1,46 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_filament_benchmark.py",
+    "--snapshot",
+    "verification/wake_filament/filament_full_10c.npz",
+    "--out",
+    "runs/scratch/filament_benchmark_full.json",
+    "--core",
+    ".05",
+    "--subdivisions",
+    "2",
+    "--repeat",
+    "3"
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "numpy": "2.4.6",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "targets": 512,
+  "core_radius_c": 0.05,
+  "subdivisions": 2,
+  "timings": {
+    "filament": [
+      4.215819099999862,
+      4.27288149999913,
+      4.20685290000074
+    ],
+    "sheet": [
+      9.059840399999302,
+      8.964541400000599,
+      9.058644099999583
+    ]
+  },
+  "median_seconds": {
+    "filament": 4.215819099999862,
+    "sheet": 9.058644099999583
+  },
+  "velocity_difference_rms": 0.015061274266523464,
+  "velocity_difference_max": 0.11776997011740133,
+  "note": "Different regularization models; same geometry/state/targets. Timings compare only velocity evaluation, not full solver or equal numerical accuracy."
+}

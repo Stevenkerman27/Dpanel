@@ -1,5 +1,77 @@
 # Fixed/free wake and length study
 
+## Free-wake geometry diagnostics, 2026-11-06
+
+The Web mesh pipeline and the CAD mesh builders now default to a 10c wake.
+The synthetic P1 wing builder also defaults to 10c. Existing explicitly
+specified wake lengths and previously generated meshes are unchanged.
+
+An experimental `--fixed-span` option holds the wake nodes at their reference
+spanwise positions and uses `z_x = (V_z - V_y z_y)/V_x` for the shape
+update. This prevents mesh compression by spanwise node motion, but the
+current Gamma basis is still fixed to the grid: circulation is not advected
+along the drifting streamlines. It is therefore a geometry diagnostic, not
+an established physically equivalent free-wake model or a production default.
+It has only been checked here on an initially flat, single-valued `z(x,y)`
+wake, not on arbitrary curved sheets or multibody geometry.
+
+On the 10x12, 10c, eight-streamwise-panel NACA0012 case, both methods used
+the same order-3 Galerkin wall, 4 degree incidence and relaxation 0.25.
+After 16 updates, the original and experimental methods had normal-slip
+RMS 0.011937 and 0.010750, and the previous raw mapping residuals were
+0.013773c and 0.012492c. Their minimum projected orientation ratios were
+0.3314 and 1.0, respectively. The original method's limiting face lay
+near the downstream wingtip, at approximately `(10.58,-1.84,0.65)c`.
+With the experimental method extended to 60 updates, the mapping residual
+fell to `4.76e-8c` but the slip RMS remained `0.010715`, above the 0.01
+criterion; the status is `iteration_limit`, not converged. A separate
+16-update original-method run with the probe height floored at 0.15 times
+the shortest face edge produced slip 0.011487 and minimum projected
+orientation ratio 0.3799. This single probe change does not resolve the
+problem. These small-grid runs are diagnostics, not the 30x32 grid screen.
+
+The study script supports `--probe-floor`, `--fixed-span`, and `--snapshots`.
+New snapshots contain wake node coordinates, connectivity, face velocities,
+Gamma and wall potential; the orientation records identify the trial's
+limiting face, nodes, centroid, velocity and projected area ratios. A small
+ratio identifies a projected orientation issue, not an independent
+self-intersection or physical-accuracy assessment.
+
+On the 30x32, 10c, eight-streamwise-panel original-method run, update 10
+ends in `blocked_geometry`, with CL `0.26481448`, slip RMS `0.018976`,
+raw map residual `0.473416c`, and minimum projection ratio `9.30e-9`.
+The limiting face is 448, nodes 231/264/265, near
+`(10.5833,-1.9120,0.4501)c`; its attempted full-step ratio is -0.6166.
+Already after update 5 its projection ratio is `3.12e-5`, but its actual
+3-D area is 2.42 times its initial area and its unit normal z-component is
+`1.29e-5`: the face is nearly vertical, not zero-area. The existing guard
+rejects a reversal relative to the initial normal, so it cannot distinguish
+a valid locally rolled-up sheet from an invalid overlap by itself. The
+snapshot data for these runs were produced before `mu` was added to the
+snapshot format; they include the geometry, Gamma and total velocity but
+cannot independently split wall and wake velocity contributions.
+
+On the same 30x32 grid, the experimental fixed-span method after 16 updates
+has CL `0.26514100`, slip RMS `0.008587`, preceding raw map residual
+`0.028329c`, minimum projected orientation ratio 1.0 and backtracking
+factor 1.0. It ends at `iteration_limit`, not convergence. The slip is lower
+than in the blocked original run, but the missing Gamma transport prevents
+using this as a validated replacement or a converged aerodynamic comparison.
+
+Reports are `wake_diag_base.json`, `wake_diag_fixed_span.json`,
+`wake_diag_fixed_span_long.json`, `wake_diag_probe015.json`,
+`wake_diag_full.json`, and `wake_diag_full_fixed_span.json`; recorded
+snapshots are in the matching directories.
+For reproduction use `python -m tools.wake_fixed_free_length_study --out
+<fresh.json> --chord-panels 10 --span-panels 12 --wake-panels 8 --lengths
+10 --free-length 10 --iterations 16 --snapshots <fresh-directory>`, adding
+`--fixed-span` or `--probe-floor 0.15` as appropriate. Use `--iterations 60
+--fixed-span` for the long small-grid run, or `--chord-panels 30 --span-panels
+32 --iterations 12` for the full-grid original run, and `--chord-panels 30
+--span-panels 32 --iterations 16 --fixed-span` for its experimental
+counterpart. Python, environment and thread settings are as in the section
+below. These runs overlapped, so their timings are not benchmarks.
+
 ## Weak-form comparison, 2026-11-06
 
 Windows `myml` Python 3.13 / NumPy 2.4.6 / Torch 2.13, CPU,

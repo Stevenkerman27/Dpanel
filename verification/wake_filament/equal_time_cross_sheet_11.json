@@ -1,0 +1,67 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_velocity_crosscheck.py",
+    "--snapshot",
+    "verification/wake_grid_length/equal_time_sheet_11.npz",
+    "--out",
+    "verification/wake_filament/equal_time_cross_sheet_11.json",
+    "--probes",
+    "0.055",
+    "0.0275",
+    "--cores",
+    "0.05",
+    "--subdivisions",
+    "2",
+    "--audit-stencils"
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "state_source": "snapshot",
+  "geometry_blend": 1.0,
+  "targets": 192,
+  "recomputed_gamma_max_difference": null,
+  "sheet": [
+    {
+      "probe_fraction": 0.055,
+      "seconds": 0.4746067999985826,
+      "slip_rms": 0.012054320767943123,
+      "slip_max": 0.04791111000817755,
+      "slip_p95": 0.028710067189208457,
+      "max_slip_face": 170,
+      "probe_adjusted_faces": 0,
+      "probe_max_halvings": 0,
+      "requested_stencil_crossings": []
+    },
+    {
+      "probe_fraction": 0.0275,
+      "seconds": 0.4768450000010489,
+      "slip_rms": 0.012248563282966715,
+      "slip_max": 0.048466566777419756,
+      "slip_p95": 0.029258924551530573,
+      "max_slip_face": 170,
+      "probe_adjusted_faces": 0,
+      "probe_max_halvings": 0,
+      "requested_stencil_crossings": []
+    }
+  ],
+  "ribbons": [
+    {
+      "core": 0.05,
+      "subdivisions": 2,
+      "seconds": 0.16096689999903901,
+      "slip_rms": 0.020443680587418075,
+      "slip_max": 0.06352320009048566,
+      "slip_difference_rms": 0.01520210874773419,
+      "velocity_difference_rms": 0.0161308028378768
+    }
+  ],
+  "note": "Same geometry, wall state, face centers and normals; ribbon differences use the first listed sheet probe. Differing near-sheet models, one cold timing per evaluator. Not an accuracy or full-solver benchmark."
+}

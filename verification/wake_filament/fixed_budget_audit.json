@@ -1,0 +1,13 @@
+{
+  "scope": "Nonadjacent wake triangles only: transverse segment intersections and coplanar overlap; shared-node pairs and wall crossings not checked.",
+  "snapshots": {
+    "fixed_budget_sheet_10c.npz": {
+      "count": 0,
+      "pairs": []
+    },
+    "fixed_budget_filament_10c.npz": {
+      "count": 0,
+      "pairs": []
+    }
+  }
+}

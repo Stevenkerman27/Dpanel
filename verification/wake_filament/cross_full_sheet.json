@@ -1,0 +1,94 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_velocity_crosscheck.py",
+    "--snapshot",
+    "verification/wake_grid_length/wake_diag_full/step_010.npz",
+    "--out",
+    "verification/wake_filament/cross_full_sheet.json",
+    "--chord-panels",
+    "30",
+    "--span-panels",
+    "32",
+    "--cores",
+    "0.025",
+    "0.05",
+    "0.1",
+    "--subdivisions",
+    "2",
+    "4"
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "state_source": "recomputed Galerkin wall and pressure Kutta",
+  "targets": 512,
+  "sheet": {
+    "seconds": 10.148723099999188,
+    "slip_rms": 0.01897599781002843,
+    "slip_max": 0.09890204988845361
+  },
+  "ribbons": [
+    {
+      "core": 0.025,
+      "subdivisions": 2,
+      "seconds": 4.340721000000485,
+      "slip_rms": 0.02510975506278748,
+      "slip_max": 0.1250047201510888,
+      "slip_difference_rms": 0.012755431752224024,
+      "velocity_difference_rms": 0.01448241727524094
+    },
+    {
+      "core": 0.025,
+      "subdivisions": 4,
+      "seconds": 4.299143599997478,
+      "slip_rms": 0.01838541084449558,
+      "slip_max": 0.08280379875159538,
+      "slip_difference_rms": 0.0037943985061459815,
+      "velocity_difference_rms": 0.008003174111935924
+    },
+    {
+      "core": 0.05,
+      "subdivisions": 2,
+      "seconds": 4.371804700000212,
+      "slip_rms": 0.01910388272757885,
+      "slip_max": 0.07344857170888047,
+      "slip_difference_rms": 0.004837973066318986,
+      "velocity_difference_rms": 0.005781984817257319
+    },
+    {
+      "core": 0.05,
+      "subdivisions": 4,
+      "seconds": 4.636497999999847,
+      "slip_rms": 0.018216012283908813,
+      "slip_max": 0.07085495033275685,
+      "slip_difference_rms": 0.004271505871539538,
+      "velocity_difference_rms": 0.0052440091162214335
+    },
+    {
+      "core": 0.1,
+      "subdivisions": 2,
+      "seconds": 4.648889799998869,
+      "slip_rms": 0.018852987771801784,
+      "slip_max": 0.06392960198854072,
+      "slip_difference_rms": 0.00946150745295751,
+      "velocity_difference_rms": 0.009882340779158838
+    },
+    {
+      "core": 0.1,
+      "subdivisions": 4,
+      "seconds": 4.603831000000355,
+      "slip_rms": 0.01884173194915789,
+      "slip_max": 0.06318289870473937,
+      "slip_difference_rms": 0.009254168079175023,
+      "velocity_difference_rms": 0.009603142123748559
+    }
+  ],
+  "note": "Same geometry, wall state, face centers and normals; differing near-sheet models, one cold timing per evaluator. Not an accuracy or full-solver benchmark."
+}

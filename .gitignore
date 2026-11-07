@@ -95,4 +95,6 @@ dist/
 test/_vspapi_tmp/
 # Phase 0 frozen fixture battery: geometry inputs only, no solver settings
 !docs/issue92/fixtures/*.npz
+!verification/wake_grid_length/**/step_*.npz
+!verification/wake_filament/*.npz
 

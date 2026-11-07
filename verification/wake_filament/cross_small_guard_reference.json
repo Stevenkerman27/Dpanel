@@ -1,0 +1,137 @@
+{
+  "command": [
+    "C:\\Users\\zyx20\\anaconda3\\envs\\myml\\python.exe",
+    "D:\\3D\\Projects\\panel\\tools\\wake_velocity_crosscheck.py",
+    "--snapshot",
+    "verification/wake_filament/filament_small_guard.npz",
+    "--out",
+    "verification/wake_filament/cross_small_guard_reference.json",
+    "--probes",
+    "0.0275",
+    "0.01375",
+    "--cores",
+    "0.025",
+    "0.05",
+    "0.1",
+    "--subdivisions",
+    "2",
+    "4",
+    "8",
+    "--audit-stencils"
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.13.14 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:26:41) [MSC v.1942 64 bit (AMD64)]",
+  "numpy": "2.4.6",
+  "torch": "2.13.0+cu132",
+  "threads": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "state_source": "snapshot",
+  "targets": 192,
+  "sheet": [
+    {
+      "probe_fraction": 0.0275,
+      "seconds": 0.4332910000011907,
+      "slip_rms": 0.024625216670866024,
+      "slip_max": 0.11815625501263402,
+      "slip_p95": 0.04974111665023489,
+      "max_slip_face": 165,
+      "stencil_crossings": []
+    },
+    {
+      "probe_fraction": 0.01375,
+      "seconds": 0.4339731000000029,
+      "slip_rms": 0.024575987510228964,
+      "slip_max": 0.11775947427722055,
+      "slip_p95": 0.04992958925635527,
+      "max_slip_face": 165,
+      "stencil_crossings": []
+    }
+  ],
+  "ribbons": [
+    {
+      "core": 0.025,
+      "subdivisions": 2,
+      "seconds": 0.1639361999987159,
+      "slip_rms": 0.025061952104161258,
+      "slip_max": 0.12400629041020338,
+      "slip_difference_rms": 0.02395154092447126,
+      "velocity_difference_rms": 0.03467757703271945
+    },
+    {
+      "core": 0.025,
+      "subdivisions": 4,
+      "seconds": 0.1745733999996446,
+      "slip_rms": 0.03334438530298246,
+      "slip_max": 0.11365945966008327,
+      "slip_difference_rms": 0.013967525002129224,
+      "velocity_difference_rms": 0.031128109830960687
+    },
+    {
+      "core": 0.025,
+      "subdivisions": 8,
+      "seconds": 0.18776940000316245,
+      "slip_rms": 0.026017801916656993,
+      "slip_max": 0.10104185481596678,
+      "slip_difference_rms": 0.005965829044835645,
+      "velocity_difference_rms": 0.03376118172993865
+    },
+    {
+      "core": 0.05,
+      "subdivisions": 2,
+      "seconds": 0.19117580000238377,
+      "slip_rms": 0.019729798513816045,
+      "slip_max": 0.102516914469143,
+      "slip_difference_rms": 0.010611556056059967,
+      "velocity_difference_rms": 0.020089422054042638
+    },
+    {
+      "core": 0.05,
+      "subdivisions": 4,
+      "seconds": 0.2981528000018443,
+      "slip_rms": 0.026338129883244472,
+      "slip_max": 0.10238935177861072,
+      "slip_difference_rms": 0.006366421269133935,
+      "velocity_difference_rms": 0.01837882459898817
+    },
+    {
+      "core": 0.05,
+      "subdivisions": 8,
+      "seconds": 0.32012769999710144,
+      "slip_rms": 0.025039034036283908,
+      "slip_max": 0.09779367019086804,
+      "slip_difference_rms": 0.005565850099324879,
+      "velocity_difference_rms": 0.01876828448570872
+    },
+    {
+      "core": 0.1,
+      "subdivisions": 2,
+      "seconds": 0.2741215000023658,
+      "slip_rms": 0.02206866379973027,
+      "slip_max": 0.07910190929160876,
+      "slip_difference_rms": 0.00783176152495344,
+      "velocity_difference_rms": 0.014068209864998788
+    },
+    {
+      "core": 0.1,
+      "subdivisions": 4,
+      "seconds": 0.30036229999677744,
+      "slip_rms": 0.02376243422763329,
+      "slip_max": 0.08505345760544983,
+      "slip_difference_rms": 0.008286865717439586,
+      "velocity_difference_rms": 0.014140476160213562
+    },
+    {
+      "core": 0.1,
+      "subdivisions": 8,
+      "seconds": 0.31804769999871496,
+      "slip_rms": 0.02370931686900901,
+      "slip_max": 0.08482010378290743,
+      "slip_difference_rms": 0.008238373096349758,
+      "velocity_difference_rms": 0.014098817805063918
+    }
+  ],
+  "note": "Same geometry, wall state, face centers and normals; differing near-sheet models, one cold timing per evaluator. Not an accuracy or full-solver benchmark."
+}

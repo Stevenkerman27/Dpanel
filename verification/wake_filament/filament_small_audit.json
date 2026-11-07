@@ -1,0 +1,35 @@
+{
+  "scope": "Nonadjacent wake triangles only: transverse segment intersections and coplanar overlap; shared-node pairs and wall crossings not checked.",
+  "snapshots": {
+    "filament_small_5c.npz": {
+      "count": 0,
+      "pairs": []
+    },
+    "filament_small_c0025.npz": {
+      "count": 0,
+      "pairs": []
+    },
+    "filament_small_c005.npz": {
+      "count": 0,
+      "pairs": []
+    },
+    "filament_small_c010.npz": {
+      "count": 0,
+      "pairs": []
+    },
+    "filament_small_sub4.npz": {
+      "count": 0,
+      "pairs": []
+    },
+    "filament_small_long.npz": {
+      "count": 1,
+      "pairs": [
+        [
+          191,
+          188,
+          "transverse"
+        ]
+      ]
+    }
+  }
+}
