@@ -317,7 +317,7 @@ def main():
     p.add_argument("--far-size", type=float, default=1.5)
     p.add_argument("--radius", type=float, default=5.)
     p.add_argument("--wake-strips", type=int, default=8)
-    p.add_argument("--wake-length", type=float, default=30.)
+    p.add_argument("--wake-length", type=float, default=10.)
     p.add_argument("--alpha-deg", type=float, default=5.)
     p.add_argument("--speed", type=float, default=1.)
     p.add_argument("--density", type=float, default=1.225)

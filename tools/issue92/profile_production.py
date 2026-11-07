@@ -147,14 +147,14 @@ def _wing_object(name, entry):
     return make_wing(chord_panels=meta["chord_panels"], span_panels=meta["span_panels"],
                      thickness=meta["thickness"], camber=meta["camber"],
                      span=meta["span"], chord=meta["chord"],
-                     wake_panels=meta["wake_panels"])
+                     wake_panels=meta["wake_panels"], wake_length=5.)
 
 
 def _multi_object(entry):
     tail_origin = entry["meta"]["tail_origin"]
     return combine_wings([
-        make_wing(chord_panels=4, span_panels=6, span=4., chord=1., camber=.02, wake_panels=2),
-        make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55, camber=0., wake_panels=2)],
+        make_wing(chord_panels=4, span_panels=6, span=4., chord=1., camber=.02, wake_panels=2, wake_length=5.),
+        make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55, camber=0., wake_panels=2, wake_length=5.)],
         origins=[(0., 0., 0.), tuple(tail_origin)], names=["main_wing", "raised_tail"])
 
 

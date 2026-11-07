@@ -5,6 +5,11 @@ from pathlib import Path
 from panel.p1_lifting_g1 import make_wing,from_dpanel_half_surface,solve,alpha_sensitivity
 
 
+def test_default_wake_length_is_ten_chords():
+    wing=make_wing(chord=2.)
+    assert np.ptp(wing.wake_xyz[:,0]) == 20.
+
+
 def test_g1_picks_circulation_at_nonzero_incidence_without_hardcoded_cl():
     wing=make_wing(chord_panels=4,span_panels=4,wake_panels=2)
     zero=solve(wing,0.,kutta='pressure',wall_formulation='collocation')

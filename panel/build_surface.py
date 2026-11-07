@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--mesh", type=Path, required=True)
 parser.add_argument("--out", type=Path, required=True)
 parser.add_argument("--subdivide", action="store_true")
-parser.add_argument("--wake-length", type=float, default=30.)
+parser.add_argument("--wake-length", type=float, default=10.)
 args = parser.parse_args()
 args.out = args.out.resolve()
 assert not args.out.exists(), "Preserve previous fixtures"

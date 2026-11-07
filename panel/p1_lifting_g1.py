@@ -78,7 +78,7 @@ def _airfoil(x, *, thickness=.12, camber=.0):
 
 
 def make_wing(*, chord_panels=6, span_panels=6, thickness=.12,
-              camber=0.0, span=4.0, chord=1.0, wake_length=5.,
+              camber=0.0, span=4.0, chord=1.0, wake_length=10.,
               wake_panels=3):
     """Closed full-span thick wing: identical geometric TE nodes, split potential traces.
 

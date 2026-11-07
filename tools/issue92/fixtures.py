@@ -91,28 +91,28 @@ def _half_surface(rel):
 def builders():
     def g1_wing_rect():
         return _wing_arrays(make_wing(chord_panels=4, span_panels=6, thickness=.12,
-                                      camber=0., span=4., chord=1., wake_panels=2)), \
+                                      camber=0., span=4., chord=1., wake_panels=2, wake_length=5.)), \
                dict(kind="wing", alpha_deg=5., kutta="pressure", chord_panels=4,
                     span_panels=6, thickness=.12, camber=0., span=4., chord=1., wake_panels=2)
 
     def g1_wing_camber():
         return _wing_arrays(make_wing(chord_panels=4, span_panels=6, thickness=.12,
-                                      camber=.02, span=4., chord=1., wake_panels=2)), \
+                                      camber=.02, span=4., chord=1., wake_panels=2, wake_length=5.)), \
                dict(kind="wing", alpha_deg=5., kutta="pressure", chord_panels=4,
                     span_panels=6, thickness=.12, camber=.02, span=4., chord=1., wake_panels=2)
 
     def g2_conventional():
         mesh = combine_wings([
-            make_wing(chord_panels=4, span_panels=6, span=4., chord=1., camber=.02, wake_panels=2),
-            make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55, camber=0., wake_panels=2)],
+            make_wing(chord_panels=4, span_panels=6, span=4., chord=1., camber=.02, wake_panels=2, wake_length=5.),
+            make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55, camber=0., wake_panels=2, wake_length=5.)],
             origins=[(0., 0., 0.), (1.6, 0., .35)], names=["main_wing", "raised_tail"])
         return _multi_arrays(mesh), dict(kind="multi", alpha_deg=5., kutta="pressure",
                                          tail_origin=[1.6, 0., .35])
 
     def g2_tail_low():
         mesh = combine_wings([
-            make_wing(chord_panels=4, span_panels=6, span=4., chord=1., camber=.02, wake_panels=2),
-            make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55, camber=0., wake_panels=2)],
+            make_wing(chord_panels=4, span_panels=6, span=4., chord=1., camber=.02, wake_panels=2, wake_length=5.),
+            make_wing(chord_panels=4, span_panels=4, span=1.8, chord=.55, camber=0., wake_panels=2, wake_length=5.)],
             origins=[(0., 0., 0.), (1.6, 0., .24)], names=["main_wing", "raised_tail"])
         return _multi_arrays(mesh), dict(kind="multi", alpha_deg=5., kutta="pressure",
                                          tail_origin=[1.6, 0., .24])
