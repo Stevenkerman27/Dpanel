@@ -225,3 +225,8 @@ def loads(*, grad, mu, areas, normals, centers, reference_point, reference_area,
     total = torch.zeros((), dtype=dtype)
     for values, stations in group_gamma:
         total = total + _trapezoid(values, stations, dtype=dtype)
+    return dict(CL=float(net @ lift / reference_area),
+                CL_gamma=float(2.0 * total / reference_area),
+                CD_pressure=float(net @ U / reference_area),
+                CM_y=float(moment[1] / (reference_area * reference_chord)),
+                cp=cp)
