@@ -1,12 +1,13 @@
 # 可选几何特征局部加密（研究PR，非物理精度通过）
 
-**当前 master 状态（2026-11-06）：** 本文记录历史研究版本，不是当前
-`panel.cad_half` 的可用接口。`panel/mesh_feature_size.py` 保留了特征线
-尺寸策略，但当前 `cad_half` 没有接入它，也不接受 `--mesh-features`；
-下文命令不能直接在当前 master 上运行。当前 CAD 入口关闭 Gmsh 曲率
+**当前工作区状态（2026-11-06）：** `panel.cad_half` 已重新接入
+`--mesh-features`，Web 在建体时按实际截面前缘点生成折线并默认启用
+前缘加密（目标 0.5 倍、影响半径 0.12c）。同一 Web STEP 在 size 0.25 m、
+单线程对照中，前缘带内平均三角边长 `0.220 → 0.120 m`，壁面面数
+`280 → 422`；该对照不证明气动网格收敛。CAD 入口仍关闭 Gmsh 曲率
 尺寸控制，尚无已接入的 CAD 曲率驱动加密。规则机翼生成器
 `panel/p1_lifting_g1.py` 使用弦向余弦节点，在前缘和后缘聚集，展向均匀。
-恢复特征加密前须重新接线并验证实际网格质量、后缘共边与求解结果。
+曲面质量及求解结果仍须在更广泛几何上验证；下文保留历史研究方案。
 
 Issue #42。此更改仅增加 Gmsh 2D 原生网格尺寸**回调**，无新依赖、无湿壁/尾迹实体变更、无解器更改。默认不传 `--mesh-features` 时，旧 `cad_half.py` 路径不变。
 
@@ -43,7 +44,7 @@ Issue #42。此更改仅增加 Gmsh 2D 原生网格尺寸**回调**，无新依�
 python -m panel.cad_half --wing-cad <ORIGINAL.step> --trailing-edge <ORIGINAL_TE.json> --mesh-features <ACTUAL_LE_TE_FEATURES.json> --out runs/NEW_FEATURE_MESH --size 0.10 --far-size 1.5 --radius 5 --alpha-deg 5
 ```
 
-`cad_half.py` 将坐标按原参考弦、原点归一化后交给 Gmsh `model.mesh.setSizeCallback(dim,tag,x,y,z,lc)`。既有湿壁 Distance+Threshold 背景场不改；size回调对曲线和面都起作用，避免只有面内加密但几何棱边仍粗。源文件 SHA-256 和每条曲线设置写入新 surface provenance。所有原生 OCC fragment、共形接触、物理 wall/wake 选面及镜像拓扑约束仍需原验证器检查。
+`cad_half.py` 将坐标按原参考弦、原点归一化后交给 Gmsh `model.mesh.setSizeCallback(dim,tag,x,y,z,lc)`。既有湿壁 Distance+Threshold 背景场不改；size回调对曲线和面都起作用，避免只有面内加密但几何棱边仍粗。当前 surface provenance 记录特征文件路径，特征文件本身记录尺寸设置；当前没有记录文件 SHA-256。所有原生 OCC fragment、共形接触、物理 wall/wake 选面及镜像拓扑约束仍需原验证器检查。
 
 ## 本地先行门槛与独立A/B
 

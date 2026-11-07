@@ -128,7 +128,10 @@ def classify_wall_surfaces(gmsh, fluid_volumes, source_copies_by_role,
             "selected_role": selected_role,
             "ambiguous": ambiguous,
             "ambiguity_rule": ambiguity_rule if ambiguous else None,
-            "role_max_sample_residual": role_residuals,
+            "role_max_sample_residual": {
+                role: residual if np.isfinite(residual) else None
+                for role, residual in role_residuals.items()
+            },
             "nearest_source_face_by_sample": role_source_faces,
             "unmatched_reason": (
                 "insufficient_trim_interior_samples" if len(samples) < 3 else

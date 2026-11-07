@@ -283,6 +283,10 @@ def _build(args, stage):
     gmsh.model.mesh.field.setNumber(control, "DistMin", .3)
     gmsh.model.mesh.field.setNumber(control, "DistMax", 2.)
     gmsh.model.mesh.field.setAsBackgroundMesh(control)
+    if args.mesh_features is not None:
+        from .mesh_feature_size import read_policy
+        policy = read_policy(args.mesh_features, origin=origin, chord=chord, wall_size=args.size)
+        gmsh.model.mesh.setSizeCallback(policy)
     gmsh.model.mesh.generate(2)
     tags, coords, _ = gmsh.model.mesh.getNodes()
     points = np.asarray(coords, dtype=float).reshape(-1, 3)
@@ -336,6 +340,7 @@ def _build(args, stage):
         wing_cad=str(args.wing_cad.resolve()),
         body_cad=None if args.body_cad is None else str(args.body_cad.resolve()),
         te_declaration=str(args.trailing_edge.resolve()),
+        mesh_features=(None if args.mesh_features is None else str(args.mesh_features.resolve())),
         CAD_contact_intervals=physical_contacts.tolist(),
         CAD_passes=history,
         half_fluid_symmetry_caps_excluded=plane_faces,
@@ -353,12 +358,13 @@ def main():
     p.add_argument("--wing-cad", type=Path, required=True)
     p.add_argument("--body-cad", type=Path)
     p.add_argument("--trailing-edge", type=Path, required=True)
+    p.add_argument("--mesh-features", type=Path)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--size", type=float, default=.3)
     p.add_argument("--far-size", type=float, default=1.5)
     p.add_argument("--radius", type=float, default=5.)
     p.add_argument("--wake-strips", type=int, default=8)
-    p.add_argument("--wake-length", type=float, default=30.)
+    p.add_argument("--wake-length", type=float, default=10.)
     p.add_argument("--alpha-deg", type=float, default=5.)
     p.add_argument("--speed", type=float, default=1.)
     p.add_argument("--density", type=float, default=1.225)

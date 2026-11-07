@@ -61,3 +61,13 @@ def test_step_rejects_insufficient_section_points(tmp_path):
     values, _ = params.normalise({})
     with pytest.raises(ValueError, match="four points"):
         geometry.write_step(tmp_path / "wing.step", values, count=3)
+
+
+def test_feature_points_are_actual_section_leading_edges(tmp_path):
+    values, _ = params.normalise({"twist_root_deg": 6, "twist_tip_deg": -1,
+                                   "dihedral_deg": 8})
+    data = geometry.write_mesh_features(tmp_path / "features.json", values)
+    for station, point in zip(params.full_stations(values), data["features"][0]["points"]):
+        upper, lower = geometry.section_curves(station)
+        np.testing.assert_allclose(point, upper[0], atol=1e-12)
+        np.testing.assert_allclose(point, lower[-1], atol=1e-12)
