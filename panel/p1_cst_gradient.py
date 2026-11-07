@@ -11,6 +11,7 @@ from .p1_galerkin_wall import _duffy_rule
 from .p1_lifting_g1 import make_wing
 from .p1_lifting_g2 import assemble_multi, combine_wings
 from .p1_pressure_kutta_torch_driver import TorchPressureModel, solve_pressure_kutta_torch
+from .p1_potential_jump_torch import affine_state, potential_jump_newton
 from .p1_rank_aware_torch import null_space
 
 
@@ -382,41 +383,19 @@ class _FixedWakeImplicit(torch.autograd.Function):
 
 
 def _affine_state(B, rhs, J, nt, ng):
-    """Build the affine map state(gamma) = [mu_base + mapping @ gamma; gamma].
+    """Affine map state(gamma) = [mu_base + mapping @ gamma; gamma]; see the shared module.
 
-    The trailing-edge operator J pins mu_upper - mu_lower = gamma and the wall equations
-    are linear, so the wall least-squares solution is an affine function of gamma.  One
-    least-squares pass with ng + 1 right-hand sides gives the whole map.
+    Kept as a name here because the function objects below were written against it, but the
+    arithmetic lives in panel/p1_potential_jump_torch.py so the production solver and this
+    autograd path cannot drift apart.
     """
-    Jc, Jg = J[:, :nt], J[:, nt:]
-    particular = Jc.t() @ torch.linalg.solve(Jc @ Jc.t(), -Jg)
-    basis = null_space(Jc, rcond=1e-11)
-    eye = torch.eye(ng, dtype=B.dtype)
-    targets = torch.cat((rhs[:, None],
-                         rhs[:, None] - B[:, nt:] @ eye - B[:, :nt] @ particular), dim=1)
-    free = torch.linalg.lstsq(B[:, :nt] @ basis, targets).solution
-    mu = torch.cat((torch.zeros(nt, 1, dtype=B.dtype), particular), dim=1) + basis @ free
-    return mu[:, 0], mu[:, 1:] - mu[:, 0][:, None]
+    return affine_state(B, rhs, J, nt, ng)
 
 
 def _potential_jump_newton(pressure, mu_base, mapping, gamma, nt, max_nfev=12, tol=1e-12):
-    """Newton on p(gamma) = 0 with the exact Jacobian dp/dgamma = Jp @ [mapping; I]."""
-    state = torch.cat((mu_base + mapping @ gamma, gamma), dim=0)
-    p = pressure(state)
-    scale = max(float(p.abs().max()), 1e-30)
-    evaluations = 0
-    for _ in range(max_nfev):
-        if float(p.abs().max()) <= tol:
-            break
-        jp = pressure.jacobian(state)
-        dpdg = jp[:, :nt] @ mapping
-        step = torch.linalg.solve(dpdg, p)
-        gamma = gamma - step
-        state = torch.cat((mu_base + mapping @ gamma, gamma), dim=0)
-        p = pressure(state)
-        evaluations += 1
-        if not bool(torch.isfinite(p).all()):
-            break
+    """Newton on p(gamma) = 0; the shared implementation also returns the relative residual."""
+    gamma, state, p, evaluations, scale, _relative = potential_jump_newton(
+        pressure, mu_base, mapping, gamma, nt, max_nfev=max_nfev, tol=tol)
     return gamma, state, p, evaluations, scale
 
 

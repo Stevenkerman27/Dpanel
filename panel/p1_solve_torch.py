@@ -77,8 +77,8 @@ def _acceptance_torch(*, result, fun, jac, z, wall_operator, wall_rhs,
 def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
                       max_nfev=80, operators=None, device="cpu"):
     """Solve wall P1 mu and all independent wake Gamma, on torch."""
-    if kutta not in ("pressure", "signed_speed"):
-        raise ValueError("kutta=pressure or signed_speed")
+    if kutta not in ("pressure", "signed_speed", "potential_jump"):
+        raise ValueError("kutta=pressure, signed_speed or potential_jump")
     if not isinstance(max_nfev, int) or max_nfev < 1:
         raise ValueError("max_nfev must be a positive integer")
     start = time.perf_counter()
@@ -151,6 +151,15 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
         nonlinear = _acceptance_torch(result=rr, fun=fun, jac=jac, z=rr.x,
                                       wall_operator=B @ reduction, wall_rhs=bw,
                                       pressure_residual=model(x))
+    elif kutta == "potential_jump":
+        # Morino closure: J holds exactly, and the trailing-edge pressure difference is driven
+        # to zero by Newton on the ng circulations.  The wall solution is affine in them, so the
+        # whole closure costs one least-squares pass plus a handful of ng x ng solves.  Fails
+        # loudly instead of returning a state that is not a converged closure.
+        from .p1_potential_jump_torch import solve_potential_jump
+        t_closure = time.perf_counter()
+        x, nonlinear = solve_potential_jump(B, bw, J, model, x[nm:], nm, max_nfev=max_nfev)
+        pressure_seconds = time.perf_counter()-t_closure
     mu, gamma = x[:nm], x[nm:]
     velocity = torch.einsum("fij,j->fi", grad, mu)
     cp = 1.-(velocity*velocity).sum(dim=1)

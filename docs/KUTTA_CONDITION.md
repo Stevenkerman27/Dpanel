@@ -287,3 +287,29 @@ ndof 维 Hessian，0.05 m 上快一倍多。0.5/0.35 m 的 3% 差异不是实现
 所以「升默认」不是改一个 kwarg，而是要把 pj 移植进 `solve_multi` / `p1_lifting_g2` 整条线，
 并重跑生产验收。在那之前把默认换掉会直接破坏「可微路径 = 生产 P1」这条性质。
 
+### 7.5 移植完成（2026-11-07）
+
+上面第 1 步已完成：生产求解器现在也支持 `kutta="potential_jump"`，默认仍是 `pressure`。
+
+* 新增 `panel/p1_potential_jump_torch.py`：`affine_state`、`potential_jump_newton`、
+  `solve_potential_jump` 是**唯一实现**，生产路径（`panel/p1_solve_torch.py`）与可微路径
+  （`panel/p1_cst_gradient.py` 的 `_FixedWakeImplicit` / `_PotentialJumpImplicit`）都调它，
+  免得两份 Newton 各自漂移。该模块只依赖 torch 和 `p1_rank_aware_torch`，不破坏
+  「`p1_solve_torch` 不 import numpy/scipy」这条性质。
+* `solve_multi_torch` 的 `kutta` 接受三个值；pj 分支在 J 精确成立的仿射族上对 TE 压差做 Newton，
+  不收敛就 `raise RuntimeError`（带 evaluations / stationarity_inf / relative / tolerance），
+  不返回「看起来像解」的状态。`nonlinear` 里给出 `method="morino_potential_jump"`。
+* 对齐证据（`runs/scratch_opt/pj_production_port.py`、`pj_port_grass.py`、`pj_port_multi.py`）：
+  - 3×3 CST 翼：`solve_multi(kutta="potential_jump")` 得 CL=0.207419222138、CD=−0.005713680157，
+    与 `fixed_wake_cst(..., kutta="potential_jump")` 差 **6.6e−15 / 6.6e−17**；同一翼的 pressure
+    路径与生产的差仍是 4.41e−15。
+  - GRASS 两截面 80 面：pressure CL=0.290700055、pj CL=0.290587122（差 1.13e−4，粗网格多根），
+    生产 pj 与可微 pj 差 1.7e−15。
+  - 双翼（2 个 group、ng=6）：pj 两次 Newton 收敛，`jump_rms=0`（仿射映射构造上成立）、
+    `pressure_kutta_rms=2.63e−15`，CL=0.294953687 对 pressure 的 0.295070972。
+* 回归：`test/test_p1_cst_gradient.py` 新增 `test_potential_jump_matches_production_solver` 与
+  `test_potential_jump_production_handles_two_groups`；三个 P1 文件 20 passed。
+* **默认为什么不跟着换**：`docs/issue92/references/` 与大部分冻结测试的期望值都是 pressure 下的数，
+  换默认要让它们一次性失效并重跑生成参考。代码上现在只剩「改一个默认值 + 重跑参考」这一步，
+  这是策略决定，不是技术阻塞。
+

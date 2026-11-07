@@ -9,6 +9,7 @@ from panel.p1_cst_gradient import (cst_geometry, fixed_wake_cst, fixed_wake_sect
                                    galerkin_operators, grass_section_geometry)
 from panel.p1_galerkin_wall import assemble_galerkin_multi
 from panel.p1_lifting_g2 import combine_wings, solve_multi
+from tools.web.params import GRASS_DEFAULTS
 
 pytestmark = pytest.mark.skipif(
     not (Path(__file__).resolve().parents[2] / "GRASS-plane" / "cst_airfoil_codec.py").is_file(),
@@ -46,6 +47,38 @@ def test_cst_gradient_matches_central_difference(index):
         minus, _ = fixed_wake_cst(value.detach() - delta, chord_panels=3, span_panels=3)
         finite_difference = ((plus - minus) / (2 * step)).detach().numpy()
         np.testing.assert_allclose(derivative, finite_difference, atol=2e-7, rtol=2e-5)
+
+
+def test_potential_jump_matches_production_solver():
+    """The production closure and the autograd path must be the same equation.
+
+    panel/p1_potential_jump_torch.py is shared by solve_multi (production) and the
+    differentiable route, so a mismatch here means one of the two affine/Newton steps drifted.
+    """
+    wing, xyz = cst_geometry(code(), chord_panels=3, span_panels=3)
+    production = solve_multi(combine_wings([replace(wing, xyz=xyz.detach().numpy())]), 4.,
+                             kutta="potential_jump")
+    assert production["kutta"] == "potential_jump"
+    assert production["nonlinear"]["success"]
+    assert production["nonlinear"]["relative_step"] < 1e-10
+    actual, info = fixed_wake_cst(code(), chord_panels=3, span_panels=3, kutta="potential_jump")
+    assert info["kutta"] == "potential_jump"
+    np.testing.assert_allclose(actual.detach().numpy(),
+                               [production["CL"], production["CD_pressure"]], atol=2e-9)
+
+
+def test_potential_jump_production_handles_two_groups():
+    """J is block-structured over groups; the closure must cover all circulations at once."""
+    wing, xyz, _, _ = grass_section_geometry(GRASS_DEFAULTS, chord_panels=4,
+                                             span_panels_per_segment=2)
+    w = replace(wing, xyz=xyz.detach().numpy())
+    mesh = combine_wings([w, w], origins=[(0., 0., 0.), (0., 6., 0.)])
+    out = solve_multi(mesh, 4., kutta="potential_jump")
+    assert len(mesh.groups) == 2
+    assert out["nonlinear"]["success"]
+    assert out["jump_rms"] <= 1e-13          # affine map satisfies J by construction
+    assert out["pressure_kutta_rms"] <= 1e-10
+    assert out["CL"] > 0
 
 
 def test_open_trailing_edge_rejected():
