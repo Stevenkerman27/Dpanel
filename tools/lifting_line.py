@@ -19,15 +19,10 @@ onto the cosine stations) or as a callable of y. Samples are fine — a sampled
 elliptic wing with 801 points returns e = 1.0000 — but the area integral uses
 the samples, so give a grid fine enough near the tips to represent the chord.
 
-The section slope is 2*pi by default (thin airfoil). A 12% thick section has a
-slightly higher slope, so a panel wing is expected to sit a few percent above
-this reference; that bias is stated where the reference is used, not hidden by
-tuning a0.
-
-A rectangular planform with a sharp tip is a poor reference case: the loading
-is discontinuous at the side edge and the sine series converges slowly, so e
-keeps drifting with the number of terms. Prefer planforms with a finite tip
-chord, which is also what the solver's bounded-tip meshes have.
+The section slope is 2*pi by default (thin airfoil). Finite-thickness comparisons
+need an independently measured section slope; a thickness correction must not be
+fitted to the three-dimensional answer. Rectangular-wing circulation also tends
+to zero at the tips, although its gradients need more terms to resolve.
 """
 
 from __future__ import annotations
@@ -48,7 +43,10 @@ def lifting_line(y=None, chord=None, *, chord_of_y=None, span=None, alpha_deg=0.
     Give either ``y`` (strictly increasing, whole span) plus ``chord`` samples of
     the same length, or just ``chord_of_y``. Returns ``cl_alpha`` (per radian),
     ``cl`` at ``alpha_deg``, ``cdi``, ``e``, the planform ``span``/``area``/
-    ``aspect_ratio`` and the circulation ``gamma`` over ``y`` (when given).
+    ``aspect_ratio`` and ``gamma = Gamma/U_inf`` over the returned ``y``.
+    Sample inputs retain their original y; callable inputs return cosine stations
+    plus both tips. ``modes`` and ``coefficients`` describe the sine expansion at
+    alpha_deg, using the full-span convention Gamma = 2*b*U_inf*sum(A_n sin(n theta)).
     """
     if chord_of_y is None:
         if y is None or chord is None:
@@ -75,27 +73,28 @@ def lifting_line(y=None, chord=None, *, chord_of_y=None, span=None, alpha_deg=0.
             raise ValueError("chord_of_y needs a positive span")
         span = float(span)
         semispan = 0.5 * span
-        # Midpoint rule over a fine grid; the caller passes a smooth chord function.
+        # Integrate the caller's chord on a fine grid, including the tips.
         grid = np.linspace(-semispan, semispan, 4001)
         area = float(np.trapezoid(np.asarray(chord_of_y(grid), dtype=float), grid))
         def chord_at(stations):
             return np.asarray(chord_of_y(stations), dtype=float)
 
-    if terms < 1:
-        raise ValueError("terms must be at least 1")
-    # Collocate on twice as many stations as harmonics and solve in the least
-    # squares sense: the square system is ill-conditioned (rows near the tip carry
-    # 1/sin(theta)), and a squared solve then returns a spurious harmonic at some
-    # term counts. Overdetermined collocation keeps e stable (measured: the square
-    # solve gave e 0.999 / 0.999 / 0.829 / 0.999 at 31 / 63 / 127 / 255 terms).
+    if not isinstance(terms, (int, np.integer)) or isinstance(terms, bool) or terms < 1:
+        raise ValueError("terms must be a positive integer")
+    if not np.isfinite(section_slope) or section_slope <= 0.0:
+        raise ValueError("section_slope must be positive and finite")
+    # Mirror rows are identical for odd modes. N whole-span symmetric stations
+    # therefore supply only ceil(N/2) independent equations for N unknowns.
     stations = 2 * terms + 1
     theta = (np.arange(1, stations + 1) - 0.5) * np.pi / stations
     sine_theta = np.sin(theta)
 
     station_y = -semispan * np.cos(theta)
     station_c = chord_at(station_y)
-    if np.any(station_c <= 0.0):
+    if not np.isfinite(station_c).all() or np.any(station_c <= 0.0):
         raise ValueError("chord vanishes inside the cosine stations")
+    if not np.allclose(station_c, station_c[::-1], rtol=1e-8, atol=1e-12):
+        raise ValueError("odd modes require chord symmetric about zero")
     n = _odd_terms(terms)
     sine = np.sin(np.outer(theta, n))
     matrix = sine * (4.0 * span / (section_slope * station_c)[:, None]
@@ -113,5 +112,11 @@ def lifting_line(y=None, chord=None, *, chord_of_y=None, span=None, alpha_deg=0.
         "e": float(unit[0] ** 2 / weighted) if weighted > 0.0 else 0.0,
         "terms": terms,
     }
-    result["gamma"] = 4.0 * span * (sine @ unit) * alpha
+    output_y = y.copy() if y is not None else np.r_[-semispan, station_y, semispan]
+    output_theta = np.arccos(np.clip(-output_y / semispan, -1.0, 1.0))
+    result["y"] = output_y
+    result["modes"] = n
+    result["coefficients"] = unit * alpha
+    result["gamma"] = 2.0 * span * (np.sin(np.outer(output_theta, n)) @ unit) * alpha
+    result["gamma"][[0, -1]] = 0.0
     return result

@@ -67,6 +67,29 @@ def test_potential_jump_matches_production_solver():
                                [production["CL"], production["CD_pressure"]], atol=2e-9)
 
 
+@pytest.mark.parametrize("kutta", ["pressure", "potential_jump"])
+def test_matched_recovery_production_and_implicit_gradient(kutta):
+    value = code().requires_grad_(True)
+    output, info = fixed_wake_cst(
+        value, chord_panels=3, span_panels=3, kutta=kutta, pressure_recovery="area")
+    weights = torch.tensor([.7, -.2], dtype=value.dtype)
+    derivative = torch.autograd.grad(output @ weights, value)[0][0].item()
+    delta = torch.zeros_like(value)
+    delta[0] = 1e-5
+    plus, _ = fixed_wake_cst(value.detach() + delta, chord_panels=3, span_panels=3,
+                             kutta=kutta, pressure_recovery="area")
+    minus, _ = fixed_wake_cst(value.detach() - delta, chord_panels=3, span_panels=3,
+                              kutta=kutta, pressure_recovery="area")
+    finite = float(((plus - minus) @ weights) / 2e-5)
+    assert derivative == pytest.approx(finite, abs=2e-6, rel=2e-4)
+    wing, xyz = cst_geometry(value.detach(), chord_panels=3, span_panels=3)
+    production = solve_multi(combine_wings([replace(wing, xyz=xyz.numpy())]), 4.,
+                             kutta=kutta, pressure_recovery="area")
+    np.testing.assert_allclose(output.detach().numpy(),
+                               [production["CL"], production["CD_pressure"]], atol=2e-9)
+    assert info["pressure_recovery"] == "area"
+
+
 def test_potential_jump_production_handles_two_groups():
     """J is block-structured over groups; the closure must cover all circulations at once."""
     wing, xyz, _, _ = grass_section_geometry(GRASS_DEFAULTS, chord_panels=4,

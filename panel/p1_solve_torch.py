@@ -75,10 +75,12 @@ def _acceptance_torch(*, result, fun, jac, z, wall_operator, wall_rhs,
 
 
 def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
-                      max_nfev=80, operators=None, device="cpu"):
+                      max_nfev=80, operators=None, device="cpu", pressure_recovery="face"):
     """Solve wall P1 mu and all independent wake Gamma, on torch."""
     if kutta not in ("pressure", "signed_speed", "potential_jump"):
         raise ValueError("kutta=pressure, signed_speed or potential_jump")
+    if pressure_recovery not in ("face", "area", "quadratic"):
+        raise ValueError("pressure_recovery must be face, area or quadratic")
     if not isinstance(max_nfev, int) or max_nfev < 1:
         raise ValueError("max_nfev must be a positive integer")
     start = time.perf_counter()
@@ -126,7 +128,13 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
     rank = int(solved.rank)
     singular = solved.singular
     pairs = [p for group in operators["te_face_pairs"] for p in group]
-    model = TorchPressureModel(grad, pairs, nm+ng, device=device)
+    velocity_maps, recovery_receipt = None, None
+    if pressure_recovery != "face":
+        from .p1_te_recovery import matched_te_velocity_maps
+        top, bottom, recovery_receipt = matched_te_velocity_maps(
+            mesh, device=device, method=pressure_recovery)
+        velocity_maps = (top, bottom)
+    model = TorchPressureModel(grad, pairs, nm+ng, device=device, velocity_maps=velocity_maps)
     nonlinear, pressure_seconds = None, None
     rr = None
     if kutta == "pressure":
@@ -144,7 +152,7 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
         pressure = solve_pressure_kutta_torch(
             wall_operator=B, wall_rhs=bw, kutta_operator=J, grad=grad,
             te_face_pairs=pairs, x0=x, weight=kut_weight,
-            max_nfev=max_nfev, device=device)
+            max_nfev=max_nfev, device=device, pressure_model=model)
         rr = pressure.result
         pressure_seconds = time.perf_counter()-t_pressure
         x = pressure.state
@@ -209,6 +217,7 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
         linear_singular_min=float(singular[-1]) if len(singular) else float("nan"),
         nonlinear=nonlinear, physical_accuracy_accepted=False,
         pressure_solver="structured" if kutta == "pressure" else None,
+        pressure_recovery=pressure_recovery, pressure_recovery_receipt=recovery_receipt,
         pressure_status=(rr.status if rr is not None else None),
         pressure_success=(bool(rr.success) if rr is not None else None),
         pressure_message=(rr.message if rr is not None else None),

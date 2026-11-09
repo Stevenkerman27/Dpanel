@@ -8,7 +8,7 @@ implementation of ours:
   1/CL_alpha against 1/AR and extrapolating to 1/AR -> 0 gives a_inf; a flat plate gives
   2*pi = 6.283, and a 12%-thick section sits a few percent above it.
 * an unswept, untwisted elliptic planform must have span efficiency
-  e = CDi / (CL^2 / (pi*AR)) close to one, and better than a rectangular wing of the same
+  e = CL_Gamma^2 / (pi*AR*CDi) close to one, and better than a rectangular wing of the same
   span and area. CDi comes from the Trefftz plane, so it is induced drag only; the
   near-field CD_pressure is not usable for this (it went negative on the elliptic case).
 * the potential-jump closure must refuse a mesh on which its own Jacobian is too
@@ -35,6 +35,10 @@ and for thickness 0.02 the pressure closure even goes negative (c4 0.139365, c8 
 c16 -0.095238) while potential_jump stays put (0.185201/0.180503/0.171499). The two
 strict xfail markers below keep that defect visible: an XPASS means the defect was fixed
 and the marker should become a plain assertion.
+
+The historical efficiency values below used an inverted definition and a midpoint
+drag approximation. They are retained as old output only. The 2026-11-09 exact
+piecewise-linear-energy check gives coarse e_ellipse=0.978154, e_rectangle=0.965248.
 
 Elliptic planform (span 8, root chord 2, GRASS sections, CST 0.17): the planform is cut at
 0.85 span and closed with a LINEAR tip taper to chord 0.24, because cutting a pure ellipse
@@ -75,7 +79,7 @@ if str(ROOT) not in sys.path:
 from panel import p1_lifting_g1 as g1  # noqa: E402
 from panel.grass_mesh import build_grass_mesh, load_grass_wing  # noqa: E402
 from panel.te_strip_audit import te_strip_diagnostics  # noqa: E402
-from tools.issue92.trefftz_full import trefftz_cd_full  # noqa: E402
+from panel.trefftz_energy_exact import exact_trefftz_piecewise_linear  # noqa: E402
 
 
 ALPHA_DEG = 2.0
@@ -167,11 +171,12 @@ def _span_efficiency(wing, alpha_deg=4.0):
                      wall_formulation="collocation")
     gamma = np.asarray(state["gamma"], float)
     stations = np.asarray(wing.gamma_y, float)
-    cd, _ = trefftz_cd_full(stations, np.r_[0.0, gamma, 0.0],
-                            area=float(wing.reference_area))
+    drag = exact_trefftz_piecewise_linear(
+        stations, np.r_[0.0, gamma, 0.0], U=1., density=1.,
+        reference_area=float(wing.reference_area))
     aspect_ratio = float(np.ptp(wing.xyz[:, 1])) ** 2 / float(wing.reference_area)
-    optimum = float(state["CL"]) ** 2 / (np.pi * aspect_ratio)
-    return cd / optimum, float(state["CL"]) / np.deg2rad(alpha_deg), aspect_ratio
+    optimum = drag["CL_circulation"] ** 2 / (np.pi * aspect_ratio)
+    return optimum / drag["CDi_ideal"], float(state["CL"]) / np.deg2rad(alpha_deg), aspect_ratio
 
 
 def test_elliptic_planform_reaches_unit_span_efficiency():
@@ -186,7 +191,7 @@ def test_elliptic_planform_reaches_unit_span_efficiency():
                                chord=float(elliptic.reference_area) / span,
                                wake_panels=2, wake_length=5.)
     rectangular_efficiency, _, _ = _span_efficiency(rectangular)
-    assert rectangular_efficiency < efficiency - 0.03, (rectangular_efficiency, efficiency)
+    assert 0.0 < rectangular_efficiency < efficiency <= 1.02, (rectangular_efficiency, efficiency)
 
 
 def test_potential_jump_refuses_an_ill_conditioned_tip():

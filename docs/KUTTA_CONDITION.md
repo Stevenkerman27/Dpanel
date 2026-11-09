@@ -1,6 +1,9 @@
 # 后缘 Kutta 条件：现状、理论、实测与两级求解方案
 
-状态：**调研 + 探针实验完成，产品代码未改**（2026-11-07）。
+2026-11-09 四步修复与实际验证见 §10，修复前复核见 §9；两节纠正前文的效率定义、权重、
+「势跳变闭包不使用压差」和「不同结果必然是同一方程多根」等解释。前文数字保留为历史证据。
+
+状态：比较定义、固定环量探针、可选尾缘恢复与 Newton 诊断已实现；物理精度未验收。
 适用代码：`panel/p1_cst_gradient.py`（`fixed_wake_geometry`）、`panel/p1_pressure_kutta_torch_driver.py`、`panel/p1_lifting_g1.py`（`assemble`）。
 证据脚本：`runs/scratch_opt/morino_probe.py`、`runs/scratch_opt/itkut_probe.py`、`runs/scratch_opt/kutta_diag.py`。
 
@@ -12,8 +15,8 @@
 
 * 隐式求导要对 903×903（0.1 m）甚至 3403×3403（0.05 m）的约化 Hessian 做逐行 vjp；
 * 0.05 m 上 `||F||∞ = 1.16e-7` 撞上绝对门禁 `1e-9`，优化器被迫中断（`panel/p1_cst_gradient.py:306-311`）；
-* 速度场在尖后缘本来就不收敛（`docs/archive/issue/ISSUE71_VELOCITY_AND_KUTTA_TESTS.md`），
-  用最后弦向单元的 |V| 定 Γ 等于用噪声定升力。
+* 原配点实验的尾缘梯度对网格很敏感。历史 ISSUE71 的固定环量/无切口证据已撤回，
+  不能据此断言所有离散都不收敛；修正后的物理位置探针见 §10。
 
 ## 2. 理论
 
@@ -416,3 +419,305 @@ cond 6.4e4 却有 8 次变号）；尖端弦长比用后缘点的 `hypot(x, z)` 
   换默认要让它们一次性失效并重跑生成参考。代码上现在只剩「改一个默认值 + 重跑参考」这一步，
   这是策略决定，不是技术阻塞。
 
+## 9. 升力线、势跳变与压力闭包复核（2026-11-09）
+
+本节记录修复前的代码阅读与现场复算；当时未修改求解器、升力线实现或默认设置，后续修复见 §10。环境为 Windows x64、
+项目 myml Python 3.13，torch CPU 单线程，BLAS/OpenMP/MKL 线程数均设为 1。
+临时脚本 `runs/scratch/lifting_line_closure_audit.py`，数据
+`runs/verification/lifting_line_closure/audit.json`；两者按仓库规则不提交。
+复现：在上述线程环境下执行
+`C:/Users/zyx20/anaconda3/envs/myml/python.exe runs/scratch/lifting_line_closure_audit.py`。
+
+### 9.1 先纠正比较量
+
+`tools/lifting_line.py` 的矩阵、`CL = pi AR A1`、`CDi = pi AR sum(n An²)`、
+`e = A1² / sum(n An²)` 彼此一致。但此处 `b` 已定义为全翼展，因此环量应为
+`Gamma = 2 b U_inf sum(An sin(n theta))`，代码第 116 行的 `4 b` 多出一倍。
+由 `CL_Gamma = 2 integral(Gamma dy)/(U_inf S)` 积分即可独立核算。
+当前函数没有速度参数，可返回 `Gamma/U_inf` 并明确单位约定。
+
+现场用精确椭圆弦长函数、b=8、根弦=2、alpha=4°：
+模态 CL=0.314964608，返回 gamma 积分所得 CL=0.629864974，比例 1.999796；
+小于精确 2 的差来自输出配点上的梯形积分。精确椭圆的 e=1，斜率为 4.511535683；
+它不是此前有界尖端分段线性平面形的 e=0.9994、斜率 4.5213。
+
+还有两个独立的接口/展示问题：
+
+* 函数文档称 gamma 对应输入 y，实际总是返回 `2*terms+1` 个内部配点上的值，
+  还未返回这些配点；输入 20001 个 y 时默认输出只有 127 个 gamma。修正应返回配点
+  坐标，或在输入 y 上重新计算正弦展开，并分别说明两种输出。
+* `runs/scratch_opt/ll_compare.py` 与 `test/test_physics_anchors.py` 把
+  `CDi/(CL²/(pi AR))` 标成 e，实际是 `1/e`。标准效率应为
+  `CL²/(pi AR CDi)`。旧展示 61.661 对应标准 e 约 0.01622，4.761 对应约 0.21004。
+  这两个例子仍异常，但不能再解释为效率暴涨。旧椭圆/矩形效率排序断言也须重新审查，
+  并同时报告 CL_pressure、CL_Gamma，避免用不一致载荷归一化掩盖问题。
+
+当前 `pytest -q test/test_lifting_line_reference.py -p no:cacheprovider` 为
+4 passed；测试未覆盖 gamma 积分恒等式、输出坐标和跨模块效率定义，故未发现这些错误。
+
+### 9.2 奇次展开与配点秩
+
+仅取奇次项适用于对称平面形与对称有效攻角；它不会天然导致两条闭包差异。
+但在全展向使用对称 theta 配点时，
+`sin(n(pi-theta)) = sin(n theta)`（n 为奇数），矩阵的镜像行完全相同。
+如果 N 个奇次未知量仅放 N 个全展向配点，秩至多 ceil(N/2)，不能只解释为尖端
+`1/sin(theta)` 太大。当前 `2N+1` 个配点避免了独立方程数量不足。
+
+用当前配点约定、矩形 AR=6 实测：
+
+| 奇次项数 N | N 个全展向配点的秩 / 条件数 | 2N+1 个配点的秩 / 条件数 |
+| --- | --- | --- |
+| 31 | 16 / 6.57e16 | 31 / 3.67e2 |
+| 63 | 32 / 1.41e17 | 63 / 1.51e3 |
+| 127 | 64 / 8.29e17 | 127 / 6.15e3 |
+
+这不表示所有方阵配点都不好：只在独立半翼上布置 N 个适当配点也可。
+矩形翼的升力线 Gamma 在翼尖趋零，并非文档所说在侧边跳跃不连续；
+边缘梯度和高阶模态收敛应另作分析。输入代码还只检查展向端点居中，
+没有检查 chord(y)=chord(-y)，所以使用奇次项的对称性目前依赖调用者。
+
+### 9.3 两条闭包实际上解什么
+
+令 x=[mu; Gamma]，B 为加权壁面算子，Jx=0 表示
+`mu_upper-mu_lower-Gamma=0`。两条路径都精确施加 J，都使用同一个
+`TorchPressureModel`：
+`p(x)=mean_top |grad(mu)|²-mean_bottom |grad(mu)|²`。
+这里 p 是速度平方差，零点对应等压条件，数值本身不是有量纲压力差。
+
+`pressure` 求：
+
+```
+min_x  ||Bx-b||² + w² ||p(x)||²,  subject to Jx=0
+```
+
+当前 w=5，即目标函数的系数是 25；不能写成残差行乘 25。
+
+`potential_jump` 求：
+
+```
+mu*(Gamma) = argmin_mu ||B[mu;Gamma]-b||²
+             subject to J[mu;Gamma]=0
+mu*(Gamma) = mu_base + M Gamma
+p([mu*(Gamma);Gamma]) = 0
+```
+
+外层 Newton 使用 `dp/dGamma = p_mu M + p_Gamma`；当前模型显式 p_Gamma=0，
+但全导数 p_mu M 一般不为零。不能用显式 Gamma 列为零推断环量不可辨识。
+对壁面最小二乘问题的条件最优性与全状态罚项目标的条件最优性不同，
+所以这不是同一离散方程的两种等价算法。即便罚项权重趋于无穷，
+也不能未经证明就把它们当作等价。
+
+### 9.4 同网格实测：小势值改动可大幅改变后缘梯度
+
+矩形 AR=16、厚度 0.12、alpha=2°、64 个展向单元、wake_length=5、
+wake_panels=2、collocation；每个弦向分辨率只装配一次算子，供两条路径复用。
+这是当前代码现场数据，不覆盖前文不同历史状态下的数字。
+同平面形薄翼升力线给 CL=0.188754692；它仅是低阶参考，不是有限厚度真值。
+
+| 弦向单元 | pressure CL_pressure / CL_Gamma | potential_jump CL_pressure / CL_Gamma |
+| --- | --- | --- |
+| 4 | 0.189956168 / 0.171737481 | 0.209379674 / 0.189627728 |
+| 8 | 0.162878910 / 0.158703440 | 0.196501801 / 0.191458660 |
+| 16 | 0.074809363 / 0.075167754 | 0.189503701 / 0.189461108 |
+
+pressure 自身 p RMS 为 2.79e-7、8.47e-9、2.95e-9。保持它的 Gamma 不变，
+把 mu 投影回上述壁面条件最小二乘族后，相对 mu 改变量仅
+0.001116、0.000998、0.001508，p RMS 却变为 0.0366、0.1724、1.3412。
+投影同时减小壁面目标值，因此这确实是 pressure 离开壁面条件最优族的量，
+不是另一个环量或另一个输入造成的差异。pj 的对应偏离为 4.24e-14、7.45e-14、0。
+
+这支持的机制是：全状态压力罚项可以利用小幅势值改变来调整高敏感的表面梯度，
+后缘速度平方差很小仍不足以确定正确环量。它不证明具体边缘奇异机制已完全定位。
+本组矩形 pj 雅可比条件数约 64、5.6、10.8，没有椭圆尖端的近奇异模态；
+pressure 的弦向失效不能统一归因于尖端条件数。
+
+也不能单凭两条路径 CL 不同、p 都小，就宣称「同一个方程有两个根」：
+要验证该结论，必须把候选解放回同一个 mu*(Gamma) 族，再检查 p 和根的延拓。
+前文 §3.3 与 §8.5 的多根/错根表述应按此限制理解。
+
+### 9.5 修正与验收顺序
+
+1. 先修 gamma 的系数与输出坐标、所有 e/1/e 标签及物理断言，增加环量积分与模态
+   CL/CDi 一致性检查。保留旧输出，明确它们是旧定义，不按正确 e 混用。
+2. 比较时固定同一几何、面积、攻角、尾迹长度、壁面离散与算子；明确区分
+   CL_pressure 与 CL_Gamma（同一状态的后处理），以及 pressure/pj（两条求解路径）。
+   先用 2pi 作薄翼锚点，再用独立二维计算获得同翼型、同工况的 a0；
+   厚度可能解释部分差异，但不能据此认定已解释全部 5% 偏差。
+3. 用固定 Gamma 的问题单独检验壁面势值、表面速度、Cp 的弦向/展向收敛，
+   然后检验闭包。历史 ISSUE71 的固定环量与无切口负例仍需在候选修正上重做；
+   只跳过最后一格、加权重、加迭代次数不是已有证据支持的解决办法。
+4. 后缘压力恢复应使用上/下表面独立、位置匹配的收敛离散；可比较面积加权恢复、
+   固定物理距离的多点外推、边缘加密/奇异富化或高阶迹空间。它们均是待验证方案，
+   不能仅以残差更小或更贴升力线选型。有限夹角后缘尤其不能直接假设上下速度向量相等。
+5. 保留环量约化路径作为诊断基线，但它仍使用相同压力模型，并非根治。
+   用小攻角延拓、多初值、尺度归一后的奇异值/模态和 Gamma 平滑性检验分支与条件；
+   尖端局部基函数/网格与尾迹匹配需独立修正。正则化或降阶若改变模型必须记录，
+   不得通过裁剪 Gamma 隐藏振荡。
+6. 最后验收 CL_pressure 与 CL_Gamma 的网格趋势、二维斜率极限、对称性、
+   Trefftz CDi 和标准 e。固定 Gamma 下场量收敛、实际网格误差与物理参考通过之前，
+   不以默认切换、冻结参考重写或条件数门禁宣称物理精度已解决。
+
+## 10. 四步修复与验证（2026-11-09）
+
+工作在用户指定的本地 master 完成，未检查 GitHub。环境：Windows x64，
+`C:/Users/zyx20/anaconda3/envs/myml/python.exe`，torch CPU，
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`，torch 单线程。
+以下严格区分代数收敛、网格趋势和物理精度；`physical_accuracy_accepted=false`。
+
+### 10.1 比较定义已修正
+
+`tools/lifting_line.py` 现在返回全翼展约定的
+`Gamma/U_inf = 2*b*sum(A_n*sin(n*theta))`，样本输入保持原 y，函数输入返回含两端点的
+余弦站位；返回 `y`、`modes`、`coefficients`，两翼尖 gamma 严格为零。奇次展开检查弦长
+对称性；保留 `2N+1` 配点，原因是镜像行相同造成的秩限制，不再误称单纯尖端病态。
+
+物理锚点与新对照脚本统一采用
+`e=CL_Gamma^2/(pi*AR*CDi)`，CDi 调用已有精确分段线性 Trefftz 能量核。
+`CL_pressure` 另报；旧 `1/e` 标签与旧中点阻力近似的数字不能直接混入。
+独立 Gauss 积分检查环量/下洗的 CL、CDi 与模态公式，避免仅用同一错误公式自检。
+椭圆/同面积矩形粗网格的修正 e 为 `0.978154/0.965248`；
+撤销没有理论依据的效率差必须大于 0.03 的断言，保留正效率、上界与物理排序。
+
+可复现的平面形比较：
+
+```text
+python -m tools.lifting_line_compare --case all --wall collocation --out runs/verification/lifting_line_fix/planforms
+python -m tools.lifting_line_compare --case all --wall galerkin --recovery area --out runs/verification/lifting_line_fix/planforms_galerkin_area
+```
+
+脚本默认壁面与生产一致使用 Galerkin，`--wall collocation` 是显式控制。
+保持相同几何、参考面积与环量，并同时保存 LL 与面元 gamma 的坐标/数据。
+薄翼 `a0=2*pi` 仅作为低阶锚点；没有从三维答案反拟合厚度修正。
+
+同为9截面、c6、每段4展向单元、1560面的 Galerkin+area 新对照：
+
+| 平面形 | 面元斜率 / LL斜率（每弧度） | 面元e / LL e | CLp / CL_Gamma（4°） |
+| --- | --- | --- | --- |
+| 矩形 | 4.433198 / 4.391205 | .980970 / .960033 | .309682 / .298964 |
+| 梢根比0.5锥形 | 4.938941 / 4.841239 | .994451 / .985509 | .345024 / .333698 |
+| 有界椭圆 | 4.293789 / 4.521323 | .978256 / .999371 | .299930 / .291719 |
+
+原 collocation+face 控制的对应 e 为 `.120023/.946644/.978154`。
+这同时改变了壁面和恢复，不能把全部改善归于恢复；受控单因素比较见 §10.3。
+有界椭圆的升力斜率仍偏低，且未做完整二维截面斜率/几何网格验收。
+
+### 10.2 严格固定环量，检验实际场量
+
+`tools/lifting_line_study.py --case fixed-gamma` 使用共享 `affine_state`，
+固定 `Gamma=.22*sqrt(1-(2y/b)^2)`，仅求条件最优壁面势值；
+分别断言/记录 gamma 误差、Jx、条件最优偏离，不再使用错误的
+`target + null_space(J) z`。探针在固定物理 x/y 上定位三角面，插值真实面上的 z 和势值；
+速度/Cp 来自该面，避免最近重心替代真实位置。
+
+```text
+python -m tools.lifting_line_study --case fixed-gamma --out runs/verification/lifting_line_fix/fixed_gamma --chords 4 8 16 32 --span-panels 12
+```
+
+矩形 AR4、t/c=.12、alpha4°、wake10c、展向12单元。固定 gamma 误差为零，
+`max|Jx|` 约 `3e-16`；`CL_Gamma=.3368181`、精确离散 e=.95944 不随弦向/壁面改变。
+
+| 壁面 | c4 CLp | c8 CLp | c16 CLp | c32 CLp | 相邻网格探针最大速度变化 |
+| --- | --- | --- | --- | --- | --- |
+| collocation | .370901 | .342740 | .337985 | .335738 | .200914 / .276550 / .421445 |
+| Galerkin | .357708 | .340007 | .333238 | .332859 | .190070 / .051305 / .040467 |
+
+Galerkin 最大势值变化为 `.014726/.001496/.000445`；配点速度没有收敛趋势。
+任意给定 gamma 不一定满足 Kutta，尖后缘本身可有奇异梯度，所以本实验以离开后缘的
+固定物理探针为证据，不以 TE 梯度有界作为固定 gamma 问题的验收条件。
+
+另执行 c16、展向 `8/16/24` 单元的 Galerkin 固定 gamma 对照（同一脚本，
+`--chords 16 --walls galerkin --span-panels N`，输出 `span_sN`）。
+最大势值变化 `.000351742/.000091566`，速度 `.00198258/.00201958`、
+Cp `.00370926/.00406944`。势值改善，速度/Cp 尚不能声称一致收敛。
+等比加密 `8/16/32` 的后一步为势值 `.000133728`、速度 `.00172390`、
+Cp `.00449462`，仍不支持 Cp 在这些探针上收敛。
+不同展向网格是同一解析 gamma 的不同分段线性表示，因此其积分升力/能量不要求逐值相等。
+
+`tools/issue71/fixed_gamma.py` 的固定 gamma 求解已修复；旧物理探针仍为历史用途。
+`tools/issue71/bisect_cut.py` 已停用：其旧固定 gamma 构造无效，
+`nocut` 也从未真正移除切口/尾迹自由度。归档 ISSUE71 §2/§3 的结论已明确撤回。
+这次没有声称重建了独立的无切口负例。
+
+### 10.3 同位置、分岸恢复速度后再施加 Bernoulli
+
+新增 `panel/p1_te_recovery.py`，上/下岸分别取同一实际 TE 节点上的入射面，
+按面积恢复 P1 梯度，排除端盖与对岸；先重构向量，再计算速度平方差。
+它与旧的“各岸邻面速度平方作算术平均”是不同离散，不能只修改标签。
+对有限夹角后缘不强制上下速度向量相等。
+
+生产与可微入口均支持 `pressure_recovery="area"`，pressure/pj 使用同一压力模型，
+反向求导按当前几何重建恢复算子。测试包括分岸仿射切向梯度、规范平移、解析压力
+Jacobian 与几何中心差分、两条闭包的生产/可微一致性与隐式梯度中心差分。
+默认仍为 `face`，本轮没有用切换默认值掩盖控制算例。
+
+```text
+python -m tools.lifting_line_study --case closures --recovery face --out runs/verification/lifting_line_fix/closures_face
+python -m tools.lifting_line_study --case closures --recovery area --out runs/verification/lifting_line_fix/closures_area
+python -m tools.lifting_line_study --case closures --recovery quadratic --out runs/verification/lifting_line_fix/closures_quadratic
+```
+
+同上矩形参数、Galerkin 壁面：
+
+| 弦向单元 | face pressure / pj CLp | area pressure / pj CLp |
+| --- | --- | --- |
+| 4 | .267136 / .267079 | .270346 / .270442 |
+| 8 | .260166 / .260134 | .262877 / .262925 |
+| 16 | .257074 / .257039 | .258954 / .258956 |
+| 32 | .258493 / .258456 | .259611 / .259589 |
+
+area 的 c16 两闭包 CLp 差约 `2e-6`，c32 差约 `2.2e-5`，
+后者 CL_Gamma 为 `.262913/.262890`、e 为 `.951546/.951581`。
+恢复后的载荷改善并不完全单调；pressure 与 pj 仍不是同一有限维问题。
+配点+area 的 pressure CLp c4/8/16/32 为
+`.272596/.131466/-.328977/-.879666`，恢复不能修复配点壁面的基础场量失效。
+
+保留 `quadratic` 作为明确的研究控制，**未选作默认/推荐恢复**：
+它用同岸邻域的二次势拟合与 QR，粗网格 pj 的 e 仅 `.04068`；
+其 Galerkin c4/8/16/32 CLp 为 `.343124/.275300/.265868/.266418`。
+多一个阶次不自动意味着较好，负结果保存在 `closures_quadratic/summary.json`。
+
+### 10.4 Newton 尺度、修正量、条件数与分支
+
+共享 Newton 增加 Armijo 回溯，按初值两岸速度平方归一化压力，
+同时检查相对残差和实际 Newton 修正量；零残差初值仍检查 Jacobian，
+包括最终根的条件数。报告迭代史、回溯数、最大原始条件数和最终行列归一后的条件数。
+生产/可微入口均保留 `1e6` 原始条件数限制，不用归一后的较小数值绕过限制。
+没有裁剪 gamma、人工置零或添加改变物理模型的正则化。
+
+```text
+python -m tools.lifting_line_branches --out runs/verification/lifting_line_fix/branches
+```
+
+脚本在同一个 `mu_base+M*gamma` 族上，用 signed、零、反号、5倍 signed 初值，
+再做 alpha `-4/-2/0/2/4°` 的正向和反向延续；每个网格30次，c4/8/16合计90次。
+全部通过代数判据，最大同角度 gamma 差 `7.58e-14`；
+各网格最大条件数约 `1.91/2.01/2.08`，配对速度点积最小 `.850/.725/.621`，
+两岸沿来流速度均为正。这支持本组分支稳定，**不是所有几何上唯一解的证明**。
+报告 gamma 二阶差分、符号变化与反向流控制，不以“压差小”单独判断物理解。
+
+零迎角仍有数值环量，最大约 c4 `.000314`、c8 `.000229`、
+c16 `.000289`；c16有6次符号变化，而非零迎角均没有。
+说明对称性/离散误差尚未消除，不能用良好条件数宣称物理正确。
+
+针对性测试已实跑：
+
+```text
+python -m pytest -q test/test_lifting_line_reference.py test/test_trefftz_energy_exact.py test/test_physics_anchors.py -p no:cacheprovider
+# 27 passed, 2 xfailed，86.04 s
+python -m pytest -q test/test_lifting_line_studies.py test/test_p1_potential_jump_newton.py test/test_p1_te_recovery.py test/test_p1_fixed_gamma.py test/test_p1_pressure_kutta_torch_driver.py test/test_p1_cst_gradient.py -p no:cacheprovider
+# 39 passed, 1 skipped，37.09 s
+```
+
+预期失败保留原配点压力闭包的 AR/弦向缺陷。新测试仅约束已验证的积分恒等式、
+数值趋势和导数，不把当前三维数值当作实验真值。
+
+全量 `python -m pytest -q test -p no:cacheprovider`：
+**948 passed, 21 skipped, 2 xfailed，466.01 s**，日志
+`runs/verification/lifting_line_fix/pytest_full.log`。
+全量启动后补的单站位面积恢复及其相关可微路径另外实跑
+`python -m pytest -q test/test_p1_te_recovery.py test/test_p1_cst_gradient.py -p no:cacheprovider`：
+**21 passed，18.61 s**。
+该单站位测试初版用了建网器不支持的两展向单元，报 ValueError；
+改为已有合法网格上的单站位恢复夹具后通过。
+开发失败回执保留于 `runs/verification/lifting_line_fix/development_failures.txt`，
+不把测试夹具错误归于物理方法。

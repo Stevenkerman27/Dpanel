@@ -6,8 +6,12 @@ A) Prescribed circulation: with Gamma fixed analytically (same for every mesh), 
    from "the Kutta selection picks a different branch".
 
 B) Branch multiplicity: the production pressure-Kutta least squares is started at the
-   signed-Kutta solution.  If the answer moves with the Kutta weight or the iteration cap,
-   the residual landscape has several roots and the solver is not selecting a branch.
+   signed-Kutta solution. Weight/cap sensitivity alone does not prove multiple roots:
+   the full-state objective differs from the reduced closure. For roots on the SAME
+   conditional wall family use tools/lifting_line_branches.py.
+
+The old nearest-face probes are historical only. The maintained fixed-physical-point
+convergence driver is tools/lifting_line_study.py.
 """
 import numpy as np
 from scipy.linalg import null_space
@@ -59,6 +63,8 @@ def probe_face(mesh, ops, p, bank):
 
 
 def solve_fixed_gamma(mesh, ops, gamma_fixed):
+    import torch
+    from panel.p1_potential_jump_torch import affine_state
     A, W, J = ops["A"], ops["W"], ops["J"]
     ms = ops["mesh"]; nm = A.shape[1]
     alpha = np.deg2rad(ALPHA)
@@ -67,10 +73,12 @@ def solve_fixed_gamma(mesh, ops, gamma_fixed):
     weights = np.sqrt(ms.areas / ms.areas.mean())
     B = weights[:, None] * np.column_stack((A, W))
     bw = weights * rhs
-    target = np.r_[np.zeros(nm), gamma_fixed]
-    N = null_space(J, rcond=1e-11)
-    z, *_ = np.linalg.lstsq(B @ N, bw - B @ target, rcond=None)
-    state = target + N @ z
+    base, mapping = affine_state(torch.as_tensor(B), torch.as_tensor(bw),
+                                 torch.as_tensor(J), nm, W.shape[1])
+    gamma = torch.as_tensor(gamma_fixed, dtype=torch.float64)
+    state = torch.cat((base + mapping @ gamma, gamma)).numpy()
+    np.testing.assert_allclose(J @ state, 0., atol=1e-12)
+    np.testing.assert_array_equal(state[nm:], gamma_fixed)
     return state
 
 
@@ -82,7 +90,7 @@ def part_a():
         mesh, ops = build(c)
         g = mesh.groups[0]
         y = np.asarray(g.gamma_y)
-        half = 0.5 * np.max(np.abs(y))
+        half = np.max(np.abs(y))
         shape = np.sqrt(np.clip(1.0 - (y[1:-1] / half) ** 2, 0.0, None))
         gamma = 0.60 * shape
         state = solve_fixed_gamma(mesh, ops, gamma)

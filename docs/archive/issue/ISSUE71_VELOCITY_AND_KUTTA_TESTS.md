@@ -1,5 +1,12 @@
 # Issue #71: velocity-field convergence and Kutta estimators that avoid the last chordwise cell
 
+2026-11-09 correction: sections 2 and 3 are NOT valid fixed-Gamma/no-cut evidence.
+The old `target + null_space(J) @ z` construction changed Gamma and retained `J target`;
+the alleged no-cut case kept the cut/wake unknowns. The probe locations also used
+nearest-face estimates. These historical numbers cannot establish those conclusions.
+The corrected physical-point study and current limits are in
+[Kutta condition sections 9-10](../../KUTTA_CONDITION.md).
+
 Date: 2026-10-29. Status: **negative result**. `physical_accuracy_accepted=false`, no production
 default changed. Scripts: `tools/issue71/`. Earlier note: `docs/archive/issue/ISSUE71_CHORDWISE_DIVERGENCE.md`.
 

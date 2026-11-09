@@ -54,13 +54,13 @@ def _condition(matrix):
     return float(singular[0]) / smallest
 
 
-def potential_jump_newton(pressure, mu_base, mapping, gamma, nm, max_nfev=12, tol=1e-12):
+def potential_jump_newton(pressure, mu_base, mapping, gamma, nm, max_nfev=12, tol=1e-12,
+                          diagnostics=None, max_backtracks=12, step_tolerance=1e-10):
     """Newton on p(gamma) = 0 with the exact Jacobian dp/dgamma = (dp/dmu) @ mapping.
 
     Returns (gamma, state, p, evaluations, scale, relative_residual, condition).  Converged
-    means the residual is small relative to its own initial scale, which is the scale-free
-    form of the gate: the closure is a square system, so |p| -> 1e-15 is manufactured and an
-    absolute threshold would only measure units.
+    requires a small residual relative to the initial paired speed squared and a small
+    Newton correction. An absolute residual threshold alone would only measure units.
 
     A small residual does NOT make the answer unique.  When the trailing edge is nearly swept
     into the stream direction at a tip, neighbouring jump rows become nearly collinear, the
@@ -70,25 +70,66 @@ def potential_jump_newton(pressure, mu_base, mapping, gamma, nm, max_nfev=12, to
     """
     state = torch.cat((mu_base + mapping @ gamma, gamma), dim=0)
     p = pressure(state)
-    scale = max(float(p.abs().max()), 1e-30)
-    evaluations = 0
-    condition = None
-    for _ in range(max_nfev):
-        if float(p.abs().max()) <= tol:
+    tiny = torch.finfo(gamma.dtype).tiny
+    scale = max(pressure.reference_scale(state) if hasattr(pressure, "reference_scale")
+                else float(p.abs().max()), tiny)
+    evaluations, backtracks, condition = 0, 0, None
+    history = []
+    gamma_scale = max(float(gamma.abs().max()), tiny)
+    relative_step, dpdg = float("inf"), None
+    for iteration in range(max_nfev + 1):
+        if not bool(torch.isfinite(p).all()):
             break
         jp = pressure.jacobian(state)
         dpdg = jp[:, :nm] @ mapping + jp[:, nm:]
         current = _condition(dpdg)
         if current is not None:
             condition = current if condition is None else max(condition, current)
-        step = torch.linalg.solve(dpdg, p)
-        gamma = gamma - step
-        state = torch.cat((mu_base + mapping @ gamma, gamma), dim=0)
-        p = pressure(state)
-        evaluations += 1
-        if not bool(torch.isfinite(p).all()):
+        # Check the Jacobian even when the initial residual is exactly zero.
+        # Otherwise a singular root bypasses both the solve and the uniqueness gate.
+        if current == float("inf"):
             break
-    relative = float(p.abs().max()) / max(scale, 1.0)
+        step = torch.linalg.solve(dpdg, p)
+        sensitivity = float(torch.linalg.vector_norm(dpdg, ord=float("inf")))
+        correction_scale = max(float(gamma.abs().max()), gamma_scale, scale / max(sensitivity, tiny))
+        relative_step = float(step.abs().max()) / correction_scale
+        history.append(dict(
+            iteration=iteration, residual_relative=float(p.abs().max()) / scale,
+            step_relative=relative_step, condition=current))
+        if float(p.abs().max()) / scale <= tol and relative_step <= step_tolerance:
+            break
+        if iteration == max_nfev:
+            break
+        residual_norm = float(torch.linalg.vector_norm(p))
+        damping, accepted = 1., False
+        for attempt in range(max_backtracks + 1):
+            trial_gamma = gamma - damping * step
+            trial_state = torch.cat((mu_base + mapping @ trial_gamma, trial_gamma), dim=0)
+            trial_p = pressure(trial_state)
+            evaluations += 1
+            if bool(torch.isfinite(trial_p).all()) and (
+                    float(torch.linalg.vector_norm(trial_p)) <= (1. - 1e-4 * damping) * residual_norm):
+                gamma, state, p = trial_gamma, trial_state, trial_p
+                accepted = True
+                break
+            damping *= .5
+            backtracks += 1
+        history[-1]["damping"] = damping
+        if not accepted:
+            break
+    relative = float(p.abs().max()) / scale
+    if diagnostics is not None:
+        scaled_condition = None
+        if dpdg is not None:
+            row_norm = torch.linalg.vector_norm(dpdg, dim=1).clamp_min(tiny)
+            scaled = dpdg / row_norm[:, None]
+            column_norm = torch.linalg.vector_norm(scaled, dim=0).clamp_min(tiny)
+            scaled_condition = _condition(scaled / column_norm[None, :])
+        diagnostics.update(
+            relative_residual=relative, correction_relative=relative_step,
+            condition_scaled=scaled_condition,
+            backtracks=backtracks, history=history,
+            gamma_norm=float(torch.linalg.vector_norm(gamma)))
     return gamma, state, p, evaluations, scale, relative, condition
 
 
@@ -106,27 +147,27 @@ def solve_potential_jump(B, rhs, J, pressure, gamma0, nm, max_nfev=12, tol=1e-12
     """
     ng = int(gamma0.numel())
     mu_base, mapping = affine_state(B, rhs, J, nm, ng)
+    trace = {}
     gamma, state, p, evaluations, scale, relative, condition = potential_jump_newton(
-        pressure, mu_base, mapping, gamma0, nm, max_nfev=max_nfev, tol=tol)
+        pressure, mu_base, mapping, gamma0, nm, max_nfev=max_nfev, tol=tol, diagnostics=trace)
     diagnostics = dict(method="morino_potential_jump", evaluations=int(evaluations),
                        stationarity_inf=float(p.abs().max()), scale=float(scale),
-                       relative_step=float(relative), tolerance=float(relative_tolerance),
+                       relative_step=trace["correction_relative"], tolerance=float(relative_tolerance),
                        condition=condition, condition_limit=float(condition_limit),
                        max_nfev=int(max_nfev), success=True)
-    if not bool(torch.isfinite(p).all()) or relative > relative_tolerance:
+    diagnostics.update(trace)
+    if condition is not None and condition > condition_limit:
+        raise RuntimeError(
+            "potential-jump Kutta is ill-conditioned: cond(dp/dgamma)=%.3g exceeds %.3g; "
+            "the trailing-edge circulation is numerically unresolved "
+            "(evaluations=%d, stationarity_inf=%.3g)"
+            % (condition, condition_limit, evaluations, float(p.abs().max())))
+    if not bool(torch.isfinite(p).all()) or relative > relative_tolerance \
+            or trace["correction_relative"] > 1e-10:
         diagnostics["success"] = False
         raise RuntimeError(
             "potential-jump Kutta did not converge; the result is not a converged closure "
             "(evaluations=%d, stationarity_inf=%.3g, relative=%.3g, tolerance=%.3g, "
             "max_nfev=%d)" % (evaluations, float(p.abs().max()), relative,
                               relative_tolerance, max_nfev))
-    if condition is not None and condition > condition_limit:
-        diagnostics["success"] = False
-        raise RuntimeError(
-            "potential-jump Kutta is ill-conditioned: cond(dp/dgamma)=%.3g exceeds %.3g, so "
-            "the trailing-edge circulation is not unique; the residual is small but the "
-            "solution carries an arbitrary component along a near-null direction. Suspect a "
-            "trailing edge swept nearly into the stream direction at a tip and the wake strips "
-            "there (evaluations=%d, stationarity_inf=%.3g)"
-            % (condition, condition_limit, evaluations, float(p.abs().max())))
     return state, diagnostics

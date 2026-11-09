@@ -1,5 +1,11 @@
 # 已退役的研究代码（S12）
 
+2026-11-09：`tools/issue71/bisect_cut.py` 的固定环量/无切口实验无效，已停用并给出替代命令。
+旧 `null_space(J)` 构造既改变 Gamma 又未抵消初始跳跃；无切口算例仍含切口/尾迹自由度。
+用 `tools/lifting_line_study.py` 重做严格固定 Gamma 与物理位置探针；历史结论限制见
+[Kutta 条件 §10](KUTTA_CONDITION.md)。`fixed_gamma.py` 的固定环量求解已修正，
+旧探针仅保留历史用途。
+
 **2026-11-06 更新：** 用户要求重新研究弦向加密不收敛后，
 `p1_galerkin_wall.py`、`p1_galerkin_solver.py`、`p1_solution_status.py`
 及其基础测试已从归档恢复。弱形式现已成为正式 P1 求解器、自由尾迹

@@ -30,8 +30,6 @@ def test_rectangular_planform_lands_near_the_prandtl_slope():
     result = lifting_line(y=y, chord=np.full(y.size, 1.0), alpha_deg=0.0, terms=127)
     prandtl = TWO_PI * 6.0 / (6.0 + 2.0)
     assert abs(result["cl_alpha"] - prandtl) / prandtl < 0.10
-    # A sharp-tipped rectangle is a slowly converging case (the loading jumps at
-    # the side edge); the module documents that instead of hiding it.
     assert 0.92 < result["e"] < 0.98, result["e"]
 
 
@@ -49,3 +47,40 @@ def test_a_chord_that_vanishes_inside_the_stations_is_rejected():
         lifting_line(y=y, chord=np.zeros(5))
     with pytest.raises(ValueError, match="vanishes"):
         lifting_line(y=y, chord=np.array([1.0, 0.0, 0.0, 0.0, 1.0]))
+
+
+def test_gamma_coordinates_normalization_and_lift_integral():
+    y = np.linspace(-4.0, 4.0, 4001)
+    result = lifting_line(y, _elliptic()(y), alpha_deg=4.0)
+    np.testing.assert_array_equal(result["y"], y)
+    assert result["gamma"].shape == y.shape
+    assert result["gamma"][0] == result["gamma"][-1] == 0.0
+    cl_integral = 2.0 * np.trapezoid(result["gamma"], result["y"]) / result["area"]
+    assert cl_integral == pytest.approx(result["cl"], rel=2e-5)
+    callable_result = lifting_line(chord_of_y=_elliptic(), span=SPAN, alpha_deg=4.0)
+    assert callable_result["y"].shape == callable_result["gamma"].shape
+    assert np.all(np.diff(callable_result["y"]) > 0)
+    assert callable_result["y"][[0, -1]].tolist() == [-4.0, 4.0]
+
+
+def test_independent_circulation_and_downwash_integrals_match_modal_lift_and_drag():
+    result = lifting_line(np.linspace(-3., 3., 801), np.ones(801),
+                          alpha_deg=4.0, terms=63)
+    nodes, weights = np.polynomial.legendre.leggauss(300)
+    theta = (nodes + 1.0) * np.pi / 2.0
+    sine = np.sin(np.outer(theta, result["modes"]))
+    gamma = 2.0 * result["span"] * (sine @ result["coefficients"])
+    induced_angle = (sine @ (result["modes"] * result["coefficients"])) / np.sin(theta)
+    dy = weights * np.pi / 2.0 * result["span"] / 2.0 * np.sin(theta)
+    cl = 2.0 * np.sum(gamma * dy) / result["area"]
+    cdi = 2.0 * np.sum(gamma * induced_angle * dy) / result["area"]
+    assert cl == pytest.approx(result["cl"], rel=1e-12)
+    assert cdi == pytest.approx(result["cdi"], rel=1e-12)
+    assert result["e"] == pytest.approx(cl * cl / (np.pi * result["aspect_ratio"] * cdi),
+                                      rel=1e-12)
+
+
+def test_odd_modes_refuse_asymmetric_chord():
+    y = np.linspace(-3., 3., 101)
+    with pytest.raises(ValueError, match="symmetric"):
+        lifting_line(y, 1.0 + 0.1 * y)

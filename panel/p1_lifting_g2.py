@@ -321,7 +321,7 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
 def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
                 max_nfev=80,operators=None,pressure_solver=None,
                 backend=None, device='cpu', wall_formulation=None,
-                galerkin_order=3):
+                galerkin_order=3, pressure_recovery="face"):
     """Solve wall P1 mu and ALL independent wake Gamma simultaneously, on torch.
 
     The NumPy/SciPy implementation of this equation set was retired in S9; it is
@@ -349,7 +349,8 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
             % (pressure_solver,))
     from .p1_solve_torch import solve_multi_torch
     out=solve_multi_torch(mesh,alpha_deg,kutta=kutta,kut_weight=kut_weight,
-                          max_nfev=max_nfev,operators=operators,device=device)
+                          max_nfev=max_nfev,operators=operators,device=device,
+                          pressure_recovery=pressure_recovery)
     for key in ('mu','cp','gamma'):
         value=out.get(key)
         if hasattr(value,'detach'):out[key]=value.detach().cpu().numpy()

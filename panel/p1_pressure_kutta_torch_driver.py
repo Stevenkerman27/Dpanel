@@ -69,7 +69,8 @@ class TorchPressureModel:
     taken over the declared face list, exactly as the NumPy implementation does.
     """
 
-    def __init__(self, grad, te_face_pairs, n_unknown, *, device=None, dtype=torch.float64):
+    def __init__(self, grad, te_face_pairs, n_unknown, *, device=None, dtype=torch.float64,
+                 velocity_maps=None):
         self.dtype = dtype
         self.device = torch.device(device) if device is not None else torch.device("cpu")
         grad = torch.as_tensor(grad, dtype=dtype, device=self.device)
@@ -89,6 +90,14 @@ class TorchPressureModel:
             raise ValueError("top and bottom pair lists must have the same length")
         self.top_count = self.top_mask.sum(dim=1, keepdim=True)
         self.bot_count = self.bot_mask.sum(dim=1, keepdim=True)
+        self.velocity_maps = None
+        if velocity_maps is not None:
+            top, bottom = (torch.as_tensor(value, dtype=dtype, device=self.device)
+                           for value in velocity_maps)
+            expected = (self.n_pressure, 3, self.n_wall)
+            if top.shape != expected or bottom.shape != expected:
+                raise ValueError("Recovered TE maps must be (pairs,3,wall_dofs)")
+            self.velocity_maps = (top, bottom)
 
     def velocity(self, state):
         if state.ndim != 1:
@@ -99,13 +108,37 @@ class TorchPressureModel:
         gathered = values[rows].squeeze(-1) * mask
         return gathered.sum(dim=1, keepdim=True) / count
 
+    def paired_velocity(self, state):
+        """Upper/lower reconstructed vectors used for branch and scale checks."""
+        if self.velocity_maps is not None:
+            return tuple(operator @ state[:self.n_wall] for operator in self.velocity_maps)
+        velocity = self.velocity(state)
+        top = (velocity[self.top_rows] * self.top_mask[:, :, None]).sum(dim=1) / self.top_count
+        bottom = (velocity[self.bot_rows] * self.bot_mask[:, :, None]).sum(dim=1) / self.bot_count
+        return top, bottom
+
+    def reference_scale(self, state):
+        top, bottom = self.paired_velocity(state)
+        return float(torch.maximum((top * top).sum(dim=1).max(),
+                                    (bottom * bottom).sum(dim=1).max()))
+
     def __call__(self, state):
+        if self.velocity_maps is not None:
+            top, bottom = self.velocity_maps
+            return ((top @ state[:self.n_wall]) ** 2).sum(dim=1) \
+                - ((bottom @ state[:self.n_wall]) ** 2).sum(dim=1)
         speed = (self.velocity(state) ** 2).sum(dim=1, keepdim=True)
         top = self._pair_mean(speed, self.top_rows, self.top_mask, self.top_count)
         bottom = self._pair_mean(speed, self.bot_rows, self.bot_mask, self.bot_count)
         return (top - bottom).reshape(-1)
 
     def jacobian(self, state):
+        if self.velocity_maps is not None:
+            top, bottom = self.velocity_maps
+            wall = 2. * (torch.einsum("pi,pij->pj", top @ state[:self.n_wall], top)
+                          - torch.einsum("pi,pij->pj", bottom @ state[:self.n_wall], bottom))
+            zeros = state.new_zeros((self.n_pressure, self.n_unknown - self.n_wall))
+            return torch.cat((wall, zeros), dim=1)
         velocity = self.velocity(state)
         pieces = []
         for rows in (self.top_rows, self.bot_rows):
@@ -132,7 +165,8 @@ class TorchPressureSolve:
 
 def solve_pressure_kutta_torch(*, wall_operator, wall_rhs, kutta_operator, grad,
                                te_face_pairs, x0, weight=5., max_nfev=80,
-                               rcond=1e-11, device=None, dtype=torch.float64):
+                               rcond=1e-11, device=None, dtype=torch.float64,
+                               pressure_model=None):
     """Reduced pressure-Kutta solve on tensors; returns the full state.
 
     Parameters are the production objects: the weighted wall block and its right
@@ -153,7 +187,8 @@ def solve_pressure_kutta_torch(*, wall_operator, wall_rhs, kutta_operator, grad,
     reduction = null_space(kutta, rcond=rcond, device=device, dtype=dtype)
     if reduction.shape[1] == 0:
         raise ValueError("All independent mu/Gamma DOFs consumed by constraints")
-    model = TorchPressureModel(grad, te_face_pairs, wall.shape[1], device=device, dtype=dtype)
+    model = pressure_model if pressure_model is not None else TorchPressureModel(
+        grad, te_face_pairs, wall.shape[1], device=device, dtype=dtype)
     solver = TorchStructuredPressureKutta(wall_operator=wall, reduction=reduction,
                                           wall_rhs=rhs, pressure=model,
                                           pressure_jacobian=model.jacobian,

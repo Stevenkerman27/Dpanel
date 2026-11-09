@@ -498,7 +498,8 @@ def assemble(wing, *, backend='numpy'):
 
 def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
-          pressure_solver=None, backend=None, device='cpu',wall_formulation='galerkin'):
+          pressure_solver=None, backend=None, device='cpu',wall_formulation='galerkin',
+          pressure_recovery="face"):
     """Solve one lifting surface as the single group of the G2 solver.
 
     One wing is not a separate equation set: it is solve_multi with exactly one
@@ -522,7 +523,7 @@ def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
     out=solve_multi(combine_wings([wing]),alpha_deg,kutta=kutta,
                     kut_weight=kutta_weight,max_nfev=max_nfev,
                     pressure_solver=pressure_solver,backend=backend,device=device,
-                    wall_formulation=wall_formulation)
+                    wall_formulation=wall_formulation,pressure_recovery=pressure_recovery)
     out['constrained_rank']=int(out['linear_constrained_rank'])
     # The multi kernel reports only the smallest singular value of the constrained
     # least-squares operator; keep a one-element spectrum under the legacy name.
