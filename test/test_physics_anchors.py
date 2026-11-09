@@ -74,6 +74,7 @@ if str(ROOT) not in sys.path:
 
 from panel import p1_lifting_g1 as g1  # noqa: E402
 from panel.grass_mesh import build_grass_mesh, load_grass_wing  # noqa: E402
+from panel.te_strip_audit import te_strip_diagnostics  # noqa: E402
 from tools.issue92.trefftz_full import trefftz_cd_full  # noqa: E402
 
 
@@ -193,9 +194,14 @@ def test_potential_jump_refuses_an_ill_conditioned_tip():
 
     Measured: cond(dp/dgamma) = 1.6e6 on this 3096-face mesh (7.3e6 on the 6176-face one),
     with the trailing-edge circulation carrying an arbitrary tip component. The closure must
-    raise instead of returning it, otherwise every consumer sees a plausible CL.
+    raise instead of returning it, otherwise every consumer sees a plausible CL. The mesh
+    audit flags the same geometry (74 deg TE sweep), so a user can see the problem before
+    paying for a solve.
     """
     y, chord = _sections(sections=9, blend=0.97, tip_chord=0.0942)
     wing = _grass_wing(y, chord, chord_panels=6, span_panels_per_segment=8)
+    audit = te_strip_diagnostics(wing)
+    assert audit["ok"] is False
+    assert audit["max_sweep_deg"] > 70.0
     with pytest.raises(RuntimeError, match="ill-conditioned"):
         g1.solve(wing, 4.0, kutta="potential_jump", wall_formulation="collocation")
