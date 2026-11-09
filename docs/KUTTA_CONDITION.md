@@ -583,6 +583,7 @@ pressure 的弦向失效不能统一归因于尖端条件数。
 ```text
 python -m tools.lifting_line_compare --case all --wall collocation --out runs/verification/lifting_line_fix/planforms
 python -m tools.lifting_line_compare --case all --wall galerkin --recovery area --out runs/verification/lifting_line_fix/planforms_galerkin_area
+python -m tools.lifting_line_compare --case all --wall galerkin --recovery area --kutta pressure --out runs/verification/lifting_line_fix/planforms_galerkin_area_pressure
 ```
 
 脚本默认壁面与生产一致使用 Galerkin，`--wall collocation` 是显式控制。
@@ -591,11 +592,18 @@ python -m tools.lifting_line_compare --case all --wall galerkin --recovery area 
 
 同为9截面、c6、每段4展向单元、1560面的 Galerkin+area 新对照：
 
-| 平面形 | 面元斜率 / LL斜率（每弧度） | 面元e / LL e | CLp / CL_Gamma（4°） |
-| --- | --- | --- | --- |
-| 矩形 | 4.433198 / 4.391205 | .980970 / .960033 | .309682 / .298964 |
-| 梢根比0.5锥形 | 4.938941 / 4.841239 | .994451 / .985509 | .345024 / .333698 |
-| 有界椭圆 | 4.293789 / 4.521323 | .978256 / .999371 | .299930 / .291719 |
+| 平面形 | pressure斜率 / pj斜率 / LL斜率（每弧度） | pressure e / pj e / LL e |
+| --- | --- | --- |
+| 矩形 | 4.433424 / 4.433198 / 4.391205 | .981178 / .980970 / .960033 |
+| 梢根比0.5锥形 | 4.939792 / 4.938941 / 4.841239 | .994461 / .994451 / .985509 |
+| 有界椭圆 | 4.294669 / 4.293789 / 4.521323 | .978283 / .978256 / .999371 |
+
+pressure 由本轮新增命令补跑，其余设置与 pj 相同。两法相对 LL 的斜率差分别为
+`+0.96%/+0.96%`、`+2.04%/+2.02%`、`-5.01%/-5.03%`；
+两法之间的斜率差仅 `.0051%/.0172%/.0205%`。
+AR4、c32 的两闭包 CLp 也仅差 `.00848%`，但相对 LL 仍为 `-7.69%/-7.70%`。
+因此共同离散/模型偏差比本组闭包差异更值得继续排查；这不是厚度已解释误差的证据。
+本轮物理参考是薄翼升力线与解析极限，尚未加入同几何的风洞或独立三维解作验收。
 
 原 collocation+face 控制的对应 e 为 `.120023/.946644/.978154`。
 这同时改变了壁面和恢复，不能把全部改善归于恢复；受控单因素比较见 §10.3。
