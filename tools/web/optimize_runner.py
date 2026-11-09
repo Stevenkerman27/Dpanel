@@ -23,10 +23,16 @@ parser.add_argument("--alpha", type=float, default=4.0)
 parser.add_argument("--objective", choices=("pressure", "induced", "lift"),
                     default="induced")
 parser.add_argument("--cl-min", type=float, default=None)
+parser.add_argument("--cl-target", type=float, default=None)
+parser.add_argument("--consistency-tolerance", type=float, default=0.0)
+parser.add_argument("--cl-gamma-min", type=float, default=None)
+parser.add_argument("--ideal-drag", choices=("quadrature", "exact"),
+                    default="exact")
 parser.add_argument("--keep-area", action="store_true")
 parser.add_argument("--iterations", type=int, default=20)
 parser.add_argument("--max-memory-gb", type=float, default=10.0)
 args = parser.parse_args()
+need_cl_gamma = True  # the UI always shows circulation lift next to pressure lift
 
 data = json.loads(args.surface.read_text(encoding="utf-8"))
 panels = len(data["faces"])
@@ -76,6 +82,19 @@ def jac_from(values, jac):
     return {"pressure": jac[1], "induced": jac[2], "lift": -jac[0]}[args.objective]
 
 
+shape = {}
+
+
+def metrics(point):
+    # Aerodynamic numbers the UI shows next to the objective.
+    cl, cd, cdi = point["CL"], point["CD"], point["CDi"]
+    clg = point.get("CL_gamma") or point.get("cl_gamma")
+    ar = shape.get("aspect_ratio")
+    e_far = (clg ** 2 / (np.pi * ar * cdi)) if (ar and clg and cdi > 0) else None
+    rel = ((cd - cdi) / cdi) if cdi else None
+    return dict(e_far=e_far, near_far_rel=rel)
+
+
 def evaluate(x):
     if "x" in cache and np.array_equal(x, cache["x"]):
         return cache
@@ -88,27 +107,40 @@ def evaluate(x):
         wing, xyz, wake, area = grass_section_geometry(
             geometry, chord_panels=chord_panels, span_panels_per_segment=span_panels,
             wake_panels=wake_panels, wake_length=wake_length)
+        shape["aspect_ratio"] = (float(np.ptp(np.asarray(wing.gamma_y, float))) ** 2
+                               / float(area.detach()))
         values, info = fixed_wake_geometry(wing, xyz, wake, area, args.alpha, 160,
-                                           include_ideal_drag=True)
+                                           include_ideal_drag=True,
+                                           include_circulation_lift=need_cl_gamma,
+                                           ideal_drag=args.ideal_drag)
+        tracked = (values[0], values[1], values[2]) + ((values[3],) if need_cl_gamma else ())
         derivatives = [torch.autograd.grad(value, variable, retain_graph=True)[0].detach().numpy()
-                       for value in (values[0], values[1], values[2], area)]
+                       for value in tracked + (area,)]
         jac = derivatives[:3]
         record = dict(evaluation=len(history) + 1,
                       objective=float(value_from(values).detach()),
                       CL=float(values[0].detach()), CD=float(values[1].detach()),
                       CDi=float(values[2].detach()), area=float(area.detach()),
+                      CL_gamma=(float(values[3].detach()) if need_cl_gamma else None),
                       stationarity=float(info["stationarity"]))
+        record.update(metrics(record))
+        if (args.consistency_tolerance > 0 and record["near_far_rel"] is not None
+                and abs(record["near_far_rel"]) > args.consistency_tolerance):
+            raise ValueError("近场阻力与远场诱导阻力相差 %.1f%%，超过容差 %.1f%%；"                             "该设计点不可信（多半是弦向网格太粗，前缘吸力没分辨出来）"                             % (100 * record["near_far_rel"], 100 * args.consistency_tolerance))
         history.append(record)
         with (args.out.parent / "history.jsonl").open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(record, allow_nan=False) + "\n")
-        print("eval %d  CL %.6f  CD %.6f  CDi %.6f  目标 %.6f" %
+        print("eval %d  CL %.6f  CD %.6f  CDi %.6f  近远差 %s  目标 %.6f" %
               (record["evaluation"], record["CL"], record["CD"], record["CDi"],
+               "-" if record["near_far_rel"] is None else "%+.1f%%" % (100 * record["near_far_rel"]),
                record["objective"]), flush=True)
         cache.clear()
         cache.update(x=x.copy(), value=record["objective"], jac=jac_from(values, jac),
                      CL=record["CL"], CD=record["CD"], CDi=record["CDi"],
-                     area=record["area"], area_jac=derivatives[3],
-                     cl_jac=jac[0].copy(), ok=True)
+                     area=record["area"], area_jac=derivatives[len(tracked)],
+                     cl_jac=jac[0].copy(), cl_gamma=record["CL_gamma"],
+                     cl_gamma_jac=(derivatives[3] if need_cl_gamma else np.zeros_like(x)),
+                     ok=True)
         if record["objective"] < best["value"]:
             best.update(value=record["objective"], x=x.copy())
         last_good.update(CL=record["CL"], CD=record["CD"], CDi=record["CDi"],
@@ -128,7 +160,8 @@ def evaluate(x):
                      jac=np.zeros_like(x), ok=False, CL=last_good["CL"],
                      CD=last_good["CD"], CDi=last_good["CDi"],
                      area=last_good["area"], area_jac=np.zeros_like(x),
-                     cl_jac=np.zeros_like(x))
+                     cl_jac=np.zeros_like(x), cl_gamma=None,
+                     cl_gamma_jac=np.zeros_like(x))
         return cache
 
 
@@ -151,18 +184,40 @@ def fun_jac(z):
 
 
 constraints = []
+if args.cl_target is not None:
+    constraints.append(dict(
+        type="eq",
+        fun=lambda z: evaluate(to_x(z))["CL"] - args.cl_target,
+        jac=lambda z: evaluate(to_x(z))["cl_jac"] * span))
 if args.cl_min is not None:
     constraints.append(dict(
         type="ineq",
         fun=lambda z: evaluate(to_x(z))["CL"] - args.cl_min,
         jac=lambda z: evaluate(to_x(z))["cl_jac"] * span))
+if args.cl_gamma_min is not None:
+    constraints.append(dict(
+        type="ineq",
+        fun=lambda z: evaluate(to_x(z))["cl_gamma"] - args.cl_gamma_min,
+        jac=lambda z: evaluate(to_x(z))["cl_gamma_jac"] * span))
 if args.keep_area:
     constraints.append(dict(
         type="eq",
         fun=lambda z: evaluate(to_x(z))["area"] - area0,
         jac=lambda z: evaluate(to_x(z))["area_jac"] * span))
 
-constraint_text = "升力下限 %.4f" % args.cl_min if args.cl_min is not None else "无"
+constraint_text = ""
+if args.cl_min is not None:
+    constraint_text += "升力下限 %.4f" % args.cl_min
+if args.cl_target is not None:
+    constraint_text += "升力等式 %.4f" % args.cl_target
+if args.cl_gamma_min is not None:
+    constraint_text += "，环量升力下限 %.4f" % args.cl_gamma_min
+if args.keep_area:
+    constraint_text += "，参考面积固定"
+if not constraint_text:
+    constraint_text = "无"
+if args.cl_gamma_min is not None:
+    constraint_text += "，环量升力下限 %.4f" % args.cl_gamma_min
 if args.keep_area:
     constraint_text += "，参考面积固定"
 print("设计变量 %d 个（%d 截面 × 弦长/扭转/17 个 CST），目标=%s，约束=%s，迭代=%d" %
@@ -183,15 +238,31 @@ final_sections = dict(leading_edge_xyz=sections0["leading_edge_xyz"],
                       chord=matrix[:, 0].tolist(),
                       twist_radians=matrix[:, 1].tolist(),
                       cst=np.column_stack((matrix[:, 2:], np.zeros(n))).tolist())
+feasible = True
+if args.cl_target is not None and abs(final_point["CL"] - args.cl_target) > 1e-6:
+    feasible = False
+if args.cl_min is not None and final_point["CL"] < args.cl_min - 1e-6:
+    feasible = False
+if args.cl_gamma_min is not None and final_point.get("cl_gamma", 0.0) < args.cl_gamma_min - 1e-6:
+    feasible = False
+if args.keep_area and abs(final_point["area"] - area0) > 1e-6 * abs(area0):
+    feasible = False
 report = dict(
-    success=bool(result.success), status=int(result.status), message=str(result.message),
+    success=bool(result.success), feasible=bool(feasible),
+    status=int(result.status), message=str(result.message),
     iterations=int(getattr(result, "nit", 0)), evaluations=len(history),
-    objective=args.objective, cl_min=args.cl_min, keep_area=bool(args.keep_area),
+    objective=args.objective, cl_min=args.cl_min, cl_target=args.cl_target,
+    cl_gamma_min=args.cl_gamma_min, consistency_tolerance=args.consistency_tolerance,
+    history=history,
+    ideal_drag=args.ideal_drag,
+    keep_area=bool(args.keep_area),
     alpha=args.alpha, sections_initial=sections0, sections_final=final_sections,
     initial=dict(CL=baseline["CL"], CD=baseline["CD"], CDi=baseline["CDi"],
-                 area=baseline["area"], objective=base_value),
+                 area=baseline["area"], objective=base_value,
+                 CL_gamma=baseline.get("cl_gamma"), **metrics(baseline)),
     final=dict(CL=final_point["CL"], CD=final_point["CD"], CDi=final_point["CDi"],
-               area=final_point["area"], objective=final_point["value"]),
+               area=final_point["area"], objective=final_point["value"],
+               CL_gamma=final_point.get("cl_gamma"), **metrics(final_point)),
     bounds="弦长 ±25%，扭转 ±3°，CST 权重 ±0.04",
     reference_area=area0, panel_count=len(data["faces"]),
     physical_accuracy_accepted=False)

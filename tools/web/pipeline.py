@@ -410,17 +410,33 @@ def run_optimize(job, options):
                    "--alpha", "%g" % alpha, "--objective", objective,
                    "--iterations", str(iterations)]
         cl_min = options.get("cl_min")
+        cl_target = options.get("cl_target")
+        for name, value in (("升力下限", cl_min), ("升力等式", cl_target)):
+            if value not in (None, "") and not -2.0 < float(value) < 4.0:
+                raise ValueError(name + "超出合理范围")
         if cl_min not in (None, ""):
-            cl_min = float(cl_min)
-            if not -2.0 < cl_min < 4.0:
-                raise ValueError("升力约束超出合理范围")
-            command += ["--cl-min", "%g" % cl_min]
+            command += ["--cl-min", "%g" % float(cl_min)]
+        if cl_target not in (None, ""):
+            command += ["--cl-target", "%g" % float(cl_target)]
+        tolerance = options.get("consistency_tolerance", 0)
+        tolerance = 0.0 if tolerance in (None, "") else float(tolerance)
+        if not 0.0 <= tolerance < 1.0:
+            raise ValueError("近场/远场一致性容差必须在 0 到 1 之间")
+        if tolerance > 0:
+            command += ["--consistency-tolerance", "%g" % tolerance]
         if options.get("keep_area"):
             command.append("--keep-area")
         job.state = "solving"
-        job.say("截面优化启动: 目标=%s, 迭代=%d, CL约束=%s, 保面积=%s"
-                % (objective, iterations, "-" if cl_min in (None, "") else "%g" % cl_min,
-                   "是" if options.get("keep_area") else "否"))
+        if cl_target not in (None, ""):
+            lift_text = "等式 %g" % float(cl_target)
+        elif cl_min not in (None, ""):
+            lift_text = "下限 %g" % float(cl_min)
+        else:
+            lift_text = "-"
+        job.say("截面优化启动: 目标=%s, 迭代=%d, 升力约束=%s, 保面积=%s, 一致性容差=%s"
+                % (objective, iterations, lift_text,
+                   "是" if options.get("keep_area") else "否",
+                   "-" if tolerance <= 0 else "%.1f%%" % (100 * tolerance)))
         output = job.run_dir / "opt_result.json"
         code, log = _spawn(job, command, job.run_dir / "opt.log")
         if code != 0 or not output.is_file():

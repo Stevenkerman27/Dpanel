@@ -16,6 +16,7 @@
       <button class="tab active" data-tab="geom">几何</button>
       <button class="tab" data-tab="mesh">网格</button>
       <button class="tab" data-tab="result">结果</button>
+      <button class="tab" data-tab="opt">优化</button>
       <span id="viewHint" class="hint">左键旋转 · 滚轮缩放</span>
     </div>
     <div class="viewport">
@@ -26,6 +27,34 @@
         <div class="legend-note">左=吸力峰（低 Cp）</div>
       </div>
       <div id="viewEmpty" class="view-empty">先点「生成几何」</div>
+      <div id="optPanel" class="opt-panel hidden">
+        <div class="opt-head">
+          <span class="opt-title">优化历史</span>
+          <span id="optStatus" class="muted"></span>
+          <span class="spacer"></span>
+          <span id="optSummary" class="badge"></span>
+        </div>
+        <div class="opt-grid">
+          <div class="chartwrap">
+            <div class="chart-title">目标值（越小越好）</div>
+            <canvas id="optObjChart"></canvas>
+          </div>
+          <div class="chartwrap">
+            <div class="chart-title">约束：升力与环量升力</div>
+            <canvas id="optConChart"></canvas>
+          </div>
+          <div class="opt-side">
+            <div class="chart-title">气动结果（初始 → 最终）</div>
+            <table id="optTable"></table>
+            <div id="optGeometry" class="opt-geometry"></div>
+          </div>
+        </div>
+        <div class="opt-foot">
+          <span class="chart-title">最终几何（侧视，按优化后的弦长与扭转）</span>
+          <canvas id="optGeomChart"></canvas>
+          <pre id="optGeometryText" class="opt-text"></pre>
+        </div>
+      </div>
     </div>
     <section class="resultbar">
       <div class="resultbar-head">
@@ -90,13 +119,21 @@
       <div class="grid2">
         <label>优化目标
           <select id="optObjective">
-            <option value="induced">最小化诱导阻力 CDi</option>
-            <option value="pressure">最小化压差阻力 CD</option>
-            <option value="lift">最大化升力 CL</option>
+            <option value="induced">远场特雷夫茨诱导阻力</option>
+            <option value="pressure">近场压力积分阻力</option>
+            <option value="lift">升力（最大化）</option>
           </select>
         </label>
         <label>迭代次数<input id="optIterations" type="number" value="20" step="1" min="1" max="200"></label>
-        <label class="wide">升力约束 CL ≥<input id="optClMin" type="number" step="0.001" placeholder="留空 = 不加约束"></label>
+        <label>升力约束
+          <select id="optClMode">
+            <option value="min">不低于</option>
+            <option value="target">等于</option>
+            <option value="none">不加约束</option>
+          </select>
+        </label>
+        <label>约束值<input id="optClValue" type="number" step="0.001" placeholder="例如 0.36"></label>
+        <label class="wide">近远一致性容差 %<input id="optTolerance" type="number" value="0" step="1" min="0" max="99"></label>
       </div>
       <label class="check"><input id="optKeepArea" type="checkbox" checked> 保持参考面积不变</label>
       <div class="row">
@@ -105,6 +142,7 @@
       </div>
       <pre id="optResult" class="grass-result"></pre>
       <p class="note">变量：各截面弦长 ±25%、扭转 ±3°、CST 权重 ±0.04；前缘坐标与尾缘厚度固定。需要先按当前参数生成网格，优化沿用该网格拓扑。</p>
+      <p class="note">远场特雷夫茨只看尾迹环量分布，稳健；近场压力积分依赖前缘吸力，弦向至少 16 段才与远场对得上（4 段会给出负阻力）。容差 &gt; 0 时，近远差超限的设计点判为失败点。</p>
     </section>
     <section class="card">
       <div class="card-head">GRASS 截面梯度 · 固定尾迹</div>

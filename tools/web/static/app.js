@@ -548,7 +548,11 @@ function resize() {
   view.height = Math.max(1, Math.round(box.height * ratio));
   draw();
 }
-window.addEventListener('resize', () => { resize(); drawSectionView(); });
+window.addEventListener('resize', () => {
+  resize();
+  drawSectionView();
+  if (state.tab === 'opt') renderOptimizePanel();
+});
 
 let dragging = null;
 view.addEventListener('mousedown', (event) => { dragging = { x: event.clientX, y: event.clientY }; });
@@ -1119,9 +1123,10 @@ function optimizationReport(report) {
     const ratio = (Number(b) - Number(a)) / Math.abs(Number(a));
     return ' (' + (ratio >= 0 ? '+' : '') + (100 * ratio).toFixed(1) + '%)';
   };
-  const labels = { induced: '诱导阻力 CDi', pressure: '压差阻力 CD', lift: '升力 CL（最大化）' };
+  const labels = OPT_OBJECTIVE_LABEL;
   const lines = [];
-  lines.push('状态: ' + (report.success ? '收敛' : '未收敛') + ' — ' + (report.message || ''));
+  lines.push('状态: ' + (report.success ? '收敛'
+    : (report.feasible ? '达到迭代上限（末点满足约束）' : '未收敛')) + ' — ' + (report.message || ''));
   lines.push('目标: ' + (labels[report.objective] || report.objective) + ' ' +
              fmt(initial.objective) + ' → ' + fmt(final.objective) +
              change(initial.objective, final.objective));
@@ -1129,6 +1134,10 @@ function optimizationReport(report) {
              '   CD ' + fmt(initial.CD) + ' → ' + fmt(final.CD));
   lines.push('CDi ' + fmt(initial.CDi) + ' → ' + fmt(final.CDi) +
              '   参考面积 ' + fmt(initial.area) + ' → ' + fmt(final.area));
+  if (final.near_far_rel !== null && final.near_far_rel !== undefined) {
+    lines.push('末次近场与远场相差 ' + (100 * Number(final.near_far_rel)).toFixed(1) +
+               '%（无粘流里两者应相等，差得多说明弦向网格太粗）');
+  }
   lines.push('评估 ' + (report.evaluations || 0) + ' 次 · SLSQP 迭代 ' +
              (report.iterations || 0) + ' · 面板 ' + (report.panel_count || '-'));
   lines.push('气动精度尚未验收：结果只表示在当前离散网格上的改进量。');
@@ -1141,17 +1150,25 @@ async function runOptimize() {
     el('optResult').textContent = '请先为当前参数、网格尺寸和迎角生成网格';
     return;
   }
-  const clText = el('optClMin').value.trim();
+  const mode = el('optClMode').value;
+  const clText = el('optClValue').value.trim();
+  const tolerance = Number(el('optTolerance').value || 0);
   const body = {
     job: state.jobId,
     alpha: Number(el('alpha').value),
     objective: el('optObjective').value,
-    cl_min: clText === '' ? null : Number(clText),
+    cl_min: mode === 'min' && clText !== '' ? Number(clText) : null,
+    cl_target: mode === 'target' && clText !== '' ? Number(clText) : null,
+    consistency_tolerance: tolerance > 0 ? tolerance / 100 : 0,
     keep_area: el('optKeepArea').checked,
     iterations: Number(el('optIterations').value),
   };
-  if (clText !== '' && !Number.isFinite(body.cl_min)) {
-    el('optResult').textContent = '升力约束必须是数值';
+  if (mode !== 'none' && (clText === '' || !Number.isFinite(Number(clText)))) {
+    el('optResult').textContent = '升力约束需要填数值，或把约束方式改成「不加约束」';
+    return;
+  }
+  if (!Number.isFinite(tolerance) || tolerance < 0 || tolerance >= 100) {
+    el('optResult').textContent = '近远一致性容差必须在 0 到 99 之间（0 = 关闭）';
     return;
   }
   if (!(body.iterations >= 1)) {
@@ -1177,6 +1194,8 @@ async function runOptimize() {
         state.optResult = job.result;
         el('optResult').textContent = optimizationReport(job.result);
         el('optApply').disabled = false;
+        renderOptimizePanel();
+        document.querySelector('.tab[data-tab="opt"]').click();
         break;
       }
       if (job.state === 'error' || job.state === 'cancelled') {
@@ -1199,18 +1218,270 @@ el('optApply').addEventListener('click', () => {
   state.sectionIndex = Math.min(state.sectionIndex, state.sections.chord.length - 1);
   state.optResult = null;
   el('optApply').disabled = true;
+  renderOptimizePanel();
   markDirty();
   renderEditor();
   drawSectionView();
   logLine('已载入优化截面：请重新生成几何与网格后再求解');
 });
 
+
+/* ---------------- optimization tab ---------------- */
+const OPT_OBJECTIVE_LABEL = {
+  induced: '远场特雷夫茨诱导阻力',
+  pressure: '近场压力积分阻力',
+  lift: '升力（最大化）',
+};
+
+function optHistory() {
+  const report = state.optResult;
+  return report && Array.isArray(report.history) ? report.history : [];
+}
+
+function chartContext(canvas) {
+  const ratio = window.devicePixelRatio || 1;
+  const width = canvas.clientWidth || 320;
+  const height = canvas.clientHeight || 180;
+  if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) {
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+  }
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = '#0f141a';
+  ctx.fillRect(0, 0, width, height);
+  return { ctx, width, height };
+}
+
+function tickText(value) {
+  if (!Number.isFinite(value)) return '-';
+  const magnitude = Math.abs(value);
+  if (magnitude !== 0 && (magnitude < 1e-3 || magnitude >= 1e4)) return value.toExponential(2);
+  return value.toPrecision(4);
+}
+
+function drawLineChart(canvas, series, references) {
+  const view = chartContext(canvas);
+  const ctx = view.ctx;
+  const pad = { left: 64, right: 12, top: 16, bottom: 20 };
+  const live = series.filter((item) => item.points && item.points.length);
+  const extra = references || [];
+  if (!live.length) {
+    ctx.fillStyle = '#4d5868';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('暂无数据', pad.left, view.height / 2);
+    return;
+  }
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  live.forEach((item) => item.points.forEach((point) => {
+    minX = Math.min(minX, point[0]);
+    maxX = Math.max(maxX, point[0]);
+    minY = Math.min(minY, point[1]);
+    maxY = Math.max(maxY, point[1]);
+  }));
+  extra.forEach((item) => {
+    minY = Math.min(minY, item.value);
+    maxY = Math.max(maxY, item.value);
+  });
+  if (maxX === minX) maxX = minX + 1;
+  const margin = (maxY - minY) * 0.15 || Math.abs(maxY || 1) * 0.05;
+  minY -= margin;
+  maxY += margin;
+  const map = (point) => [
+    pad.left + ((point[0] - minX) / (maxX - minX)) * (view.width - pad.left - pad.right),
+    view.height - pad.bottom - ((point[1] - minY) / (maxY - minY)) * (view.height - pad.top - pad.bottom),
+  ];
+  ctx.strokeStyle = '#1e2630';
+  ctx.fillStyle = '#5f6b7c';
+  ctx.font = '10px Consolas, monospace';
+  for (let i = 0; i <= 3; i += 1) {
+    const value = minY + (maxY - minY) * i / 3;
+    const y = map([minX, value])[1];
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(view.width - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(tickText(value), 4, y + 3);
+  }
+  ctx.fillText('评估 ' + minX.toFixed(0) + ' 到 ' + maxX.toFixed(0), pad.left, view.height - 6);
+  live.forEach((item) => {
+    ctx.strokeStyle = item.color;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    item.points.forEach((point, index) => {
+      const [x, y] = map(point);
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    const last = map(item.points[item.points.length - 1]);
+    ctx.fillStyle = item.color;
+    ctx.beginPath();
+    ctx.arc(last[0], last[1], 2.6, 0, 2 * Math.PI);
+    ctx.fill();
+  });
+  extra.forEach((item) => {
+    const y = map([minX, item.value])[1];
+    ctx.strokeStyle = item.color;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(view.width - pad.right, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+  let legendX = pad.left + 6;
+  ctx.font = '10px sans-serif';
+  live.concat(extra).forEach((item) => {
+    ctx.fillStyle = item.color;
+    ctx.fillRect(legendX, 4, 8, 8);
+    ctx.fillStyle = '#9fb3c9';
+    ctx.fillText(item.label, legendX + 11, 12);
+    legendX += 16 + ctx.measureText(item.label).width;
+  });
+}
+
+function drawFinalGeometry(sections) {
+  const canvas = el('optGeomChart');
+  const view = chartContext(canvas);
+  const ctx = view.ctx;
+  if (!sections || !sections.chord || !sections.chord.length) return;
+  const frames = sectionFrames(sections);
+  const count = sections.chord.length;
+  const outlines = [];
+  for (let i = 0; i < count; i += 1) outlines.push(sectionOutline(sections, frames, i, 61));
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  outlines.forEach((outline) => {
+    outline.upper.concat(outline.lower).forEach((point) => {
+      minX = Math.min(minX, point[0]);
+      maxX = Math.max(maxX, point[0]);
+      minZ = Math.min(minZ, point[1]);
+      maxZ = Math.max(maxZ, point[1]);
+    });
+  });
+  const pad = 16;
+  const spanX = Math.max(maxX - minX, 1e-6);
+  const spanZ = Math.max(maxZ - minZ, 1e-6);
+  const scale = Math.min((view.width - 2 * pad) / spanX, (view.height - 2 * pad) / spanZ);
+  const originX = pad + (view.width - 2 * pad - spanX * scale) / 2;
+  const originY = pad + (view.height - 2 * pad - spanZ * scale) / 2;
+  const map = (point) => [originX + (point[0] - minX) * scale, originY + (maxZ - point[1]) * scale];
+  ctx.strokeStyle = 'rgba(79,195,247,.75)';
+  ctx.lineWidth = 1.2;
+  outlines.forEach((outline) => {
+    ctx.beginPath();
+    outline.upper.forEach((point, index) => {
+      const [x, y] = map(point);
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    for (let index = outline.lower.length - 1; index >= 0; index -= 1) {
+      const [x, y] = map(outline.lower[index]);
+      ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  });
+}
+
+function setOptimizeTable(rows) {
+  el('optTable').innerHTML = rows
+    .map((row) => '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td></tr>')
+    .join('');
+}
+
+function renderOptimizePanel() {
+  const report = state.optResult;
+  const history = optHistory();
+  if (!report) {
+    el('optStatus').textContent = '还没有优化结果：在右侧「截面优化」里点运行';
+    el('optSummary').textContent = '';
+    drawLineChart(el('optObjChart'), []);
+    drawLineChart(el('optConChart'), []);
+    setOptimizeTable([['提示', '运行一次优化后这里显示目标与约束的变化']]);
+    drawFinalGeometry(null);
+    el('optGeomChart').getContext('2d').clearRect(0, 0, el('optGeomChart').width, el('optGeomChart').height);
+    el('optGeometryText').textContent = '';
+    el('optGeometry').textContent = '';
+    return;
+  }
+  const initial = report.initial || {};
+  const final = report.final || {};
+  const fmt = (value, digits) => (value === null || value === undefined || !Number.isFinite(Number(value)))
+    ? '-' : Number(value).toFixed(digits === undefined ? 6 : digits);
+  const percent = (value) => (value === null || value === undefined || !Number.isFinite(Number(value)))
+    ? '-' : (100 * Number(value)).toFixed(1) + '%';
+  const label = OPT_OBJECTIVE_LABEL[report.objective] || report.objective;
+  const statusText = report.success ? '收敛'
+    : (report.feasible ? '达到迭代上限（末点满足约束）' : '未收敛');
+  el('optStatus').textContent = statusText + ' · ' + (report.message || '') +
+    ' · 评估 ' + (report.evaluations || 0) + ' 次';
+  el('optSummary').textContent = (report.panel_count || '-') + ' 面板 · 迎角 ' + fmt(report.alpha, 1) + '°';
+  drawLineChart(el('optObjChart'), [{
+    label: '目标', color: '#4fc3f7',
+    points: history.map((item) => [item.evaluation, item.objective]),
+  }]);
+  const constraintSeries = [{
+    label: '升力 CL', color: '#58c98a',
+    points: history.map((item) => [item.evaluation, item.CL]),
+  }];
+  if (history.some((item) => item.CL_gamma !== null && item.CL_gamma !== undefined)) {
+    constraintSeries.push({
+      label: '环量升力', color: '#f0c674',
+      points: history.map((item) => [item.evaluation, item.CL_gamma]),
+    });
+  }
+  const references = [];
+  if (Number.isFinite(Number(report.cl_target))) {
+    references.push({ label: '升力等式 ' + fmt(report.cl_target, 3), value: Number(report.cl_target), color: '#e07ad0' });
+  } else if (Number.isFinite(Number(report.cl_min))) {
+    references.push({ label: '升力下限 ' + fmt(report.cl_min, 3), value: Number(report.cl_min), color: '#e07ad0' });
+  }
+  drawLineChart(el('optConChart'), constraintSeries, references);
+  setOptimizeTable([
+    ['目标', label],
+    ['目标值', fmt(initial.objective) + ' 到 ' + fmt(final.objective)],
+    ['升力 CL', fmt(initial.CL) + ' 到 ' + fmt(final.CL)],
+    ['环量升力', fmt(initial.CL_gamma) + ' 到 ' + fmt(final.CL_gamma)],
+    ['近场压力阻力 CD', fmt(initial.CD) + ' 到 ' + fmt(final.CD)],
+    ['特雷夫茨诱导阻力 CDi', fmt(initial.CDi) + ' 到 ' + fmt(final.CDi)],
+    ['近远差（末次）', percent(final.near_far_rel)],
+    ['参考面积', fmt(initial.area, 4) + ' 到 ' + fmt(final.area, 4)],
+    ['迭代 / 评估', (report.iterations || 0) + ' / ' + (report.evaluations || 0)],
+    ['远场公式', report.ideal_drag === 'exact' ? '精确（对数核二重积分）' : '中点求积'],
+  ]);
+  const sections = report.sections_final;
+  drawFinalGeometry(sections);
+  if (sections && sections.chord) {
+    const lines = sections.chord.map((chord, index) => {
+      const twist = (sections.twist_radians[index] * 180 / Math.PI).toFixed(2);
+      const le = sections.leading_edge_xyz[index];
+      return '#' + (index + 1) + '  弦长 ' + Number(chord).toFixed(3) + '  扭转 ' + twist + '°' +
+        '  前缘 (' + le.map((value) => Number(value).toFixed(2)).join(', ') + ')';
+    });
+    el('optGeometryText').textContent = lines.join('\n');
+  } else {
+    el('optGeometryText').textContent = '';
+  }
+  el('optGeometry').textContent = (report.success || report.feasible) ? ''
+    : '未收敛：这些数字是最后一代，不是最优解';
+}
+
 /* ---------------- tabs ---------------- */
 document.querySelectorAll('.tab').forEach((button) => {
   button.addEventListener('click', () => {
     state.tab = button.dataset.tab;
     document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b === button));
+    el('optPanel').classList.toggle('hidden', state.tab !== 'opt');
     if (state.tab === 'mesh' && !state.mesh) loadMesh();
+    if (state.tab === 'opt') renderOptimizePanel();
     updateHint();
     draw();
   });
