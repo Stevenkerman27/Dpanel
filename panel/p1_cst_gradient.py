@@ -232,8 +232,33 @@ def fixed_wake_surface(path, wall_xz, wake_xz, reference_area, alpha_deg=4., max
     return fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev)
 
 
+def _second_primitive_log(value):
+    """F(t) = t^2 (log|t|/2 - 3/4), the second primitive of log|t|, F(0)=0."""
+    zero = torch.zeros_like(value)
+    safe = torch.where(value == 0, torch.ones_like(value), value.abs())
+    return torch.where(value == 0, zero, value * value * (0.5 * torch.log(safe) - 0.75))
+
+
+def _exact_ideal_drag(gamma, y, reference_area):
+    """Analytic Trefftz induced drag of a piecewise-linear full-span circulation.
+
+    The midpoint-on-stations quadrature below is biased: fed an exactly elliptic
+    loading it returns span efficiency 1.22 at 4 stations, 1.036 at 36 and 1.012 at
+    144, so an optimiser can buy drag by exploiting the bias.  This is the exact
+    double integral of the logarithmic kernel (see panel/trefftz_energy_exact.py).
+    """
+    a, b = y[:-1], y[1:]
+    slope = torch.diff(gamma) / (b - a)
+    kernel = (_second_primitive_log(b[:, None] - a[None, :])
+              - _second_primitive_log(a[:, None] - a[None, :])
+              - _second_primitive_log(b[:, None] - b[None, :])
+              + _second_primitive_log(a[:, None] - b[None, :]))
+    energy = (slope[:, None] * kernel * slope[None, :]).sum()
+    return -energy / (2 * torch.pi * reference_area)
+
+
 def _coefficients(state, grad, areas, normals, reference_area, angle, wing, xyz,
-                  include_ideal_drag):
+                  include_ideal_drag, circulation_lift=False, ideal_drag="quadrature"):
     """Lift/drag coefficients of one reduced solution (explicit in x, quadratic in state)."""
     U = torch.stack((torch.cos(angle), torch.zeros_like(angle), torch.sin(angle)))
     lift = torch.stack((-torch.sin(angle), torch.zeros_like(angle), torch.cos(angle)))
@@ -250,9 +275,15 @@ def _coefficients(state, grad, areas, normals, reference_area, angle, wing, xyz,
         slope = torch.diff(gamma) / width
         logs = torch.log(torch.abs((centers[:, None] - left[None, :]) /
                                    (centers[:, None] - right[None, :])))
-        downwash = -(logs @ slope) / (4 * torch.pi)
-        drag = -((gamma[:-1] + gamma[1:]) * downwash * width).sum() / reference_area
+        if ideal_drag == "exact":
+            drag = _exact_ideal_drag(gamma, y, reference_area)
+        else:
+            downwash = -(logs @ slope) / (4 * torch.pi)
+            drag = -((gamma[:-1] + gamma[1:]) * downwash * width).sum() / reference_area
         coefficients = torch.cat((coefficients, drag.reshape(1)))
+        if circulation_lift:
+            coefficients = torch.cat((coefficients, 2. * torch.trapezoid(gamma, y)
+                                     .reshape(1) / reference_area))
     return coefficients
 
 
@@ -294,6 +325,8 @@ class _FixedWakeImplicit(torch.autograd.Function):
         wing = meta["wing"]
         alpha_deg = float(meta["alpha_deg"])
         include_ideal_drag = bool(meta["include_ideal_drag"])
+        circulation_lift = bool(meta.get("include_circulation_lift", False))
+        ideal_drag = str(meta.get("ideal_drag", "quadrature"))
         max_nfev = int(meta["max_nfev"])
         recompute = meta["recompute"]
         wake_xyz = wake if wake.numel() else None
@@ -345,7 +378,7 @@ class _FixedWakeImplicit(torch.autograd.Function):
                                    % (result.result.status, stationarity_inf, relative_step,
                                       int(hessian_status)))
             coefficients = _coefficients(state, grad, mesh["areas"], mesh["normals"],
-                                         reference_area, angle, wing, xyz, include_ideal_drag)
+                                         reference_area, angle, wing, xyz, include_ideal_drag, circulation_lift, ideal_drag)
         ctx.save_for_backward(xyz, wake, reference_area, z, reduction, hessian)
         ctx.meta = meta
         meta["sink"]["info"] = dict(
@@ -364,6 +397,8 @@ class _FixedWakeImplicit(torch.autograd.Function):
         wing = meta["wing"]
         alpha_deg = float(meta["alpha_deg"])
         include_ideal_drag = bool(meta["include_ideal_drag"])
+        circulation_lift = bool(meta.get("include_circulation_lift", False))
+        ideal_drag = str(meta.get("ideal_drag", "quadrature"))
         recompute = meta["recompute"]
         with torch.enable_grad():
             xg = xyz.detach().clone().requires_grad_(True)
@@ -381,12 +416,12 @@ class _FixedWakeImplicit(torch.autograd.Function):
                                         meta["pressure_recovery"])
             state = reduction @ z
             coef_x = _coefficients(state, grad, mesh["areas"], mesh["normals"], ag,
-                                   angle, wing, xg, include_ideal_drag)
+                                   angle, wing, xg, include_ideal_drag, circulation_lift, ideal_drag)
             residual_x = _stationarity(state, B, rhs, reduction, pressure)
             zt = z.detach().clone().requires_grad_(True)
             coef_z = _coefficients(reduction @ zt, grad.detach(), mesh["areas"].detach(),
                                    mesh["normals"].detach(), ag.detach(), angle, wing,
-                                   xg.detach(), include_ideal_drag)
+                                   xg.detach(), include_ideal_drag, circulation_lift, ideal_drag)
             dz = torch.autograd.grad((coef_z * grad_coef).sum(), zt)[0]
             lam = torch.linalg.solve(hessian.t(), dz).detach()
             total = (coef_x * grad_coef).sum() - (lam * residual_x).sum()
@@ -431,6 +466,8 @@ class _PotentialJumpImplicit(torch.autograd.Function):
         wing = meta["wing"]
         alpha_deg = float(meta["alpha_deg"])
         include_ideal_drag = bool(meta["include_ideal_drag"])
+        circulation_lift = bool(meta.get("include_circulation_lift", False))
+        ideal_drag = str(meta.get("ideal_drag", "quadrature"))
         max_nfev = int(meta["max_nfev"])
         recompute = meta["recompute"]
         wake_xyz = wake if wake.numel() else None
@@ -478,7 +515,7 @@ class _PotentialJumpImplicit(torch.autograd.Function):
                     "(evaluations=%d, stationarity_inf=%.3g, relative=%.3g, max_nfev=%d)"
                     % (evaluations, p_inf, relative_p, max_nfev))
             coefficients = _coefficients(state, grad, mesh["areas"], mesh["normals"],
-                                         reference_area, angle, wing, xyz, include_ideal_drag)
+                                         reference_area, angle, wing, xyz, include_ideal_drag, circulation_lift, ideal_drag)
         ctx.save_for_backward(xyz, wake, reference_area, gamma)
         ctx.meta = meta
         meta["sink"]["info"] = dict(
@@ -497,6 +534,8 @@ class _PotentialJumpImplicit(torch.autograd.Function):
         wing = meta["wing"]
         alpha_deg = float(meta["alpha_deg"])
         include_ideal_drag = bool(meta["include_ideal_drag"])
+        circulation_lift = bool(meta.get("include_circulation_lift", False))
+        ideal_drag = str(meta.get("ideal_drag", "quadrature"))
         recompute = meta["recompute"]
         with torch.enable_grad():
             xg = xyz.detach().clone().requires_grad_(True)
@@ -518,7 +557,7 @@ class _PotentialJumpImplicit(torch.autograd.Function):
                                         meta["pressure_recovery"])
             p = pressure(state)
             coef = _coefficients(state, grad, mesh["areas"], mesh["normals"], ag, angle,
-                                 wing, xg, include_ideal_drag)
+                                 wing, xg, include_ideal_drag, circulation_lift, ideal_drag)
             jp = pressure.jacobian(state)
             dpdg = jp[:, :nt] @ mapping
             # The adjoint is one vector, not one per coefficient: dJ/dx = dJ/dx|_gamma
@@ -537,7 +576,8 @@ class _PotentialJumpImplicit(torch.autograd.Function):
         return grads[0], grad_wake, grads[1], None
 
 def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
-                        include_ideal_drag=False, recompute=None, kutta="pressure",
+                        include_ideal_drag=False, include_circulation_lift=False,
+                        ideal_drag="quadrature", recompute=None, kutta="pressure",
                         pressure_recovery="face"):
     """Kutta-closed coefficients and the implicit gradient, at the cost of one assembly.
 
@@ -556,6 +596,7 @@ def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
         raise ValueError("pressure_recovery must be face, area or quadratic")
     sink = {}
     meta = dict(wing=wing, alpha_deg=alpha_deg, include_ideal_drag=include_ideal_drag,
+                include_circulation_lift=include_circulation_lift, ideal_drag=ideal_drag,
                 max_nfev=max_nfev, recompute=recompute, sink=sink,
                 pressure_recovery=pressure_recovery)
     if kutta == "potential_jump":
