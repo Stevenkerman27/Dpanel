@@ -93,6 +93,19 @@ def jac_from(values, jac):
     return {"pressure": jac[1], "induced": jac[2], "lift": -jac[0]}[args.objective]
 
 
+OBJECTIVE_ROW = {"pressure": "CD", "induced": "CDi", "lift": "CL"}
+# A row is only worth a backward pass if SLSQP reads it: the objective, the lift
+# constraints, the circulation-lift constraint, the area constraint.  CD and CLi are
+# reported but never constrained, and each row costs a full assembly plus adjoint solve.
+NEEDED_ROWS = {OBJECTIVE_ROW[args.objective]}
+if args.cl_min is not None or args.cl_target is not None:
+    NEEDED_ROWS.add("CL")
+if args.cl_gamma_min is not None:
+    NEEDED_ROWS.add("CL_gamma")
+if args.keep_area:
+    NEEDED_ROWS.add("area")
+
+
 shape = {}
 
 
@@ -125,10 +138,17 @@ def evaluate(x):
                                            include_ideal_drag=True,
                                            include_circulation_lift=need_cl_gamma,
                                            ideal_drag=args.ideal_drag)
-        tracked = (values[0], values[1], values[2]) + ((values[3],) if need_cl_gamma else ())
-        derivatives = [torch.autograd.grad(value, variable, retain_graph=True)[0].detach().numpy()
-                       for value in tracked + (area,)]
-        jac = derivatives[:3]
+        outputs = {"CL": values[0], "CD": values[1], "CDi": values[2], "area": area}
+        if need_cl_gamma:
+            outputs["CL_gamma"] = values[3]
+        derivatives = {}
+        for name, output in outputs.items():
+            if name in NEEDED_ROWS:
+                derivatives[name] = torch.autograd.grad(
+                    output, variable, retain_graph=True)[0].detach().numpy()
+            else:
+                derivatives[name] = np.zeros_like(x)
+        jac = [derivatives["CL"], derivatives["CD"], derivatives["CDi"]]
         record = dict(evaluation=len(history) + 1,
                       objective=float(value_from(values).detach()),
                       CL=float(values[0].detach()), CD=float(values[1].detach()),
@@ -149,9 +169,10 @@ def evaluate(x):
         cache.clear()
         cache.update(x=x.copy(), value=record["objective"], jac=jac_from(values, jac),
                      CL=record["CL"], CD=record["CD"], CDi=record["CDi"],
-                     area=record["area"], area_jac=derivatives[len(tracked)],
+                     area=record["area"], area_jac=derivatives["area"],
                      cl_jac=jac[0].copy(), cl_gamma=record["CL_gamma"],
-                     cl_gamma_jac=(derivatives[3] if need_cl_gamma else np.zeros_like(x)),
+                     cl_gamma_jac=(derivatives["CL_gamma"] if need_cl_gamma
+                                   else np.zeros_like(x)),
                      ok=True)
         if record["objective"] < best["value"]:
             best.update(value=record["objective"], x=x.copy())
