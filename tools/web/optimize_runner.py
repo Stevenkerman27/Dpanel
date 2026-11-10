@@ -8,6 +8,7 @@ topology is preserved.
 """
 import argparse
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +16,15 @@ import torch
 from scipy.optimize import minimize
 
 from panel.p1_cst_gradient import fixed_wake_geometry, grass_section_geometry
+
+STARTED = time.time()
+
+
+def elapsed_text():
+    seconds = int(time.time() - STARTED)
+    if seconds < 60:
+        return "%d 秒" % seconds
+    return "%d 分 %02d 秒" % (seconds // 60, seconds % 60)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--surface", type=Path, required=True)
@@ -29,6 +39,7 @@ parser.add_argument("--cl-gamma-min", type=float, default=None)
 parser.add_argument("--ideal-drag", choices=("quadrature", "exact"),
                     default="exact")
 parser.add_argument("--keep-area", action="store_true")
+parser.add_argument("--kutta", choices=("pressure", "potential_jump"), default="pressure")
 parser.add_argument("--iterations", type=int, default=20)
 parser.add_argument("--max-memory-gb", type=float, default=10.0)
 args = parser.parse_args()
@@ -98,6 +109,7 @@ def metrics(point):
 def evaluate(x):
     if "x" in cache and np.array_equal(x, cache["x"]):
         return cache
+    print("eval %d 开始（已用 %s）" % (len(history) + 1, elapsed_text()), flush=True)
     variable = torch.tensor(x, dtype=torch.float64, requires_grad=True)
     matrix = variable.reshape(n, 19)
     geometry = dict(leading_edge_xyz=leading, chord=matrix[:, 0],
@@ -109,7 +121,7 @@ def evaluate(x):
             wake_panels=wake_panels, wake_length=wake_length)
         shape["aspect_ratio"] = (float(np.ptp(np.asarray(wing.gamma_y, float))) ** 2
                                / float(area.detach()))
-        values, info = fixed_wake_geometry(wing, xyz, wake, area, args.alpha, 160,
+        values, info = fixed_wake_geometry(wing, xyz, wake, area, args.alpha, 160, kutta=args.kutta,
                                            include_ideal_drag=True,
                                            include_circulation_lift=need_cl_gamma,
                                            ideal_drag=args.ideal_drag)
@@ -130,10 +142,10 @@ def evaluate(x):
         history.append(record)
         with (args.out.parent / "history.jsonl").open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(record, allow_nan=False) + "\n")
-        print("eval %d  CL %.6f  CD %.6f  CDi %.6f  近远差 %s  目标 %.6f" %
+        print("eval %d  CL %.6f  CD %.6f  CDi %.6f  近远差 %s  目标 %.6f  (用时 %s)" %
               (record["evaluation"], record["CL"], record["CD"], record["CDi"],
                "-" if record["near_far_rel"] is None else "%+.1f%%" % (100 * record["near_far_rel"]),
-               record["objective"]), flush=True)
+               record["objective"], elapsed_text()), flush=True)
         cache.clear()
         cache.update(x=x.copy(), value=record["objective"], jac=jac_from(values, jac),
                      CL=record["CL"], CD=record["CD"], CDi=record["CDi"],
@@ -216,10 +228,6 @@ if args.keep_area:
     constraint_text += "，参考面积固定"
 if not constraint_text:
     constraint_text = "无"
-if args.cl_gamma_min is not None:
-    constraint_text += "，环量升力下限 %.4f" % args.cl_gamma_min
-if args.keep_area:
-    constraint_text += "，参考面积固定"
 print("设计变量 %d 个（%d 截面 × 弦长/扭转/17 个 CST），目标=%s，约束=%s，迭代=%d" %
       (len(x0), n, args.objective, constraint_text, args.iterations), flush=True)
 if args.objective != "lift" and args.cl_min is None:
@@ -227,8 +235,19 @@ if args.objective != "lift" and args.cl_min is None:
           "（实测 0.1 m 网格 CL 0.349 → 0.060）；建议设置升力下限", flush=True)
 baseline = dict(evaluate(x0))
 base_value = baseline["value"]
+iteration = [0]
+
+
+def iteration_callback(z):
+    iteration[0] += 1
+    point = evaluate(to_x(z))
+    print("SLSQP 迭代 %d：目标 %.6f  CL %.6f  CDi %.6f  (已用 %s)" %
+          (iteration[0], point["value"], point["CL"], point["CDi"], elapsed_text()),
+          flush=True)
+
+
 result = minimize(fun, np.zeros_like(x0), jac=fun_jac, bounds=[(-1.0, 1.0)] * len(x0),
-                  constraints=constraints, method="SLSQP",
+                  constraints=constraints, method="SLSQP", callback=iteration_callback,
                   options=dict(maxiter=int(args.iterations), ftol=1e-8, disp=False))
 
 final_x = to_x(result.x)

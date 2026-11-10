@@ -135,6 +135,7 @@
         <label>约束值<input id="optClValue" type="number" step="0.001" placeholder="例如 0.36"></label>
         <label class="wide">近远一致性容差 %<input id="optTolerance" type="number" value="0" step="1" min="0" max="99"></label>
       </div>
+      <label class="wide">Kutta 闭包<select id="optKutta"><option value="pressure">pressure（默认，慢）</option><option value="potential_jump">potential_jump（快，尖端掠角大时会拒绝）</option></select></label>
       <label class="check"><input id="optKeepArea" type="checkbox" checked> 保持参考面积不变</label>
       <div class="row">
         <button id="optRun" class="primary">运行优化</button>

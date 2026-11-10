@@ -426,6 +426,10 @@ def run_optimize(job, options):
             command += ["--consistency-tolerance", "%g" % tolerance]
         if options.get("keep_area"):
             command.append("--keep-area")
+        kutta = str(options.get("kutta", "pressure"))
+        if kutta not in ("pressure", "potential_jump"):
+            raise ValueError("未知 Kutta 闭包")
+        command += ["--kutta", kutta]
         job.state = "solving"
         if cl_target not in (None, ""):
             lift_text = "等式 %g" % float(cl_target)
@@ -433,10 +437,10 @@ def run_optimize(job, options):
             lift_text = "下限 %g" % float(cl_min)
         else:
             lift_text = "-"
-        job.say("截面优化启动: 目标=%s, 迭代=%d, 升力约束=%s, 保面积=%s, 一致性容差=%s"
+        job.say("截面优化启动: 目标=%s, 迭代=%d, 升力约束=%s, 保面积=%s, 一致性容差=%s, 闭包=%s"
                 % (objective, iterations, lift_text,
                    "是" if options.get("keep_area") else "否",
-                   "-" if tolerance <= 0 else "%.1f%%" % (100 * tolerance)))
+                   "-" if tolerance <= 0 else "%.1f%%" % (100 * tolerance), kutta))
         output = job.run_dir / "opt_result.json"
         code, log = _spawn(job, command, job.run_dir / "opt.log")
         if code != 0 or not output.is_file():

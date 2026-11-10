@@ -7,6 +7,7 @@ const state = {
   build: null, result: null, mesh: null, meshLoading: false, jobId: null,
   tab: 'geom', busy: false, dirty: true, poll: null, grassJobId: null,
   sections: null, sectionIndex: 0, optJobId: null, optResult: null,
+  optStartedAt: 0, optLogTail: '', optEvaluations: 0,
 };
 const SECTION_FIELDS = ['leading_edge_xyz', 'chord', 'twist_radians', 'cst'];
 function deepClone(value) { return JSON.parse(JSON.stringify(value)); }
@@ -1161,6 +1162,7 @@ async function runOptimize() {
     cl_target: mode === 'target' && clText !== '' ? Number(clText) : null,
     consistency_tolerance: tolerance > 0 ? tolerance / 100 : 0,
     keep_area: el('optKeepArea').checked,
+    kutta: el('optKutta').value,
     iterations: Number(el('optIterations').value),
   };
   if (mode !== 'none' && (clText === '' || !Number.isFinite(Number(clText)))) {
@@ -1176,8 +1178,12 @@ async function runOptimize() {
     return;
   }
   state.optResult = null;
+  state.optStartedAt = Date.now();
+  state.optLogTail = '';
+  state.optEvaluations = 0;
   setBusy(true);
   el('optResult').textContent = '启动优化…';
+  if (state.tab === 'opt') renderOptimizeRunning();
   try {
     const started = await api('/api/optimize', body);
     state.optJobId = started.job;
@@ -1189,6 +1195,9 @@ async function runOptimize() {
         last = (job.log || []).length;
         const tail = (job.log || []).slice(-1)[0];
         if (tail) el('optResult').textContent = tail;
+        state.optLogTail = tail || '';
+        state.optEvaluations = (job.log || []).filter((line) => /eval \d+ /.test(line)).length;
+        if (state.tab === 'opt') renderOptimizeRunning();
       }
       if (job.state === 'done') {
         state.optResult = job.result;
@@ -1397,8 +1406,27 @@ function setOptimizeTable(rows) {
     .join('');
 }
 
+function durationText(seconds) {
+  if (seconds < 60) return seconds + ' 秒';
+  return Math.floor(seconds / 60) + ' 分 ' + String(seconds % 60).padStart(2, '0') + ' 秒';
+}
+
+function renderOptimizeRunning() {
+  const elapsed = Math.max(0, Math.round((Date.now() - (state.optStartedAt || Date.now())) / 1000));
+  const tail = state.optLogTail || '';
+  const done = Number(state.optEvaluations || 0);
+  el('optStatus').textContent = '优化运行中 · 已用 ' + durationText(elapsed) +
+    (done ? ' · 已完成 ' + done + ' 次气动评估' : ' · 正在算第一次评估');
+  el('optSummary').textContent = tail;
+  el('optTable').innerHTML = '<tr><td>提示</td><td>曲线与表格在优化结束后显示；' +
+    '右侧「截面优化」下方会实时刷新评估结果，每评估一次通常要 1–5 分钟（取决于面板数）</td></tr>';
+  el('optGeometryText').textContent = '最优点还未知：SLSQP 结束后显示最终几何';
+  el('optGeometry').textContent = '';
+}
+
 function renderOptimizePanel() {
   const report = state.optResult;
+  if (!report && state.optJobId) { renderOptimizeRunning(); return; }
   const history = optHistory();
   if (!report) {
     el('optStatus').textContent = '还没有优化结果：在右侧「截面优化」里点运行';
