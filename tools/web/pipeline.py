@@ -281,7 +281,7 @@ def _spawn(job, command, log_path):
 
 
 def solve(job, surface, wake, alpha, iterations, reference, attempts=6,
-          ncpu=SOLVE_THREADS, wall_formulation="galerkin"):
+          ncpu=SOLVE_THREADS, wall_formulation="galerkin", kutta="production"):
     """Run the solve in a child process, retrying native crashes.
 
     Isolation keeps the HTTP server alive when a native dependency crashes.
@@ -300,10 +300,11 @@ def solve(job, surface, wake, alpha, iterations, reference, attempts=6,
                    "--wake", wake, "--alpha", "%g" % float(alpha),
                    "--iterations", str(int(iterations)),
                    "--reference", json.dumps(reference or {}),
-                   "--wall-formulation", wall_formulation, "--ncpu", str(ncpu)]
+                   "--wall-formulation", wall_formulation, "--ncpu", str(ncpu),
+                   "--kutta", kutta]
         if attempt == 0:
-            job.say("求解进程启动: wake=%s, alpha=%g, 设备=CPU, 线程=%d"
-                    % (wake, float(alpha), ncpu))
+            job.say("求解进程启动: wake=%s, alpha=%g, 闭合=%s, 设备=CPU, 线程=%d"
+                    % (wake, float(alpha), kutta, ncpu))
         code, log_path = _spawn(job, command, log_path)
         result_path = directory / "result.json"
         if code == 0 and result_path.exists():
@@ -365,11 +366,15 @@ def run_grass(job, options):
             raise ValueError("当前网格不是 GRASS 固定拓扑网格，机身/CAD 网格暂不支持此梯度")
         if float(options.get("alpha", 4.)) != job.mesh_options["alpha"]:
             raise ValueError("迎角已变化，请重新生成网格")
-        job.say("使用当前正式求解网格计算 GRASS 固定尾迹梯度")
+        kutta = str(options.get("kutta", "production"))
+        if kutta not in ("production", "pressure", "potential_jump"):
+            raise ValueError("未知 Kutta 闭合")
+        job.say("使用当前正式求解网格计算 GRASS 固定尾迹梯度（闭合=%s）" % kutta)
         output = job.run_dir / "grass_result.json"
         code, log = _spawn(job, [sys.executable, "-m", "tools.web.grass_runner",
                                  "--input", str(source), "--out", str(output),
-                                 "--alpha", str(job.mesh_options["alpha"])],
+                                 "--alpha", str(job.mesh_options["alpha"]),
+                                 "--kutta", kutta],
                            job.run_dir / "grass.log")
         if code != 0 or not output.is_file():
             lines = log.read_text(encoding="utf-8", errors="replace").strip().splitlines()
@@ -493,8 +498,11 @@ def run_job(job, options):
         job.state = "solving"
         reference = (job.build or {}).get("reference") or params_module.reference(
             (job.build or {}).get("params") or params_module.normalise({})[0])
+        kutta = str(options.get("kutta", "production"))
+        if kutta not in ("production", "pressure", "potential_jump"):
+            raise ValueError("未知 Kutta 闭合")
         result = solve(job, surface, wake, alpha, iterations, reference, ncpu=ncpu,
-                       wall_formulation=wall_formulation)
+                       wall_formulation=wall_formulation, kutta=kutta)
         result = _plain(result)
         if wake in ("free", "free_filament") and (not result.get("converged") or result.get("geometry_stable") is False):
             history = result.get("history") or []

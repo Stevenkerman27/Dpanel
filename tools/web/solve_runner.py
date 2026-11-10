@@ -73,7 +73,7 @@ def solve_fixed_p0(surface):
                 field=field)
 
 
-def solve_fixed(surface, alpha, reference, wall_formulation="galerkin"):
+def solve_fixed(surface, alpha, reference, wall_formulation="galerkin", kutta=None):
     """Fixed wake with the same full-span P1 model as the free-wake solver."""
     from panel.p1_lifting_g1 import from_dpanel_half_surface
     from panel.p1_lifting_g2 import combine_wings, solve_multi
@@ -89,7 +89,9 @@ def solve_fixed(surface, alpha, reference, wall_formulation="galerkin"):
                           reference_chord=reference.get("chord", wing.chord),
                           reference_point=tuple(reference.get("point", wing.reference_point)))
     print("P1 %s 固定尾迹（半翼镜像为全翼）" % wall_formulation, flush=True)
-    state = solve_multi(model, alpha, kutta="pressure", wall_formulation=wall_formulation)
+    # kutta=None follows the production closure (panel/p1_lifting_g2.PRODUCTION_KUTTA) so the
+    # forward job cannot silently report a different closure than the differentiable path.
+    state = solve_multi(model, alpha, kutta=kutta, wall_formulation=wall_formulation)
     faces = data.get("faces") or []
     cp = state["cp"][:len(faces)]
     vertices = data["coordinates"]
@@ -121,7 +123,7 @@ def solve_fixed(surface, alpha, reference, wall_formulation="galerkin"):
 
 
 def solve_free(surface, alpha, iterations, reference, wall_formulation="galerkin",
-               wake_method="sheet"):
+               wake_method="sheet", kutta=None):
     """Steady free wake: the wake shape and mu/Gamma are solved together."""
     from panel.p1_lifting_g1 import from_dpanel_half_surface
     from panel.p1_lifting_g2 import combine_wings
@@ -162,7 +164,7 @@ def solve_free(surface, alpha, iterations, reference, wall_formulation="galerkin
                     relaxation=0.25, core_radius=0.05*model.reference_chord,
                     subdivisions=2, intersection_guard=True, save_callback=save)
     elif wake_method == "sheet":
-        value = solve_steady_free_wake(model, alpha, kutta="pressure",
+        value = solve_steady_free_wake(model, alpha, kutta=kutta,
                                        iterations=int(iterations), relaxation=0.25,
                                        wall_formulation=wall_formulation,
                                        save_callback=save)
@@ -204,12 +206,15 @@ def main(argv=None):
     parser.add_argument("--alpha", type=float, default=4.0)
     parser.add_argument("--iterations", type=int, default=12)
     parser.add_argument("--reference", default="{}")
+    parser.add_argument("--kutta", default="production",
+                        choices=["production", "pressure", "potential_jump"])
     parser.add_argument("--ncpu", type=int, default=min(8, os.cpu_count() or 1))
     args = parser.parse_args(argv)
     if not 1 <= args.ncpu <= (os.cpu_count() or 1):
         parser.error("--ncpu must be between 1 and the logical CPU count")
     for key in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
         os.environ[key] = str(args.ncpu)
+    kutta = None if args.kutta == "production" else args.kutta
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     started = time.time()
@@ -218,12 +223,13 @@ def main(argv=None):
             parser.error("p0 is only available for a fixed wake")
         result = solve_free(Path(args.surface), args.alpha, args.iterations,
                             json.loads(args.reference), args.wall_formulation,
-                            wake_method="filament" if args.wake=="free_filament" else "sheet")
+                            wake_method="filament" if args.wake=="free_filament" else "sheet",
+                            kutta=kutta)
     elif args.wall_formulation == "p0":
         result = solve_fixed_p0(Path(args.surface))
     else:
         result = solve_fixed(Path(args.surface), args.alpha, json.loads(args.reference),
-                             args.wall_formulation)
+                             args.wall_formulation, kutta=kutta)
     result["runner_seconds"] = time.time() - started
     result["ncpu"] = args.ncpu
     (out / "result.json").write_text(json.dumps(_plain(result)), encoding="utf-8")

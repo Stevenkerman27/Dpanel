@@ -13,11 +13,14 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--input", type=Path, required=True)
 parser.add_argument("--out", type=Path, required=True)
 parser.add_argument("--alpha", type=float, default=4.)
+parser.add_argument("--kutta", default="production",
+                    choices=["production", "pressure", "potential_jump"])
 args = parser.parse_args()
 data = json.loads(args.input.read_text(encoding="utf-8"))
 names = ("leading_edge_xyz", "chord", "twist_radians", "cst")
 geometry, wing, xyz, wake, area = reconstruct_grass_mesh(data)
-values, info = fixed_wake_geometry(wing, xyz, wake, area, args.alpha, 160)
+kutta = None if args.kutta == "production" else args.kutta
+values, info = fixed_wake_geometry(wing, xyz, wake, area, args.alpha, 160, kutta=kutta)
 gradients = {}
 for label, value in zip(("CL", "CD"), values):
     derivatives = torch.autograd.grad(value, tuple(geometry.values()), retain_graph=True)
