@@ -6,11 +6,59 @@ jax = pytest.importorskip("jax")
 torch = pytest.importorskip("torch")
 import jax.numpy as jnp
 
-from panel.differentiable import solve_fields
+from panel.differentiable import PanelTopology, solve_fields
 from panel.torch_bridge import TorchPanelBridge, INPUT_NAMES, OUTPUT_NAMES
-from test_differentiable_panel_fields import wing_inputs
 
 jax.config.update("jax_enable_x64", True)
+
+
+def wing_inputs():
+    # Full closed diamond-section wing: 5 stations, caps, shared sharp TE nodes.
+    ys = np.linspace(-1., 1., 5)
+    ring = np.array([[0.,0.,0.],[.5,0.,.1],[1.,0.,0.],[.5,0.,-.1]])
+    xyz = np.concatenate([ring+[0.,y,0.] for y in ys]).tolist()
+    faces=[];upper=[];lower=[];te=[]
+    for i in range(len(ys)-1):
+        for j in range(4):
+            a,b,c,d = 4*i+j,4*i+(j+1)%4,4*(i+1)+j,4*(i+1)+(j+1)%4
+            faces += [[a,b,d],[a,d,c]]
+        te.append([4*i+2,4*(i+1)+2])
+        upper.append(8*i+2);lower.append(8*i+5)
+    for end in (0,4):
+        cap=len(xyz);xyz.append([.5,float(ys[end]),0.])
+        for j in range(4):
+            f=[cap,4*end+j,4*end+(j+1)%4]
+            faces.append(f if end==4 else f[::-1])
+    downstream=[]
+    for y in ys:
+        downstream.append(len(xyz));xyz.append([4.,float(y),0.])
+    wake=[]
+    for i in range(4):
+        wake += [[4*i+2,downstream[i],downstream[i+1]], [4*i+2,downstream[i+1],4*(i+1)+2]]
+    faces=np.array(faces);xyz=np.array(xyz)
+    adjacency=[set() for f in faces]; edge_map={}
+    for i,f in enumerate(faces):
+        for a,b in ((f[0],f[1]),(f[1],f[2]),(f[2],f[0])):
+            edge_map.setdefault(tuple(sorted((a,b))), []).append(i)
+    assert all(len(v)==2 for v in edge_map.values())
+    for edge,(a,b) in edge_map.items():
+        if list(edge) not in te:
+            adjacency[a].add(b);adjacency[b].add(a)
+    # Freeze a topology-only two-ring stencil; no geometry/solution in selection.
+    neigh=[]
+    for i,one in enumerate(adjacency):
+        neigh.append(sorted((one | set().union(*(adjacency[j] for j in one))) - {i}))
+    width=max(map(len,neigh)); neighbors=np.array([r+[i]*(width-len(r)) for i,r in enumerate(neigh)])
+    hat=np.zeros((5,3));hat[1:4]=np.eye(3)
+    topology=PanelTopology(*(jnp.asarray(x) for x in (
+        faces,np.array(wake),np.array(te),np.array(upper),np.array(lower),hat,
+        np.repeat(np.arange(4),2),np.repeat(np.arange(4)[:,None],2,axis=1),neighbors,
+        np.full(len(faces),10),
+    )))
+    return dict(vertices=jnp.array(xyz),station_y=jnp.array(ys),topology=topology,
+                freestream=jnp.array([1.,0.,.08]),density=jnp.array(1.225),
+                reference_area=jnp.array(2.),reference_chord=jnp.array(1.),
+                reference_point=jnp.array([.25,0.,0.]))
 
 
 @pytest.fixture(scope="module")
