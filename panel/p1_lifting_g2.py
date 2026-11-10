@@ -318,7 +318,19 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
                                 wall_floor_ratio=wall_floor_ratio))
 
 
-def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
+# The production closure stays pressure.  potential_jump is the more accurate closure on
+# unswept wings (CL within 1.2% of lifting line and e = 0.992 on the AR 6 elliptic wing,
+# against a 7% low CL and e = 0.907 for pressure), but on a 30-degree swept wing it returns
+# a sawtooth circulation: adjacent trailing-edge stations alternate in sign, |dGamma/dy| at
+# the tip reaches 5.2 (pressure: 0.29) and the Trefftz drag comes out 6x too high
+# (CDi 3.98e-02 against 4.22e-03, tools/wake_closure_study.py, 2026-11-10).  A default that
+# is silently wrong on every swept planform is worse than a closure that is 7% low, so the
+# switch flips only after that sawtooth is understood and gated.  Callers who want the
+# Morino closure ask for it: kutta='potential_jump'.
+PRODUCTION_KUTTA = 'pressure'
+
+
+def solve_multi(mesh, alpha_deg=5., *, kutta=None,kut_weight=5.,
                 max_nfev=80,operators=None,pressure_solver=None,
                 backend=None, device='cpu', wall_formulation=None,
                 galerkin_order=3, pressure_recovery="face"):
@@ -328,7 +340,19 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
     preserved at tag numpy-path-frozen-s8 and its answers for the frozen fixtures are
     docs/issue92/references/. pressure_solver='reference' named the SciPy
     trust-region solver and is rejected here on purpose.
+
+    kutta=None means PRODUCTION_KUTTA, currently pressure.  When an unpinned call does
+    use a potential_jump production closure that reports an ill-conditioned trailing edge
+    (cond(dp/dgamma) above the gate) or a non-converged Newton solve, the same operators
+    are re-solved with pressure and the answer carries
+    kutta_requested/kutta_effective/kutta_fallback.  The fallback is never silent, and the
+    answer always names the closure that produced it: read kutta_effective.
     """
+    pinned = kutta is not None
+    if kutta is None:
+        kutta = PRODUCTION_KUTTA
+    if kutta not in ('pressure', 'signed_speed', 'potential_jump'):
+        raise ValueError("kutta=pressure, signed_speed or potential_jump")
     backend,backend_source=resolve_backend(backend)
     if wall_formulation is None:
         wall_formulation=(operators.get('wall_formulation','collocation')
@@ -348,9 +372,23 @@ def solve_multi(mesh, alpha_deg=5., *, kutta='pressure',kut_weight=5.,
             "are docs/issue92/references/ and its code is tag numpy-path-frozen-s8"
             % (pressure_solver,))
     from .p1_solve_torch import solve_multi_torch
-    out=solve_multi_torch(mesh,alpha_deg,kutta=kutta,kut_weight=kut_weight,
-                          max_nfev=max_nfev,operators=operators,device=device,
-                          pressure_recovery=pressure_recovery)
+    requested = kutta
+    fallback = None
+    try:
+        out=solve_multi_torch(mesh,alpha_deg,kutta=kutta,kut_weight=kut_weight,
+                              max_nfev=max_nfev,operators=operators,device=device,
+                              pressure_recovery=pressure_recovery)
+    except RuntimeError as error:
+        if (pinned or kutta != 'potential_jump'
+                or not str(error).startswith('potential-jump Kutta')):
+            raise
+        fallback = str(error)
+        out=solve_multi_torch(mesh,alpha_deg,kutta='pressure',kut_weight=kut_weight,
+                              max_nfev=max_nfev,operators=operators,device=device,
+                              pressure_recovery=pressure_recovery)
+    out['kutta_requested']=requested
+    out['kutta_effective']=out.get('kutta', requested)
+    out['kutta_fallback']=fallback
     for key in ('mu','cp','gamma'):
         value=out.get(key)
         if hasattr(value,'detach'):out[key]=value.detach().cpu().numpy()

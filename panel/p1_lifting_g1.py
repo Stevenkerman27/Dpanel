@@ -496,7 +496,7 @@ def assemble(wing, *, backend='numpy'):
     return dict(A=A,W=W,C=C,GH=GH,K=K,mesh=mesh,grad=grad,te_pairs=pairs)
 
 
-def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
+def solve(wing,alpha_deg=5., *, kutta=None, wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
           pressure_solver=None, backend=None, device='cpu',wall_formulation='galerkin',
           pressure_recovery="face"):
@@ -528,7 +528,7 @@ def solve(wing,alpha_deg=5., *, kutta='signed_speed', wall_weight=1.,
     # The multi kernel reports only the smallest singular value of the constrained
     # least-squares operator; keep a one-element spectrum under the legacy name.
     out['singular']=np.asarray([out['linear_singular_min']],float)
-    out['method']=kutta
+    out['method']=out.get('kutta_effective', kutta)
     out['diagnostics']=dict(
         n_wall_faces=int(len(wing.faces)),n_wall_dofs=int(np.size(out['mu'])),
         n_gamma_dofs=int(np.size(out['gamma'])),

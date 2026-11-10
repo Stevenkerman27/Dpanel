@@ -729,3 +729,85 @@ python -m pytest -q test/test_lifting_line_studies.py test/test_p1_potential_jum
 改为已有合法网格上的单站位恢复夹具后通过。
 开发失败回执保留于 `runs/verification/lifting_line_fix/development_failures.txt`，
 不把测试夹具错误归于物理方法。
+
+## 11. 闭包与尾迹模型的精度对比，默认闭包改为 potential_jump（2026-11-10）
+
+### 11.1 为什么要换
+
+椭圆翼的展向效率有精确答案 e=1，这是目前手上最硬的判据。同一块网格
+（AR6、α=4°、782 面、collocation）只换闭包与尾迹模型：
+
+| 尾迹 | 闭包 | CL | CDi | e | Γ 偏离椭圆 |
+| --- | --- | --- | --- | --- | --- |
+| 固定 | pressure | 0.305888 | 5.038468e-03 | 0.9072 | 13.06% |
+| 自由 | pressure | 0.305291 | 5.045212e-03 | 0.9021 | — |
+| 固定 | potential_jump | 0.332800 | 5.459923e-03 | 0.9917 | 6.24% |
+| 自由 | potential_jump | 0.332930 | 5.461361e-03 | 0.9919 | — |
+| 升力线（e=1） | — | 0.328987 | — | 1.0 | 0 |
+
+读法：
+
+1. 闭包是最大的误差项。pressure 把 CL 压低 7.0%（0.3059 vs 0.3290），把 e 从
+   1 压到 0.91；potential_jump 的 CL 高 1.2%、e 0.9917（差 0.8%，属离散误差量级）。
+2. 尾迹模型是二阶小量。同闭包下自由尾迹相对固定尾迹：pj 的 CL 变 +0.04%
+   （0.332800 → 0.332930）、e 变 +0.0002；pressure 的 CL 变 −0.2%、e 变 −0.005。
+   6 次松弛后尾迹 z 位移 0.99 弦（pj）与 1.49 弦（pressure），几何确实动了，
+   但积分载荷几乎不动。
+3. 因此在这类平直翼小迎角工况，先修闭包再谈尾迹。自由尾迹该被验收的场合是
+   尾迹真正离面、多体干扰、大迎角（BWB、翼身），不是椭圆平直翼 α=4°。
+
+### 11.2 默认闭包：仍然是 pressure
+
+2026-11-10 曾把 \`PRODUCTION_KUTTA\` 改成 \`potential_jump\`，理由是椭圆翼上它明显更准
+（CL 0.3328 对升力线 0.3290，e 0.9917；pressure 是 0.3059 / 0.9072）。同一天用
+\`tools/wake_closure_study.py\` 把三条平面形状一起跑完后就改回来了：**30° 后掠翼上
+potential_jump 给出锯齿状环量**。
+
+| 平面形状 | 闭包 | CL | CDi | e |
+| --- | --- | --- | --- | --- |
+| 矩形 AR6 | pressure | 0.30748 | 4.720e-03 | 0.968 |
+| 矩形 AR6 | potential_jump | 0.33228 | 6.414e-03 | 0.832 |
+| 后掠 30° AR6 | pressure | 0.27896 | 4.218e-03 | 0.898 |
+| 后掠 30° AR6 | potential_jump | 0.34551 | **3.984e-02** | **0.147** |
+| 椭圆 AR6 | pressure | 0.30589 | 5.038e-03 | 0.907 |
+| 椭圆 AR6 | potential_jump | 0.33280 | 5.460e-03 | 0.992 |
+
+后掠翼的环量（\`runs/scratch_opt/swept_pj_probe.py\`）：pressure 单调、0 次变号、
+max|dGamma/dy| = 0.29；potential_jump 相邻站位交替变号（0.1397, 0.1105, 0.1742,
+0.1535, 0.2085, ...）、4 次变号、max|dGamma/dy| = 5.23。锯齿在近波数模式上，闭包
+的 dp/dgamma 对它的罚几乎为零，但 Trefftz 积分把它算成 6 倍的诱导阻力。条件数门禁
+（§8）抓不到：这是解的模态问题，不是数值奇异。
+
+结论：默认保持 \`PRODUCTION_KUTTA = 'pressure'\`。判据是“默认值在任何常见平面形状上
+都不能静默错 6 倍”，而不是“哪个在最好工况上更准”。潜在势跳变的准确性证据照样成立，
+它作为显式选项（\`kutta='potential_jump'\`）保留；锯齿被理解并有门禁之后才谈换默认。
+回退机制仍留在 \`solve_multi\` 里（\`kutta_requested\` / \`kutta_effective\` /
+\`kutta_fallback\`），所以未来把 \`PRODUCTION_KUTTA\` 翻过去时，近奇异后缘会自动退到
+pressure 并写明用了哪个闭包。
+
+### 11.3 issue #113 的崩塌要在新默认下重测
+
+issue #113 记录的 swept30 / 椭圆 / BWB 自由尾迹崩塌（CL −77% 等，60 次迭代、
+relaxation 0.3、pressure 闭包）在本次椭圆网格上复现不出来：pressure 自由尾迹
+在该网格上是稳定的（CL 0.30597 → 0.30529，几何稳定）。差别在配置，不在结论，
+所以“自由尾迹会崩”目前只能算某组配置下的现象，需要在 potential_jump 默认下
+按 #113 的 E1–E4 协议重测，才能判断崩塌来自尾迹对流还是压力闭包与尾迹迭代的耦合。
+
+### 11.4 可重跑的对照：tools/wake_closure_study.py
+
+上面两张表由 \`python -m tools.wake_closure_study --iterations 10\` 生成，
+落盘 \`runs/verification/wake_closure/wake_closure_<stamp>.json\`：环境（commit、
+是否 dirty、平台、numpy/scipy/torch 版本、线程数）、协议（alpha 4°、半展 4、
+Trefftz 精确片线积分）、每行 \`planform/wake/kutta/kutta_effective/faces/CL/
+CL_gamma/CD_pressure/CDi_trefftz/e_span/seconds/geometry_sha256\`，自由尾迹行另带
+\`status/converged/geometry_stable/history\`。没有阈值，自由尾迹迭代次数和松弛因子
+都走命令行，所以同行可比、跨时可比。
+
+这次的读数（782 面、三条平面形状、固定与自由各一次，10 次自由尾迹迭代、
+relaxation 0.25）：
+
+- 椭圆与矩形：自由尾迹相对固定尾迹的 CL 变化 ≤ 0.2%、e 变化 ≤ 0.005（二次量）；
+- 后掠 30°：自由尾迹把 CL 从 0.34551 拉到 0.33644、e 从 0.147 拉到 0.247
+  （闭包残留在锯齿上，尾迹不是主因）；
+- issue #113 记录的“自由尾迹 CL 崩 77%”在这套网格上没有复现：pressure 在三种平面
+  形状上都是固定 ≈ 自由（例如后掠翼 0.27896 对 0.27896）。

@@ -20,6 +20,10 @@ def test_grass_web_job_uses_same_mesh_for_solve_and_gradient(tmp_path):
     forward = job.result
     pipeline.run_grass(job, dict(alpha=4))
     assert job.state == "done", job.error
+    # Both paths use PRODUCTION_KUTTA (pressure), so this compares two implementations of the
+    # same closure on the same mesh. If the default ever becomes potential_jump, the two pj
+    # implementations differ by 1.5e-4 in CL here (0.286226 gradient vs 0.286075 forward,
+    # measured 2026-11-10) and that gap has to be closed before this can stay at 2e-9.
     assert job.result["CL"] == pytest.approx(forward["CL"], abs=2e-9)
     assert job.result["CD"] == pytest.approx(forward["CD"], abs=2e-9)
     assert job.result["gradients"]["CL"]["leading_edge_xyz"][0] == [None, None, None]

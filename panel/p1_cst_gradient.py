@@ -193,14 +193,14 @@ def galerkin_operators(wing, xyz, order=3, wake_xyz=None, recompute=None):
 
 
 def fixed_wake_cst(code, alpha_deg=4., chord_panels=4, span_panels=4,
-                   span=4., wake_panels=2, max_nfev=160, kutta="pressure",
+                   span=4., wake_panels=2, max_nfev=160, kutta=None,
                    pressure_recovery="face"):
     """Small sharp-TE wing, exact stationary implicit gradient.
 
-    The default closure stays "pressure" because the production solver
-    (panel/p1_lifting_g2.py:solve_multi, kutta="pressure") is what this path is verified
-    against: on the 3x3 CST wing the two agree to 5e-15 in CL, while "potential_jump"
-    differs by 2.9e-4.  See docs/KUTTA_CONDITION.md section 7.
+    kutta=None is the production closure, potential_jump; the differentiable path has
+    no silent fallback, so a design whose trailing edge breaks the conditioning gate
+    fails loudly instead of mixing two closures inside one gradient.  Pass
+    kutta="pressure" to reproduce the pre-2026-11-10 studies.
     """
     wing, xyz = cst_geometry(code, chord_panels, span_panels, span, wake_panels)
     return fixed_wake_geometry(wing, xyz, None, wing.reference_area, alpha_deg, max_nfev,
@@ -209,7 +209,7 @@ def fixed_wake_cst(code, alpha_deg=4., chord_panels=4, span_panels=4,
 
 def fixed_wake_sections(geometry, alpha_deg=4., chord_panels=4,
                         span_panels_per_segment=2, wake_panels=2, max_nfev=160,
-                        kutta="pressure", pressure_recovery="face"):
+                        kutta=None, pressure_recovery="face"):
     wing, xyz, wake, area = grass_section_geometry(
         geometry, chord_panels, span_panels_per_segment, wake_panels)
     return fixed_wake_geometry(wing, xyz, wake, area, alpha_deg, max_nfev, kutta=kutta,
@@ -577,15 +577,21 @@ class _PotentialJumpImplicit(torch.autograd.Function):
 
 def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
                         include_ideal_drag=False, include_circulation_lift=False,
-                        ideal_drag="quadrature", recompute=None, kutta="pressure",
+                        ideal_drag="quadrature", recompute=None, kutta=None,
                         pressure_recovery="face"):
     """Kutta-closed coefficients and the implicit gradient, at the cost of one assembly.
 
-    kutta="pressure" (default) is the weighted pressure-Kutta least squares used by every
-    existing study.  kutta="potential_jump" switches to the Morino closure solved by Newton
-    in the ng trailing-edge unknowns (see docs/KUTTA_CONDITION.md).
+    kutta=None takes the production closure (PRODUCTION_KUTTA, potential_jump); pass
+    kutta="pressure" for the weighted pressure-Kutta least squares that every study
+    before 2026-11-10 used.  The Morino closure is solved by Newton in the ng
+    trailing-edge unknowns and refuses an ill-conditioned tip (docs/KUTTA_CONDITION.md
+    sections 8 and 11); this path never falls back, because a gradient must belong to
+    one closure.
     pressure_recovery="area" reconstructs both bank velocities at the same TE node.
     """
+    if kutta is None:
+        from .p1_lifting_g2 import PRODUCTION_KUTTA
+        kutta = PRODUCTION_KUTTA
     if wake is None:
         wake = torch.zeros(0, dtype=xyz.dtype)
     elif not torch.is_tensor(wake):
