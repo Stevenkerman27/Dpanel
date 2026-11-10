@@ -21,11 +21,13 @@ def test_solve_threads_reach_the_child_command_and_result(tmp_path, monkeypatch)
     monkeypatch.setattr(pipeline, "_spawn", spawn)
     assert pipeline.solve(job, tmp_path / "surface.json", "fixed", 4., 1, {},
                           ncpu=ncpu)["CL"] == 0.5
-    assert commands[0][-2:] == ["--ncpu", str(ncpu)]
+    assert commands[0][commands[0].index("--ncpu")+1] == str(ncpu)
+    assert commands[0][commands[0].index("--kutta")+1] == "production"
     assert commands[0][commands[0].index("--wall-formulation")+1] == "galerkin"
 
-    def fixed(surface, alpha, reference, wall_formulation):
+    def fixed(surface, alpha, reference, wall_formulation, kutta=None):
         assert wall_formulation == "galerkin"
+        assert kutta is None  # "production" maps to None, i.e. follow PRODUCTION_KUTTA
         assert os.environ["OPENBLAS_NUM_THREADS"] == str(ncpu)
         assert os.environ["OMP_NUM_THREADS"] == str(ncpu)
         assert os.environ["MKL_NUM_THREADS"] == str(ncpu)
