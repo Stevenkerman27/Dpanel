@@ -1,12 +1,14 @@
 # 项目状态
 
-更新：2026-11-09。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
+更新：2026-11-10。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
 
 ## 一句话
 
 JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾迹），另有全势/P2 对照线；几何与离散导数在声明范围内通过，**物理精度尚未验收**（`physical_accuracy_accepted=false`）。
 
 ## 代码基线
+
+- 优化评估成本：梯度行剪枝与反传实测（2026-11-10）：用户问「CPU 占用低，计算效率能优化吗」，先把成本拆开量了一遍（862 未知量、torch 16 线程、`runs/scratch_opt/{pj_grad_cost.py,cpu_ratio.py,backward_profile.py}`）：pressure 前向 8.3 s、potential_jump 前向 5.4 s，但**每条雅可比行的反传都是 25 s，两个闭包完全一样**——瓶颈在算子重装（`panel/p1_assembly_torch.py:57 _doublet_block` 90 次调用 9.6 s）与伴随求解，不在闭包迭代；换 pj 只省前向，不省反传。原 `tools/web/optimize_runner.py` 每次评估固定反传 CL/CD/CDi/CL_gamma/面积 5 条，其中 CD 与未加约束的 CL_gamma 根本没有消费者。改为按 `NEEDED_ROWS` 只反传 SLSQP 读的行（目标、CL 约束、CL_gamma 约束、面积约束），典型 induced + CL 下限 + 保面积从 4 条贵行降到 2 条，单次评估约 108 s→58 s；用 pj 则 5.4+2×25≈55 s。156 面复跑与改前逐位一致（CL 0.3324047988 vs 0.3324047988、CDi 0.0084400468，差 <1e-11 为线程浮点次序），`pytest test/test_web_grass.py test/test_web_grass_geometry.py test/test_web_step_leading_edge.py` -> 12 passed。另测：torch 默认 16 线程已经被用满（前向 cpu/wall 7.2、反传 7.9–13.4），`torch.set_num_threads(32)` 无收益（前向 0.63 s→0.80 s），所以「任务管理器里 CPU 低」是 32 逻辑核里只占 8–9 核，不是单线程瓶颈。下一步要再快只能动组装本身（批量块、消掉 numpy `cross` 58531 次调用）或按行批量伴随（一次组装解多个右端项）。
 - Web 优化页与近场/远场选择（2026-11-09，本地 master）：用户要求「web 能跑优化、同时显示特雷夫茨与积分量、左侧加优化标签页」，随后明确「不在意展向效率，不要显示；允许选择近场还是远场」。**背景**：原优化器只有「最小化阻力」一个目标、用的是近场压力积分，而 4 个弦向面板的近场阻力会被积成**负数**（实测 CD −0.0107 而 CDi 0.0065），于是优化器靠数值误差取胜而不是靠平面形状。 **改动**：`tools/web/optimize_runner.py` 新增 `--cl-target`（升力等式约束）与 `--consistency-tolerance`（>0 时把近远差超限的设计点判为失败点）、`--ideal-drag` 默认改成 `exact`（解析对数核，见 `panel/p1_cst_gradient.py` 的 `_exact_ideal_drag`；中点求积对椭圆载荷给出 4 站效率 1.22、36 站 1.036、144 站 1.012，优化器可以靠这个偏差换阻力）、环量升力始终输出、每次评估记录 CL/CD/CDi/CL_gamma/面积/近远差、整份 history 进结果、报告加 `feasible`（SLSQP 撞迭代上限但末点满足约束时不再算「未收敛」）。 `tools/web/static/` 新增「优化」标签页：目标曲线、CL 与环量升力曲线 + 约束线、10 行气动表（初始→最终）、最终侧视与逐截面弦长/扭转/前缘；右侧可选目标「远场特雷夫茨诱导阻力 / 近场压力积分阻力 / 升力最大化」、升力约束「无 / 下限 / 等式」、近远一致性容差百分比。 **实测**：`pytest test/test_p1_cst_gradient.py test/test_trefftz_energy_exact.py test/test_web_grass.py test/test_web_grass_geometry.py` → 40 passed；HTTP 端到端（:8821，GRASS 默认截面、0.7 m、alpha 4°、cl_target 0.30、保面积、2 次迭代）CL `0.315206 → 0.300000`（等式精确钉住）、特雷夫茨 CDi `0.006526 → 0.005932`、近远差 `−50% → −79%`（4 弦向面板；开容差闸门时这种点会被判失败）；app.js 另在 DOM shim 里用该报告跑过（10 行表格、曲线与最终侧视都画、跑完自动切页）。 **限制**：优化只支持 GRASS 固定拓扑网格（CAD/机身网格直接报错）；沙箱内起不了无头浏览器，版面仍需人眼验收；本轮提交 `b7cd145`、`48e539a`，连同此前 20 个提交尚未推送（代理/审批通道不通）。
 
 
