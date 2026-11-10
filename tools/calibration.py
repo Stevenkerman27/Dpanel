@@ -305,6 +305,31 @@ def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0):
             e=float(optimum / drag["CDi_ideal"]),
             gamma_shape_rms=float(np.sqrt(np.mean((measured - reference_shape) ** 2))),
             seconds=seconds))
+    refinement = []
+    for sections, chordwise, spanwise in ((9, 6, 4), (13, 8, 6), (17, 10, 8)):
+        y, chord, root_chord = _elliptic_planform(6.0, sections=sections)
+        wing = _grass_wing(y, chord, chord_panels=chordwise,
+                           span_panels_per_segment=spanwise)
+        state, seconds = _solve(wing, alpha_deg)
+        drag = _trefftz(wing, state)
+        optimum = drag["CL_circulation"] ** 2 / (np.pi * 6.0)
+        measured = np.asarray(state["gamma"], float)
+        shape = wing.gamma_y[1:-1]
+        reference_shape = np.sqrt(np.clip(1.0 - (2.0 * shape / SPAN) ** 2, 0.0, None))
+        reference_shape = reference_shape / np.max(reference_shape)
+        measured = measured / np.max(measured)
+        refinement.append(dict(
+            aspect_ratio=6.0, sections=sections, chordwise_panels=chordwise,
+            spanwise_panels_per_segment=spanwise, faces=int(len(wing.xyz)),
+            CL=float(state["CL"]),
+            cl_alpha=float(state["CL"]) / np.deg2rad(alpha_deg),
+            cl_alpha_lifting_line=TWO_PI * 6.0 / (6.0 + 2.0),
+            cdi_trefftz=drag["CDi_ideal"], e=float(optimum / drag["CDi_ideal"]),
+            gamma_shape_rms=float(np.sqrt(np.mean((measured - reference_shape) ** 2))),
+            seconds=seconds))
+        print(json.dumps({k: refinement[-1][k] for k in
+                          ("sections", "chordwise_panels", "spanwise_panels_per_segment",
+                           "faces", "CL", "e", "gamma_shape_rms", "seconds")}), flush=True)
     return _summary(
         "C05_elliptic_AR4_6_8_A4", status="ran",
         geometry_source="elliptic planform, span 8, 9 sections, finite tip chord",
@@ -316,6 +341,8 @@ def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0):
             cdi_reference="LLT CDi = CL^2/(pi AR), e = 1",
             gamma_reference="Gamma(y)/Gamma_0 = sqrt(1 - (2y/b)^2)"),
         levels=rows,
+        refinement=dict(protocol="AR 6, sections/chordwise/spanwise refined together",
+                        rows=refinement),
         notes=["The planform keeps a finite tip chord instead of a cusped tip: a cusped tip "
                "sweeps the trailing edge into the stream direction and the potential-jump "
                "closure becomes near singular (docs/KUTTA_CONDITION.md section 8).",

@@ -77,6 +77,22 @@ the spanwise circulation approaches the elliptic shape (RMS 8.1% -> 5.1%). AR 4
 is where the slender-wing assumption of lifting-line theory is weakest, which is
 why the issue flags it as a stress case rather than a reference.
 
+Refining the AR 6 elliptic wing (sections / chordwise panels per section / spanwise
+panels per segment):
+
+| sections | chordwise | spanwise per segment | faces | CL | e | Gamma shape RMS | seconds |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 9 | 6 | 4 | 782 | 0.332800 | 0.9917 | 6.24% | 1.93 |
+| 13 | 8 | 6 | 2322 | 0.324324 | 0.9889 | 6.12% | 15.27 |
+| 17 | 10 | 8 | 5142 | 0.320527 | 0.9784 | 6.03% | 77.16 |
+
+The span efficiency does **not** converge monotonically to one: it falls
+0.9917 -> 0.9889 -> 0.9784 while CL crosses the lifting-line value (0.32899) from
++1.2% to -2.6%. If the remaining error were spanwise resolution, e would climb
+toward 1 as the planform is resolved; it does not, so the residual sits in the tip
+strip and the Trefftz integration of the wake, not in the panel count. That is the
+next thing to fix, and it is reported here rather than excused by a threshold.
+
 ## Known gaps
 
 1. No 2D path, so C01, C03 and C06 cannot run. This is the next structural gap
@@ -87,5 +103,6 @@ why the issue flags it as a stress case rather than a reference.
 3. `max_normal_velocity_ratio` is left null for C02: the P1 recovery velocity is
    in-plane by construction and cannot diagnose wall leakage. An exterior-probe
    audit through `velocity_fd` is the honest measurement and is not wired in.
-4. Mesh convergence is reported for C02 only; C04 and C05 still need their three
-   refinement levels.
+4. Mesh convergence is reported for C02 and C05. C04 still needs its three
+   refinement levels, and C05's refinement does not converge monotonically (see
+   the AR 6 table above).
