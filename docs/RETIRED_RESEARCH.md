@@ -1,5 +1,13 @@
 # 已退役的研究代码（S12）
 
+2026-11-10：分支收敛到单一 `master`。三条历史研究分支不再以分支形式存在，
+其提交由 tag 保留，可 `git checkout archive/<name>` 取回：
+`archive/fix-issue113-b3-material-wake-map`（4 个提交，其材料尾迹映射修复已被
+主线 `48f30ca` + `04541fc` 以材料射线积分重新实现并转正，故未合并）、
+`archive/issue92-phase1-wake-evaluator`（S1–S12 研究）、
+`archive/issue49-vspaero-evidence`（VSPAero 对照证据）。
+整理前的完整状态另存 `cleanup-before-2026-11-10`。
+
 2026-11-09：`tools/issue71/bisect_cut.py` 的固定环量/无切口实验无效，已停用并给出替代命令。
 旧 `null_space(J)` 构造既改变 Gamma 又未抵消初始跳跃；无切口算例仍含切口/尾迹自由度。
 用 `tools/lifting_line_study.py` 重做严格固定 Gamma 与物理位置探针；历史结论限制见

@@ -271,8 +271,11 @@ python -m tools.wake_first_step_decomposition --case swept30 --out runs/verifica
 因此 CAD 平面参考尾迹连均匀轴向流的不动点检查也不满足。
 这是 B3 更新映射的直接运动学缺陷证据，不涉及 G2 T5 26c 边或 OpenBLAS。
 首步拆分是额外诊断，包含已翻转面片的状态，不能将其当成物理解或外推小扰动导数。
-矩形均匀流不动点测试通过；后掠控制以明确的 `xfail(strict=True)` 保留未修复的
-同一物理要求，未来修正时必须将其转为正常通过，不能把预期失败当作算法验收。
+矩形均匀流不动点测试通过；后掠控制当时以 `xfail(strict=True)` 记录同一物理要求。
+该缺陷已由 `48f30ca`（冻结材料射线积分与方向回溯保护）和 `04541fc`
+（删除 xfail、改为真断言，并新增斜流仿射漂移与固定附着点检查）修正，
+`test_oblique_uniform_flow_has_affine_drift_and_fixed_te_attachments` 等用例
+现在正常通过。预期失败不能当作算法验收，任何 xfail 都必须在修正后转正。
 均匀流的未松弛目标中，swept30 的 1110/1110、elliptic 的 1497/1528 个面片
 退化；矩形 0/24。这与实际采用 0.3 松弛的首步几何检查分开记录。
 
