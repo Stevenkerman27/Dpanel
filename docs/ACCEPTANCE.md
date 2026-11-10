@@ -37,6 +37,7 @@ Single environment, as everywhere else in this repository:
 | `refinement` | chordwise panels 4, 8, 16; both closures | CL, CL_alpha, forward time |
 | `span_efficiency` | elliptic (bounded tip) vs rectangular planform, same span and area | e = CDi_opt/CDi from the Trefftz plane, CL_alpha, aspect ratio |
 | `wake_material` | uniform axial flow, flat and swept geometry | attachment identity, wake-node displacement under rigid flow, frozen nodes |
+| `pressure_reconstruction` | reconstruction operator: production normal equations, untruncated QR, inverse-distance-weighted QR (issue #9) | CL, CM_y, Cp L2 and max error against the analytic field, stencil singular ratios, faces skipped for rank |
 
 Walls are collocation and alpha is 2 degrees except where a case says otherwise. The
 potential-jump closure is a square Newton solve, the pressure closure is an overdetermined
@@ -64,6 +65,52 @@ The report of 2026-11-10 (commit 04a9913 plus the uncommitted harness) reads:
 
 Near-field CD is negative in several cases because the chordwise grid is too coarse to
 resolve leading-edge suction. That is why the drag comparisons use the Trefftz plane.
+
+## Issue #9: face-gradient reconstruction
+
+Issue #9 asks one question about the frozen field: is the gap between pressure
+lift and circulation lift a linear-algebra artifact of the face-gradient
+reconstruction, or the model error of the affine template? Its protocol is
+three arms on one immutable field -- the production unweighted normal
+equations, the same fit by untruncated QR, and an experimental
+inverse-distance-weighted QR -- with no clipping, smoothing, truncation or
+regularization, plus per-face differences, loads and stencil conditioning.
+
+The \`pressure_reconstruction\` case implements exactly those arms, in
+\`panel/pressure_reconstruction_probe.py\`, on a jittered plate split by a
+potential cut. Two fields are used: an affine one whose gradient every arm must
+reproduce (so a nonzero error means the stencil or the solve is wrong, not the
+template), and a curved one that isolates the template model error.
+
+Readings on 2026-11-10 (288 faces, 4 to 10 faces per stencil):
+
+- Affine field: every arm is exact to ~1e-16 in Cp, CL and CM_y. The stencils,
+  the cut handling and the elimination are therefore not the noise source.
+- Curved field: the unweighted arms lose 5.5% of the Cp L2 norm (max 0.064 Cp,
+  CL -1.62%, CM_y -3.44% against the analytic field). That residual is the
+  affine template model error issue #9 predicted, not round-off.
+- Inverse-distance weighting is *not* a repair here: it lowers the Cp error by
+  24.8% on this plate, which is the opposite direction from the real-field
+  failure recorded in PR #10 (weighted CL 0.25-0.32 to 0.50-1.04, worst Cp
+  -0.348 to -43.42). The difference is the stencil: this plate has no
+  near-collinear trailing-edge stencil to amplify. The case reports the number
+  and the sign; it does not tune a weight to make the second regime appear.
+- Stencil singular ratios stay between 0.50 and 0.74; no face is skipped for
+  rank. Rank failures are counted, never repaired, so a mesh that produces
+  them shows up as a skipped-face count rather than a silently regularized
+  answer.
+
+**What this case cannot do.** It cannot replay a *saved aerodynamic field*,
+because the current chain has none: the G1 constant-panel solver that wrote
+\`fields.npz\` (mu, panel centers, frozen neighbor indices) is no longer the
+default path, and the P1 solver carries vertex potentials, where the
+face-gradient reconstruction is not the production operator. The
+real-field replay remains \`python -m panel.compare_pressure_recovery --surface
+SAVED/surface.json --snapshot SAVED/frozen_state.npz\`, which compares the
+production Cp, its QR control and the cut-aware candidate on a frozen
+half-panel state and audits patch rank. Until such a snapshot is kept in the
+repository, the table above is a controlled-field statement, not a re-run of
+PR #10.
 
 ## Relationship to the GitHub acceptance work
 

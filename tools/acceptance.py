@@ -369,6 +369,92 @@ def render_markdown(report):
     return "\n".join(lines)
 
 
+def _plate(n=13):
+    """Jittered flat plate with a mid-chord potential cut, as an offline wing patch."""
+    yy, xx = np.meshgrid(np.linspace(-1.0, 1.0, n), np.linspace(-1.0, 1.0, n))
+    points = np.column_stack((xx.ravel(), yy.ravel(), np.zeros(n * n)))
+    j0 = n // 2
+    inner = ((np.abs(points[:, 0]) < 1.0) & (np.abs(points[:, 1]) < 1.0)
+             & (np.abs(np.arange(n * n) % n - j0) > 0))
+    rng = np.random.default_rng(19)
+    points[inner, :2] += rng.uniform(-0.03, 0.03, (inner.sum(), 2))
+    faces = []
+    for i in range(n - 1):
+        for j in range(n - 1):
+            a = i * n + j
+            faces.extend(([a, a + n, a + n + 1], [a, a + n + 1, a + 1]))
+    cuts = np.array([[i * n + j0, (i + 1) * n + j0] for i in range(n - 1)], dtype=np.int64)
+    return points, np.array(faces), cuts
+
+
+@case("pressure_reconstruction", "Face-gradient reconstruction on a frozen field",
+      "The issue #9 comparison, offline: the production unweighted normal equations, the same "
+      "fit by untruncated QR, and an inverse-distance-weighted QR fit all see the identical "
+      "field and stencil. Nothing is clipped, smoothed, truncated or regularized. The affine "
+      "field has an exact answer; the curved field shows the template model error.")
+def pressure_reconstruction():
+    from panel.drag_consistency_audit import pressure_integral_audit
+    from panel.pressure_reconstruction_probe import (
+        face_frames, two_ring_neighbors, fit_gradients, cp)
+
+    points, faces, cuts = _plate()
+    centers, normal, tangent, second = face_frames(points, faces)
+    ids = two_ring_neighbors(faces, cuts)
+    flow = np.array([np.cos(np.deg2rad(4.0)), 0.0, np.sin(np.deg2rad(4.0))])
+    fields = {
+        "affine": (.05 * centers[:, 0] - .02 * centers[:, 1],
+                   np.column_stack((np.full(len(faces), .05),
+                                    np.full(len(faces), -.02), np.zeros(len(faces))))),
+        "curved": (.05 * centers[:, 0] - .02 * centers[:, 1] + .15 * centers[:, 0] ** 2,
+                   np.column_stack((.05 + .3 * centers[:, 0],
+                                    np.full(len(faces), -.02), np.zeros(len(faces))))),
+    }
+    arms = ["normal", "QR", "distance-weighted QR"]
+    modes = ["normal", "qr", "weighted"]
+
+    def loads(cp_values):
+        return pressure_integral_audit(
+            points, faces, cp_values, flow, density=1.0, reference_area=2.0,
+            reference_chord=1.0, reference_point=np.zeros(3))
+
+    rows, ratios = [], {}
+    for name, (mu, gradient) in fields.items():
+        exact = cp(gradient, normal, flow)
+        reference = loads(exact)
+        cl = {}
+        cm = {}
+        rel = {}
+        worst = {}
+        for arm, mode in zip(arms, modes):
+            gradient_fit, ratio, rejected = fit_gradients(points, faces, mu, ids, mode=mode)
+            ratios[arm] = (ratio, rejected)
+            values = cp(gradient_fit, normal, flow)
+            audit = loads(values)
+            cl[arm] = audit["CL_pressure"]
+            cm[arm] = audit["CM_y"]
+            rel[arm] = float(np.linalg.norm(values - exact) / np.linalg.norm(exact))
+            worst[arm] = float(np.max(np.abs(values - exact)))
+        rows.append(dict(quantity="CL (%s field)" % name, unit="-", values=cl,
+                         reference=dict(label="analytic", value=reference["CL_pressure"])))
+        rows.append(dict(quantity="CM_y (%s field)" % name, unit="-", values=cm,
+                         reference=dict(label="analytic", value=reference["CM_y"])))
+        rows.append(dict(quantity="Cp L2 error, relative to analytic (%s)" % name, unit="-",
+                         values=rel))
+        rows.append(dict(quantity="max |Cp - analytic| (%s)" % name, unit="-", values=worst))
+    rows.append(dict(quantity="min stencil singular ratio", unit="-",
+                     values={arm: float(np.nanmin(ratios[arm][0])) for arm in arms}))
+    rows.append(dict(quantity="median stencil singular ratio", unit="-",
+                     values={arm: float(np.nanmedian(ratios[arm][0])) for arm in arms}))
+    rows.append(dict(quantity="faces skipped for rank", unit="-",
+                     values={arm: float(ratios[arm][1]) for arm in arms}))
+    return dict(configs=arms, baseline="normal", rows=rows,
+                notes=["Affine field: every arm reproduces the analytic gradient, so a nonzero "
+                       "error here means the stencil or the solve is wrong, not the template.",
+                       "Curved field: the residual is the affine template model error, which is "
+                       "the quantity issue #9 asks about. A weighted fit that does not reduce it "
+                       "is reported as no improvement, not tuned."])
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Re-runnable acceptance comparisons")
     parser.add_argument("--case", action="append", choices=sorted(CASES), default=None,
