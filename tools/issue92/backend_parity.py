@@ -25,7 +25,7 @@ does not), then replayed:
         --csv quad:runs/studies/rm_bench/projection_gate_quad.csv
 
     <python-with-torch> -m tools.issue92.backend_parity \
-        --geometry runs/scratch/issue92_loose/parity_g2.npz --out docs/issue92/backend_parity.json
+        --geometry runs/scratch/issue92_loose/parity_g2.npz --out verification/issue92/backend_parity.json
 """
 from __future__ import annotations
 

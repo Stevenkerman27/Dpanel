@@ -38,7 +38,7 @@ args=parser.parse_args()
 if args.out.exists():
     raise FileExistsError(args.out)
 root=Path(__file__).resolve().parents[1]
-specs=json.loads((root/"docs/issue92/b3_cases.json").read_text())["cases"]
+specs=json.loads((root/"verification/issue92/b3_cases.json").read_text())["cases"]
 control=np.array([[0.,0.,0.],[1.,0.,0.],[0.,1.,0.]])
 neighbor=np.array([[1.,0.,0.],[1.,1.,0.],[0.,1.,0.]])
 assert overlap_area(control,neighbor,1e-10)<=1e-14

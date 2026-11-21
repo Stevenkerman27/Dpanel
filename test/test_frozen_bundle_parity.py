@@ -1,6 +1,6 @@
 """Replay the eight regression-reference bundles against the torch backend (issue #92, S9/S10).
 
-The bundles in docs/issue92/references/ hold the production default solve of eight frozen
+The bundles in verification/issue92/references/ hold the production default solve of eight frozen
 fixtures, recorded on the NumPy/SciPy chain before the default moved to torch, and S10
 retired that chain. They are a REGRESSION REFERENCE, not an oracle: they record what our
 own previous code answered, so the only claim they support is "this path still returns the
@@ -48,7 +48,7 @@ from tools.issue92.s3_pressure_parity import CASES, _build, _manifest  # noqa: E
 from tools.issue92.s7_reference_export import _solve, _spectrum  # noqa: E402
 
 ROOT = Path(os.environ.get("PANEL_ROOT", Path.cwd()))
-BUNDLES = ROOT / "docs/issue92/references"
+BUNDLES = ROOT / "verification/issue92/references"
 
 LOADS = ("CL", "CL_gamma", "CD_pressure", "CM_y")
 DECLARED = dict(CL=5e-7, CL_gamma=5e-7, CD_pressure=2e-6, CM_y=1.5e-6,
@@ -111,7 +111,7 @@ def test_torch_backend_reproduces_the_frozen_bundle(name):
 
 
 def test_the_index_and_the_bundles_agree():
-    index_path = ROOT / "docs/issue92/s7_reference_index.json"
+    index_path = ROOT / "verification/issue92/s7_reference_index.json"
     index = json.loads(index_path.read_text(encoding="utf-8"))
     missing = [name for name in CASES if name not in index["cases"]]
     assert not missing, missing

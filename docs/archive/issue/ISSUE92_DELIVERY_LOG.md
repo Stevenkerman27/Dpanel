@@ -1,6 +1,6 @@
 # ISSUE92 交付日志：S1–S8（2026-11-02）
 
-本文件是 [ISSUE92_TORCH_PORT_MAP.md](../../ISSUE92_TORCH_PORT_MAP.md) 第 8–17 节的归档，
+本文件是 [ISSUE92_TORCH_PORT_MAP.md](./ISSUE92_TORCH_PORT_MAP.md) 第 8–17 节的归档，
 记录 S1–S8 每个切片的交付范围、测量与门禁；当前默认状态见主文档第 18–20 节。
 
 ## 8. S1 已交付：torch 压力-Kutta（2026-11-02）
@@ -8,7 +8,7 @@
 文件：`panel/p1_pressure_kutta_torch.py`（TorchPressureResult、TorchStructuredPressureKutta、
 solve_structured_pressure_torch）、`tools/issue92/s1_problem.py`（共享结构问题）、
 `tools/issue92/s1_parity.py`（numpy / torch / compare 阶段）、`test/test_p1_pressure_kutta_torch.py`，
-证据 `docs/issue92/s1_reference_<scenario>.npz` 与 `docs/issue92/s1_parity_<scenario>.json`。
+证据 `verification/issue92/s1_reference_<scenario>.npz` 与 `verification/issue92/s1_parity_<scenario>.json`。
 
 这次移植是逐调用对应的：`M = B N` 的 QR 一次，压力空间中的 Woodbury 步，相同的
 gtol -> relative_gtol -> stagnation -> max_nfev -> step -> Armijo 序列，相同的状态码与
@@ -64,8 +64,8 @@ S1 **不**主张的是：生产入口仍调用 SciPy 路径（尚无任何东西
 文件：`panel/p1_rank_aware_torch.py`（`RankReport`、`LeastSquaresResult`、`null_space`、`lstsq`、
 `constrained_solve`）、`tools/issue92/s2_rank_parity.py`（阶段 `capture` / `torch` / `loads` /
 `compare`）、`tools/issue92/s2_loads.py`（两个状态上共用的 state -> load 映射）、
-`test/test_p1_rank_aware_torch.py`，证据 `docs/issue92/s2_rank_parity.json`、
-`docs/issue92/s2_loads.json`、`docs/issue92/s2_reference.npz`。
+`test/test_p1_rank_aware_torch.py`，证据 `verification/issue92/s2_rank_parity.json`、
+`verification/issue92/s2_loads.json`、`verification/issue92/s2_reference.npz`。
 
 这次移植镜像 SciPy 语义，而不是"某个合理的东西"：截断阈值是
 约束谱上的 `s.max() * 1e-11`（与生产调用传入的 `rcond` 相同），最小二乘
@@ -139,7 +139,7 @@ S2 **不**主张的是：在样例集无法判定的地方 torch 决策是正确
     python -m tools.issue92.s2_rank_parity capture --work runs/issue92/s2
     <torch python> -m tools.issue92.s2_rank_parity torch --work runs/issue92/s2
     python -m tools.issue92.s2_rank_parity loads   --work runs/issue92/s2 --out runs/issue92/s2/s2_loads.json
-    python -m tools.issue92.s2_rank_parity compare --work runs/issue92/s2 --out docs/issue92/s2_rank_parity.json
+    python -m tools.issue92.s2_rank_parity compare --work runs/issue92/s2 --out verification/issue92/s2_rank_parity.json
 
 测试状态：`test/test_p1_rank_aware_torch.py` 在 torch 解释器中配合
 `PANEL_TORCH_PARITY=1` 给出 14 passed，在 `.conda_env` 中 1 passed / 13 skipped（静态守卫在 torch
@@ -150,8 +150,8 @@ S2 **不**主张的是：在样例集无法判定的地方 torch 决策是正确
 
 文件：`panel/p1_pressure_kutta_torch_driver.py`（`TorchPressureModel`、`TorchPressureSolve`、
 `solve_pressure_kutta_torch`）、`tools/issue92/s3_pressure_parity.py`（阶段 `capture` / `torch` / `judge` /
-`bundle`）、`test/test_p1_pressure_kutta_torch_driver.py`（8 个测试），证据 `docs/issue92/s3_parity.json`
-以及冻结门禁用例 `docs/issue92/s3_reference_g1_wing_rect.npz`。
+`bundle`）、`test/test_p1_pressure_kutta_torch_driver.py`（8 个测试），证据 `verification/issue92/s3_parity.json`
+以及冻结门禁用例 `verification/issue92/s3_reference_g1_wing_rect.npz`。
 
 ### 10.1 第 6 节的门禁不得不改，以及原因
 
@@ -270,7 +270,7 @@ S3 **不**主张的是：torch 非线性路径已接入 G1/G2（没有 —— `p
 
     python -m tools.issue92.s3_pressure_parity capture --work runs/issue92/s3
     <torch python> -m tools.issue92.s3_pressure_parity torch --work runs/issue92/s3
-    python -m tools.issue92.s3_pressure_parity judge --work runs/issue92/s3 --out docs/issue92/s3_parity.json
+    python -m tools.issue92.s3_pressure_parity judge --work runs/issue92/s3 --out verification/issue92/s3_parity.json
     python -m tools.issue92.s3_pressure_parity bundle        # rebuild the frozen gate case
 
 测试状态：`test/test_p1_pressure_kutta_torch_driver.py` 在 torch 解释器中配合
@@ -317,7 +317,7 @@ S4 的门禁已达成：8/8 验收分类，7/8 相同决策，第八个记录为
 文件：`panel/p1_assembly_torch.py`（`mesh_kernel`、`doublet_matrix`、`gradient_map`、
 `wake_operator`、`loads`）、`test/test_p1_assembly_torch.py`（9 个测试）、
 `tools/issue92/s4_assembly_parity.py`（capture / torch / judge），证据
-`docs/issue92/s4_assembly_parity.json`。
+`verification/issue92/s4_assembly_parity.json`。
 
 ### 11.1 尾迹算子在两个求解器中都是节点式的（对第 1 节的更正）
 
@@ -396,7 +396,7 @@ capture 中的 `assemble` 调用，torch 列在 `.numpy()` 拷贝之前结束）
 
     python -m tools.issue92.s4_assembly_parity capture --work runs/issue92/s4
     <torch python> -m tools.issue92.s4_assembly_parity torch --work runs/issue92/s4
-    python -m tools.issue92.s4_assembly_parity judge --work runs/issue92/s4 --out docs/issue92/s4_assembly_parity.json
+    python -m tools.issue92.s4_assembly_parity judge --work runs/issue92/s4 --out verification/issue92/s4_assembly_parity.json
 
 ## 12. S5 交付：耦合自由尾迹循环内的 torch 后端（2026-11-02）
 
@@ -620,7 +620,7 @@ python -m tools.issue92.b2_cuda_bench --device cuda --case g2_cad
 python -m tools.issue92.b2_profile               # cProfile of one CAD iteration
 ```
 
-`docs/issue92/b2_cuda_bench.json` 以机器可读形式包含上表。
+`verification/issue92/b2_cuda_bench.json` 以机器可读形式包含上表。
 
 ## 14. 第 13 节找到的杠杆：几何门禁现在是一次数组遍历
 
@@ -699,8 +699,8 @@ python -m tools.issue92.b2_profile
 python -m pytest test/test_geometry_gate_vectorised.py test/test_p1_coupled_material_wake.py
 ```
 
-`docs/issue92/b2_cuda_bench_vectorised.json` 保存改动后的表，
-`docs/issue92/b2_cuda_bench.json` 保存改动前的表，两者来自同一框架。
+`verification/issue92/b2_cuda_bench_vectorised.json` 保存改动后的表，
+`verification/issue92/b2_cuda_bench.json` 保存改动前的表，两者来自同一框架。
 
 ## 15. S6 交付：公开的 G1/G2 求解接受 `backend='numpy'|'torch'`
 
@@ -746,7 +746,7 @@ NumPy 路径与旧代码路径逐字节相同，其结果 dict 没有 `backend`
 ### 15.3 测量（8 个冻结固定样例，alpha = 4 deg，压力 Kutta）
 
 `tools/issue92/s6_solve_parity.py`，阈值先声明，报告写入
-`docs/issue92/s6_parity.json`。
+`verification/issue92/s6_parity.json`。
 
 | 固定样例 | 状态 / nfev（两者） | 载荷最大相对 | `mu`/`gamma` 最大相对 | `max |dcp|` |
 | --- | --- | --- | --- | --- |
@@ -817,8 +817,8 @@ S6 使 `backend='torch'` 可从公共入口到达。在那与删除 NumPy 路径
 
 `tools/issue92/s7_reference_export.py` 有两个阶段。`export` 对每个固定样例运行生产默认求解
 （kutta `pressure`、`pressure_solver='reference'`、SciPy `trf`、`rcond=1e-11`），
-并写出 `docs/issue92/references/<fixture>.npz` 以及
-`docs/issue92/s7_reference_index.json`（schema `dpanel.issue92.s7.reference.v1`）。每个
+并写出 `verification/issue92/references/<fixture>.npz` 以及
+`verification/issue92/s7_reference_index.json`（schema `dpanel.issue92.s7.reference.v1`）。每个
 数据包保存 `mu`、`gamma`、`cp`、`singular`、四个载荷和四个残差，外加
 决策记录（`pressure_status`、`pressure_success`、`pressure_nfev`、
 `pressure_message`、`constrained_rank`、`spectrum_rank`）以及一份谱摘要
@@ -933,7 +933,7 @@ python -m tools.issue92.s7_reference_export --stage verify
 
 # RM-P1 parity and cost (torch environment)
 python -m tools.issue92.s7_rm_parity --device cpu
-python -m tools.issue92.s7_rm_parity --device cuda --out docs/issue92/s7_rm_parity_cuda.json
+python -m tools.issue92.s7_rm_parity --device cuda --out verification/issue92/s7_rm_parity_cuda.json
 python -m pytest test/test_p1_regularized_sheet_torch.py     # 8 passed, 1 skipped
 ```
 
@@ -1004,7 +1004,7 @@ w^2 sum_p p_p d^2 p_p / dx^2 ,     d^2 p_p = 2 ( mean_top(g_i g_j) - mean_bot(g_
 | g1_wingbody_cad | 压力 | 0.419 | 0.452 | 0.337 | 0.522 | **0.63** (CL) |
 
 `certified = [g1_wing_rect, g1_swept30, g2_conventional]`，`unstable = {g1_wingbody_cad:
-[pressure]}`，因此 `docs/issue92/s8_adjoint.json` 中 `passed = false`。同一 CAD 体的
+[pressure]}`，因此 `verification/issue92/s8_adjoint.json` 中 `passed = false`。同一 CAD 体的
 线性层一致到 2.2e-8，所以那里的问题不在机制。
 
 ### 17.4 CAD 体为何未被认证——问题在前向求解，不在伴随

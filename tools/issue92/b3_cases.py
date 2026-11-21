@@ -117,7 +117,7 @@ def manifest(out_path):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="B3 station tables and manifests")
-    parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/b3_cases.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "verification/issue92/b3_cases.json")
     args = parser.parse_args(argv)
     doc = manifest(args.out)
     for name, spec in doc["cases"].items():

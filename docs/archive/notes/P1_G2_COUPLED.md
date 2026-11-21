@@ -2,7 +2,7 @@
 
 > **部分过时（2026-11-21）**：文中“NumPy/SciPy CPU 链”“基座 P1 G1 已退役”“最终需要 JAX 几何 VJP”
 > 均已不成立——现为 Torch、`p1_lifting_g1.solve` 只是薄适配器、几何 VJP 已用隐式微分进生产
-> （[ROUTE.md](ROUTE.md) §3）。G2 耦合实测（192 面、5° CLp 0.365472 vs 分离求和 0.417510）仍可用。
+> （[ROUTE.md](../../ROUTE.md) §3）。G2 耦合实测（192 面、5° CLp 0.365472 vs 分离求和 0.417510）仍可用。
 
 
 基于 P1 G1（`research/p1-g1-te-pairing-fix@4051ee8`）的研究实现。
@@ -10,7 +10,7 @@
 机翼载荷之和。旧的 `panel/kernel.py`、P0 生产求解器、
 现有 G1 源码与所有 CAD 输入均未改变。
 
-**状态（2026-11-03）**：这条研究线的演示代码保留，`panel/p1_lifting_g2.py` 现在是它的验收判据；基座 P1 G1 已退役（见 [RETIRED_RESEARCH.md](RETIRED_RESEARCH.md)），文中 `research/p1-g1-te-pairing-fix@4051ee8` 在浅克隆里可能检不出，可用归档 tag `research-p1-line-archive` 取回。
+**状态（2026-11-03）**：这条研究线的演示代码保留，`panel/p1_lifting_g2.py` 现在是它的验收判据；基座 P1 G1 已退役（见 [RETIRED_RESEARCH.md](../../RETIRED_RESEARCH.md)），文中 `research/p1-g1-te-pairing-fix@4051ee8` 在浅克隆里可能检不出，可用归档 tag `research-p1-line-archive` 取回。
 
 ## 方法 / 实现
 

@@ -134,7 +134,7 @@ def _dominant_normal(points):
     Triangles (what this gate sees) span their own plane, so the normal is the edge
     cross product. Larger sets (a swept triangle's six-vertex hull) use torch's SVD:
     a NumPy LAPACK call after a torch kernel in the same process kills it
-    (docs/ISSUE92_TORCH_PORT_MAP.md section 6f), and this module runs inside the
+    (docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md section 6f), and this module runs inside the
     coupled loop, after the solve. torch is imported lazily so that importing this
     module still works in an interpreter without it.
     """

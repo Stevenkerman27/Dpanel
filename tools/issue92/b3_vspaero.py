@@ -5,7 +5,7 @@ chord, leading-edge offset and thickness ratio.  Levels change only the
 tessellation (SectTess_U / Tess_W), never the geometry.
 
 Usage (OpenVSP 3.55 python, vsppytools interpreter):
-  python -m tools.issue92.b3_vspaero --cases docs/issue92/b3_cases.json \
+  python -m tools.issue92.b3_vspaero --cases verification/issue92/b3_cases.json \
       --out runs/benchmarks/b3_vspaero/b3/vspaero.json --levels coarse fine --modes panel vlm
 """
 from __future__ import annotations
@@ -158,7 +158,7 @@ def run_case(name, spec, *, alphas, levels, modes, out_dir, exe, ncpu=8,
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="B3 VSPAERO side")
-    parser.add_argument("--cases", type=Path, default=ROOT / "docs/issue92/b3_cases.json")
+    parser.add_argument("--cases", type=Path, default=ROOT / "verification/issue92/b3_cases.json")
     parser.add_argument("--out", type=Path, default=ROOT / "runs/benchmarks/b3_vspaero/b3/vspaero.json")
     parser.add_argument("--out-dir", type=Path, default=ROOT / "runs/benchmarks/b3_vspaero/b3/vsp")
     parser.add_argument("--only", nargs="*", default=None)

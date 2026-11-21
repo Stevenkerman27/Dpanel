@@ -34,11 +34,11 @@ out.mkdir(parents=True, exist_ok=True)
 if (out / "initial_state.npz").exists():
     raise FileExistsError("Preserve the existing frozen run: " + str(out))
 torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS", "1")))
-spec = json.loads((root / "docs/issue92/b3_cases.json").read_text(encoding="utf-8"))["cases"][args.case]
+spec = json.loads((root / "verification/issue92/b3_cases.json").read_text(encoding="utf-8"))["cases"][args.case]
 wing = _wing(spec)
 mesh = combine_wings([wing], reference_chord=spec["cref"],
                      reference_area=spec["sref"], reference_point=wing.reference_point)
-reference = json.loads((root / "docs/issue92/b3_free_wake.json").read_text(encoding="utf-8"))["cases"][args.case]["dpanel"]
+reference = json.loads((root / "verification/issue92/b3_free_wake.json").read_text(encoding="utf-8"))["cases"][args.case]["dpanel"]
 arrays = {f.name: getattr(wing, f.name) for f in fields(wing)
           if isinstance(getattr(wing, f.name), np.ndarray)}
 materials = {g.name: prepare_wake_material(g) for g in mesh.groups}

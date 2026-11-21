@@ -12,11 +12,11 @@ sheet and one real coupled iteration:
 
 Order matters: every NumPy reference is computed BEFORE torch is imported in this process,
 because a NumPy LAPACK call after a torch kernel crashes the interpreter (section 6f of
-docs/ISSUE92_TORCH_PORT_MAP.md).
+docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md).
 
   python -m tools.issue92.s7_rm_parity --device cpu
 
-Writes docs/issue92/s7_rm_parity.json and exits non-zero when a declared threshold fails.
+Writes verification/issue92/s7_rm_parity.json and exits non-zero when a declared threshold fails.
 """
 from __future__ import annotations
 
@@ -78,7 +78,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
     parser.add_argument("--targets", type=int, default=64)
-    parser.add_argument("--out", type=Path, default=ROOT/"docs/issue92/s7_rm_parity.json")
+    parser.add_argument("--out", type=Path, default=ROOT/"verification/issue92/s7_rm_parity.json")
     args = parser.parse_args(argv)
 
     from panel.p1_coupled_material_wake import solve_coupled_material_wake

@@ -3,7 +3,7 @@
 Run inside an interpreter that has a CUDA torch build (myml on this machine):
 
     C:/Users/zyx20/anaconda3/envs/myml/python.exe -m tools.issue92.gpu_fp64_probe \
-        --out docs/issue92/gpu_fp64_probe.json
+        --out verification/issue92/gpu_fp64_probe.json
 
 The question is not "is the GPU faster" in general, but "at the sizes DPanel actually
 solves (541-1728 unknowns) and for the kernels DPanel actually runs (one dense solve,
@@ -138,7 +138,7 @@ def _pairwise_kernel(device, n_targets, n_triangles, dtype=torch.float64, chunk=
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", default="docs/issue92/gpu_fp64_probe.json")
+    parser.add_argument("--out", default="verification/issue92/gpu_fp64_probe.json")
     parser.add_argument("--targets", type=int, default=18992,
                         help="points evaluated in one B2 coupled iteration (Phase 0)")
     parser.add_argument("--triangles", type=int, default=794,

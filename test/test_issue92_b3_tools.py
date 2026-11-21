@@ -65,7 +65,7 @@ def test_gamma_shape_is_zero_for_identical_distributions():
 
 
 def test_manifest_is_consistent():
-    doc = json.loads((ROOT / "docs/issue92/b3_cases.json").read_text(encoding="utf-8"))
+    doc = json.loads((ROOT / "verification/issue92/b3_cases.json").read_text(encoding="utf-8"))
     assert doc["alphas_deg"] == [0.0, 2.0, 4.0, 6.0]
     for name, case in doc["cases"].items():
         assert len(case["geometry_sha256"]) == 64

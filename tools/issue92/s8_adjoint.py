@@ -190,7 +190,7 @@ def main(argv=None):
     parser.add_argument("--stage", choices=("prepare", "adjoint"), default="adjoint")
     parser.add_argument("--cases", nargs="+", default=list(CASES))
     parser.add_argument("--artifacts", type=Path, default=ROOT/"runs/scratch/issue92_loose/s8")
-    parser.add_argument("--out", type=Path, default=ROOT/"docs/issue92/s8_adjoint.json")
+    parser.add_argument("--out", type=Path, default=ROOT/"verification/issue92/s8_adjoint.json")
     args = parser.parse_args(argv)
 
     if args.stage == "prepare":

@@ -41,7 +41,7 @@ Single environment, as everywhere else in this repository:
 
 Walls are collocation and alpha is 2 degrees except where a case says otherwise. The
 potential-jump closure is a square Newton solve, the pressure closure is an overdetermined
-least-squares problem; see `docs/KUTTA_CONDITION.md` for why the two disagree on coarse
+least-squares problem; see `docs/archive/notes/KUTTA_CONDITION.md` for why the two disagree on coarse
 meshes and why the default is still `pressure`.
 
 ## Reading the 2026-11-10 report

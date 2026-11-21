@@ -125,7 +125,7 @@ VSPAERO 的尾迹是自由尾迹（会卷起），但 `WriteTecplotFile = 1` 只
 
 > **这一节的绝对值已被 §4.7 取代**：这里的四档网格是 OpenVSP **3.52** 剖分的，同一模型换成 3.55 剖分后 CL(5°) 从 0.6544 变 0.7126（+8.9%）。本节保留下来作为「panel 模式对 mesher 敏感」的证据。
 
-VSPAERO 的模式由几何集成员决定（机翼进 `SET_FIRST_USER` 且 `ThinGeomSet=SET_NONE` → `Model type: PANEL or MIXED`、6249 条涡环方程；`SET_ALL` 不代表 panel，见 `docs/VSPAPI.md`），此时它和 DPanel 一样是**厚面元**，才是与 DPanel 对等的对照。但 panel 模式的 polar 有一个已知缺陷（`docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md`）：`CLi` 那一列在粗网格上会给出 $10^2$–$10^4$ 倍的错数，可用的是 `CLwtot` 与 `trap.lod` 的条带载荷。
+VSPAERO 的模式由几何集成员决定（机翼进 `SET_FIRST_USER` 且 `ThinGeomSet=SET_NONE` → `Model type: PANEL or MIXED`、6249 条涡环方程；`SET_ALL` 不代表 panel，见 `docs/reference/VSPAPI.md`），此时它和 DPanel 一样是**厚面元**，才是与 DPanel 对等的对照。但 panel 模式的 polar 有一个已知缺陷（`docs/archive/notes/VSPAERO_PANEL_POLAR_DIAGNOSIS.md`）：`CLi` 那一列在粗网格上会给出 $10^2$–$10^4$ 倍的错数，可用的是 `CLwtot` 与 `trap.lod` 的条带载荷。
 
 用 DEP-OPT 的 `create_wing` 重建同一机翼的厚网格四档（52×120 为目标档、与 `cases/vsp` 的 6249 面板同量级），统一设置 `WakeIters 5 / NumWakeNodes 8 / FarDist −1 / WakeRelax 1 / Symmetry 1`：
 
@@ -208,7 +208,7 @@ $e = C_L^2/(\pi AR)/C_D$：
 | 0.07 | 1.128 | 1.055 | | l4 | 0.615 |
 | 0.05 | 1.125 | 1.055 | | | |
 
-平面翼的 Munk 定理要求 $e \le 1$。DPanel 偏大 5%~13%，是因为 Trefftz 积分只用 Γ（环量）而 CL 用表面压力积分，**两条升力不一致**：`CL_p - CL_Γ` 在 0.05 档为 0.695979 − 0.675226 = +3.1%（`docs/ERROR_SEPARATION.md` 记录过同一预算）。VSPAERO 偏小到 0.615，说明它的 CDi 随加密继续增长不是物理收敛，而是**细网格上诱导阻力的离散化误差在积累**（尾迹设置已排除，见 §1 第 5 条）。
+平面翼的 Munk 定理要求 $e \le 1$。DPanel 偏大 5%~13%，是因为 Trefftz 积分只用 Γ（环量）而 CL 用表面压力积分，**两条升力不一致**：`CL_p - CL_Γ` 在 0.05 档为 0.695979 − 0.675226 = +3.1%（`docs/reference/ERROR_SEPARATION.md` 记录过同一预算）。VSPAERO 偏小到 0.615，说明它的 CDi 随加密继续增长不是物理收敛，而是**细网格上诱导阻力的离散化误差在积累**（尾迹设置已排除，见 §1 第 5 条）。
 
 → 所以：$C_{D,DP}/C_{D,VLM} = 0.644$ 这个比值只能当「DPanel 的 Trefftz 阻力比 VLM 的 CDi 低三分之一」来读，**不能当物理结论**；可靠的只有「两侧的阻力都比 5% 收敛准则更差」。
 

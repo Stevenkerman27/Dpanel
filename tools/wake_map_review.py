@@ -29,7 +29,7 @@ report = dict(head=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=rev
               text=True).strip(), imported_solver=str(Path(wake.__file__).resolve()),
               numpy=np.__version__, torch=torch.__version__, cases={},
               physical_accuracy_accepted=False)
-specs = json.loads((args.inputs / "docs/issue92/b3_cases.json").read_text(encoding="utf-8"))["cases"]
+specs = json.loads((args.inputs / "verification/issue92/b3_cases.json").read_text(encoding="utf-8"))["cases"]
 for case in ("rect", "swept30", "elliptic"):
     spec = specs[case]
     if spec["kind"] == "rect":

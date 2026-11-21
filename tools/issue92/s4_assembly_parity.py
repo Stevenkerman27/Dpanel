@@ -47,7 +47,7 @@ THRESHOLDS = {
 
 def _manifest():
     from tools.issue92 import fixtures  # noqa: F401  (registers the fixture cases)
-    manifest = json.loads((ROOT / "docs/issue92/fixtures_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "verification/issue92/fixtures_manifest.json").read_text(encoding="utf-8"))
     return manifest["fixtures"]
 
 
@@ -203,7 +203,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=("capture", "torch", "judge"))
     parser.add_argument("--work", default=str(ROOT / "runs/scratch/issue92_loose/s4"))
-    parser.add_argument("--out", default=str(ROOT / "docs/issue92/s4_assembly_parity.json"))
+    parser.add_argument("--out", default=str(ROOT / "verification/issue92/s4_assembly_parity.json"))
     args = parser.parse_args(argv)
     work, out = Path(args.work), Path(args.out)
     if args.stage == "capture":

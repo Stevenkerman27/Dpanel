@@ -8,7 +8,7 @@ from pathlib import Path
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
-    ap.add_argument("--path", type=Path, default=Path("docs/issue92/pressure_solver_bench.json"))
+    ap.add_argument("--path", type=Path, default=Path("verification/issue92/pressure_solver_bench.json"))
     args = ap.parse_args(argv)
     payload = json.loads(args.path.read_text(encoding="utf-8"))
     print("%-20s %-10s %5s %10s %10s %12s %12s %11s"

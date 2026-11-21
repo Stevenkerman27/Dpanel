@@ -1,7 +1,7 @@
 """Free-wake comparison for the B3 gate.
 
-The fixed-wake matrix in docs/issue92/b3_matrix.json is the first half of the
-VSPAERO comparison.  Protocol rule 4 (docs/ISSUE92_B3_VSPAERO_PROTOCOL.md) says
+The fixed-wake matrix in verification/issue92/b3_matrix.json is the first half of the
+VSPAERO comparison.  Protocol rule 4 (docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md) says
 the free wake is compared only after the fixed wake, and only for the cases the
 fixed-wake gate did not fail.  This tool runs that second half at a single
 angle of attack:
@@ -125,15 +125,15 @@ def _run_worker(name, args):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="B3 free-wake comparison")
-    parser.add_argument("--cases", type=Path, default=ROOT / "docs/issue92/b3_cases.json")
+    parser.add_argument("--cases", type=Path, default=ROOT / "verification/issue92/b3_cases.json")
     parser.add_argument("--dpanel-fixed", type=Path,
                         default=ROOT / "runs/benchmarks/b3_vspaero/b3/dpanel_cpu.json")
     parser.add_argument("--vspaero-fixed", type=Path,
                         default=ROOT / "runs/benchmarks/b3_vspaero/b3/vspaero.json")
     parser.add_argument("--vspaero-free", type=Path,
                         default=ROOT / "runs/benchmarks/b3_vspaero/b3/vspaero_freewake.json")
-    parser.add_argument("--matrix", type=Path, default=ROOT / "docs/issue92/b3_matrix.json")
-    parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/b3_free_wake.json")
+    parser.add_argument("--matrix", type=Path, default=ROOT / "verification/issue92/b3_matrix.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "verification/issue92/b3_free_wake.json")
     parser.add_argument("--iterations", type=int, default=16)
     parser.add_argument("--relaxation", type=float, default=0.3)
     parser.add_argument("--only", nargs="*", default=None)

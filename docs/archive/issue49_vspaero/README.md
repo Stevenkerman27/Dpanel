@@ -111,7 +111,7 @@ Invoke-Expression (Get-Content tools/vsp_evidence/evidence_rerun.ps1.txt -Raw)
 .conda_env/python.exe tools/vsp_evidence/verify_sha.py
 ```
 
-3.55 的 panel/VLM 阶梯走 `vspapi`（见 `docs/VSPAPI.md`）：
+3.55 的 panel/VLM 阶梯走 `vspapi`（见 `docs/reference/VSPAPI.md`）：
 
 ```powershell
 C:/Users/zyx20/anaconda3/envs/vsppytools/python.exe -m vspapi sweep <spec.json> --mode panel --ncpu 8

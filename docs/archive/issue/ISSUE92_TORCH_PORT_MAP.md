@@ -1,7 +1,7 @@
 # 稳态 P1 生产路径的 Torch CPU 移植映射
 
 > **证据/移植清单（2026-11-21 降级）**：本文记录 torch 移植的 AST 清单与 S1–S12 切片。
-> 面向读者的摘要见 [ISSUE77_92.md](ISSUE77_92.md)。
+> 面向读者的摘要见 [ISSUE77_92.md](../../ISSUE77_92.md)。
 
 
 Issue #92，路线 B（决策评论 6569612502），当务之急：*"为完整生产路径产出一份逐文件的 Torch
@@ -147,7 +147,7 @@ mu/Gamma、Cp、载荷、残差、状态的 `.npz`；由比较器读取两者）
 ## 交付日志
 
 S1–S8 的分切片交付记录（测量、门禁、被拒项与复现命令）已移到
-[archive/issue/ISSUE92_DELIVERY_LOG.md](archive/issue/ISSUE92_DELIVERY_LOG.md)。
+[archive/issue/ISSUE92_DELIVERY_LOG.md](ISSUE92_DELIVERY_LOG.md)。
 本文件保留移植前的架构判断（第 1–7 节）与当前默认状态（第 18–20 节）。
 
 ## 18. S9：默认值转向 torch，NumPy 成为证据生成器（2026-11-02）
@@ -163,7 +163,7 @@ S1–S8 的分切片交付记录（测量、门禁、被拒项与复现命令）
 | --- | --- |
 | 生产默认 | torch，逐次调用解析 |
 | NumPy/SciPy 链 | 通过 `backend='numpy'` 可达，未改动 |
-| `docs/issue92/references/` 中的冻结数据包 | 仍是 8 个固定样例的 oracle |
+| `verification/issue92/references/` 中的冻结数据包 | 仍是 8 个固定样例的 oracle |
 | 删除 `panel/p1_rank_aware.py`、`panel/p1_pressure_kutta_reduced.py`、NumPy 求解分支 | 推迟到拥有一个两条路径都能运行的环境的切片 |
 
 解析是显式的，而不是假定的。`panel/p1_backend.py`：
@@ -193,7 +193,7 @@ NumPy 路径上测得的，且关乎算法，而非哪个线性代数库运行�
 `np.linalg.svd|svdvals|qr|solve|lstsq|eig|eigh|pinv|matrix_rank|cholesky`、
 `scipy.linalg` 和 `scipy.optimize.least_squares`：
 
-    python -m tools.issue92.retirement_inventory --out docs/issue92/s9_inventory.json
+    python -m tools.issue92.retirement_inventory --out verification/issue92/s9_inventory.json
 
 33 个模块，69 个调用点。其中，`tools/issue92/port_inventory.py` 从三个生产
 入口到达 19 个模块，而在该表面上只有这些模块
@@ -352,11 +352,11 @@ NumPy 构建变化的界限下对这些数据包的重放。
 
     solve(..., backend='numpy')
     ValueError: backend='numpy' was retired with the NumPy solve chain; its code is tag
-    numpy-path-frozen-s8 and its recorded answers are docs/issue92/references/
+    numpy-path-frozen-s8 and its recorded answers are verification/issue92/references/
 
     solve(..., pressure_solver='reference')
     ValueError: pressure_solver='reference' was retired with the NumPy chain; its recorded
-    answers are docs/issue92/references/ and its code is tag numpy-path-frozen-s8
+    answers are verification/issue92/references/ and its code is tag numpy-path-frozen-s8
 
 `PANEL_P1_BACKEND` 作为进程固定保留下来，但只有 `torch` 是有效值；固定
 `numpy` 会抛出同样的退役错误，这也是过期的 CI 作业会看到的情形。
@@ -404,11 +404,11 @@ NumPy 构建变化的界限下对这些数据包的重放。
 而不是回溯：
 
     SystemExit: this evidence tool re-runs the retired NumPy chain; check out tag
-    numpy-path-frozen-s8 to use it (its recorded answers are docs/issue92/references/)
+    numpy-path-frozen-s8 to use it (its recorded answers are verification/issue92/references/)
 
 `tools/issue92/s3_pressure_parity.py capture` 也是如此，它通过
 `g1.solve(..., pressure_solver='reference')` 构建参考状态；其输出
-已作为 `docs/issue92/s3_parity.json` 提交。
+已作为 `verification/issue92/s3_parity.json` 提交。
 
 ### 19.4 测试
 

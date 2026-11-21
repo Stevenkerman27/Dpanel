@@ -1,6 +1,6 @@
 # 厚翼身接触尾迹面元：方法与几何验证
 
-更新：2026-11-03（初稿 2026-10-25）。**方法、离散实现与几何门禁已验证；完整鲁棒求解器与物理精度尚未验收**，当前状态以 [STATUS.md](../STATUS.md) 为准。本轮已从前置机身闭环推进到机身跨后缘、粗机身、双机身和真正带接触边界的尾迹。历史交接见 [PAUSE_HANDOFF.md](./archive/root/PAUSE_HANDOFF.md)。
+更新：2026-11-03（初稿 2026-10-25）。**方法、离散实现与几何门禁已验证；完整鲁棒求解器与物理精度尚未验收**，当前状态以 [STATUS.md](../../STATUS.md) 为准。本轮已从前置机身闭环推进到机身跨后缘、粗机身、双机身和真正带接触边界的尾迹。历史交接见 [PAUSE_HANDOFF.md](../archive/root/PAUSE_HANDOFF.md)。
 
 紧凑证据与原始字段哈希见 [summary.json](panel_robustness_evidence_v2/summary.json)。主矩阵37/37项、补充拓扑10/10项通过；四组完整AD/三档中心差分合计180/180个标量比较通过。这些检查认证公开输入范围内的离散实现及几何门禁，**不认证物理精度**。
 
@@ -8,7 +8,7 @@
 
 ## 为什么新增一个小求解器
 
-前阶段的 VortexAD 闭环保留，见 [archive/notes/WINGBODY_PANEL_LOOP.md](archive/notes/WINGBODY_PANEL_LOOP.md)。它定位了表面势梯度模板秩亏，但其默认尾迹接口不能直接表达机身遮挡后缘、流体侧带洞尾迹与接触势跳跃的相容约束。本轮没有改造上游接口，而在 `panel/` 独立实现透明的JAX源/偶极子求解器；解析核来自本仓库独立 `core/triangle_kernel.py` 的公式。
+前阶段的 VortexAD 闭环保留，见 [archive/notes/WINGBODY_PANEL_LOOP.md](../archive/notes/WINGBODY_PANEL_LOOP.md)。它定位了表面势梯度模板秩亏，但其默认尾迹接口不能直接表达机身遮挡后缘、流体侧带洞尾迹与接触势跳跃的相容约束。本轮没有改造上游接口，而在 `panel/` 独立实现透明的JAX源/偶极子求解器；解析核来自本仓库独立 `core/triangle_kernel.py` 的公式。
 
 `panel/cad.py` 复用旧OCC布尔、部件识别和两遍接触站位构造，只生成二维表面网格，不生成或优化体网格。壁面通过共享边一致绕序、连通组件正体积检查；尾迹仅保留真正邻接流体的曲面。双机身粗例616壁面、细例1646壁面，CAD生成分别为数秒量级。旧P2双机身体网格失败记录不改写。
 

@@ -6,7 +6,7 @@ hit with the torch counterpart that already exists, if any. np.linalg.norm and p
 array algebra are not LAPACK and are not listed: they cannot crash a torch process.
 
 Usage:
-    python -m tools.issue92.retirement_inventory [--out docs/issue92/s9_inventory.json]
+    python -m tools.issue92.retirement_inventory [--out verification/issue92/s9_inventory.json]
 """
 from __future__ import annotations
 

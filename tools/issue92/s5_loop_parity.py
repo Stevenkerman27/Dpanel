@@ -27,7 +27,7 @@ THRESHOLDS = dict(
     # the first declaration was load/state/residual 1e-9. The 192-face fixtures met
     # it (1e-13); the 872-face CAD body missed it (loads 1.4e-6, states 1.5e-6,
     # residual 6.6e-7 at the iteration whose line search failed). Attribution is in
-    # docs/ISSUE92_TORCH_PORT_MAP.md section 12: same cost to 1e-13, same residual to
+    # docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md section 12: same cost to 1e-13, same residual to
     # printed precision, state difference along the flat valley of the nonlinear
     # least squares. The gate is therefore one order above the measured worst case.
     declared_first=dict(load_relative=1e-9, state_relative=1e-9, residual_absolute=1e-9),
@@ -240,7 +240,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stage", choices=("numpy", "torch", "judge", "bundle"))
     parser.add_argument("--work", type=Path, default=ROOT/"runs/scratch/issue92_loose/s5")
-    parser.add_argument("--out", type=Path, default=ROOT/"docs/issue92/s5_loop_parity.json")
+    parser.add_argument("--out", type=Path, default=ROOT/"verification/issue92/s5_loop_parity.json")
     parser.add_argument("--case", default=None)
     parser.add_argument("--iterations", type=int, default=ITERATIONS)
     args = parser.parse_args(argv)
@@ -252,7 +252,7 @@ def main(argv=None):
         return 0 if report["passed"] else 1
     if args.stage == "bundle":
         info = bundle(args.out if args.out.suffix == ".npz"
-                      else ROOT/"docs/issue92/s5_reference_g2.npz",
+                      else ROOT/"verification/issue92/s5_reference_g2.npz",
                       args.case or "g2_conventional")
         print(json.dumps(info, indent=2))
         return 0

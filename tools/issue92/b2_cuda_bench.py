@@ -11,7 +11,7 @@ here is inherited, not re-derived: loads to 1e-5 relative against the same
 iteration index, plus the requirement that status and acceptance decisions
 agree.
 
-    python -m tools.issue92.b2_cuda_bench --out docs/issue92/b2_cuda_bench.json
+    python -m tools.issue92.b2_cuda_bench --out verification/issue92/b2_cuda_bench.json
 """
 from __future__ import annotations
 
@@ -139,7 +139,7 @@ def judge(rows):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", type=pathlib.Path, default=ROOT/"docs/issue92/b2_cuda_bench.json")
+    parser.add_argument("--out", type=pathlib.Path, default=ROOT/"verification/issue92/b2_cuda_bench.json")
     parser.add_argument("--case", action="append", choices=CASES, default=None)
     parser.add_argument("--device", action="append", choices=("cpu", "cuda"), default=None)
     parser.add_argument("--repetitions", type=int, default=THRESHOLDS["repetitions"])

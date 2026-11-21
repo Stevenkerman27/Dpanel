@@ -20,7 +20,7 @@
 | 分支 head | `e331788`（research/occ-half-feature-density） |
 | `panel/mesh_feature_size.py` | `4ea6cf2e3d5797731a4a161fb928a69471f8b81931ebc11be4dad8d88943df54` |
 | `panel/cad_half.py` | `2d5c13cf0ff3250717821bf09441706437d06e099ecef2eb31bb8d990437b9a1` |
-| `docs/MESH_FEATURE_SIZE.md` | `eb0e30a3537bc98dc8b1c5ee53fb88e0672515dcee93df7e64f488f37d61fba6` |
+| `docs/reference/MESH_FEATURE_SIZE.md` | `eb0e30a3537bc98dc8b1c5ee53fb88e0672515dcee93df7e64f488f37d61fba6` |
 | STEP `elliptic/wing.step` | `dd254707e840ac38b44f8240bcb052a2f1c75f38d75e8d6f424b87f099fb31bf` |
 | `elliptic/trailing_edge.json` | `352370c14d4f6f032b8a1e4a885a15812928cf569c39103b41f802aaf8165471` |
 | `features_le_only.json` | `710749c9de4950f5a1e91c1008014f7bbd8440776175cdde0423921cd8b45912` |
@@ -87,7 +87,7 @@ LE/TE 带 = 面心或边中点到特征折线距离 ≤ 0.05 c（5% 弦长带）
 
 1. **回调确实只降不升、且作用在 CAD 曲线与面上**：LE 带内边长 −62.8%，带外面元数不变（feat_le 尾迹 577 与 base 相同）。
 2. **TE 加密的连带成本没有门控**：尾迹 577→1003、未知量翻 2.4 倍。issue #42 要求"最小尺寸/总面元预算，超限中止而不是默改尺寸"，当前实现没有总预算，只有 1000 段折线上限。建议加 `max_wall_panels`/`max_total_panels` 预算，超限 `ValueError` 中止。
-3. **网格质量可能反向**：LE-only 最小角 10.22° → 6.44°。`docs/MESH_FEATURE_SIZE.md` 已声明"只保证请求 size 的数学性质，不保证实际元素质量"，本实测正好验证了这条警告——审计脚本应作为标配，而不是可选。
+3. **网格质量可能反向**：LE-only 最小角 10.22° → 6.44°。`docs/reference/MESH_FEATURE_SIZE.md` 已声明"只保证请求 size 的数学性质，不保证实际元素质量"，本实测正好验证了这条警告——审计脚本应作为标配，而不是可选。
 4. 小改进项：`radius_chords` 与 `target_ratio` 没有交叉校验（radius 很小时回调几乎不生效但会静默通过）；provenance 只记源 SHA 与特征名，未记 `target_ratio/radius_chords` 的数值摘要，回放时无法仅凭 surface.json 复现请求。
 
 ## 8 未做 / 不能声称

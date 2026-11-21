@@ -312,7 +312,7 @@
     "panel/p1_lifting_g2.py": "fe143b7cf9071c1d86524a435b2c027dbc9b0ebaaeb266a739f0565212d197c3",
     "panel/run_p1_lifting_g2.py": "4f8c265b67abec5161cb68dd3cdca09d4a5d6965f484bd1cbcd6bc926c6c0c58",
     "test/test_p1_lifting_g2.py": "3e995fa05c0c938173d28c08b2f8b01f96193f795bf2c48e48a44ededbfb17d0",
-    "docs/P1_G2_COUPLED.md": "9830b91a47805305b437a7564d799ae73f22e0f72e4bbe5cee056f9936481f24",
+    "docs/archive/notes/P1_G2_COUPLED.md": "9830b91a47805305b437a7564d799ae73f22e0f72e4bbe5cee056f9936481f24",
     "runs/generated_g2/report.json": "32b51132d693a93974599972943b364f4bc87c7dc39aff8bff23730d29ada491",
     "runs/generated_g2/mesh.npz": "13cd7d2141c1019fabaaf78541e373ab91e37295de0fb506c7d1322e20fa0405",
     "runs/generated_g2/alpha_p000.000.npz": "ca8be0c7915e215f746e08029f11a1d2d1818fcc9cf3cd32145925510d5526dd",

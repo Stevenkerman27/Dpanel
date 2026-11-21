@@ -58,7 +58,7 @@ class TotalVelocity:
     """U + wall + ALL wakes, preserving each sheet's P1 gradient.
 
     Two wire-ready models, both on the same P1 doublet-sheet representation
-    (see docs/ARCHITECTURE_WAKE_MODELS.md):
+    (see docs/reference/ARCHITECTURE_WAKE_MODELS.md):
 
     * analytic_edges -- method 1, unregularized, production default/reference.
     * rm_regularized_p1 -- method 2, one explicit Rosenhead–Moore core applied
@@ -978,7 +978,7 @@ def solve_coupled_material_wake(mesh, alpha_deg=5., *, kutta='pressure', iterati
     if pressure_solver not in (None, "structured"):
         raise ValueError(
             "pressure_solver=%r was retired with the NumPy chain; its recorded answers "
-            "are docs/issue92/references/ and its code is tag numpy-path-frozen-s8"
+            "are verification/issue92/references/ and its code is tag numpy-path-frozen-s8"
             % (pressure_solver,))
     try:
         solve_backend, solve_backend_source = resolve_backend(solve_backend)

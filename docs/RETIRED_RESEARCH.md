@@ -11,7 +11,7 @@
 2026-11-09：`tools/issue71/bisect_cut.py` 的固定环量/无切口实验无效，已停用并给出替代命令。
 旧 `null_space(J)` 构造既改变 Gamma 又未抵消初始跳跃；无切口算例仍含切口/尾迹自由度。
 用 `tools/lifting_line_study.py` 重做严格固定 Gamma 与物理位置探针；历史结论限制见
-[Kutta 条件 §10](KUTTA_CONDITION.md)。`fixed_gamma.py` 的固定环量求解已修正，
+[Kutta 条件 §10](archive/notes/KUTTA_CONDITION.md)。`fixed_gamma.py` 的固定环量求解已修正，
 旧探针仅保留历史用途。
 
 **2026-11-06 更新：** 用户要求重新研究弦向加密不收敛后，
@@ -135,6 +135,22 @@ python -m tools.issue71.galerkin_ab --help                 # the A/B driver
 重新实现，因为活动验收谓词位于 `panel/p1_lifting_g2.py`，并
 由其自身测试覆盖。
 
+## 文档迁移（2026-11-21）
+
+`docs/` 顶层只留人读的文档，过程材料与数据全部移出：
+
+| 原路径 | 新路径 | 原因 |
+| --- | --- | --- |
+| `docs/issue92/`（65 文件，含 `fixtures/`） | `verification/issue92/` | 测试重放的数据，不是文档 |
+| `docs/issue77/`（1 文件） | `verification/issue77/` | 同上 |
+| `docs/issue39_schema_example_v2.json` | `verification/issue39_schema_example_v2.json` | 数据 |
+| `docs/ACCEPTANCE.md` 等 15 篇 | `docs/reference/` | 模块入口，不是路线 |
+| `docs/KUTTA_CONDITION.md`、`docs/P1_G2_COUPLED.md` | `docs/archive/notes/` | 证据日志 |
+| `docs/ISSUE92_TORCH_PORT_MAP.md`、`docs/ISSUE92_B3_VSPAERO_PROTOCOL.md` | `docs/archive/issue/` | 过程/协议；摘要见 `docs/ISSUE77_92.md` |
+
+代码与文档里的路径字符串已同步替换（`.gitignore` 的 `!verification/issue92/fixtures/*.npz` 也改过），
+`docs/archive/` 内旧文中的路径一并改写，内容未改。
+
 ## 文档降级（2026-11-21）
 
 路线文档从“按 issue/日志找”改为三层：`docs/ROUTE.md`（实际路线与默认值）、
@@ -143,10 +159,10 @@ python -m tools.issue71.galerkin_ab --help                 # the A/B driver
 
 | 文档 | 原入口角色 | 降级原因 | 现入口 |
 | --- | --- | --- | --- |
-| `docs/KUTTA_CONDITION.md` | 后缘闭合的唯一入口 | 814 行按时间追加的实验日志；§11.2 的“pj 后掠 CDi 6 倍”是 collocation+face 口径，生产口径（Galerkin+area）复测不成立 | `docs/TRAILING_EDGE.md` |
-| `docs/ISSUE92_TORCH_PORT_MAP.md` | “求解链现在是什么、为什么 torch” | 移植清单，不是路线；内容已被摘要 | `docs/ISSUE77_92.md` |
-| `docs/ISSUE92_B3_VSPAERO_PROTOCOL.md` | VSPAERO 对照入口 | 实验协议，不是路线 | `docs/ISSUE77_92.md` |
-| `docs/P1_G2_COUPLED.md` | G2 耦合现状 | 部分内容过时（NumPy 链、G1 退役、JAX VJP）；实测数字仍可用 | `docs/ARCHITECTURE_WAKE_MODELS.md` |
+| `docs/archive/notes/KUTTA_CONDITION.md` | 后缘闭合的唯一入口 | 814 行按时间追加的实验日志；§11.2 的“pj 后掠 CDi 6 倍”是 collocation+face 口径，生产口径（Galerkin+area）复测不成立 | `docs/TRAILING_EDGE.md` |
+| `docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md` | “求解链现在是什么、为什么 torch” | 移植清单，不是路线；内容已被摘要 | `docs/ISSUE77_92.md` |
+| `docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md` | VSPAERO 对照入口 | 实验协议，不是路线 | `docs/ISSUE77_92.md` |
+| `docs/archive/notes/P1_G2_COUPLED.md` | G2 耦合现状 | 部分内容过时（NumPy 链、G1 退役、JAX VJP）；实测数字仍可用 | `docs/reference/ARCHITECTURE_WAKE_MODELS.md` |
 
 `docs/README.md` 同时重写为分层索引（路线层 3 篇 / 状态只认 `STATUS.md` / 参考层 16 篇 /
 归档），并删掉了指向已不存在的 `WORKFLOW.md` 的死链。

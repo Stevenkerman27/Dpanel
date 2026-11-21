@@ -227,7 +227,7 @@ def sweep_strips(mesh, state, targets, *, pairs, reference=(48, 8), out=None):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path,
-                        default=ROOT / "docs/issue92/wake_evaluator_profile.json")
+                        default=ROOT / "verification/issue92/wake_evaluator_profile.json")
     parser.add_argument("--targets-limit", type=int, default=None)
     parser.add_argument("--fan-targets", type=int, default=24)
     parser.add_argument("--repeat", type=int, default=1)

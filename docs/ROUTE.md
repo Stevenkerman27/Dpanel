@@ -47,7 +47,7 @@
   并把平稳性残差记进 meta；
 - 反向：`backward`（:394 / :502）用隐式函数定理，只对**当前几何的算子**做 VJP，不保存求解轨迹。
 - 适用范围：固定拓扑的设计变量（CST 系数、GRASS 截面参数）。顶点级 VJP 没有做，
-  `docs/GEOMETRY_DIFFERENTIABILITY.md` 里的 JAX 实验是另一条线，未进生产。
+  `docs/reference/GEOMETRY_DIFFERENTIABILITY.md` 里的 JAX 实验是另一条线，未进生产。
 
 ## 4. 自由尾迹
 
@@ -69,7 +69,7 @@
    短暂翻过默认又改回时漏改的。
 3. **研究口径与生产口径分叉**。测试用 `area`，生产用 `face`，于是“测试通过”不代表
    Web 上那条路径被同一组数字覆盖。
-4. **旧索引把日志当入口**。`docs/KUTTA_CONDITION.md` 是 814 行的按时间追加日志，
+4. **旧索引把日志当入口**。`docs/archive/notes/KUTTA_CONDITION.md` 是 814 行的按时间追加日志，
    被当成后缘条件的唯一入口——现在它降级为证据日志，结论进 [TRAILING_EDGE.md](TRAILING_EDGE.md)。
 
 ## 6. 复现
@@ -91,4 +91,4 @@ python runs/verification/route_check/run.py
 
 `potential/`（全势/P2）、`lifting3d/`（升力线 + CAD）、`core/`（JAX 面元）、`volume/`：
 对照或研究代码，只有受限前向证据。WBCAero 只作路线参考，OpenVSP/VSPAERO 只作外部对照
-（`vspapi/`，见 `docs/VSPAPI.md`）。不要把它们的默认当成主线的默认。
+（`vspapi/`，见 `docs/reference/VSPAPI.md`）。不要把它们的默认当成主线的默认。

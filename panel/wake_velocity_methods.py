@@ -5,7 +5,7 @@ only the first is the production default.  Quadrature order, fan strips, near/fa
 splits and adaptive budgets are *numerical controls of a model*, never models of
 their own -- this module is the single place where that distinction is recorded
 so the CLI, the solver and the documentation cannot drift apart.  See
-`docs/ARCHITECTURE_WAKE_MODELS.md` for the full page.
+`docs/reference/ARCHITECTURE_WAKE_MODELS.md` for the full page.
 
 Method 1 -- `analytic_edges` (default, reference)
     Representation: continuous P1 doublet sheet, i.e. mu varies linearly over each
@@ -50,7 +50,7 @@ ACCEPTED_METHODS = PUBLIC_METHODS + DEPRECATED_METHODS
 DEFAULT_METHOD = "analytic_edges"
 AREA_QUADRATURES = ("legacy_duffy", "projection_fan", "projection_fan_adaptive")
 DEFAULT_AREA_QUADRATURE = "legacy_duffy"
-ARCHITECTURE_DOC = "docs/ARCHITECTURE_WAKE_MODELS.md"
+ARCHITECTURE_DOC = "docs/reference/ARCHITECTURE_WAKE_MODELS.md"
 
 METHOD_SPECS = {
     "analytic_edges": {

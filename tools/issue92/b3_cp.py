@@ -203,10 +203,10 @@ def compare(name, spec, work, dpanel):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="B3 Cp comparison on matched sections")
-    parser.add_argument("--cases", type=Path, default=ROOT / "docs/issue92/b3_cases.json")
+    parser.add_argument("--cases", type=Path, default=ROOT / "verification/issue92/b3_cases.json")
     parser.add_argument("--vsp-dir", type=Path,
                         default=ROOT / "runs/benchmarks/b3_vspaero/b3/vsp_cp")
-    parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/b3_cp.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "verification/issue92/b3_cp.json")
     parser.add_argument("--only", nargs="*", default=None)
     args = parser.parse_args(argv)
     doc = json.loads(args.cases.read_text(encoding="utf-8"))

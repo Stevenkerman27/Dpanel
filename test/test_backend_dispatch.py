@@ -3,7 +3,7 @@
 S6 wired backend='numpy'|'torch' into the public G1/G2 entry points so the two
 implementations could be compared. S9 made torch the default and kept the NumPy path as
 the explicit evidence generator. S10 retires that path: its code is tag
-numpy-path-frozen-s8 and its recorded answers are docs/issue92/references/, replayed by
+numpy-path-frozen-s8 and its recorded answers are verification/issue92/references/, replayed by
 test/test_frozen_bundle_parity.py.
 
 What is left to test here is the contract of the surviving path: the retired names must

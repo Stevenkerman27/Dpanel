@@ -130,7 +130,7 @@ lagrangian_filaments       3  future model, not coupled        False
 ## 9. G2 T5 物质前驱图
 
 PR #110 的审计不改变图或尾迹更新。其原始 G2 T5 CAD 算例的完整导出为
-[`verification/wake_material_graph/g2_t5/material_graph.json`](../verification/wake_material_graph/g2_t5/material_graph.json)。
+[`verification/wake_material_graph/g2_t5/material_graph.json`](../../verification/wake_material_graph/g2_t5/material_graph.json)。
 它包含主翼和平尾的全部参考坐标、尾迹面片、使用/未使用节点 ID、根、前驱、
 排序、每条前驱边的所属面片、最长路径，以及前 20 条长边的上游候选和选择距离。
 `material_graph` 字段直接使用 `wake_material_graph_audit` 的原始返回值。
@@ -186,7 +186,7 @@ issue #113 的受控实验使用 `solve_steady_free_wake` 的 B3 单翼路径，
 ARS-Codex `experiment-agent` 的 run 模式，实际数值证据由本机脚本生成，
 不包含跨模型评审或物理精度验收。
 
-输入由 `docs/issue92/b3_cases.json` 的原 CAD 文件和矩形翼参数构建。
+输入由 `verification/issue92/b3_cases.json` 的原 CAD 文件和矩形翼参数构建。
 冻结全部壁面、初始尾迹、P1 Gamma 基函数、参考量及 pressure-Kutta 设置；
 `initial_state.npz` 与逐轮快照记录输入和状态哈希。自由尾迹迭代 0
 采用 pressure-Kutta，不能与历史表中的 signed-speed 固定尾迹 CL 混用。
@@ -309,9 +309,9 @@ Jacobian 纵向拼接后的算子，不是孤立压力块的谱；应按实际�
   环量载荷、远场诱导阻力与展向分布。外部求解器的设置敏感性和并行
   不确定性不应被当作 DPanel 的误差或验证真值。后缘上下岸的声明是
   拓扑约束，不能用后缘折线的相邻点猜配。既有数据和限制见
-  [Gamma 细化](archive/issue/ISSUE49_GAMMA_REFINEMENT.md)、
-  [VSPAERO 尾迹敏感性](archive/issue/ISSUE49_WAKE_SENSITIVITY.md)和
-  [后缘配对](archive/issue/ISSUE58_G1_TE_PAIRING_FIX.md)。
+  [Gamma 细化](../archive/issue/ISSUE49_GAMMA_REFINEMENT.md)、
+  [VSPAERO 尾迹敏感性](../archive/issue/ISSUE49_WAKE_SENSITIVITY.md)和
+  [后缘配对](../archive/issue/ISSUE58_G1_TE_PAIRING_FIX.md)。
 - **#80，`1c615ca`，无核直涡丝 oracle。** 单条直线段的对称主值为零，
   不等于弯曲涡丝的完整自诱导；在多边形细化时，相邻段的贡献可呈对数
   增长。旧分支的独立直线段核未并入生产路径。未来若重新引入，应先用
@@ -321,16 +321,16 @@ Jacobian 纵向拼接后的算子，不是孤立压力块的谱；应按实际�
   长度，不是自动随网格变化的误差容差。固定正核半径时可比较多边形环与
   连续环积分，并分别检查核半径敏感性；不同核模型的半径和自诱导常数
   不可直接互换。该独立核已在主线，但尚未耦合 P1 尾迹，见
-  [原研究及验证](archive/issue/ISSUE82_REGULARIZED_FILAMENT_INDUCTION.md)。
+  [原研究及验证](../archive/issue/ISSUE82_REGULARIZED_FILAMENT_INDUCTION.md)。
 - **#92，`ce91e0a`，尾迹求值和后端。** 固定几何和采样点后分阶段测量，
   把表示、积分误差、单次核性能与完整迭代性能分开；投影扇形只在明确的
   近场/远场误差预算下替换求积，不因一次计时选择生产默认值。历史
   fan/Duffy 对比、GPU 加速及混合后端结果属于当时机器与配置，不是当前
   性能保证；旧版混合运行时访问冲突也不能直接外推到已热修的环境。
   切换求解后端还必须验证秩阈值、停止条件、载荷、几何门禁和导数，
-  而不只比较数组。见 [求值器分析](archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md)、
-  [Torch 移植映射](ISSUE92_TORCH_PORT_MAP.md)和
-  [外部对照协议](ISSUE92_B3_VSPAERO_PROTOCOL.md)。
+  而不只比较数组。见 [求值器分析](../archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md)、
+  [Torch 移植映射](../archive/issue/ISSUE92_TORCH_PORT_MAP.md)和
+  [外部对照协议](../archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md)。
 
 这些审查保留方法及证据，不表示上述研究分支已逐提交合并，也不接受物理精度。
 尤其自由尾迹在真实 CAD 几何上的不动点与切向条件仍需独立修复、验证。
@@ -400,7 +400,7 @@ CLI 对应 `--wake-potential-backend torch --wake-device cuda --wake-velocity-bl
 B3 势函数/差分速度及研究线解析速度的计时与误差，不跨公式计算加速比。
 
 复现命令、原始失败、同模型误差和阶段结果见
-[本机修复验收](../verification/wake_material_repair/README.md)。
+[本机修复验收](../../verification/wake_material_repair/README.md)。
 本轮没有修改 G2 T5 的材料路径，也没有建立自由尾迹外循环的几何 VJP；
 材料线权重和几何回溯的分支导数仍需单独处理。物理精度未验收。
 

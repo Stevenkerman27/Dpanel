@@ -28,7 +28,7 @@ def run_numpy(out, scenario="base", quadratic=None):
 except ImportError as error:  # pragma: no cover - historical evidence tool
     raise SystemExit(
         "this evidence tool re-runs the retired NumPy chain; check out tag "
-        "numpy-path-frozen-s8 to use it (its recorded answers are docs/issue92/references/)"
+        "numpy-path-frozen-s8 to use it (its recorded answers are verification/issue92/references/)"
     ) from error
 
     problem = build(scenario=scenario, quadratic=quadratic)

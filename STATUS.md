@@ -53,8 +53,9 @@ for wall, recovery in [("collocation", "face"), ("galerkin", "face"), ("galerkin
 | 实际求解路线、各入口默认值、已知不一致 | [docs/ROUTE.md](docs/ROUTE.md) |
 | 后缘闭包（pressure/pj）与速度恢复（face/area）怎么选 | [docs/TRAILING_EDGE.md](docs/TRAILING_EDGE.md) |
 | issue #77（接触迹/Γ 支撑）与 #92（torch 移植）留下了什么 | [docs/ISSUE77_92.md](docs/ISSUE77_92.md) |
-| 标模校准与验收比较 | [docs/CALIBRATION.md](docs/CALIBRATION.md)、[docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) |
-| 尾迹模型和自由尾迹限制 | [docs/ARCHITECTURE_WAKE_MODELS.md](docs/ARCHITECTURE_WAKE_MODELS.md) |
-| 几何可微性 | [docs/GEOMETRY_DIFFERENTIABILITY.md](docs/GEOMETRY_DIFFERENTIABILITY.md) |
-| 测试状态 | [docs/TEST_STATUS.md](docs/TEST_STATUS.md) |
+| #77/#92 的原始数据与过程日志 | `verification/issue92/`、`verification/issue77/`（测试重放用）；日志在 [docs/archive/issue/](docs/archive/issue/) |
+| 标模校准与验收比较 | [docs/reference/CALIBRATION.md](docs/reference/CALIBRATION.md)、[docs/reference/ACCEPTANCE.md](docs/reference/ACCEPTANCE.md) |
+| 尾迹模型和自由尾迹限制 | [docs/reference/ARCHITECTURE_WAKE_MODELS.md](docs/reference/ARCHITECTURE_WAKE_MODELS.md) |
+| 几何可微性 | [docs/reference/GEOMETRY_DIFFERENTIABILITY.md](docs/reference/GEOMETRY_DIFFERENTIABILITY.md) |
+| 测试状态 | [docs/reference/TEST_STATUS.md](docs/reference/TEST_STATUS.md) |
 | 退役代码及历史研究 | [docs/RETIRED_RESEARCH.md](docs/RETIRED_RESEARCH.md)、[docs/archive/README.md](docs/archive/README.md) |

@@ -1,6 +1,6 @@
 """Physics anchors: analytic limits, not replays of our own past answers.
 
-The regression references in docs/issue92/references/ only prove that behaviour did not
+The regression references in verification/issue92/references/ only prove that behaviour did not
 change. These tests ask whether the answer is right, using limits that depend on no
 implementation of ours:
 

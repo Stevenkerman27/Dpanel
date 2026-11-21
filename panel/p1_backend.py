@@ -13,7 +13,7 @@ What a caller may pass:
   cannot import torch - nothing is switched silently;
 * `backend='numpy'` -> `ValueError`, because the NumPy solve chain that produced the
   S1-S8 baselines is preserved at tag `numpy-path-frozen-s8` and its answers for the
-  eight frozen fixtures are in `docs/issue92/references/`.
+  eight frozen fixtures are in `verification/issue92/references/`.
 
 `PANEL_P1_BACKEND` may still pin a process; only `torch` is a live choice.
 """
@@ -25,7 +25,7 @@ DEFAULT = "torch"
 RETIRED = "numpy"
 CHOICES = (DEFAULT,)
 ARCHIVE_TAG = "numpy-path-frozen-s8"
-ARCHIVE_EVIDENCE = "docs/issue92/references/"
+ARCHIVE_EVIDENCE = "verification/issue92/references/"
 
 
 def torch_available():

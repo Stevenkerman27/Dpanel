@@ -1,4 +1,4 @@
-"""Render the markdown tables for docs/ISSUE92_B3_VSPAERO_PROTOCOL.md."""
+"""Render the markdown tables for docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md."""
 from __future__ import annotations
 
 import json
@@ -9,8 +9,8 @@ from pathlib import Path
 ROOT = Path(os.environ.get("PANEL_ROOT", Path.cwd()))
 sys.path.insert(0, str(ROOT))
 
-MATRIX = ROOT / "docs/issue92/b3_matrix.json"
-CASES = ROOT / "docs/issue92/b3_cases.json"
+MATRIX = ROOT / "verification/issue92/b3_matrix.json"
+CASES = ROOT / "verification/issue92/b3_cases.json"
 OUT = ROOT / "runs/benchmarks/b3_vspaero/b3_tables.md"
 
 CASE_ORDER = ("rect", "swept30", "elliptic", "bwb")

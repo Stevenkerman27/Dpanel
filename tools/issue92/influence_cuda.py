@@ -28,7 +28,7 @@ from panel.p1_batched_influence import influence_matrix, source_invariants
 # process; mixing that with CUDA torch on this host trips an access violation with no
 # Python traceback. The GPU runner therefore reads the npz plus the manifest directly
 # and re-verifies the file digest, which keeps the frozen-fixture guarantee.
-FIXTURES = ROOT / "docs/issue92/fixtures"
+FIXTURES = ROOT / "verification/issue92/fixtures"
 
 
 def _load_fixture(name, arrays_dir=None):
@@ -135,7 +135,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="CUDA parity for the batched influence kernel")
     parser.add_argument("--fixtures", default="g1_elliptic,g1_wingbody_cad")
     parser.add_argument("--reference", type=Path, default=ROOT / "runs/scratch/issue92_loose/reference")
-    parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/influence_cuda.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "verification/issue92/influence_cuda.json")
     parser.add_argument("--repeat", type=int, default=3)
     args = parser.parse_args(argv)
     import torch

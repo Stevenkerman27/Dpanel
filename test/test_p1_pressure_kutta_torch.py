@@ -1,6 +1,6 @@
 """S1 parity tests: torch pressure-Kutta against the frozen NumPy reference.
 
-The reference values in docs/issue92/s1_reference_<scenario>.npz were produced by
+The reference values in verification/issue92/s1_reference_<scenario>.npz were produced by
 the NumPy/SciPy backend in a separate process (tools/issue92/s1_parity.py numpy
 stage), because torch and NumPy LAPACK cannot share an interpreter: once torch
 runs an op, the next LAPACK call dies with 0xC0000005
@@ -27,7 +27,7 @@ import numpy as np
 import pytest
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
-REFERENCE = REPO / "docs" / "issue92"
+REFERENCE = REPO / "verification" / "issue92"
 SCENARIOS = ("base", "hard", "backtrack")
 
 pytestmark = pytest.mark.filterwarnings("ignore::DeprecationWarning")

@@ -134,7 +134,7 @@ Prandtl 式 `2*pi*AR/(AR+2)`，Helmbold 薄翼低速式 `2*pi*AR/(2+sqrt(AR^2+4)
 
 ## 12. 上表面压力可视化
 
-![上表面 Cp](geometry_robustness/fig16_geometry_matrix.png)
+![上表面 Cp](../archive/geometry_robustness/fig16_geometry_matrix.png)
 
 图为右半解镜像后的整机俯视，只画外法向 z>0 的面片；色标裁剪到 [-1.5, 0.5]，真实 Cp 极小值在每格标题里（swept30 -7.82、elliptic -2.90、bwb -5.99、conv -6.44，都落在翼尖/后缘角点）。
 

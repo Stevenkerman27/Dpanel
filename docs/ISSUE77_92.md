@@ -83,7 +83,7 @@ DOF 与 67 条兼容行。根部不再强制零 Γ，只有外翼尖是零 Γ �
 - `panel/p1_pressure_kutta_torch_driver.py`：结构化 Gauss-Newton + B 预分解 + Woodbury；
 - `panel/p1_potential_jump_torch.py`：仿射状态 + Newton；
 - `panel/p1_te_recovery.py`：后缘速度恢复（见 [TRAILING_EDGE.md](TRAILING_EDGE.md)）；
-- 冻结的 NumPy 结果包在 `docs/issue92/references/`，只作 oracle（误差约 1e-6）。
+- 冻结的 NumPy 结果包在 `verification/issue92/references/`，只作 oracle（误差约 1e-6）。
 
 ### 代价与教训
 
@@ -94,8 +94,8 @@ DOF 与 67 条兼容行。根部不再强制零 Γ，只有外翼尖是零 Γ �
 
 ### B3 与 VSPAERO
 
-`docs/ISSUE92_B3_VSPAERO_PROTOCOL.md` 是自由尾迹/B3 与 VSPAERO 的对照协议（600 行），
-`vspapi/` 是仓库里唯一的 OpenVSP/VSPAERO 客户端（见 [VSPAPI.md](VSPAPI.md)）。
+`docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md` 是自由尾迹/B3 与 VSPAERO 的对照协议（600 行），
+`vspapi/` 是仓库里唯一的 OpenVSP/VSPAERO 客户端（见 [VSPAPI.md](reference/VSPAPI.md)）。
 **VSPAERO 不是真值 oracle**，它只提供同几何的外部读数；`physical_accuracy_accepted`
 仍是 false。
 

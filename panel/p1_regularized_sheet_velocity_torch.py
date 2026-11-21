@@ -21,7 +21,7 @@ refused here rather than silently falling back, because a silent fallback would 
 device timing a CPU one.
 
 Nothing here calls NumPy linalg, so it is safe to use after torch has run - the constraint
-that shaped the rest of Route B (section 6f of docs/ISSUE92_TORCH_PORT_MAP.md).
+that shaped the rest of Route B (section 6f of docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md).
 """
 from __future__ import annotations
 

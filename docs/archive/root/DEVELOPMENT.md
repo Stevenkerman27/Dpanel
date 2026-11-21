@@ -2,7 +2,7 @@
 
 更新：2026-10-26。用户已恢复本地目标，当前研究尾迹与准确性；云端协同和 GitHub 自动任务仍暂停，只通过指定代理只读查询 GitHub。完整求解器尚未整体验收。根目录面元入口已增加处方尾迹方向、广义物质坐标线性偶极矩和独立尾迹总场审计；局部总流驱动原型保留所有迭代，不宣称物理收敛。最新进展见 [WAKE_ACCURACY.md](docs/WAKE_ACCURACY.md) 和 [PAUSE_HANDOFF.md](PAUSE_HANDOFF.md)。
 
-`panel-cut` 统一入口和原始Cp/组件载荷VTU已实现。近相切 radius8 复核已完成于 `runs/panel_error_budget_v2/`，见 [ERROR_SEPARATION.md](../../ERROR_SEPARATION.md)，不再列作未运行。物理精度仍为 false。后文旧P2的阶段状态属于历史后端；半模和矩阵无关证据主要来自隔离工作副本，不能当作根目录已集成。
+`panel-cut` 统一入口和原始Cp/组件载荷VTU已实现。近相切 radius8 复核已完成于 `runs/panel_error_budget_v2/`，见 [ERROR_SEPARATION.md](../../reference/ERROR_SEPARATION.md)，不再列作未运行。物理精度仍为 false。后文旧P2的阶段状态属于历史后端；半模和矩阵无关证据主要来自隔离工作副本，不能当作根目录已集成。
 
 ## 当前优先级
 

@@ -285,7 +285,7 @@ def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure
     least-squares problem, where a residual floor is information). It is not a general
     Kutta-convergence criterion: the potential-jump closure is a square Newton solve whose
     |p| -> 1e-15 is constructed, so the same predicates would accept or reject for the wrong
-    reasons. See docs/KUTTA_CONDITION.md section 7.4.
+    reasons. See docs/archive/notes/KUTTA_CONDITION.md section 7.4.
     """
     rows=int(wall_operator.shape[0])
     residual=np.asarray(fun(z),float)
@@ -338,7 +338,7 @@ def solve_multi(mesh, alpha_deg=5., *, kutta=None,kut_weight=5.,
 
     The NumPy/SciPy implementation of this equation set was retired in S9; it is
     preserved at tag numpy-path-frozen-s8 and its answers for the frozen fixtures are
-    docs/issue92/references/. pressure_solver='reference' named the SciPy
+    verification/issue92/references/. pressure_solver='reference' named the SciPy
     trust-region solver and is rejected here on purpose.
 
     kutta=None means PRODUCTION_KUTTA, currently pressure.  When an unpinned call does
@@ -369,7 +369,7 @@ def solve_multi(mesh, alpha_deg=5., *, kutta=None,kut_weight=5.,
     if kutta=='pressure' and pressure_solver not in (None,'structured'):
         raise ValueError(
             "pressure_solver=%r was retired with the NumPy chain; its recorded answers "
-            "are docs/issue92/references/ and its code is tag numpy-path-frozen-s8"
+            "are verification/issue92/references/ and its code is tag numpy-path-frozen-s8"
             % (pressure_solver,))
     from .p1_solve_torch import solve_multi_torch
     requested = kutta

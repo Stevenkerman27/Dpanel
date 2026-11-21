@@ -21,7 +21,7 @@
 
 ## 恢复先读
 
-- 最新方法、构型表及保留误差：[PANEL_ROBUSTNESS.md](../../PANEL_ROBUSTNESS.md)。
+- 最新方法、构型表及保留误差：[PANEL_ROBUSTNESS.md](../../reference/PANEL_ROBUSTNESS.md)。
 - 紧凑证据及原始字段哈希：[summary.json](../../panel_robustness_evidence_v2/summary.json)。
 - 实际入口及依赖：[panel/README.md](../../../panel/README.md)。
 - 路线和总体状态：[SOLVER_ROUTE.md](SOLVER_ROUTE.md)、[DEVELOPMENT.md](DEVELOPMENT.md)。

@@ -57,7 +57,7 @@ is a float64 rounding statement, measured below, not an algebraic identity.
 ## 3. Blocking and threads
 
 Self-panel A on the elliptic fixture (3220 faces, 1728 unknowns), best of 3 warm runs,
-seconds (docs/issue92/block_sweep.json):
+seconds (verification/issue92/block_sweep.json):
 
 | threads | 128x64 | 256x128 | 512x128 | 256x256 | 512x256 | 1024x256 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -84,7 +84,7 @@ an embedder keeps its own thread policy).
 
 ## 4. Parity on the eight frozen fixtures
 
-docs/issue92/influence_parity.json, all fixtures rebuilt from docs/issue92/fixtures with
+verification/issue92/influence_parity.json, all fixtures rebuilt from verification/issue92/fixtures with
 their SHA256 verified first. A and W are compared as max abs difference over the whole
 matrix; relative scale is at most 1.4 for A and 0.32 for W here, so 1e-15 is about 1e-15
 relative.
@@ -170,7 +170,7 @@ ratios measured inside one process are quoted as speedups.
 
 ## 6. The same kernel on CUDA (float64)
 
-docs/issue92/influence_cuda.json, myml interpreter (torch 2.13.0+cu132, CUDA 13.2,
+verification/issue92/influence_cuda.json, myml interpreter (torch 2.13.0+cu132, CUDA 13.2,
 NVIDIA GeForce RTX 5060, 8124 MB), same kernel, same frozen fixtures, sources
 precomputed once and left on the device, gamma contraction on the device:
 
@@ -208,7 +208,7 @@ Two operational facts that cost time to find:
 * No default changed: backend defaults to 'numpy' in both solvers, and the CLI does not
   expose the torch backend yet.
 * No physical accuracy claim: physical_accuracy_accepted stays false, and the accepted
-  convergence statements remain the ones in docs/MESH_CONVERGENCE.md (CL, Trefftz CD).
+  convergence statements remain the ones in docs/reference/MESH_CONVERGENCE.md (CL, Trefftz CD).
 * Not a solver result: the dense LU stays on the CPU and solve time is unchanged. Step 2
   targets the 43% spent in least_squares' dense Jacobian SVD.
 * The GPU numbers are kernel measurements, not workflow measurements: the production
@@ -220,9 +220,9 @@ Two operational facts that cost time to find:
 From the repository root, with PYTHONPATH containing the tree, runs and runs/torch_site,
 and TMP/TEMP/TMPDIR pointing at runs/pipwork:
 
-* python -m tools.issue92.fixtures --out docs/issue92/fixtures
-* python -m tools.issue92.influence_parity --repeat 3 --threads 8 --save-reference runs/issue92/reference --out docs/issue92/influence_parity.json
-* python -m tools.issue92.block_sweep --out docs/issue92/block_sweep.json --repeat 3
+* python -m tools.issue92.fixtures --out verification/issue92/fixtures
+* python -m tools.issue92.influence_parity --repeat 3 --threads 8 --save-reference runs/issue92/reference --out verification/issue92/influence_parity.json
+* python -m tools.issue92.block_sweep --out verification/issue92/block_sweep.json --repeat 3
 * the myml interpreter with -m tools.issue92.influence_cuda --fixtures g1_elliptic,g1_swept30,g1_wingbody_cad_3x,g1_wingbody_cad,g1_wing_rect --reference runs/issue92/reference --repeat 3
 * python -m pytest test/test_batched_influence.py -q
 

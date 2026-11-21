@@ -13,8 +13,8 @@ Two stages, both need SciPy:
   python -m tools.issue92.s7_reference_export export
   python -m tools.issue92.s7_reference_export verify
 
-The bundles are `docs/issue92/references/<fixture>.npz` and the index, with one sha256
-per bundle and the gap table, is `docs/issue92/s7_reference_index.json`.
+The bundles are `verification/issue92/references/<fixture>.npz` and the index, with one sha256
+per bundle and the gap table, is `verification/issue92/s7_reference_index.json`.
 
 What a bundle keeps, and why:
 
@@ -41,8 +41,8 @@ import numpy as np
 from tools.issue92.s3_pressure_parity import CASES, RCOND, _build, _manifest
 
 SCHEMA = "dpanel.issue92.s7.reference.v1"
-OUT = ROOT / "docs/issue92/references"
-INDEX = ROOT / "docs/issue92/s7_reference_index.json"
+OUT = ROOT / "verification/issue92/references"
+INDEX = ROOT / "verification/issue92/s7_reference_index.json"
 LOADS = ("CL", "CL_gamma", "CD_pressure", "CM_y")
 RESIDUALS = ("wall_rms", "jump_rms", "signed_kutta_rms", "pressure_kutta_rms")
 

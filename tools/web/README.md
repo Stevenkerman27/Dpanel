@@ -153,7 +153,7 @@ Web 下一次生成网格会启动新导出进程，无需重启服务。
   （`panel/p1_assembly_torch.py` 的 `_checkpointed`）后，同一 2 截面网格：1720 面（size 0.1）峰值 15,273 → **1,810 MB**，
   单次评估约 68 s；3400 面（size 0.05）3,848 MB，不再被杀。`optimize_runner` 的门禁相应改为
   `max(0.3, 1.2e-3 × 面数 − 0.2)` GB。代价是反向变慢（13.4 s → 17.9 s），因为要多做一次装配重算。
-  细节与 A/B 见 `docs/DIFFERENTIABLE_MEMORY.md`。
+  细节与 A/B 见 `docs/reference/DIFFERENTIABLE_MEMORY.md`。
 - 目标是最小阻力但没设升力下限时，最优解会退化为零升力（实测 CL 0.349 → 0.060），现在会在日志里警告。
 ## HTTP 接口
 
@@ -184,7 +184,7 @@ field = {vertices: [[x,y,z], ...],   # 半域求解器网格（含尾迹节点�
 - **上反角还没有物理验收**：见上一节的免责说明；5°/10° 的 CL 凸起未解释。自由尾迹 + 20° 上反角
   能跑但照样塌陷（CL 0.439 → 0.309 → 0.240，两轮迭代），和平面一致。
 - **自由尾迹会塌陷**：典型 CL 从 +0.39 掉到 +0.26，`converged=false`、`geometry_stable=false`。
-  这是 `docs/ISSUE92_B3_VSPAERO_PROTOCOL.md` §13 记录的未解决缺陷，工作台会在结果表里打黄色警告，
+  这是 `docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md` §13 记录的未解决缺陷，工作台会在结果表里打黄色警告，
   数值不可当气动结论。自由尾迹路径不产生 `field`，结果页会回落到几何视图。
 - **机身的数值影响尚未验收**：同一尺寸下，机翼-only 为 204 面板 / CL +0.4219 / CD 0.01316，
   加机身变成 276 面板 / CL +0.4045 / CD 0.00933。机身壁面只增加浸润面，理论上 CD 应该上升，

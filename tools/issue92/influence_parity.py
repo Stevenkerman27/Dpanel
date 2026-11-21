@@ -7,7 +7,7 @@ Timing is reported per stage, with the reference and the batched path measured o
 same process and the same geometry.
 
 Usage:
-  python -m tools.issue92.influence_parity --out docs/issue92/influence_parity.json
+  python -m tools.issue92.influence_parity --out verification/issue92/influence_parity.json
   python -m tools.issue92.influence_parity --only g1_wing_rect --repeat 5
 """
 from __future__ import annotations
@@ -221,7 +221,7 @@ def _multi_pair(name, entry, repeat, target_block, source_block, save_dir=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="batched influence kernel parity")
-    parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/influence_parity.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "verification/issue92/influence_parity.json")
     parser.add_argument("--only", default=None)
     parser.add_argument("--repeat", type=int, default=3)
     parser.add_argument("--target-block", type=int, default=DEFAULT_TARGET_BLOCK)

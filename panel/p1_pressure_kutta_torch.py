@@ -6,7 +6,7 @@ LAPACK call in that interpreter dies with 0xC0000005 (measured, see
 docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md section 6f). The NumPy/SciPy backend
 therefore cannot be used from inside a torch solve; this module is the torch
 replacement for the reduced pressure-Kutta path, slice S1 of
-docs/ISSUE92_TORCH_PORT_MAP.md.
+docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md.
 
 Same algebra as panel/p1_pressure_kutta_reduced.py, call for call: the wall
 block is factorised once by QR, the Gauss-Newton step is a Woodbury solve in

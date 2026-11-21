@@ -2,7 +2,7 @@
 
 The static guard and the shape/argument validation run everywhere. The numerical
 tests need torch and skip without it; the SciPy parity test also needs
-PANEL_TORCH_PARITY=1 and the committed reference docs/issue92/s2_reference.npz.
+PANEL_TORCH_PARITY=1 and the committed reference verification/issue92/s2_reference.npz.
 """
 import ast
 import importlib.util
@@ -15,7 +15,7 @@ HAS_TORCH = importlib.util.find_spec("torch") is not None
 requires_torch = pytest.mark.skipif(not HAS_TORCH, reason="torch is not installed")
 
 MODULE = Path(__file__).resolve().parents[1] / "panel" / "p1_rank_aware_torch.py"
-REFERENCE = Path(__file__).resolve().parents[1] / "docs" / "issue92" / "s2_reference.npz"
+REFERENCE = Path(__file__).resolve().parents[1] / "verification" / "issue92" / "s2_reference.npz"
 
 
 def _api():

@@ -32,7 +32,7 @@ Usage (a Python that has torch):
 
     python -m tools.issue92.analytic_backend_bench \
         --surface runs/cases/wingbody/half_cad_wingbody_v1/surface.json \
-        --out docs/issue92/analytic_batch_bench.json
+        --out verification/issue92/analytic_batch_bench.json
 """
 from __future__ import annotations
 
@@ -156,7 +156,7 @@ def main(argv=None):
     parser.add_argument('--targets', type=int, default=1024)
     parser.add_argument('--repeats', type=int, default=3)
     parser.add_argument('--out', type=Path,
-                        default=ROOT/'docs/issue92/analytic_batch_bench.json')
+                        default=ROOT/'verification/issue92/analytic_batch_bench.json')
     args = parser.parse_args(argv)
     if args.targets < THRESHOLDS["cuda_min_targets"]:
         parser.error('--targets must be >= ' + str(THRESHOLDS["cuda_min_targets"]))

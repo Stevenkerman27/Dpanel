@@ -192,7 +192,7 @@ def stage_judge():
                                           base["loads"][key]) for key in LOAD_KEYS}
     report = dict(thresholds=THRESHOLDS, rows=rows, structured_vs_reference=reference)
     (OUT / "s6_parity.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
-    (ROOT / "docs/issue92/s6_parity.json").write_text(json.dumps(report, indent=1),
+    (ROOT / "verification/issue92/s6_parity.json").write_text(json.dumps(report, indent=1),
                                                       encoding="utf-8")
     for row in rows:
         bad = [k for k, v in row["loads"].items() if v > THRESHOLDS["loads_relative"]]

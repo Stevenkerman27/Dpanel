@@ -14,7 +14,7 @@ The profiler calls the same public entry points as the shipped CLIs
 production numbers, not a reduced toy path.
 
 Usage:
-  python -m tools.issue92.profile_production --out docs/issue92/phase0_profile.json
+  python -m tools.issue92.profile_production --out verification/issue92/phase0_profile.json
   python -m tools.issue92.profile_production --only g1_wing_rect g2_conventional --repeat 2
 """
 from __future__ import annotations
@@ -266,7 +266,7 @@ def profile_wake(iterations=1):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Issue #92 Phase 0 production profile")
-    parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/phase0_profile.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "verification/issue92/phase0_profile.json")
     parser.add_argument("--only", nargs="+", default=None)
     parser.add_argument("--repeat", type=int, default=1,
                         help="extra warm solves per fixture (timing stability)")
@@ -274,7 +274,7 @@ def main(argv=None):
                         help="also profile one coupled free-wake iteration on the CAD case")
     parser.add_argument("--wake-iterations", type=int, default=1)
     args = parser.parse_args(argv)
-    manifest = json.loads((ROOT / "docs/issue92/fixtures_manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads((ROOT / "verification/issue92/fixtures_manifest.json").read_text(encoding="utf-8"))
     available = [name for name, entry in manifest["fixtures"].items() if entry["status"] == "ok"]
     names = args.only or available
     payload = {"schema": "dpanel.issue92.phase0_profile.v1",

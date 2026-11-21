@@ -89,7 +89,7 @@ def run_case(name, spec, *, alphas, out_dir, device="cpu", backend=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="B3 DPanel side")
-    parser.add_argument("--cases", type=Path, default=ROOT / "docs/issue92/b3_cases.json")
+    parser.add_argument("--cases", type=Path, default=ROOT / "verification/issue92/b3_cases.json")
     parser.add_argument("--out", type=Path, default=ROOT / "runs/benchmarks/b3_vspaero/b3/dpanel.json")
     parser.add_argument("--only", nargs="*", default=None)
     parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu",

@@ -327,7 +327,7 @@ GRASS-plane 需要整机几何/载荷，但本契约只覆盖「多升力面的�
 整机配平、总阻力与训练 reward 仍需外部验证与单独的物理接受流程；本条与
 #36/#30 口径一致：先证明装配与诊断正确，再谈物理精度。
 
-字段形状的可机读示例见 `docs/issue39_schema_example_v2.json`。该文件本身仍只是示例，
+字段形状的可机读示例见 `verification/issue39_schema_example_v2.json`。该文件本身仍只是示例，
 但 v2 声明格式在 Step B 已**有真实 loader**：`panel/run_half_groups.py` 的
 `groups_from_spec()` 读 `dpanel.half_shed_groups.v2`（schema 不符即 `ValueError`），
 再由 `panel/shed_groups.validate_shed_groups()` 执行 D1-D12。

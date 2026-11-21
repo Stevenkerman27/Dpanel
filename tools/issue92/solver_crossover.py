@@ -2,7 +2,7 @@
 
 Measured on the same float64 inputs and the same deterministic diagonally dominant
 matrices, so the comparison isolates the linear-algebra primitive. The real fixture
-unknown counts are printed from docs/issue92/phase0_profile.json so the measured
+unknown counts are printed from verification/issue92/phase0_profile.json so the measured
 crossover can be read against the sizes DPanel actually assembles.
 
 Rules:
@@ -11,7 +11,7 @@ Rules:
   * no silent fallback: if CUDA is unavailable the row is reported as skipped.
 
 Usage:
-  python -m tools.issue92.solver_crossover --out docs/issue92/solver_crossover.json
+  python -m tools.issue92.solver_crossover --out verification/issue92/solver_crossover.json
   python -m tools.issue92.solver_crossover --sizes 256 512 1024 --warm 2
 """
 from __future__ import annotations
@@ -107,7 +107,7 @@ def gmres_dense(a, b, tol=1e-10):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Issue #92 Phase 0 solver crossover")
-    parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/solver_crossover.json")
+    parser.add_argument("--out", type=Path, default=ROOT / "verification/issue92/solver_crossover.json")
     parser.add_argument("--sizes", nargs="+", type=int, default=list(DEFAULT_SIZES))
     parser.add_argument("--warm", type=int, default=3)
     parser.add_argument("--backends", nargs="+", default=["cpu", "torch_cpu", "cuda"],
@@ -265,7 +265,7 @@ def _verdict(rows):
 
 
 def _fixture_sizes():
-    path = ROOT / "docs/issue92/phase0_profile.json"
+    path = ROOT / "verification/issue92/phase0_profile.json"
     if not path.exists():
         return None
     payload = json.loads(path.read_text(encoding="utf-8"))

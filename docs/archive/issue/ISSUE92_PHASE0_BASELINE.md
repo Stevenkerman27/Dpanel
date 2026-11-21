@@ -11,13 +11,13 @@ questions with numbers before any PyTorch code is written:
 3. Which stage should the native backend reproduce first, and with which tolerance?
 
 The answers below are reproducible from the three scripts in tools/issue92 and the
-frozen fixtures in docs/issue92/fixtures.
+frozen fixtures in verification/issue92/fixtures.
 
 ## 1. Method
 
-* Eight geometry-only fixtures (docs/issue92/fixtures/*.npz) are built once and then
+* Eight geometry-only fixtures (verification/issue92/fixtures/*.npz) are built once and then
   frozen by SHA256: each array is hashed in C order and the sorted (name, hash) list is
-  hashed again into one digest recorded in docs/issue92/fixtures_manifest.json. Every
+  hashed again into one digest recorded in verification/issue92/fixtures_manifest.json. Every
   measurement re-verifies that digest before it runs, so the claim that a number belongs
   to a given geometry is checked rather than assumed.
 * Fixtures carry topology and reference data only. They do not store solver settings,
@@ -181,7 +181,7 @@ the assembly and the induced velocity, which are the actual hot spots.
 ## 7b. Why the solve stays on the CPU, and what the GPU is for
 
 The crossover table answers "which dense solver is fastest on this machine", not "why".
-`tools/issue92/gpu_fp64_probe.py` (artifact: `docs/issue92/gpu_fp64_probe.json`) measures the
+`tools/issue92/gpu_fp64_probe.py` (artifact: `verification/issue92/gpu_fp64_probe.json`) measures the
 mechanism directly, in the CUDA interpreter (Python 3.13.14, torch 2.13.0+cu132, CUDA 13.2,
 RTX 5060 with 8.52 GB and 30 SMs). Every number below is float64, synchronised, and the
 host-to-device traffic is timed on its own, so a one-shot solve cannot be confused with a
@@ -249,7 +249,7 @@ from one machine, one GPU and one library version.
 ## 8. What Phase 1 has to reproduce, and how it is checked
 
 The fingerprint below is the parity target for each fixture (recorded in
-docs/issue92/phase0_profile.json). Example for g1_elliptic:
+verification/issue92/phase0_profile.json). Example for g1_elliptic:
 
 | quantity | value |
 | --- | --- |
@@ -290,12 +290,12 @@ re-run of the SciPy path in the same process.
     set PYTHONPATH=D:/3D/Projects/panel/runs/fix_master
     set PANEL_ROOT=D:/3D/Projects/panel/runs/fix_master
 
-    python -m tools.issue92.fixtures --out docs/issue92/fixtures
+    python -m tools.issue92.fixtures --out verification/issue92/fixtures
     python -m tools.issue92.profile_production --wake --wake-iterations 1
-    python -m tools.issue92.solver_crossover --backends cpu --out docs/issue92/solver_crossover_cpu.json
-    python -m tools.issue92.solver_crossover --backends torch_cpu --out docs/issue92/solver_crossover_torchcpu.json
-    python -m tools.issue92.solver_crossover --backends cuda --out docs/issue92/solver_crossover_cuda.json
-    python -m tools.issue92.solver_crossover --merge docs/issue92/solver_crossover_cpu.json docs/issue92/solver_crossover_torchcpu.json docs/issue92/solver_crossover_cuda.json --out docs/issue92/solver_crossover.json
+    python -m tools.issue92.solver_crossover --backends cpu --out verification/issue92/solver_crossover_cpu.json
+    python -m tools.issue92.solver_crossover --backends torch_cpu --out verification/issue92/solver_crossover_torchcpu.json
+    python -m tools.issue92.solver_crossover --backends cuda --out verification/issue92/solver_crossover_cuda.json
+    python -m tools.issue92.solver_crossover --merge verification/issue92/solver_crossover_cpu.json verification/issue92/solver_crossover_torchcpu.json verification/issue92/solver_crossover_cuda.json --out verification/issue92/solver_crossover.json
 
 The CUDA line must run in an interpreter that has a CUDA torch build (myml, with
 C:/Users/zyx20/anaconda3/envs/myml/python.exe on this machine); the other lines run in

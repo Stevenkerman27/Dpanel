@@ -1,7 +1,7 @@
 # 测试状态（2026-11-03）
 
 本页记录**当前工作树实测**的测试基线。历史 PR 的收口报告在
-[archive/notes/TEST_HEALTH_2026-10-30.md](archive/notes/TEST_HEALTH_2026-10-30.md)（master `91d4d2a`、NumPy 链口径），
+[archive/notes/TEST_HEALTH_2026-10-30.md](../archive/notes/TEST_HEALTH_2026-10-30.md)（master `91d4d2a`、NumPy 链口径），
 两边的数字不能直接比较：分支不同、依赖链不同（NumPy vs torch）。
 
 ## 1. 环境

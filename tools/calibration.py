@@ -345,7 +345,7 @@ def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0):
                         rows=refinement),
         notes=["The planform keeps a finite tip chord instead of a cusped tip: a cusped tip "
                "sweeps the trailing edge into the stream direction and the potential-jump "
-               "closure becomes near singular (docs/KUTTA_CONDITION.md section 8).",
+               "closure becomes near singular (docs/archive/notes/KUTTA_CONDITION.md section 8).",
                "CDi is the exact Trefftz integral of the solved circulation, not the near-field "
                "pressure drag, which is unreliable on these coarse chordwise grids."])
 

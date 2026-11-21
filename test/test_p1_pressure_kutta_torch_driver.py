@@ -8,7 +8,7 @@ Two layers:
 * analytic checks of the trailing-edge pressure model and a frozen end-to-end
   case, which need torch and are skipped in the default .conda_env.
 
-The frozen case (docs/issue92/s3_reference_g1_wing_rect.npz) holds the system,
+The frozen case (verification/issue92/s3_reference_g1_wing_rect.npz) holds the system,
 the linear initial state and the NumPy structured result, all produced in a
 separate process by tools.issue92.s3_pressure_parity bundle. It is gated by
 PANEL_TORCH_PARITY=1 because a passing run leaves the interpreter unusable for
@@ -26,7 +26,7 @@ import numpy as np
 import pytest
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
-BUNDLE = REPO / "docs" / "issue92" / "s3_reference_g1_wing_rect.npz"
+BUNDLE = REPO / "verification" / "issue92" / "s3_reference_g1_wing_rect.npz"
 TORCH_MODULES = ("panel/p1_pressure_kutta_torch.py",
                  "panel/p1_pressure_kutta_torch_driver.py",
                  "panel/p1_rank_aware_torch.py",

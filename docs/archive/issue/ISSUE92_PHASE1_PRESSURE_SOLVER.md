@@ -113,7 +113,7 @@ the line search ended the run, which is the same situation the reference reports
 
 ## 6. A/B over the eight frozen fixtures
 
-`docs/issue92/pressure_solver_bench.json`, `repeat = 1`, `max_nfev = 100` (80 for the
+`verification/issue92/pressure_solver_bench.json`, `repeat = 1`, `max_nfev = 100` (80 for the
 multi-body cases), same fixtures and digests as Phase 0 (`fixture_verified` in the
 JSON). `nonlin` is the nonlinear stage only, so the assembly work is excluded and the
 comparison is about the stage this change replaces.

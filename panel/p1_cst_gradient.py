@@ -555,7 +555,7 @@ def fixed_wake_geometry(wing, xyz, wake, reference_area, alpha_deg, max_nfev,
     kutta=None takes the production closure (PRODUCTION_KUTTA, potential_jump); pass
     kutta="pressure" for the weighted pressure-Kutta least squares that every study
     before 2026-11-10 used.  The Morino closure is solved by Newton in the ng
-    trailing-edge unknowns and refuses an ill-conditioned tip (docs/KUTTA_CONDITION.md
+    trailing-edge unknowns and refuses an ill-conditioned tip (docs/archive/notes/KUTTA_CONDITION.md
     sections 8 and 11); this path never falls back, because a gradient must belong to
     one closure.
     pressure_recovery="area" reconstructs both bank velocities at the same TE node.

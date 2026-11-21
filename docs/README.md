@@ -1,11 +1,22 @@
 # 文档索引
 
-打开这一页应该能在十分钟内知道**该读哪一篇**。四层：
+打开这一页应该能在十分钟内知道**该读哪一篇**。`docs/` 顶层只放人读的文档，
+过程材料（日志、移植清单、协议、原始数据）一律不在顶层：
 
-1. **路线层（3 篇）** —— 项目现在实际跑的是什么、为什么这样选；
-2. **状态层（1 处）** —— [STATUS.md](../STATUS.md) 是唯一的状态来源；
-3. **参考层（15 篇）** —— 分模块的验收/标定/证据，按主题查，不需要通读；
-4. **归档（`archive/`）** —— 历史交接、PR/issue 报告，只读。
+```
+docs/
+├── README.md              这一页（分层索引）
+├── ROUTE.md               路线层 ①  实际求解链 + 各入口默认值
+├── TRAILING_EDGE.md       路线层 ②  后缘闭包 × 速度恢复
+├── ISSUE77_92.md          路线层 ③  两次大修留下了什么
+├── RETIRED_RESEARCH.md    退役代码与降级文档清单
+├── reference/             15 篇：分模块的验收/标定/模型入口，按主题查
+└── archive/               历史：pr/ issue/ notes/ root/ evidence/ + 旧数据包
+```
+
+- **状态层只有一处**：[STATUS.md](../STATUS.md)。
+- **测试重放用的数据不在 `docs/`**：`verification/issue92/`（65 个文件，含 `fixtures/`）与
+  `verification/issue77/`，由 `test/test_frozen_bundle_parity.py` 等直接读取。
 
 > 规则：文档与 `STATUS.md` 冲突时以 `STATUS.md` 为准；文档与代码冲突时以代码为准，
 > 并且那本身就是一个要修的 bug（见 `ROUTE.md` §5）。
@@ -32,31 +43,31 @@
 
 | 文档 | 内容 | 口径 |
 | --- | --- | --- |
-| [ACCEPTANCE.md](ACCEPTANCE.md) | `tools/acceptance.py`：同工况多设置并排比较，打印绝对/相对差与解析参考 | 刻意**不设阈值** |
-| [TEST_STATUS.md](TEST_STATUS.md) | 测试基线、已知失败、环境矩阵（2026-11-03 口径） | 历史基线，最新数字看 STATUS.md |
-| [CALIBRATION.md](CALIBRATION.md) | #115 标模链 C01 圆柱 → C06 NACA0012，参考值在 `benchmarks/calibration/reference.json` | 验收套件 |
-| [ERROR_SEPARATION.md](ERROR_SEPARATION.md) | 几何/离散/势重构/尾缘四类误差预算（2026-10-25，未复跑） | 误差量级记录 |
+| [ACCEPTANCE.md](reference/ACCEPTANCE.md) | `tools/acceptance.py`：同工况多设置并排比较，打印绝对/相对差与解析参考 | 刻意**不设阈值** |
+| [TEST_STATUS.md](reference/TEST_STATUS.md) | 测试基线、已知失败、环境矩阵（2026-11-03 口径） | 历史基线，最新数字看 STATUS.md |
+| [CALIBRATION.md](reference/CALIBRATION.md) | #115 标模链 C01 圆柱 → C06 NACA0012，参考值在 `benchmarks/calibration/reference.json` | 验收套件 |
+| [ERROR_SEPARATION.md](reference/ERROR_SEPARATION.md) | 几何/离散/势重构/尾缘四类误差预算（2026-10-25，未复跑） | 误差量级记录 |
 
 ### 几何与网格
 
 | 文档 | 内容 |
 | --- | --- |
-| [GEOMETRY_ROBUSTNESS.md](GEOMETRY_ROBUSTNESS.md) | 后掠/椭圆/BWB/翼身的鲁棒性矩阵（程序化生成，JAX 0.10.2 时代） |
-| [PANEL_ROBUSTNESS.md](PANEL_ROBUSTNESS.md) | 翼身接触尾迹面元：37/37 主矩阵、180/180 标量比较（不认证物理精度） |
-| [MESH_CONVERGENCE.md](MESH_CONVERGENCE.md) | 半模 NACA4412 翼身 5° 的网格收敛（2026-10-26） |
-| [MESH_FEATURE_SIZE.md](MESH_FEATURE_SIZE.md) | 前缘局部加密（平均边长 0.220 → 0.120 m） |
-| [MESH_QUALITY_GATES.md](MESH_QUALITY_GATES.md) | #42 OCC 网格预算与质量门禁（可选补丁，不改默认） |
-| [HALF_MODEL_SCALING.md](HALF_MODEL_SCALING.md) | 半模 396/805/1205 壁面的 LU vs 预条件 GMRES 成本 |
+| [GEOMETRY_ROBUSTNESS.md](reference/GEOMETRY_ROBUSTNESS.md) | 后掠/椭圆/BWB/翼身的鲁棒性矩阵（程序化生成，JAX 0.10.2 时代） |
+| [PANEL_ROBUSTNESS.md](reference/PANEL_ROBUSTNESS.md) | 翼身接触尾迹面元：37/37 主矩阵、180/180 标量比较（不认证物理精度） |
+| [MESH_CONVERGENCE.md](reference/MESH_CONVERGENCE.md) | 半模 NACA4412 翼身 5° 的网格收敛（2026-10-26） |
+| [MESH_FEATURE_SIZE.md](reference/MESH_FEATURE_SIZE.md) | 前缘局部加密（平均边长 0.220 → 0.120 m） |
+| [MESH_QUALITY_GATES.md](reference/MESH_QUALITY_GATES.md) | #42 OCC 网格预算与质量门禁（可选补丁，不改默认） |
+| [HALF_MODEL_SCALING.md](reference/HALF_MODEL_SCALING.md) | 半模 396/805/1205 壁面的 LU vs 预条件 GMRES 成本 |
 
 ### 模型、可微与力
 
 | 文档 | 内容 |
 | --- | --- |
-| [ARCHITECTURE_WAKE_MODELS.md](ARCHITECTURE_WAKE_MODELS.md) | 尾迹模型三轴（表示/求值器/更新）、材料线推进、B3 实验与合并边界 |
-| [DIFFERENTIABLE_MEMORY.md](DIFFERENTIABLE_MEMORY.md) | 反传内存 15,273 → 1,810 MB（1720 面板），梯度一致性 ~7e-9 |
-| [GEOMETRY_DIFFERENTIABILITY.md](GEOMETRY_DIFFERENTIABILITY.md) | 固定拓扑几何 VJP 的接口设计 + 最小 JAX 数值证明（未进生产） |
-| [EXACT_TREFFTZ_ENERGY.md](EXACT_TREFFTZ_ENERGY.md) | 分段线性 Γ 的解析理想 Trefftz 积分（#49），生产 CDi 用的就是它 |
-| [VSPAPI.md](VSPAPI.md) | `vspapi/`：仓库内唯一 OpenVSP/VSPAERO 客户端，外部对照用 |
+| [ARCHITECTURE_WAKE_MODELS.md](reference/ARCHITECTURE_WAKE_MODELS.md) | 尾迹模型三轴（表示/求值器/更新）、材料线推进、B3 实验与合并边界 |
+| [DIFFERENTIABLE_MEMORY.md](reference/DIFFERENTIABLE_MEMORY.md) | 反传内存 15,273 → 1,810 MB（1720 面板），梯度一致性 ~7e-9 |
+| [GEOMETRY_DIFFERENTIABILITY.md](reference/GEOMETRY_DIFFERENTIABILITY.md) | 固定拓扑几何 VJP 的接口设计 + 最小 JAX 数值证明（未进生产） |
+| [EXACT_TREFFTZ_ENERGY.md](reference/EXACT_TREFFTZ_ENERGY.md) | 分段线性 Γ 的解析理想 Trefftz 积分（#49），生产 CDi 用的就是它 |
+| [VSPAPI.md](reference/VSPAPI.md) | `vspapi/`：仓库内唯一 OpenVSP/VSPAERO 客户端，外部对照用 |
 
 ### 证据日志（曾经是入口，现在只当证据读）
 
@@ -64,23 +75,24 @@
 
 | 文档 | 性质 |
 | --- | --- |
-| [KUTTA_CONDITION.md](KUTTA_CONDITION.md) | 814 行后缘闭包实验日志（§3 线性闭包 vs ITKUT、§6 五层网格、§10 恢复 A/B、§11 平面形状对比）→ 结论见 [TRAILING_EDGE.md](TRAILING_EDGE.md) |
-| [ISSUE92_TORCH_PORT_MAP.md](ISSUE92_TORCH_PORT_MAP.md) | torch 移植 AST 清单与 S1–S12 切片 → 摘要见 [ISSUE77_92.md](ISSUE77_92.md) |
-| [ISSUE92_B3_VSPAERO_PROTOCOL.md](ISSUE92_B3_VSPAERO_PROTOCOL.md) | 自由尾迹/B3 与 VSPAERO 的对照协议（600 行）；VSPAERO 不是真值 |
-| [P1_G2_COUPLED.md](P1_G2_COUPLED.md) | 部分过时：“NumPy/SciPy CPU”“基座 G1 已退役”已不成立；G2 耦合实测数字仍可用 |
+| [KUTTA_CONDITION.md](archive/notes/KUTTA_CONDITION.md) | 814 行后缘闭包实验日志（§3 线性闭包 vs ITKUT、§6 五层网格、§10 恢复 A/B、§11 平面形状对比）→ 结论见 [TRAILING_EDGE.md](TRAILING_EDGE.md) |
+| [ISSUE92_TORCH_PORT_MAP.md](archive/issue/ISSUE92_TORCH_PORT_MAP.md) | torch 移植 AST 清单与 S1–S12 切片 → 摘要见 [ISSUE77_92.md](ISSUE77_92.md) |
+| [ISSUE92_B3_VSPAERO_PROTOCOL.md](archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md) | 自由尾迹/B3 与 VSPAERO 的对照协议（600 行）；VSPAERO 不是真值 |
+| [P1_G2_COUPLED.md](archive/notes/P1_G2_COUPLED.md) | 部分过时：“NumPy/SciPy CPU”“基座 G1 已退役”已不成立；G2 耦合实测数字仍可用 |
 
 ## 4. 归档与证据包
 
 - `archive/pr/`（19 篇）PR 报告；`archive/issue/`（53 篇）单文件 issue 报告；
   `archive/notes/`（35 篇）一次性分析、阶段总结、历史交接；`archive/evidence/` 已退役研究线的原始数据。
-- 结论在正文、原始数据在 `issueNN/` 子目录（`issue92/`、`issue84/`、`issue77/`、`issue71/`、
-  `issue49_vspaero/`、`geometry_robustness/`、`panel_robustness_evidence_v2/`）。
+- 结论在正文、原始数据在同名子目录（`issue84/`、`issue71/`、`issue49_vspaero/`、
+  `geometry_robustness/`、`panel_robustness_evidence_v2/`）。#92 与 #77 的数据已搬到
+  `verification/issue92/`、`verification/issue77/`（测试直接读，不能放在文档目录）。
 - 被删掉的代码去哪找：[RETIRED_RESEARCH.md](RETIRED_RESEARCH.md)（S12 退役清单 + tag `research-p1-line-archive`）。
 - 归档不等于失效：路径改过，内容没改，`git log --follow` 可追溯。
 
 ## 5. 维护规则
 
-1. **新文档先自问“半年后还有人读吗”。** 会 → 放本层并加一行；只是这次验收 → `archive/`，数据进 `issueNN/`。
+1. **新文档先自问“半年后还有人读吗”。** 会 → 放本层并加一行；只是这次验收 → `archive/`；被测试重放的数据进 `verification/issueNN/`。
 2. **一篇只回答一个问题。** 过程按时间追加的日志不算结论文档，写完当天就该把结论搬进路线层。
 3. 每篇结论文档写清：数据文件路径、复现命令、以及**不声明**的部分。
 4. 先声明阈值再看数；阈值写进文档也写死在被测脚本里，事后改写要留更正记录。

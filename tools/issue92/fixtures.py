@@ -7,7 +7,7 @@ the sha256 of every array (raw little-endian bytes, C order) plus one digest ove
 the sorted (name, sha256) pairs.
 
 Usage:
-  python -m tools.issue92.fixtures --out docs/issue92/fixtures
+  python -m tools.issue92.fixtures --out verification/issue92/fixtures
 """
 from __future__ import annotations
 
@@ -173,7 +173,7 @@ def build(out_dir):
 
 
 def manifest_path(arrays_dir=None):
-    arrays_dir = Path(arrays_dir or (ROOT / "docs/issue92/fixtures"))
+    arrays_dir = Path(arrays_dir or (ROOT / "verification/issue92/fixtures"))
     return arrays_dir.parent / "fixtures_manifest.json"
 
 
@@ -183,7 +183,7 @@ def load_manifest(arrays_dir=None):
 
 def available(name, arrays_dir=None):
     """True when the fixture file exists and the manifest records it as built."""
-    arrays_dir = Path(arrays_dir or (ROOT / "docs/issue92/fixtures"))
+    arrays_dir = Path(arrays_dir or (ROOT / "verification/issue92/fixtures"))
     if not (arrays_dir / (name + ".npz")).exists():
         return False
     entry = load_manifest(arrays_dir)["fixtures"].get(name, {})
@@ -192,7 +192,7 @@ def available(name, arrays_dir=None):
 
 def load(name, arrays_dir=None):
     """Load one fixture into a dict of arrays; raises if the manifest digest drifts."""
-    arrays_dir = Path(arrays_dir or (ROOT / "docs/issue92/fixtures"))
+    arrays_dir = Path(arrays_dir or (ROOT / "verification/issue92/fixtures"))
     entry = load_manifest(arrays_dir)["fixtures"][name]
     if entry["status"] != "ok":
         raise ValueError("fixture unavailable: " + name + ": " + entry["reason"])
@@ -206,7 +206,7 @@ def load(name, arrays_dir=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--out", type=Path, default=ROOT / "docs/issue92/fixtures")
+    parser.add_argument("--out", type=Path, default=ROOT / "verification/issue92/fixtures")
     args = parser.parse_args(argv)
     manifest = build(args.out)
     for name, entry in manifest["fixtures"].items():

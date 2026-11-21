@@ -1,6 +1,6 @@
 # B3 尾迹位置敏感性证据（issue #113）
 
-实验结果与方法解释见 `docs/ARCHITECTURE_WAKE_MODELS.md` 第 10 节和
+实验结果与方法解释见 `docs/reference/ARCHITECTURE_WAKE_MODELS.md` 第 10 节和
 `STATUS.md`。`manifest.json` 的 `execution_complete` 只表示计划作业和
 独立审计已收集，不表示物理精度或所有状态通过验收。
 

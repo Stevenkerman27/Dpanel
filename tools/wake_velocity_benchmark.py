@@ -27,7 +27,7 @@ if args.out.exists():
     raise FileExistsError(args.out)
 root = Path(__file__).resolve().parents[1]
 torch.set_num_threads(int(os.environ.get("OMP_NUM_THREADS","1")))
-spec = json.loads((root/"docs/issue92/b3_cases.json").read_text())["cases"][args.case]
+spec = json.loads((root/"verification/issue92/b3_cases.json").read_text())["cases"][args.case]
 wing = _wing(spec)
 mesh = combine_wings([wing],reference_chord=spec["cref"],reference_area=spec["sref"])
 snapshot = root/"runs/verification/issue102_wake_sensitivity"/args.case/"initial_state.npz"

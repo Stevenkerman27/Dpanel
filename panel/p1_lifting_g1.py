@@ -509,7 +509,7 @@ def solve(wing,alpha_deg=5., *, kutta=None, wall_weight=1.,
     tools read. The torch single-wing kernel
     (p1_solve_torch.solve_single_torch) was a second implementation of the same
     equations and has been deleted; the retired NumPy/SciPy chain is preserved at tag
-    numpy-path-frozen-s8 with its recorded answers in docs/issue92/references/.
+    numpy-path-frozen-s8 with its recorded answers in verification/issue92/references/.
 
     wall_weight and jump_weight belonged to that retired single-wing weighting. The
     Any other legacy wall/jump weight is rejected rather than silently ignored.

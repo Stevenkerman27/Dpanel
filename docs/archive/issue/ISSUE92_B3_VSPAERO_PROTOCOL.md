@@ -1,7 +1,7 @@
 # B3: DPanel versus VSPAERO on four geometries
 
 > **实验协议（2026-11-21 降级）**：本文是自由尾迹/B3 与 VSPAERO 的对照协议，不是路线入口。
-> 摘要见 [ISSUE77_92.md](ISSUE77_92.md)；VSPAERO 不是真值 oracle。
+> 摘要见 [ISSUE77_92.md](../../ISSUE77_92.md)；VSPAERO 不是真值 oracle。
 
 
 Issue #92, Route B, third gate. This document records the protocol, the raw
@@ -51,7 +51,7 @@ than DPanel, which carries thickness. Mach 0, beta 0, `wake_iters = 1`,
 for rect, which is a full-span mesh.
 
 The manifest, with a SHA-256 over the stations, reference quantities and moment
-reference of each case, is `docs/issue92/b3_cases.json`.
+reference of each case, is `verification/issue92/b3_cases.json`.
 
 ## 3. Two things that did not work, and why the protocol looks like this
 
@@ -159,7 +159,7 @@ panel with its own tip and trailing-edge treatment; the ~7-10 per cent bias is
 consistent across four planforms and two mesh levels, so it is not noise. It is
 also not evidence that either code is wrong: the two implementations discretise
 the same equations differently, and the repository already records that its
-own near-field pressure drag does not converge (docs/MESH_CONVERGENCE.md).
+own near-field pressure drag does not converge (docs/reference/MESH_CONVERGENCE.md).
 
 **Camber, measured not assumed.** The zero-incidence intercept of DPanel's CL
 is +0.1567 for swept30 and +0.1033 for bwb, which is camber lift (NACA 2412 and
@@ -287,7 +287,7 @@ VSPAERO needs `PYTHONPATH=D:/3D/Projects/OpenVSP-3.55.0-win64/python/openvsp` (2
 (3.13). The DPanel side needs torch: the repository `.conda_env` (3.11) has
 no torch, so both passes recorded here ran on Python 3.13 + torch 2.13. Raw
 output is `runs/benchmarks/b3_vspaero/b3/{dpanel,vspaero}.json`; the gate
-report is `docs/issue92/b3_matrix.json`. Both raw files went missing from
+report is `verification/issue92/b3_matrix.json`. Both raw files went missing from
 the working tree during the 2026-11-03 `runs/` reorganisation; section 10
 records what that costs and how the DPanel side was regenerated.
 
@@ -304,9 +304,9 @@ records what that costs and how the DPanel side was regenerated.
   DPanel panel solution.
 * `tools/issue92/b3_free_wake.py` the fixed-to-free comparison, one child
   process per case so a native crash cannot take the report with it.
-* `docs/issue92/b3_cases.json` the manifest, `docs/issue92/b3_matrix.json`
-  the gate report, `docs/issue92/b3_cp.json` and
-  `docs/issue92/b3_free_wake.json` the two new records.
+* `verification/issue92/b3_cases.json` the manifest, `verification/issue92/b3_matrix.json`
+  the gate report, `verification/issue92/b3_cp.json` and
+  `verification/issue92/b3_free_wake.json` the two new records.
 
 ## 10. CUDA rerun (2026-11-03)
 
@@ -329,7 +329,7 @@ protocol changes. The output file now carries a `provenance` block: Python
 
 **Parity.** The CPU side was rerun in the same interpreter and torch build
 rather than compared against a saved baseline, and that rerun reproduces the
-numbers already published in `docs/issue92/b3_matrix.json` to 2.8e-15..1.8e-10
+numbers already published in `verification/issue92/b3_matrix.json` to 2.8e-15..1.8e-10
 relative — so the pair below differs by device, not by code version.
 
 | quantity | worst CPU-vs-CUDA difference | where |
@@ -377,7 +377,7 @@ agreeing with a CPU is a reproducibility statement, and
 `vsp_smoke.json`: both raw outputs of the original gate (`dpanel.json` and
 `vspaero.json`) were removed during the 2026-11-03 `runs/` reorganisation and
 are not in git. The analysed numbers survive in the committed
-`docs/issue92/b3_matrix.json`, and this rerun restores the DPanel side as
+`verification/issue92/b3_matrix.json`, and this rerun restores the DPanel side as
 `dpanel_cpu.json` and `dpanel_cuda.json`. The VSPAERO side was regenerated on
 2026-11-03 as `vspaero.json` (sixteen rows, `vsppytools` + OpenVSP 3.55,
 command in section 8), which is what let the moment and section-Cp blocks of
@@ -475,7 +475,7 @@ triangles while DPanel has quad panels, and a 20-strip average smooths the
 leading-edge suction peak that carries a large share of the section force and
 sits in a single strip on one side only. Turning this into a gate would first
 need a chordwise density convergence study on both sides; until then the numbers
-are recorded in `docs/issue92/b3_cp.json` and the gate note in that file says the
+are recorded in `verification/issue92/b3_cp.json` and the gate note in that file says the
 same thing.
 
 ## 13. Fixed wake to free wake (2026-11-03)
@@ -555,7 +555,7 @@ used for the wake influence product. Verification: the merged swept30 mesh
 assembles in 5.7 s and solves to CL = 0.40989704632820095, against
 0.4098970463282688 from the single-wing path (7e-14 apart), so `combine_wings`
 on one wing is physically a no-op and the block multiply is numerically
-transparent. The trap is recorded in `docs/TEST_STATUS.md` because it will bite
+transparent. The trap is recorded in `docs/reference/TEST_STATUS.md` because it will bite
 any other large product in that environment.
 
 ### 13.2 The remaining failure: the load leaves the wing
@@ -592,7 +592,7 @@ convergence, so resolution alone is not the trigger.
 
 Consequence for this gate: the free-wake block is judged for rect only
 (CL -4.68 %, CM 0.0189, both inside budget). For swept30, elliptic and bwb the
-numbers in `docs/issue92/b3_free_wake.json` are a defect report, not a
+numbers in `verification/issue92/b3_free_wake.json` are a defect report, not a
 comparison. Fixing this is separate work; the candidates are freezing the first
 few wake rows, a wake-position gate (the module already has `slip_gate` and
 `max_step_chord` hooks, both off by default), or a wake-doublet basis that stays

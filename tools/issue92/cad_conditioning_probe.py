@@ -1,7 +1,7 @@
 """Why the g1_wingbody_cad pressure derivative cannot be certified (Route B, slice S8).
 
 Reads the pickled system that `python -m tools.issue92.s8_adjoint --stage prepare` writes and
-answers two questions that section 17.4 of docs/ISSUE92_TORCH_PORT_MAP.md quotes:
+answers two questions that section 17.4 of docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md quotes:
 
   stationarity  how far the forward solve is from a stationary point of the quartic
                 objective, for several iteration caps;

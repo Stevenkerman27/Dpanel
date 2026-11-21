@@ -52,7 +52,7 @@ KUTTA = "pressure"
 
 def _manifest():
     from tools.issue92 import fixtures
-    return json.loads((ROOT / "docs/issue92/fixtures_manifest.json").read_text(encoding="utf-8"))
+    return json.loads((ROOT / "verification/issue92/fixtures_manifest.json").read_text(encoding="utf-8"))
 
 
 def _build(name, entry):
@@ -392,7 +392,7 @@ def main(argv=None):
     elif args.stage == "torch":
         torch(args.work, args.only, args.device)
     elif args.stage == "bundle":
-        target = args.out or (ROOT / "docs/issue92/s3_reference_g1_wing_rect.npz")
+        target = args.out or (ROOT / "verification/issue92/s3_reference_g1_wing_rect.npz")
         print(json.dumps(bundle("g1_wing_rect", target)))
     else:
         judge(args.work, args.out, args.only)

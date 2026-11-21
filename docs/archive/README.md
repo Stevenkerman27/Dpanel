@@ -3,8 +3,9 @@
 这里的文档按"当时的交付单元"分组，不再更新：
 
 - `pr/`：PR 验收报告（`PRnn_*`）。
-- `issue/`：单文件 issue 报告（`ISSUEnn_*`）。对应的原始数据仍在该 issue 的证据目录
-  （`docs/issueNN/`），本层只放结论文字。
+- `issue/`：单文件 issue 报告（`ISSUEnn_*`）。原始数据在同名子目录（`issue84/`、`issue71/` 等）；
+  2026-11-21 起 #92/#77 的数据移出文档树，放到 `verification/issue92/`、`verification/issue77/`
+  （测试直接读），本层只放结论文字。
 - `notes/`：一次性分析、阶段总结、历史交接（`PAUSE_HANDOFF_*`、`CLEANUP_*`、`STAGE1_*` 等）。
 - `evidence/`：已退役 PR/研究线的原始证据目录（pr26–pr36、wake_*_20261026、mesh_*_verify、
   issue28/issue49_phase0、wingbody、shed_groups_cad），以及 `p1_receipts/`。

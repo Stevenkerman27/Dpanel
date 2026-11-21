@@ -98,7 +98,7 @@ def main(argv=None):
     ap.add_argument("--max-nfev", type=int, default=100)
     ap.add_argument("--multi-max-nfev", type=int, default=80)
     ap.add_argument("--repeat", type=int, default=1)
-    ap.add_argument("--out", type=Path, default=ROOT / "docs/issue92/pressure_solver_bench.json")
+    ap.add_argument("--out", type=Path, default=ROOT / "verification/issue92/pressure_solver_bench.json")
     args = ap.parse_args(argv)
 
     solvers = [s.strip() for s in args.solvers.split(",") if s.strip()]

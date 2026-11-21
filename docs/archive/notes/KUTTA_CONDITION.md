@@ -1,7 +1,7 @@
 # 后缘 Kutta 条件：现状、理论、实测与两级求解方案
 
 > **证据日志（2026-11-21 降级）**：本文是按时间追加的后缘闭包实验记录，**不再是入口文档**。
-> 当前结论见 [TRAILING_EDGE.md](TRAILING_EDGE.md)；注意 §11.2 的“potential_jump 在后掠翼上
+> 当前结论见 [TRAILING_EDGE.md](../../TRAILING_EDGE.md)；注意 §11.2 的“potential_jump 在后掠翼上
 > CDi 高 6 倍”是在 **collocation 壁面 + face 恢复**下测的，生产口径（Galerkin + area）复测不成立
 > （见 TRAILING_EDGE.md §5）。
 
@@ -421,7 +421,7 @@ cond 6.4e4 却有 8 次变号）；尖端弦长比用后缘点的 `hypot(x, z)` 
     `pressure_kutta_rms=2.63e−15`，CL=0.294953687 对 pressure 的 0.295070972。
 * 回归：`test/test_p1_cst_gradient.py` 新增 `test_potential_jump_matches_production_solver` 与
   `test_potential_jump_production_handles_two_groups`；三个 P1 文件 20 passed。
-* **默认为什么不跟着换**：`docs/issue92/references/` 与大部分冻结测试的期望值都是 pressure 下的数，
+* **默认为什么不跟着换**：`verification/issue92/references/` 与大部分冻结测试的期望值都是 pressure 下的数，
   换默认要让它们一次性失效并重跑生成参考。代码上现在只剩「改一个默认值 + 重跑参考」这一步，
   这是策略决定，不是技术阻塞。
 

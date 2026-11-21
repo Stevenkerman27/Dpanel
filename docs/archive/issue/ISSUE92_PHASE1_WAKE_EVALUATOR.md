@@ -36,7 +36,7 @@ Five configurations, all on the same 1666 triangles:
 | method 2 rm_regularized_p1, projection_fan 48x8 | 16 | 35.066 | 2191.634 |
 | method 2 rm_regularized_p1, projection_fan_adaptive 16x8 | 16 | 57.077 | 3567.299 |
 
-Raw data: docs/issue92/wake_evaluator_profile.json. Absolute seconds are not
+Raw data: verification/issue92/wake_evaluator_profile.json. Absolute seconds are not
 portable between machines; only ratios inside one run are used here.
 
 ## 2. Stage attribution for the fan
@@ -90,7 +90,7 @@ Replacing the 1.5 power by sqrt(x)*x in the same micro-benchmark is worth only
 
 The same tool sweeps (fan_order, strips) against a fixed 48x8 reference on 16
 targets and reports the maximum relative velocity difference over the target set
-(docs/issue92/wake_fan_strips_sweep.json):
+(verification/issue92/wake_fan_strips_sweep.json):
 
 | fan_order x strips | ms/target | sub/target | max rel err |
 | --- | --- | --- | --- |
@@ -272,7 +272,7 @@ Two facts fix the design before any tuning:
    evaluated with the fan at 48x8. A plain tensor map needs order 32 for the 1e-4
    level; order 16 is nowhere near it even at 20 core radii.
 
-Near fan 48x1 (docs/issue92/hybrid_acceptance_g2.json), 109 targets, 9 cells,
+Near fan 48x1 (verification/issue92/hybrid_acceptance_g2.json), 109 targets, 9 cells,
 cost ratios against the 48x8 reference and against 48x1:
 
 | near core / far order | max | p90 | median | cost | vs 48x1 | verdict |
@@ -287,7 +287,7 @@ cost ratios against the 48x8 reference and against 48x1:
 | 20 / 12 | 1.86e-02 | 4.30e-03 | 1.59e-08 | 0.019 | 0.145 | no |
 | 20 / 16 | 5.01e-03 | 3.36e-03 | 1.98e-10 | 0.024 | 0.179 | no |
 
-Near fan 48x8 (docs/issue92/hybrid_acceptance_g2_near8.json), same grid; the cost
+Near fan 48x8 (verification/issue92/hybrid_acceptance_g2_near8.json), same grid; the cost
 column is also against 48x1 because the baseline and the near rule are then the same
 configuration:
 
@@ -303,7 +303,7 @@ configuration:
 | 20 / 12 | 1.92e-02 | 5.60e-03 | 1.04e-08 | 0.032 | no |
 | 20 / 16 | 3.72e-03 | 6.76e-04 | 1.37e-10 | 0.037 | no |
 
-The far order is then raised (docs/issue92/hybrid_acceptance_g2_far32.json, near fan
+The far order is then raised (verification/issue92/hybrid_acceptance_g2_far32.json, near fan
 48x8):
 
 | near core / far order | max | p90 | median | cost | verdict |
@@ -532,7 +532,7 @@ At the decision level the backends are interchangeable.
 ### Declared thresholds, and the four that were missed
 
 The bench declared `numpy >= 1.3x`, `torch CPU <= 1e-12`, `torch CUDA <= 1e-11`,
-`CUDA >= 5x` before it ran (`docs/issue92/analytic_batch_bench.json`). The CUDA speed-up and
+`CUDA >= 5x` before it ran (`verification/issue92/analytic_batch_bench.json`). The CUDA speed-up and
 the gate equivalence pass; four checks fail and are left failing in the JSON rather than
 relaxed after the fact:
 
@@ -597,12 +597,12 @@ Consequences, stated plainly:
 
     python -m tools.issue92.wake_evaluator_profile \
         --fan-targets 16 --sweep-targets 16 \
-        --out docs/issue92/wake_evaluator_profile.json \
-        --sweep-out docs/issue92/wake_fan_strips_sweep.json
+        --out verification/issue92/wake_evaluator_profile.json \
+        --sweep-out verification/issue92/wake_fan_strips_sweep.json
 
 Contract tests: test/test_issue92_wake_profile.py (5 tests, 0.4 s, no fixtures).
 
-Far-field probe: python -m tools.issue92.far_field_probe --bands 3 10 30 100 --near-share (docs/issue92/far_field_bands.json).
+Far-field probe: python -m tools.issue92.far_field_probe --bands 3 10 30 100 --near-share (verification/issue92/far_field_bands.json).
 
 Hybrid acceptance (section 6c):
 
@@ -611,7 +611,7 @@ Hybrid acceptance (section 6c):
         --csv eps:runs/issue84/projection_gate_eps.csv \
         --csv quad:runs/issue84/projection_gate_quad.csv \
         --fan-strips 8 --near-cores 10 20 --far-orders 24 32 \
-        --out docs/issue92/hybrid_acceptance_g2_far32.json
+        --out verification/issue92/hybrid_acceptance_g2_far32.json
 
 Hybrid contract tests: test/test_p1_hybrid_area.py (16 tests, 0.14 s, no fixtures).
 
@@ -624,9 +624,9 @@ context dies with a Windows access violation in one process:
         --csv eps:runs/issue84/projection_gate_eps.csv \
         --csv quad:runs/issue84/projection_gate_quad.csv
     python -m tools.issue92.backend_parity \
-        --geometry runs/issue92/parity_g2.npz --out docs/issue92/backend_parity.json
+        --geometry runs/issue92/parity_g2.npz --out verification/issue92/backend_parity.json
     python -m tools.issue92.analytic_bench \
-        --geometry runs/issue92/parity_g2.npz --out docs/issue92/analytic_torch_bench.json
+        --geometry runs/issue92/parity_g2.npz --out verification/issue92/analytic_torch_bench.json
 
 Backend tests need torch, which lives in the other interpreter; test/conftest.py imports
 jax, so a stub is used to run them there:
@@ -641,7 +641,7 @@ that the CPU and CUDA rows are populated:
 
     python -m tools.issue92.analytic_backend_bench \
         --surface <repo>/runs/half_cad_wingbody_v1/surface.json \
-        --out docs/issue92/analytic_batch_bench.json
+        --out verification/issue92/analytic_batch_bench.json
 
 Contract tests: test/test_analytic_batch.py (11 tests; the torch rows skip without torch).
 The in-loop comparison is the CLI itself, one G2 iteration per backend:

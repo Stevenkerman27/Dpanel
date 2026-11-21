@@ -50,7 +50,7 @@ RCOND = 1e-11
 
 def _load_manifest():
     from tools.issue92 import fixtures
-    return fixtures, json.loads((ROOT / "docs/issue92/fixtures_manifest.json").read_text(encoding="utf-8"))
+    return fixtures, json.loads((ROOT / "verification/issue92/fixtures_manifest.json").read_text(encoding="utf-8"))
 
 
 def _initial_system(name, entry):
@@ -277,7 +277,7 @@ def main(argv=None):
     loa.add_argument("--out", type=Path, default=ROOT / "runs/scratch/issue92_loose/s2/s2_loads.json")
     com = sub.add_parser("compare")
     com.add_argument("--work", type=Path, default=ROOT / "runs/scratch/issue92_loose/s2")
-    com.add_argument("--out", type=Path, default=ROOT / "docs/issue92/s2_rank_parity.json")
+    com.add_argument("--out", type=Path, default=ROOT / "verification/issue92/s2_rank_parity.json")
     args = parser.parse_args(argv)
     if args.stage == "capture":
         report = capture(args.work, only=args.only or ())

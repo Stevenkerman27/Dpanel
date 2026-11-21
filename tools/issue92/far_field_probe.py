@@ -148,7 +148,7 @@ def main(argv=None):
     parser.add_argument("--core", type=float, default=0.01)
     parser.add_argument("--bands", type=float, nargs="+",
                         default=(3.0, 10.0, 30.0, 100.0, 300.0))
-    parser.add_argument("--out", type=Path, default=Path("docs/issue92/far_field_bands.json"))
+    parser.add_argument("--out", type=Path, default=Path("verification/issue92/far_field_bands.json"))
     parser.add_argument("--near-share", action="store_true",
                         help="also report how many faces a near-field restriction keeps")
     args = parser.parse_args(argv)
