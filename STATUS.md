@@ -10,7 +10,8 @@
 
 - 当前主线与路线边界：固定尾迹 P1 有前向和几何伴随；自由尾迹有材料线推进与几何门禁，但缺跨构型平衡验收和耦合伴随。全势/P2 有受限算例前向证据，通用三维形状梯度与跨声速格式未完成。JAX、升力线和 VSPAERO 用作独立对照；WBCAero 仅作路线参考。
 - 现役 pytest 移除了 #92 端到端冻结回放、S1/S2/S3/S5 冻结答案、Torch 与旧 SciPy 求解器并排测试及旧载荷断言。测试保留解析极限、方程与约束、中心差分梯度和接口检查。原算例和移植过程见 [历史离散化对照](docs/archive/notes/DISCRETIZATION_COMPARISONS.md)。
-- Windows/myml，Python 3.13.14、Torch 2.13.0+cu132、NumPy 2.4.6、SciPy 1.18.0，BLAS/OMP/MKL 单线程。`python -m pytest -q -p no:cacheprovider --strict-markers --tb=short -m "not macro" test` 为 **660 passed / 8 skipped**（196.08 s）。同参数的 `-m macro` 为 **8 passed / 2 xfailed**（139.98 s）。两项预期失败覆盖 `pressure` 配点闭合的升力斜率和弦向细化。
+- 继续移除 4 项旧断言，涉及 Markdown 措辞、参照表行数、C01/C03 占位状态和旧 Gauss 后端的失效表现。CLI 选择检查改用现役 C02，解析速度保留独立面积积分和阶数无关性检查。
+- Windows/myml，Python 3.13.14、Torch 2.13.0+cu132、NumPy 2.4.6、SciPy 1.18.0，BLAS/OMP/MKL 单线程。`python -m pytest -q -p no:cacheprovider --strict-markers --tb=short -m "not macro" test` 为 **656 passed / 8 skipped**（146.26 s）。同参数的 `-m macro` 为 **8 passed / 2 xfailed**（90.87 s）。两项预期失败覆盖 `pressure` 配点闭合的升力斜率和弦向细化。本轮沿用已有 VSPAERO 报告。
 
 ## 当前状态
 
@@ -23,7 +24,7 @@
 - **测试分层：** 新增默认主线的球体、薄翼、椭圆翼和零迎角自由尾迹四项宏观检查。零迎角自由尾迹通过收敛判据，2° 工况四步后映射残差为 0.0548，仍待验证有载尾迹平衡。NACA 0012 风洞数据仅作归档。[测试与验证](docs/VALIDATION.md)
 - **VSPAERO：** OpenVSP 3.56.0 完成四构型、两档网格、每档四个迎角。细网格下矩形翼和椭圆翼的升力斜率差为 −5.41% 和 +0.15%。后掠和翼身融合体用于诊断，VSPAERO 重建省略弯度。翼身融合体的环量 RMS 差为 0.409，仍待对齐几何和条带口径。报告在 `runs/verification/current_vspaero/summary.json`。
 - **全势/P2：** 已有受限二维升力翼型、三维闭体和翼身前向算例；非线性跨声速方案未通过冻结验收，通用 CAD 体网格和几何伴随仍未完成。
-- **GitHub：** 2026-11-21 核对为 36 个开放 issue、2 个开放 PR。#115 的标模校准和 #103 的 P1 几何可微边界仍开放。上一轮推送被 GitHub 拒绝，现有令牌缺少提交链中 GitHub Actions 改动所需的 `workflow` 权限。
+- **GitHub：** 2026-11-21 核对为 36 个开放 issue、2 个开放 PR。#115 的标模校准和 #103 的 P1 几何可微边界仍开放。推送被 GitHub 拒绝，待推送的 `503c767` 改了 `.github/workflows/issue77-gamma-support.yml` 的路径过滤条件，现有令牌缺少所需的 `workflow` 权限。
 
 ## 文档入口
 

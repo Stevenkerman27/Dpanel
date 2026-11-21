@@ -14,26 +14,7 @@ def test_default_cli_runs_only_active_p1_cases(tmp_path, monkeypatch):
     assert [record["case_id"] for record in written] == ["C02", "C04", "C05"]
 
 
-def test_inviscid_reference_tables_have_expected_rows():
-    data = calibration._reference()
-    tables = data["tables"]
-    assert len(tables["C01_cylinder_cp"]["rows"]) == 9
-    assert len(tables["C02_sphere_cp"]["rows"]) == 8
-    assert len(tables["C03_joukowski"]["rows"]) == 3
-    assert len(tables["C04_plate"]["rows"]) == 5
-    assert len(tables["C05_elliptic"]["rows"]) == 5
-
-
-def test_blocked_cases_report_the_reason_and_keep_the_reference():
-    for name in ("C01", "C03"):
-        record = calibration.CASES[name]()
-        assert record["status"] == "blocked"
-        assert record["notes"], name
-        assert record["differences"], name
-        assert record["physical_acceptance"] == "not_assessed"
-
-
-def test_summary_fields_follow_the_issue_template(tmp_path):
+def test_summary_json_contains_aerodynamic_report_fields(tmp_path):
     refinement = {"rows": [{"faces": 1560}, {"faces": 4640}]}
     record = calibration._summary("X", status="ran", refinement=refinement)
     required = {"case_id", "geometry_source", "geometry_sha256", "solver_commit",
@@ -51,8 +32,8 @@ def test_summary_fields_follow_the_issue_template(tmp_path):
     assert written["refinement"] == refinement
 
 
-def test_cli_runs_only_the_requested_case(tmp_path, capsys):
-    assert calibration.main(["--case", "C03", "--out", str(tmp_path)]) == 0
+def test_cli_runs_only_the_requested_case(tmp_path, monkeypatch):
+    monkeypatch.setitem(calibration.CASES, "C02", lambda: calibration._summary("C02", status="ran"))
+    assert calibration.main(["--case", "C02", "--out", str(tmp_path)]) == 0
     written = json.loads((tmp_path / "summary.json").read_text(encoding="utf-8"))
-    assert [record["case_id"] for record in written] == ["C03_joukowski_A0_4_8"]
-    assert "C03_joukowski_A0_4_8" in capsys.readouterr().out
+    assert [record["case_id"] for record in written] == ["C02"]

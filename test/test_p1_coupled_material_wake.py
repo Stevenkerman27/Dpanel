@@ -451,15 +451,12 @@ def test_frozen_field_replay_is_bitwise_and_rejects_input_tampering():
         replay_snapshot(arrays, digest)
 
 
-def test_analytic_total_velocity_does_not_depend_on_legacy_gauss_order():
+def test_analytic_total_velocity_is_independent_of_quadrature_order():
     mesh, state = small_field()
     field = TotalVelocity(mesh, state)
     assert field.method == "analytic_edges"
     p = np.array([.38, -.02, .024])
     np.testing.assert_array_equal(field(p, order=48), field(p, order=96))
-    legacy = TotalVelocity(mesh, state, method="legacy_gauss")
-    far = np.array([.3, -.4, 1.7])
-    np.testing.assert_allclose(field(far), legacy(far, order=96), rtol=1e-10, atol=1e-10)
 
 
 def test_initial_equivalence_is_operator_gate_not_nonlinear_path(monkeypatch):
@@ -477,24 +474,6 @@ def test_initial_equivalence_is_operator_gate_not_nonlinear_path(monkeypatch):
     assert len(calls) == 1  # cannot follow two different nonlinear termination paths
     assert run["initial_equivalence"]["W_relative"] < 1e-12
     assert run["initial_equivalence"]["CL"] == 0.
-
-
-def test_high_aspect_260_analytic_is_not_unresolved_48_point_gauss():
-    # This controls the SAME linear doublet strength, geometry and field point;
-    # only the edge integration differs. No viscous core is introduced.
-    tri = np.array([[0., 0., 0.], [26., 0., 0.], [26., .1, 0.]])
-    mesh = NS(xyz=tri, faces=np.array([[0, 1, 2]]),
-              dof_face=np.array([[0, 1, 2]]), groups=())
-    state = dict(mu=np.array([.1, .2, .3]), gamma=np.array([]), alpha_deg=0.)
-    p = tri.mean(axis=0) + np.array([0., 0., .000625])
-    analytic = TotalVelocity(mesh, state, method="analytic_edges")
-    legacy = TotalVelocity(mesh, state, method="legacy_gauss")
-    exact_value = analytic(p, order=48)
-    np.testing.assert_array_equal(exact_value, analytic(p, order=96))
-    # The original 48/96 global-edge Gauss evaluations both miss a near-edge
-    # contribution; increasing the fixed order once does not certify a PV.
-    assert np.linalg.norm(legacy(p, order=48)-exact_value) > .5
-    assert np.linalg.norm(legacy(p, order=96)-exact_value) > .5
 
 
 def test_unconverged_initial_pressure_kutta_is_distinct_from_later_failure(monkeypatch):

@@ -122,15 +122,3 @@ def test_cli_rejects_a_quadrature_backend_as_a_method(tmp_path=None):
     with pytest.raises(SystemExit) as err:
         cli.main([])
     assert err.value.code == 2
-
-
-def test_doc_page_covers_the_required_distinctions():
-    text = (ROOT / methods.ARCHITECTURE_DOC).read_text(encoding="utf-8")
-    for needle in ("representation", "evaluator", "update",
-                   "Method 1", "Method 2", "Method 3",
-                   "Rosenhead-Moore", "Biot-Savart",
-                   "fan_order", "fan_strips", "wake node count",
-                   "wake iteration count", "physical_accuracy_accepted",
-                   "not coupled"):
-        assert needle.lower() in text.lower(), needle
-    assert "projection_fan" in text and "area_quadrature" in text
