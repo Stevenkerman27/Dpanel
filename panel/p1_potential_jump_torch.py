@@ -56,17 +56,15 @@ def _condition(matrix):
 
 def potential_jump_newton(pressure, mu_base, mapping, gamma, nm, max_nfev=12, tol=1e-12,
                           diagnostics=None, max_backtracks=12, step_tolerance=1e-10):
-    """Newton on p(gamma) = 0 with the exact Jacobian dp/dgamma = (dp/dmu) @ mapping.
+    """Newton on p(gamma) = 0 with the chain rule through the affine wall state.
 
     Returns (gamma, state, p, evaluations, scale, relative_residual, condition).  Converged
     requires a small residual relative to the initial paired speed squared and a small
     Newton correction. An absolute residual threshold alone would only measure units.
 
-    A small residual does NOT make the answer unique.  When the trailing edge is nearly swept
-    into the stream direction at a tip, neighbouring jump rows become nearly collinear, the
-    Jacobian condition number runs to 1e6, and Newton dumps an arbitrary circulation into the
-    near-null direction while the residual still converges.  The largest condition number seen
-    is therefore reported, and solve_potential_jump rejects the solution above a limit.
+    A small residual does NOT make the answer unique. An ill-conditioned Jacobian can
+    allow spurious circulation even when the residual converges. The largest condition
+    number seen is reported, and solve_potential_jump rejects the solution above a limit.
     """
     state = torch.cat((mu_base + mapping @ gamma, gamma), dim=0)
     p = pressure(state)
@@ -134,16 +132,15 @@ def potential_jump_newton(pressure, mu_base, mapping, gamma, nm, max_nfev=12, to
 
 
 def solve_potential_jump(B, rhs, J, pressure, gamma0, nm, max_nfev=12, tol=1e-12,
-                         relative_tolerance=1e-10, condition_limit=1e6):
+                         relative_tolerance=1e-10, condition_limit=1e6, *,
+                         return_jacobian=False):
     """Solve the closure and return (state, diagnostics); raise if it did not converge.
 
     Two things can go wrong and both are refused rather than returned:
 
     * the Newton residual does not converge, so p(gamma) = 0 was never reached;
     * the residual converges but the Jacobian is too ill-conditioned for the answer to be
-      unique (measured: 1.1e2 on a rectangular wing, 4.5e4 with a linear tip taper, 7.1e5 with
-      a 62 degree trailing-edge sweep, 7.3e6 with the pure elliptic tip).  A converged point on
-      a near-null direction carries a spurious tip circulation, so it is not a solution.
+      unique. A converged point on a near-null direction can carry spurious circulation.
     """
     ng = int(gamma0.numel())
     mu_base, mapping = affine_state(B, rhs, J, nm, ng)
@@ -170,4 +167,7 @@ def solve_potential_jump(B, rhs, J, pressure, gamma0, nm, max_nfev=12, tol=1e-12
             "(evaluations=%d, stationarity_inf=%.3g, relative=%.3g, tolerance=%.3g, "
             "max_nfev=%d)" % (evaluations, float(p.abs().max()), relative,
                               relative_tolerance, max_nfev))
+    if return_jacobian:
+        jp = pressure.jacobian(state)
+        return state, diagnostics, jp[:, :nm] @ mapping + jp[:, nm:]
     return state, diagnostics

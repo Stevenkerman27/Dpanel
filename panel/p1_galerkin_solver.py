@@ -11,6 +11,7 @@ from scipy.optimize import least_squares
 
 from .p1_galerkin_wall import assemble_galerkin_multi as _assemble_galerkin_multi
 from .p1_solution_status import assess_solution
+from .p1_te_recovery import matched_te_velocity_maps
 from .p1_wake_contact import contact_jump_report
 
 
@@ -24,25 +25,22 @@ def assemble_galerkin_multi(mesh, *, order=3, block=2048, target_face_batch=64):
     ops=_assemble_galerkin_multi(mesh,order=order,block=block,
                                  target_face_batch=target_face_batch)
     ops["te_face_pairs"]=[p for group in ops["te_face_pairs"] for p in group]
+    top, bottom, _ = matched_te_velocity_maps(mesh)
+    ops["te_velocity_maps"] = top.numpy(), bottom.numpy()
     ops["physical_accuracy_accepted"]=False
     return ops
 
 
 def _pressure_residual(x,ops,nm):
-    v=np.einsum("fij,j->fi",ops["grad"],x[:nm])
-    return np.asarray([
-        np.mean(np.sum(v[top]**2,axis=1))-np.mean(np.sum(v[bot]**2,axis=1))
-        for top,bot in ops["te_face_pairs"]],float)
+    top, bottom = ops["te_velocity_maps"]
+    return np.sum((top @ x[:nm])**2 - (bottom @ x[:nm])**2, axis=1)
 
 
 def _pressure_jacobian(x,ops,nm,ng):
-    v=np.einsum("fij,j->fi",ops["grad"],x[:nm])
-    rows=[]
-    for top,bot in ops["te_face_pairs"]:
-        dt=2*np.mean(np.einsum("fi,fij->fj",v[top],ops["grad"][top]),axis=0)
-        db=2*np.mean(np.einsum("fi,fij->fj",v[bot],ops["grad"][bot]),axis=0)
-        rows.append(np.r_[dt-db,np.zeros(ng)])
-    return np.asarray(rows)
+    top, bottom = ops["te_velocity_maps"]
+    dt = np.einsum("ti,tij->tj", top @ x[:nm], top)
+    db = np.einsum("ti,tij->tj", bottom @ x[:nm], bottom)
+    return np.column_stack((2 * (dt - db), np.zeros((len(top), ng))))
 
 
 def solve_galerkin_multi(mesh, alpha_deg=5., *, kutta="signed_speed",
@@ -50,6 +48,9 @@ def solve_galerkin_multi(mesh, alpha_deg=5., *, kutta="signed_speed",
                          order=3):
     """Solve full multi-wing Galerkin wall system with existing TE closures."""
     ops=assemble_galerkin_multi(mesh,order=order) if operators is None else operators
+    if "te_velocity_maps" not in ops:
+        top, bottom, _ = matched_te_velocity_maps(mesh)
+        ops = dict(ops, te_velocity_maps=(top.numpy(), bottom.numpy()))
     A,W,M,bxyz=ops["A"],ops["W"],ops["M"],ops["b_xyz"]
     J,K,grad,ms=ops["J"],ops["K"],ops["grad"],ops["mesh"]
     nm,ng=A.shape[1],W.shape[1]

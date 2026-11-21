@@ -67,9 +67,9 @@ def evaluate(x):
             wake_panels=mesh["wake_panels"], wake_length=mesh["wake_length"])
         values, info = fixed_wake_geometry(wing, xyz, wake, area, args.alpha, 160,
                                            include_ideal_drag=True)
-        jac = np.stack([torch.autograd.grad(value, variable, retain_graph=True)[0].detach().numpy()
-                        for value in values])
-        area_jac = torch.autograd.grad(area, variable)[0].detach().numpy()
+        area_jac = torch.autograd.grad(area, variable, retain_graph=True)[0].detach().numpy()
+        seeds = torch.eye(values.numel(), dtype=values.dtype, device=values.device)
+        jac = torch.autograd.grad(values, variable, seeds, is_grads_batched=True)[0].detach().numpy()
         record = dict(evaluation=len(history) + 1, CL=float(values[0].detach()),
                       CD=float(values[1].detach()), CDi=float(values[2].detach()), area=float(area.detach()),
                       stationarity=info["stationarity"], x=x.tolist())

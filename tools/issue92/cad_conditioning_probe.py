@@ -23,7 +23,7 @@ def _load(path):
     import torch
 
     from panel.p1_implicit_adjoint import AdjointProblem
-    from panel.p1_pressure_kutta_torch_driver import TorchPressureModel
+    from tools.issue92.s3_pressure_parity import FrozenFacePressure
 
     record = pickle.loads(Path(path).read_bytes())
     tensor = lambda value: torch.as_tensor(value, dtype=torch.float64)
@@ -31,7 +31,7 @@ def _load(path):
     areas = tensor(record["areas"])
     pairs = [(torch.as_tensor(a, dtype=torch.long), torch.as_tensor(b, dtype=torch.long))
              for a, b in record["pairs"]]
-    model = TorchPressureModel(tensor(record["grad"]), pairs, int(operator.shape[1]))
+    model = FrozenFacePressure(tensor(record["grad"]), pairs, int(operator.shape[1]))
     problem = AdjointProblem(
         wall_operator=operator, kutta_operator=tensor(record["kutta"]),
         centers=tensor(record["centers"]), weights=torch.sqrt(areas/areas.mean()),
@@ -46,8 +46,8 @@ def _stationarity(record, model, problem, torch, caps):
     for cap in caps:
         solve = driver.solve_pressure_kutta_torch(
             wall_operator=problem.wall_operator, wall_rhs=problem.rhs(alpha),
-            kutta_operator=problem.kutta_operator, grad=model.grad,
-            te_face_pairs=problem.te_face_pairs, x0=problem.linear_state(alpha),
+            kutta_operator=problem.kutta_operator, pressure_model=model,
+            x0=problem.linear_state(alpha),
             weight=5.0, max_nfev=cap)
         state = solve.state
         stationarity = float(problem.stationarity(state, alpha))

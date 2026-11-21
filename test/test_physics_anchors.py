@@ -11,11 +11,12 @@ implementation of ours:
   e = CL_Gamma^2 / (pi*AR*CDi) close to one, and better than a rectangular wing of the same
   span and area. CDi comes from the Trefftz plane, so it is induced drag only; the
   near-field CD_pressure is not usable for this (it went negative on the elliptic case).
-* the potential-jump closure must refuse a mesh on which its own Jacobian is too
-  ill-conditioned for the trailing-edge circulation to be unique, instead of returning a
-  converged-looking answer (see the tip section below).
+* matched-node area recovery must keep the pure elliptic tip well conditioned in
+  potential_jump. The singular-Jacobian rejection gate is tested independently in
+  test_p1_potential_jump_newton.py.
 
-Measured 2026-11-07/08 (myml: torch 2.13.0+cu132, CPU), alpha = 2 deg, collocation wall,
+Historical face recovery, measured 2026-11-07/08 (myml: torch 2.13.0+cu132, CPU),
+alpha = 2 deg, collocation wall,
 chord_panels = 8, span_panels = 4*AR, thickness 0.12, wake_panels = 2, wake_length = 5:
 
 * potential_jump, AR 8/16/24 -> CL_alpha 4.9353/5.6294/5.8854, fit a_inf = 6.62189
@@ -49,7 +50,7 @@ chord_panels 6, 4 span panels per segment, 1560 faces, AR 5.123, e = 0.9265, CL_
 gives e = 0.8678. Refined to 13 sections and 8 span panels per segment (6176 faces) the
 same bounded-tip planform gives e = 0.9884, i.e. it converges towards the elliptic optimum.
 
-Tip conditioning, same 6176-face mesh, only the tip shape changed (cond = condition number
+Historical face recovery tip conditioning, same 6176-face mesh, only the tip shape changed (cond = condition number
 of dp/dgamma at the closure solution, measured by instrumenting torch.linalg.solve):
 
 | tip | TE sweep | cond | gamma sign changes | CL |
@@ -62,7 +63,8 @@ of dp/dgamma at the closure solution, measured by instrumenting torch.linalg.sol
 The last row is a converged state (stationarity 3e-15, jump residual 3e-15) that is not a
 solution: Newton puts an arbitrary 2.13 circulation into the near-null direction, and the
 wake sheet there is 7 strips of width 0.007 and length 20 chords (aspect ratio ~2900).
-solve_potential_jump now raises above condition 1e6, which is what the last test checks.
+The closure gate remains at 1e6. With area recovery the 3096-face version of the
+last geometry gives cond = 16.1, CL = 0.30730, and positive interior circulation.
 """
 from __future__ import annotations
 
@@ -113,7 +115,7 @@ def test_potential_jump_recovers_the_two_dimensional_lift_slope():
 
 
 @pytest.mark.xfail(strict=True,
-                   reason="pressure closure: AR slope 1.126 vs 1/pi=0.318, a_inf +10.7%")
+                   reason="pressure collocation: aspect-ratio slope still outside the analytic band")
 def test_pressure_kutta_has_the_lifting_line_aspect_ratio_slope():
     _, slope = _lift_slope("pressure")
     assert abs(slope - 1.0 / np.pi) < 0.15, slope
@@ -131,7 +133,7 @@ def test_potential_jump_survives_chordwise_refinement():
 
 
 @pytest.mark.xfail(strict=True,
-                   reason="pressure closure: CL 0.150047 -> 0.025672 from c8 to c16")
+                   reason="pressure collocation: c8-to-c16 lift change still exceeds 30%")
 def test_pressure_kutta_survives_chordwise_refinement():
     coarse, fine = _cl_at(16, 8, "pressure"), _cl_at(16, 16, "pressure")
     assert abs(fine - coarse) / coarse < 0.30, (coarse, fine)
@@ -141,7 +143,7 @@ def _sections(sections=9, blend=0.85, tip_chord=0.24):
     """Unswept elliptic planform, cut at 'blend' span and closed with a linear tip taper.
 
     A pure ellipse cut near the tip sweeps the trailing edge into the stream direction and
-    makes the potential-jump Jacobian singular there; see the module docstring.
+    made the old face-recovery Jacobian ill-conditioned; see the module docstring.
     """
     theta = np.linspace(0.0, 0.5 * np.pi * 0.97, sections)
     y = 0.5 * SPAN * np.sin(theta)
@@ -194,19 +196,14 @@ def test_elliptic_planform_reaches_unit_span_efficiency():
     assert 0.0 < rectangular_efficiency < efficiency <= 1.02, (rectangular_efficiency, efficiency)
 
 
-def test_potential_jump_refuses_an_ill_conditioned_tip():
-    """A pure ellipse cut at 0.97 span converges to a residual of 1e-15 and is still wrong.
-
-    Measured: cond(dp/dgamma) = 1.6e6 on this 3096-face mesh (7.3e6 on the 6176-face one),
-    with the trailing-edge circulation carrying an arbitrary tip component. The closure must
-    raise instead of returning it, otherwise every consumer sees a plausible CL. The mesh
-    audit flags the same geometry (74 deg TE sweep), so a user can see the problem before
-    paying for a solve.
-    """
+def test_area_recovery_keeps_potential_jump_conditioned_at_an_elliptic_tip():
     y, chord = _sections(sections=9, blend=0.97, tip_chord=0.0942)
     wing = _grass_wing(y, chord, chord_panels=6, span_panels_per_segment=8)
     audit = te_strip_diagnostics(wing)
     assert audit["ok"] is False
     assert audit["max_sweep_deg"] > 70.0
-    with pytest.raises(RuntimeError, match="ill-conditioned"):
-        g1.solve(wing, 4.0, kutta="potential_jump", wall_formulation="collocation")
+    state = g1.solve(wing, 4.0, kutta="potential_jump", wall_formulation="collocation")
+    assert state["pressure_recovery"] == "area"
+    assert state["nonlinear"]["condition"] < 100.0
+    assert state["pressure_kutta_rms"] < 1e-10
+    assert np.all(np.asarray(state["gamma"]) > 0.)

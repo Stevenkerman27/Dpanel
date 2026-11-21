@@ -132,6 +132,55 @@ def _pressure_closures(system):
     return pressure, jacobian
 
 
+class FrozenFacePressure:
+    """Historical S3/S7/S8 residual. Use only to replay pre-area evidence."""
+
+    def __init__(self, grad, pairs, n_unknown, device="cpu"):
+        import torch
+
+        self.grad = torch.as_tensor(grad, dtype=torch.float64, device=device)
+        self.n_wall = self.grad.shape[2]
+        self.n_unknown = n_unknown
+        width = max(len(indices) for pair in pairs for indices in pair)
+        self.banks = []
+        for bank in zip(*pairs):
+            rows = torch.zeros((len(pairs), width), dtype=torch.long, device=device)
+            mask = self.grad.new_zeros(rows.shape)
+            for row, indices in enumerate(bank):
+                rows[row, :len(indices)] = torch.as_tensor(indices, dtype=torch.long, device=device)
+                mask[row, :len(indices)] = 1
+            self.banks.append((rows, mask, mask.sum(dim=1, keepdim=True)))
+
+    def __call__(self, state):
+        import torch
+
+        velocity = torch.einsum("fij,j->fi", self.grad, state[:self.n_wall])
+        speed = (velocity * velocity).sum(dim=1)
+        top, bottom = [(speed[rows] * mask).sum(dim=1, keepdim=True) / count
+                       for rows, mask, count in self.banks]
+        return (top - bottom).reshape(-1)
+
+    def jacobian(self, state):
+        import torch
+
+        velocity = torch.einsum("fij,j->fi", self.grad, state[:self.n_wall])
+        top, bottom = [(torch.einsum("pfi,pfij->pfj", velocity[rows], self.grad[rows])
+                        * mask[:, :, None]).sum(dim=1, keepdim=True) / count[:, :, None]
+                       for rows, mask, count in self.banks]
+        wall = 2. * (top - bottom).reshape(-1, self.n_wall)
+        return torch.cat((wall, wall.new_zeros((len(wall), self.n_unknown - self.n_wall))), dim=1)
+
+    def reduced_curvature(self, residual, basis):
+        import torch
+
+        weights = self.grad.new_zeros(len(self.grad))
+        for sign, (rows, mask, count) in zip((1., -1.), self.banks):
+            weights.index_add_(0, rows.reshape(-1), (sign * residual[:, None] * mask / count).reshape(-1))
+        extra = torch.einsum("fic,fid->cd", self.grad, self.grad * weights[:, None, None])
+        wall = basis[:self.n_wall]
+        return 2. * (wall.T @ extra @ wall)
+
+
 def _acceptance(system, state, decision):
     """Run the production acceptance classifier on a state that came from any backend."""
     from types import SimpleNamespace
@@ -232,8 +281,9 @@ def torch(work, only=(), device="cpu"):
             pairs = _unpack_pairs(data["top_flat"], data["top_ptr"],
                                   data["bot_flat"], data["bot_ptr"])
         started = time.perf_counter()
+        model = FrozenFacePressure(grad, pairs, B.shape[1], device=device)
         out = solve_pressure_kutta_torch(wall_operator=B, wall_rhs=bw, kutta_operator=kutta,
-                                         grad=grad, te_face_pairs=pairs, x0=x0,
+                                         pressure_model=model, x0=x0,
                                          weight=weight, max_nfev=max_nfev, device=device)
         elapsed = time.perf_counter() - started
         state = out.state.detach().to("cpu").numpy()

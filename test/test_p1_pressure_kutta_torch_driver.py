@@ -64,38 +64,34 @@ def test_torch_modules_have_no_numpy_or_scipy(relative):
                 "%s calls %s" % (relative, ".".join(reversed(chain)))
 
 
-def _reference_model(grad, pairs, state, n_unknown):
-    """Plain NumPy transcription of the production pressure residual and Jacobian."""
-    n_wall = grad.shape[2]
-    velocity = np.einsum("fij,j->fi", grad, state[:n_wall])
-    pressure = np.array([np.mean(np.sum(velocity[top] ** 2, axis=1))
-                         - np.mean(np.sum(velocity[bot] ** 2, axis=1)) for top, bot in pairs])
-    rows = np.array([2 * np.mean(np.einsum("fi,fij->fj", velocity[top], grad[top]), axis=0)
-                     - 2 * np.mean(np.einsum("fi,fij->fj", velocity[bot], grad[bot]), axis=0)
-                     for top, bot in pairs])
-    jacobian = np.column_stack((rows, np.zeros((rows.shape[0], n_unknown - n_wall))))
+def _reference_model(maps, state):
+    top, bottom = maps
+    n_wall = top.shape[2]
+    vt, vb = top @ state[:n_wall], bottom @ state[:n_wall]
+    pressure = (vt**2 - vb**2).sum(axis=1)
+    rows = 2. * (vt[..., None] * top - vb[..., None] * bottom).sum(axis=1)
+    jacobian = np.column_stack((rows, np.zeros((len(rows), state.size - n_wall))))
     return pressure, jacobian
 
 
-def _ragged_problem(seed=7, n_faces=9, n_wall=11, n_gamma=3):
+def _recovered_problem(seed=7, stations=3, n_wall=11, n_gamma=3):
     rng = np.random.default_rng(seed)
-    grad = rng.normal(size=(n_faces, 3, n_wall))
-    pairs = [([0, 1], [2]), ([3], [4, 5, 6]), ([7, 8], [0])]
+    maps = rng.normal(size=(2, stations, 3, n_wall))
     state = rng.normal(size=n_wall + n_gamma)
-    return grad, pairs, state
+    return maps, state
 
 
 def test_pressure_model_matches_the_numpy_definition():
     torch = _torch()
     from panel.p1_pressure_kutta_torch_driver import TorchPressureModel
 
-    grad, pairs, state = _ragged_problem()
-    model = TorchPressureModel(grad, pairs, state.size)
-    reference, reference_jacobian = _reference_model(grad, pairs, state, state.size)
+    maps, state = _recovered_problem()
+    model = TorchPressureModel(maps, state.size)
+    reference, reference_jacobian = _reference_model(maps, state)
     pressure = model(torch.as_tensor(state))
     jacobian = model.jacobian(torch.as_tensor(state))
-    assert pressure.shape == (len(pairs),)
-    assert jacobian.shape == (len(pairs), state.size)
+    assert pressure.shape == (maps.shape[1],)
+    assert jacobian.shape == (maps.shape[1], state.size)
     np.testing.assert_allclose(pressure.numpy(), reference, rtol=0, atol=1e-12)
     np.testing.assert_allclose(jacobian.numpy(), reference_jacobian, rtol=0, atol=1e-12)
     assert np.all(jacobian.numpy()[:, model.n_wall:] == 0.0)
@@ -105,10 +101,10 @@ def test_pressure_jacobian_matches_finite_differences():
     torch = _torch()
     from panel.p1_pressure_kutta_torch_driver import TorchPressureModel
 
-    grad, pairs, state = _ragged_problem(seed=11)
-    model = TorchPressureModel(grad, pairs, state.size)
+    maps, state = _recovered_problem(seed=11)
+    model = TorchPressureModel(maps, state.size)
     step = 1e-6
-    numeric = np.zeros((len(pairs), state.size))
+    numeric = np.zeros((maps.shape[1], state.size))
     for j in range(state.size):
         bump = np.zeros_like(state)
         bump[j] = step
@@ -123,6 +119,7 @@ def test_pressure_jacobian_matches_finite_differences():
 def test_frozen_case_matches_the_numpy_structured_result():
     torch = _torch()
     from panel.p1_pressure_kutta_torch_driver import solve_pressure_kutta_torch
+    from tools.issue92.s3_pressure_parity import FrozenFacePressure
 
     with np.load(BUNDLE) as data:
         B, bw, kutta, grad = (data[key] for key in ("B", "bw", "kutta", "grad"))
@@ -138,7 +135,7 @@ def test_frozen_case_matches_the_numpy_structured_result():
     pairs = [(list(map(int, top)), list(map(int, bot))) for top, bot in zip(tops, bots)]
 
     out = solve_pressure_kutta_torch(wall_operator=B, wall_rhs=bw, kutta_operator=kutta,
-                                     grad=grad, te_face_pairs=pairs, x0=x0,
+                                     pressure_model=FrozenFacePressure(grad, pairs, B.shape[1]), x0=x0,
                                      weight=weight, max_nfev=max_nfev)
     assert int(out.result.status) == status
     assert int(out.result.nfev) == nfev
@@ -151,14 +148,15 @@ def test_rejects_inconsistent_inputs():
     torch = _torch()
     from panel.p1_pressure_kutta_torch_driver import TorchPressureModel, solve_pressure_kutta_torch
 
-    grad, pairs, state = _ragged_problem()
+    maps, state = _recovered_problem()
     with pytest.raises(ValueError):
-        TorchPressureModel(grad, [], state.size)
+        TorchPressureModel((maps[0][:0], maps[1][:0]), state.size)
     with pytest.raises(ValueError):
-        TorchPressureModel(grad, [([0], [])], state.size)
+        TorchPressureModel((maps[0], maps[1][:-1]), state.size)
     with pytest.raises(ValueError):
-        TorchPressureModel(grad, pairs, grad.shape[2] - 1)
+        TorchPressureModel(maps, maps.shape[-1] - 1)
     kutta = np.zeros((2, state.size))
     with pytest.raises(ValueError):
         solve_pressure_kutta_torch(wall_operator=np.zeros((5, state.size)), wall_rhs=np.zeros(4),
-                                   kutta_operator=kutta, grad=grad, te_face_pairs=pairs, x0=state)
+                                   kutta_operator=kutta, pressure_model=TorchPressureModel(maps, state.size),
+                                   x0=state)

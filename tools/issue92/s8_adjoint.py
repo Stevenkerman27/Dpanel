@@ -78,7 +78,7 @@ def _adjoint(record):
     import torch
 
     from panel.p1_implicit_adjoint import AdjointProblem, implicit_state
-    from panel.p1_pressure_kutta_torch_driver import TorchPressureModel
+    from tools.issue92.s3_pressure_parity import FrozenFacePressure
 
     order = ("CL", "CD_pressure", "CM_y")
     wall_operator = torch.as_tensor(record["B"], dtype=torch.float64)
@@ -91,7 +91,7 @@ def _adjoint(record):
     weights = torch.sqrt(areas/areas.mean())
     pairs = [(torch.as_tensor(a, dtype=torch.long), torch.as_tensor(b, dtype=torch.long))
              for a, b in record["pairs"]]
-    model = TorchPressureModel(grad, pairs, int(record["B"].shape[1]))
+    model = FrozenFacePressure(grad, pairs, int(record["B"].shape[1]))
     area = record["reference_area"]
 
     def loads(alpha, state):

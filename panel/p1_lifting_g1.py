@@ -499,7 +499,7 @@ def assemble(wing, *, backend='numpy'):
 def solve(wing,alpha_deg=5., *, kutta=None, wall_weight=1.,
           jump_weight=6.,kutta_weight=5.,seed=None, max_nfev=100,
           pressure_solver=None, backend=None, device='cpu',wall_formulation='galerkin',
-          pressure_recovery="face"):
+          pressure_recovery="area"):
     """Solve one lifting surface as the single group of the G2 solver.
 
     One wing is not a separate equation set: it is solve_multi with exactly one

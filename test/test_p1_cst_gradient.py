@@ -6,7 +6,8 @@ import pytest
 import torch
 
 from panel.p1_cst_gradient import (cst_geometry, fixed_wake_cst, fixed_wake_sections,
-                                   galerkin_operators, grass_section_geometry)
+                                   fixed_wake_geometry, galerkin_operators,
+                                   grass_section_geometry)
 from panel.p1_galerkin_wall import assemble_galerkin_multi
 from panel.p1_lifting_g2 import combine_wings, solve_multi
 from tools.web.params import GRASS_DEFAULTS
@@ -40,7 +41,8 @@ def test_cst_gradient_matches_central_difference(index):
     derivative = torch.stack([torch.autograd.grad(v, value, retain_graph=True)[0][index]
                               for v in output]).detach().numpy()
     assert info["stationarity"] < 1e-8
-    for step in (1e-4, 1e-5):
+    # These steps keep finite differences above the pressure solver's stopping noise.
+    for step in (1e-3, 3e-4):
         delta = torch.zeros_like(value)
         delta[index] = step
         plus, _ = fixed_wake_cst(value.detach() + delta, chord_panels=3, span_panels=3)
@@ -71,7 +73,7 @@ def test_potential_jump_matches_production_solver():
 def test_matched_recovery_production_and_implicit_gradient(kutta):
     value = code().requires_grad_(True)
     output, info = fixed_wake_cst(
-        value, chord_panels=3, span_panels=3, kutta=kutta, pressure_recovery="area")
+        value, chord_panels=3, span_panels=3, kutta=kutta)
     weights = torch.tensor([.7, -.2], dtype=value.dtype)
     derivative = torch.autograd.grad(output @ weights, value)[0][0].item()
     delta = torch.zeros_like(value)
@@ -87,7 +89,32 @@ def test_matched_recovery_production_and_implicit_gradient(kutta):
                              kutta=kutta, pressure_recovery="area")
     np.testing.assert_allclose(output.detach().numpy(),
                                [production["CL"], production["CD_pressure"]], atol=2e-9)
-    assert info["pressure_recovery"] == "area"
+    assert info["pressure_recovery"] == production["pressure_recovery"] == "area"
+
+
+@pytest.mark.parametrize("kutta", ["pressure", "potential_jump"])
+def test_batched_load_gradients_match_independent_rows(kutta):
+    wing, xyz = cst_geometry(code(), chord_panels=3, span_panels=3)
+    xyz.requires_grad_(True)
+    wake = torch.tensor(wing.wake_xyz, requires_grad=True)
+    area = torch.tensor(wing.reference_area, dtype=xyz.dtype, requires_grad=True)
+    loads, _ = fixed_wake_geometry(wing, xyz, wake, area, 4., 160, kutta=kutta,
+                                   include_ideal_drag=True, ideal_drag="exact")
+    seeds = loads.new_tensor([[1., 0., 0.], [.25, -.30, .70]])
+    targets = (xyz, wake, area)
+    expected = [torch.autograd.grad(loads, targets, seed, retain_graph=True) for seed in seeds]
+    actual = torch.autograd.grad(loads, targets, seeds, is_grads_batched=True)
+    for rows, reference in zip(actual, zip(*expected)):
+        torch.testing.assert_close(rows, torch.stack(reference), rtol=1e-8, atol=1e-10)
+
+
+def test_face_recovery_is_not_a_solver_option():
+    wing, xyz = cst_geometry(code(), chord_panels=3, span_panels=3)
+    with pytest.raises(ValueError, match="area or quadratic"):
+        solve_multi(combine_wings([wing]), pressure_recovery="face")
+    with pytest.raises(ValueError, match="area or quadratic"):
+        fixed_wake_geometry(wing, xyz, None, wing.reference_area, 4., 160,
+                            pressure_recovery="face")
 
 
 def test_potential_jump_production_handles_two_groups():

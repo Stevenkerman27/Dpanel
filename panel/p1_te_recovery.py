@@ -27,12 +27,18 @@ def matched_te_velocity_maps(mesh, xyz=None, *, device="cpu", method="area", max
     dof_xyz = xyz[dof_to_geo]
     maps, receipt = [[], []], []
     for group in mesh.groups:
+        banks = [group.face_ids[mesh.face_bank[group.face_ids] == side] for side in (1, -1)]
+        incident_by_bank = [{}, {}]
+        for side, bank_faces in enumerate(banks):
+            for face in bank_faces:
+                for dof in mesh.dof_face[face]:
+                    incident_by_bank[side].setdefault(int(dof), []).append(int(face))
         for station, pair in enumerate(group.te_pairs):
             upper, lower = map(int, pair)
             point = dof_xyz[upper]
             for side, (bank, anchor) in enumerate(((1, upper), (-1, lower))):
-                bank_faces = [int(f) for f in group.face_ids if mesh.face_bank[int(f)] == bank]
-                incident = [f for f in bank_faces if anchor in mesh.dof_face[f]]
+                bank_faces = banks[side]
+                incident = incident_by_bank[side].get(anchor, [])
                 if not incident:
                     raise ValueError("TE recovery is missing bank-specific incident faces")
                 if method == "area":

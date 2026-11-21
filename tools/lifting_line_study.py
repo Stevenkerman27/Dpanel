@@ -30,7 +30,7 @@ parser.add_argument("--span-panels", type=int, default=12)
 parser.add_argument("--span", type=float, default=4.)
 parser.add_argument("--thickness", type=float, default=.12)
 parser.add_argument("--alpha", type=float, default=4.)
-parser.add_argument("--recovery", choices=("face", "area", "quadratic"), default="face")
+parser.add_argument("--recovery", choices=("area", "quadratic"), default="area")
 parser.add_argument("--walls", nargs="+", choices=("collocation", "galerkin"),
                     default=["collocation", "galerkin"])
 args = parser.parse_args()
@@ -81,13 +81,9 @@ for chord_panels in args.chords:
             wall_rhs = -(torch.as_tensor(ms.centers) @ flow)
             rhs = weight * wall_rhs
         mu_base, mapping = affine_state(B, rhs, J, nm, ng)
-        pairs = [pair for group in ops["te_face_pairs"] for pair in group]
-        velocity_maps = None
-        if args.recovery != "face":
-            from panel.p1_te_recovery import matched_te_velocity_maps
-            top, bottom, recovery_receipt = matched_te_velocity_maps(mesh, method=args.recovery)
-            velocity_maps = (top, bottom)
-        pressure = TorchPressureModel(grad, pairs, nm + ng, velocity_maps=velocity_maps)
+        from panel.p1_te_recovery import matched_te_velocity_maps
+        top, bottom, recovery_receipt = matched_te_velocity_maps(mesh, method=args.recovery)
+        pressure = TorchPressureModel((top, bottom), nm + ng)
         gamma_y = np.asarray(wing.gamma_y)
         gamma_fixed = torch.as_tensor(
             .22 * np.sqrt(np.clip(1. - (2. * gamma_y[1:-1] / args.span) ** 2, 0., None)),

@@ -44,7 +44,7 @@ import pytest
 
 pytest.importorskip("torch")
 
-from tools.issue92.s3_pressure_parity import CASES, _build, _manifest  # noqa: E402
+from tools.issue92.s3_pressure_parity import CASES, FrozenFacePressure, _build, _manifest  # noqa: E402
 from tools.issue92.s7_reference_export import _solve, _spectrum  # noqa: E402
 
 ROOT = Path(os.environ.get("PANEL_ROOT", Path.cwd()))
@@ -76,9 +76,15 @@ def _system(name):
 
 
 @pytest.mark.parametrize("name", CASES)
-def test_torch_backend_reproduces_the_frozen_bundle(name):
+def test_torch_backend_reproduces_the_frozen_bundle(name, monkeypatch):
+    from panel import p1_solve_torch
+
     bundle = _bundle(name)
     system = _system(name)
+    # Replay the original residual without exposing it as a production option.
+    monkeypatch.setattr(p1_solve_torch, "TorchPressureModel",
+                        lambda maps, n, device: FrozenFacePressure(
+                            system["grad"], system["pairs"], n, device=device))
     out, rank = _solve(system, backend="torch", device="cpu")
 
     for key in LOADS:

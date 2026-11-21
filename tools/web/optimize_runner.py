@@ -141,13 +141,18 @@ def evaluate(x):
         outputs = {"CL": values[0], "CD": values[1], "CDi": values[2], "area": area}
         if need_cl_gamma:
             outputs["CL_gamma"] = values[3]
-        derivatives = {}
-        for name, output in outputs.items():
-            if name in NEEDED_ROWS:
-                derivatives[name] = torch.autograd.grad(
-                    output, variable, retain_graph=True)[0].detach().numpy()
-            else:
-                derivatives[name] = np.zeros_like(x)
+        derivatives = {name: np.zeros_like(x) for name in outputs}
+        rows = [name for name in outputs if name != "area" and name in NEEDED_ROWS]
+        indices = [("CL", "CD", "CDi", "CL_gamma").index(name) for name in rows]
+        if "area" in NEEDED_ROWS:
+            derivatives["area"] = torch.autograd.grad(area, variable, retain_graph=True)[0].detach().numpy()
+        if len(rows) == 1:
+            derivatives[rows[0]] = torch.autograd.grad(values[indices[0]], variable)[0].detach().numpy()
+        else:
+            seeds = torch.eye(values.numel(), dtype=values.dtype, device=values.device)[indices]
+            jacobian = torch.autograd.grad(
+                values, variable, grad_outputs=seeds, is_grads_batched=True)[0]
+            derivatives.update(zip(rows, jacobian.detach().numpy()))
         jac = [derivatives["CL"], derivatives["CD"], derivatives["CDi"]]
         record = dict(evaluation=len(history) + 1,
                       objective=float(value_from(values).detach()),

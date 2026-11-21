@@ -78,22 +78,22 @@
 两种闭合的差别只在"把 Δp_TE=0 塞进离散方程的方式"，因此其差异与壁面离散（Galerkin/配点）
 和速度恢复位置（§6）耦合；三者不可分开评价。参照值见 [VALIDATION.md](VALIDATION.md) §3。
 
-## 6 速度恢复的三种定义
+## 6 后缘速度恢复
 
-后缘压力差由"上下表面速度"算出，而离散中"上下表面速度"有三种取法。
+后缘压力差用同一个后缘节点处的上下岸速度计算。
 
 | 恢复 | 位置定义 | 算子定义 | 实现 |
 |---|---|---|---|
-| `face`（默认） | 每个岸上**声明的后缘面**各自的面梯度，再对每岸若干面做算术平均；上下岸比较的是不同面、不同位置 | v_top = mean_f∈top G_f μ，v_bot = mean_f∈bot G_f μ | `TorchPressureModel`（`panel/p1_pressure_kutta_torch_driver.py`） |
-| `area` | **同一个后缘节点**；上下岸分别取该节点的同岸入射一面环 | 面积加权：w_f = A_f / Σ A_f，v = Σ_f w_f (G_f μ)，只取同 face_bank 的入射面 | `matched_te_velocity_maps(method="area")`（`panel/p1_te_recovery.py:10`） |
+| `area`（默认） | 上下岸分别取该节点的同岸入射一面环 | 面积加权：w_f = A_f / Σ A_f，v = Σ_f w_f (G_f μ)，只取同 face_bank 的入射面 | `matched_te_velocity_maps(method="area")`（`panel/p1_te_recovery.py`） |
 | `quadratic` | 同一个后缘节点 | 1,u,v,u²,uv,v² 六项 QR 最小二乘；秩比 > 1e-8 接受，否则扩环至 5 环；亏秩报错 | 同上，`method="quadratic"`；研究对照，非生产选项 |
 
-三种恢复都作用于同一组 P1 物理自由度，不跨尾迹割线、不跨端盖。压力定义：
+两种恢复都作用于同一组 P1 物理自由度，按岸处理并排除端盖。压力定义：
 
     Cp = 1 − |v|²,   v = G μ
 
-`face` 与 `area` 不是同一定义的两种写法：前者比较两个不同位置的压力，后者比较同一位置的
-两个压力；对有限夹角、有厚度的后缘两者不等价。
+`area` 先在同一个后缘节点分别恢复上下岸速度，再比较两岸恢复速度的平方。
+两种 Kutta 闭合都使用恢复后的速度计算后缘残差。壁面载荷由求解后的逐面 Cp 积分。
+旧 `face` 恢复仅用于冻结回归及历史对照。
 
 ## 7 力与积分量
 
@@ -115,7 +115,7 @@
 |---|---|
 | 设计变量 | 固定拓扑下的几何参数：CST 系数；GRASS 截面参数（展长/弦长/后掠/上反/扭转/厚度/弯度/站数）；或导入面的 (x,z) 坐标 |
 | 前向 | 求解一次，并把平稳性残差记入 meta（`_FixedWakeImplicit.forward` `panel/p1_cst_gradient.py:324`，`_PotentialJumpImplicit.forward` :456） |
-| 反向 | 隐式函数定理：F(x,θ)=0 ⇒ dx/dθ = −(∂F/∂x)⁻¹ ∂F/∂θ；只对当前几何算子做 VJP，不保存求解轨迹 |
+| 反向 | 隐式函数定理：F(x,θ)=0 ⇒ dx/dθ = −(∂F/∂x)⁻¹ ∂F/∂θ。`pressure` 复用精确 Hessian 的 Cholesky，`potential_jump` 复用闭合 Jacobian 转置的 LU。多载荷 VJP 共享几何算子的重建和求解因子 |
 | 边界 | 顶点级 VJP 未实现；接触约束不支持（`fixed_wake_surface` 在存在 contact_pairs 时抛错，:230-231）；拓扑必须固定 |
 
 ## 9 约定与不变量

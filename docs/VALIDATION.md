@@ -138,6 +138,8 @@ area + potential_jump 为 0.895–0.899、0 次变号。该组合的残差诊断
 
 ## 6 复算
 
+下列历史对照含旧 `face` 分支，使用 `8807b61` 版本。当前 `area` 复算入口见 [STATUS.md](../STATUS.md)。
+
     # 三平面形状 × 壁面 × 恢复 × 闭合（§3 主表）
     python runs/verification/route_check/run.py      # → swept_elliptic.json
     python runs/verification/route_check/rect.py     # → rect_colloc.json

@@ -124,15 +124,13 @@ class AdjointProblem:
     def state(self, alpha_deg):
         if self.model is None:
             return self.linear_state(alpha_deg)
-        if self.te_face_pairs is None:
-            raise ValueError("a pressure model needs te_face_pairs for the forward solve")
         from .p1_pressure_kutta_torch_driver import solve_pressure_kutta_torch
         start = self.linear_state(alpha_deg)
         options = {} if self.max_nfev is None else {"max_nfev": self.max_nfev}
         solve = solve_pressure_kutta_torch(
             wall_operator=self.wall_operator, wall_rhs=self.rhs(alpha_deg),
-            kutta_operator=self.kutta_operator, grad=self.model.grad,
-            te_face_pairs=self.te_face_pairs, x0=start, weight=self.weight,
+            kutta_operator=self.kutta_operator, pressure_model=self.model,
+            x0=start, weight=self.weight,
             device=self.device, **options)
         self.last_pressure_residual = self.model(solve.state)
         self.last_pressure_solve = solve
@@ -151,38 +149,17 @@ class AdjointProblem:
         full = _transposed_adjoint(q, r, self.basis, grad_state)
         return full[: int(self.wall_operator.shape[0])]
 
-    def _face_weights(self, pressure):
-        """Per-face multiplier of the second-order term, sum_p p_p d2p_p/dx2."""
-        model = self.model
-        weights = torch.zeros(int(model.grad.shape[0]), dtype=DTYPE, device=self.device)
-        top = (pressure.unsqueeze(-1)*model.top_mask/model.top_count).reshape(-1)
-        bottom = (pressure.unsqueeze(-1)*model.bot_mask/model.bot_count).reshape(-1)
-        weights.index_add_(0, model.top_rows.reshape(-1), top)
-        weights.index_add_(0, model.bot_rows.reshape(-1), -bottom)
-        return weights
-
     def _exact_rhs_gradient(self, state, grad_state):
         """dL/db from the exact stationarity condition, not its Gauss-Newton model.
 
         The pressure residual is quadratic in the state, so the objective
         0.5||B x - b||^2 + 0.5 w^2 ||p(x)||^2 is quartic and its Gauss-Newton operator is not
         its Hessian: the difference is w^2 * sum_p p_p d2p_p/dx2, a state-independent
-        quadratic form that the per-face weights below assemble exactly. Dropping it is only
+        quadratic form supplied by the pressure model. Dropping it is only
         legitimate when the pressure residual is negligible, which is precisely what the S8
         readings show is false on the flat-valley CAD fixture.
         """
-        model = self.model
-        weight = self.weight
-        jacobian = model.jacobian(state)
-        stacked = torch.vstack((self.wall_operator, weight*jacobian))
-        reduced = stacked @ self.basis
-        hessian = reduced.mT @ reduced
-        pressure = model(state)
-        face_weights = self._face_weights(pressure)
-        grad = model.grad
-        extra = torch.einsum("fic,fid->cd", grad, grad*face_weights[:, None, None])
-        wall_basis = self.basis[: int(model.n_wall)]
-        hessian = hessian+2.0*weight*weight*(wall_basis.mT @ extra @ wall_basis)
+        hessian = self.reduced_hessian(state)
         right = self.basis.mT @ grad_state
         multiplier = torch.linalg.solve(hessian, right.unsqueeze(-1)).squeeze(-1)
         return self.wall_operator @ (self.basis @ multiplier)
@@ -217,11 +194,7 @@ class AdjointProblem:
         hessian = reduced.mT @ reduced
         if self.hessian == "gauss_newton":
             return hessian
-        face_weights = self._face_weights(self.model(state))
-        grad = self.model.grad
-        extra = torch.einsum("fic,fid->cd", grad, grad*face_weights[:, None, None])
-        wall_basis = self.basis[: int(self.model.n_wall)]
-        return hessian+2.0*self.weight*self.weight*(wall_basis.mT @ extra @ wall_basis)
+        return hessian + self.weight**2 * self.model.reduced_curvature(self.model(state), self.basis)
 
     def conditioning(self, state, alpha_deg):
         report = dict(stationarity=float(self.stationarity(state, alpha_deg)),

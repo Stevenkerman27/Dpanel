@@ -27,7 +27,7 @@ parser.add_argument("--chords", nargs="+", type=int, default=[4, 8, 16])
 parser.add_argument("--alphas", nargs="+", type=float, default=[-4., -2., 0., 2., 4.])
 parser.add_argument("--span-panels", type=int, default=12)
 parser.add_argument("--wall", choices=("collocation", "galerkin"), default="galerkin")
-parser.add_argument("--recovery", choices=("face", "area", "quadratic"), default="area")
+parser.add_argument("--recovery", choices=("area", "quadratic"), default="area")
 args = parser.parse_args()
 args.out.mkdir(parents=True, exist_ok=True)
 torch.set_num_threads(1)
@@ -62,12 +62,8 @@ for chord_panels in args.chords:
     base_xyz = mu_basis @ torch.linalg.lstsq(B[:, :nm] @ mu_basis, rhs_xyz).solution
     signed_basis = null_space(torch.vstack((J, K)), rcond=1e-11)
     signed_xyz = signed_basis @ torch.linalg.lstsq(B @ signed_basis, rhs_xyz).solution
-    pairs = [pair for group in ops["te_face_pairs"] for pair in group]
-    velocity_maps = None
-    if args.recovery != "face":
-        top, bottom, _ = matched_te_velocity_maps(mesh, method=args.recovery)
-        velocity_maps = (top, bottom)
-    pressure = TorchPressureModel(grad, pairs, nm + ng, velocity_maps=velocity_maps)
+    top, bottom, _ = matched_te_velocity_maps(mesh, method=args.recovery)
+    pressure = TorchPressureModel((top, bottom), nm + ng)
     roots = {}
     for seed in ("signed", "zero", "reverse", "large", "continuation_up", "continuation_down"):
         previous = None

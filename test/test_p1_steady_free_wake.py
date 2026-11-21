@@ -72,11 +72,16 @@ def test_only_wake_reassembly_reproduces_original_g2_operator():
 
 
 def test_real_coupled_state_recomputed_after_both_wakes_relax():
+    from panel.p1_lifting_g2 import solve_multi
+
     model=make_conventional_fixture(wake_panels=3,wake_length=5.)
     a=solve_steady_free_wake(model,5,kutta='pressure',iterations=3,relaxation=.2,
                              wall_formulation='collocation')
     assert len(a['history'])==4
-    assert abs(a['history'][0]['CL']-.3654723)<.001
+    fixed=solve_multi(model,5.,kutta='pressure',wall_formulation='collocation',
+                      pressure_recovery='area')
+    assert abs(a['history'][0]['CL']-fixed['CL'])<1e-10
+    assert a['state']['pressure_recovery']=='area'
     assert a['history'][0]['jump_rms']<1e-12
     assert a['history'][-1]['jump_rms']<1e-12
     assert len(a['state']['group_results'])==2

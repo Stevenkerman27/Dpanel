@@ -31,12 +31,12 @@ def load(work, name="g1_elliptic"):
 def numpy_stage(work, out_path):
     from scipy.linalg import null_space
     try:
-    from panel.p1_pressure_kutta_reduced import StructuredPressureKutta
-except ImportError as error:  # pragma: no cover - historical evidence tool
-    raise SystemExit(
-        "this evidence tool re-runs the retired NumPy chain; check out tag "
-        "numpy-path-frozen-s8 to use it (its recorded answers are verification/issue92/references/)"
-    ) from error
+        from panel.p1_pressure_kutta_reduced import StructuredPressureKutta
+    except ImportError as error:  # pragma: no cover - historical evidence tool
+        raise SystemExit(
+            "this evidence tool re-runs the retired NumPy chain; check out tag "
+            "numpy-path-frozen-s8 to use it (its recorded answers are verification/issue92/references/)"
+        ) from error
 
     system = load(work)
     grad, pairs = system["grad"], system["pairs"]
@@ -73,16 +73,16 @@ except ImportError as error:  # pragma: no cover - historical evidence tool
 
 
 def torch_stage(work, out_path):
-    import torch
     from panel.p1_pressure_kutta_torch_driver import solve_pressure_kutta_torch
+    from tools.issue92.s3_pressure_parity import FrozenFacePressure
 
     system = load(work)
+    model = FrozenFacePressure(system["grad"], system["pairs"], system["B"].shape[1])
     rows = []
     for eps in EPSILONS:
         x0 = system["x0"] * (1.0 + eps) if eps else system["x0"].copy()
         out = solve_pressure_kutta_torch(wall_operator=system["B"], wall_rhs=system["bw"],
-                                         kutta_operator=system["kutta"], grad=system["grad"],
-                                         te_face_pairs=system["pairs"], x0=x0,
+                                         kutta_operator=system["kutta"], pressure_model=model, x0=x0,
                                          weight=system["weight"], max_nfev=system["max_nfev"])
         result = out.result
         rows.append(dict(epsilon=eps, status=int(result.status), nfev=int(result.nfev),

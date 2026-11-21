@@ -86,9 +86,9 @@ def test_directional_vjp_matches_a_central_difference():
 def test_pressure_level_adjoint_matches_a_central_difference():
     rng = np.random.default_rng(13)
     rows, columns = 24, 8
-    grad = rng.normal(size=(rows, columns, 3))*0.05
+    maps = rng.normal(size=(2, 2, 3, columns))*0.05
     pairs = [(np.array([0, 1]), np.array([2, 3])), (np.array([4]), np.array([5, 6]))]
-    model = TorchPressureModel(torch.as_tensor(grad, dtype=torch.float64), pairs, columns)
+    model = TorchPressureModel(maps, columns)
     problem = _problem(seed=17, rows=rows, columns=columns, constraints=2, model=model,
                        pairs=pairs)
     weight = torch.as_tensor(rng.normal(size=columns), dtype=torch.float64)
@@ -126,9 +126,9 @@ def test_module_does_not_touch_numpy_linalg():
 
 def _quartic_problem(seed=13, rows=24, columns=8):
     rng = np.random.default_rng(seed)
-    grad = rng.normal(size=(rows, 3, columns))*0.05
+    maps = rng.normal(size=(2, 2, 3, columns))*0.05
     pairs = [(np.array([0, 1]), np.array([2, 3])), (np.array([4]), np.array([5, 6]))]
-    model = TorchPressureModel(torch.as_tensor(grad, dtype=torch.float64), pairs, columns)
+    model = TorchPressureModel(maps, columns)
     problem = AdjointProblem(
         wall_operator=rng.normal(size=(rows, columns)),
         kutta_operator=rng.normal(size=(2, columns)),

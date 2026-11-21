@@ -21,10 +21,11 @@ names = ("leading_edge_xyz", "chord", "twist_radians", "cst")
 geometry, wing, xyz, wake, area = reconstruct_grass_mesh(data)
 kutta = None if args.kutta == "production" else args.kutta
 values, info = fixed_wake_geometry(wing, xyz, wake, area, args.alpha, 160, kutta=kutta)
+seeds = torch.eye(values.numel(), dtype=values.dtype, device=values.device)
+derivatives = torch.autograd.grad(values, tuple(geometry.values()), seeds, is_grads_batched=True)
 gradients = {}
-for label, value in zip(("CL", "CD"), values):
-    derivatives = torch.autograd.grad(value, tuple(geometry.values()), retain_graph=True)
-    gradients[label] = {name: derivative.detach().tolist()
+for row, label in enumerate(("CL", "CD")):
+    gradients[label] = {name: derivative[row].detach().tolist()
                         for name, derivative in zip(names, derivatives)}
     gradients[label]["leading_edge_xyz"][0] = [None, None, None]
     for section in gradients[label]["cst"]:

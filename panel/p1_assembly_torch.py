@@ -117,7 +117,7 @@ def _checkpointed(fn, *args):
     return torch.utils.checkpoint.checkpoint(fn, *args, use_reentrant=False)
 
 def doublet_matrix(triangles, targets, *, self_faces=None, face_dofs=None, ndof=None,
-                   face_chunk=64, device=None, dtype=torch.float64):
+                   face_chunk=64, device=None, dtype=torch.float64, checkpoint_blocks=True):
     """Analytic P1 doublet operator, batched over source triangles.
 
     Returns a (len(targets), ndof) tensor whose columns are scattered by face_dofs
@@ -150,7 +150,10 @@ def doublet_matrix(triangles, targets, *, self_faces=None, face_dofs=None, ndof=
         f1 = min(n_face, f0 + face_chunk)
         mask = None if self_index is None else (
             self_index[:, None] == arange_all[None, f0:f1])
-        rows = _checkpointed(functools.partial(_doublet_block, mask=mask), tri[f0:f1], X)
+        if checkpoint_blocks:
+            rows = _checkpointed(functools.partial(_doublet_block, mask=mask), tri[f0:f1], X)
+        else:
+            rows = _doublet_block(tri[f0:f1], X, mask)
         block = dofs[f0:f1]
         for k in range(3):
             A.scatter_add_(1, block[:, k][None, :].expand(n_target, f1 - f0), rows[:, :, k])

@@ -65,7 +65,7 @@ def test_matched_pressure_jacobian_and_geometry_gradient():
     state = torch.linspace(-.3, .8, mesh.ndof_mu + 5, dtype=torch.float64)
     grad = torch.zeros((len(mesh.faces), 3, mesh.ndof_mu), dtype=torch.float64)
     pairs = [([0], [1])] * len(mesh.groups[0].te_pairs)
-    model = TorchPressureModel(grad, pairs, len(state), velocity_maps=(top, bottom))
+    model = TorchPressureModel((top, bottom), len(state))
     analytic = model.jacobian(state)
     step = 1e-6
     bump = torch.zeros_like(state)
@@ -81,7 +81,7 @@ def test_matched_pressure_jacobian_and_geometry_gradient():
     values = []
     for sign in (-1., 1.):
         a, b, _ = matched_te_velocity_maps(mesh, xyz.detach() + sign * step * direction)
-        candidate = TorchPressureModel(grad, pairs, len(state), velocity_maps=(a, b))
+        candidate = TorchPressureModel((a, b), len(state))
         values.append(candidate(state).sum())
     finite = (values[1] - values[0]) / (2 * step)
     assert abs(float(finite)) > 1e-5

@@ -39,10 +39,10 @@
 
 | 函数 | 签名（关键参数） | 位置 |
 |---|---|---|
-| `solve_multi` | `(mesh, alpha_deg=5., *, kutta=None, kut_weight=5., max_nfev=80, operators=None, pressure_solver=None, backend=None, device='cpu', wall_formulation=None, galerkin_order=3, pressure_recovery="face")` | `panel/p1_lifting_g2.py:333` |
-| `solve` | `(wing, alpha_deg=5., *, kutta=None, wall_weight=1., jump_weight=6., kutta_weight=5., seed=None, max_nfev=100, pressure_solver=None, backend=None, device='cpu', wall_formulation='galerkin', pressure_recovery="face")` | `panel/p1_lifting_g1.py:499` |
-| `solve_multi_torch` | `(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5., max_nfev=80, operators=None, device="cpu", pressure_recovery="face")` | `panel/p1_solve_torch.py:77` |
-| `fixed_wake_geometry` | `(wing, xyz, wake, reference_area, alpha_deg, max_nfev, kutta=None, pressure_recovery="face")` | `panel/p1_cst_gradient.py:549` |
+| `solve_multi` | `(mesh, alpha_deg=5., *, kutta=None, kut_weight=5., max_nfev=80, operators=None, pressure_solver=None, backend=None, device='cpu', wall_formulation=None, galerkin_order=3, pressure_recovery="area")` | `panel/p1_lifting_g2.py:333` |
+| `solve` | `(wing, alpha_deg=5., *, kutta=None, wall_weight=1., jump_weight=6., kutta_weight=5., seed=None, max_nfev=100, pressure_solver=None, backend=None, device='cpu', wall_formulation='galerkin', pressure_recovery="area")` | `panel/p1_lifting_g1.py:499` |
+| `solve_multi_torch` | `(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5., max_nfev=80, operators=None, device="cpu", pressure_recovery="area")` | `panel/p1_solve_torch.py:77` |
+| `fixed_wake_geometry` | `(wing, xyz, wake, reference_area, alpha_deg, max_nfev, ..., kutta=None, pressure_recovery="area")` | `panel/p1_cst_gradient.py:502` |
 | `solve_steady_free_wake` | `(mesh, alpha_deg=5., *, kutta='pressure', iterations=6, relaxation=.25, ...)` | `panel/p1_steady_free_wake.py:537` |
 
 `panel/p1_lifting_g1.solve` 只做 `combine_wings([wing])` 后转调 `solve_multi`；单翼 torch 核
@@ -53,14 +53,14 @@
 
 | 入口 | wall_formulation | kutta | pressure_recovery |
 |---|---|---|---|
-| `solve_multi`（默认源） | galerkin | pressure（`PRODUCTION_KUTTA`） | face |
-| `solve` | galerkin | pressure | face |
-| `solve_multi_torch` | —（沿用算子） | pressure | face |
-| `fixed_wake_geometry` | galerkin | pressure | face |
-| `tools/web/solve_runner.solve_fixed` | galerkin | production → pressure | face（不暴露参数） |
-| `tools/web/grass_runner` | 继承 | production → pressure | face |
-| `tools/web/optimize_runner` | — | `--kutta` 默认 pressure | face |
-| `tools/acceptance`、`tools/wake_closure_study` | collocation（脚本内显式） | 显式传参 | 显式传参 |
+| `solve_multi`（默认源） | galerkin | pressure（`PRODUCTION_KUTTA`） | area |
+| `solve` | galerkin | pressure | area |
+| `solve_multi_torch` | —（沿用算子） | pressure | area |
+| `fixed_wake_geometry` | galerkin | pressure | area |
+| `tools/web/solve_runner.solve_fixed` | galerkin | production → pressure | area（不暴露参数） |
+| `tools/web/grass_runner` | 继承 | production → pressure | area |
+| `tools/web/optimize_runner` | — | `--kutta` 默认 pressure | area |
+| `tools/acceptance`、`tools/wake_closure_study` | collocation（脚本内显式） | 显式传参 | area |
 | `test/test_p1_cst_gradient.py`、`test/test_lifting_line_studies.py` | galerkin | 显式 | area |
 
 Web 参数表（`tools/web/params.py:21` `SCHEMA`）只有几何量：origin_x、span、root_chord、
@@ -89,12 +89,12 @@ thickness_tip、camber_root、camber_tip、camber_position、sections。没有�
 | 条件 | 行为 |
 |---|---|
 | `kutta` 非法值 | `ValueError("kutta=pressure, signed_speed or potential_jump")` |
-| `pressure_recovery` 非法值 | `ValueError("pressure_recovery must be face, area or quadratic")` |
+| `pressure_recovery` 非法值（含 `face`） | `ValueError("pressure_recovery must be area or quadratic")` |
 | pj 求解失败且未 pinned | 回退 pressure，写 `kutta_requested/effective/fallback`（不静默） |
 | pj 求解失败且 pinned（可微路径） | 直接抛错 |
 | 约束吃掉全部自由度 | `ValueError("All independent mu/Gamma DOFs consumed by constraints")` |
-| TE 恢复缺同岸入射面 | `RuntimeError("TE recovery is missing bank-specific incident faces")` |
-| 秩不足的 quadratic 恢复 | `RuntimeError("TE recovery patch is rank deficient after %d rings")` |
+| TE 恢复缺同岸入射面 | `ValueError("TE recovery is missing bank-specific incident faces")` |
+| 秩不足的 quadratic 恢复 | `ValueError("TE recovery patch is rank deficient after %d rings")` |
 | 可微路径遇到接触约束 | `ValueError("Wake contact constraints are not supported by this derivative path")` |
 
 ## 6 数据位置
@@ -115,15 +115,15 @@ thickness_tip、camber_root、camber_tip、camber_position、sections。没有�
 | 测试 | 固定下来的契约 |
 |---|---|
 | `test/test_frozen_bundle_parity.py` | torch 后端与冻结包的 CL/CD/μ/Γ 逐位一致（缺输入即失败，不跳过） |
-| `test/test_p1_cst_gradient.py` | 可微算子与生产算子的 CL/CD 差 ≤2e-9（研究口径用 area） |
+| `test/test_p1_cst_gradient.py` | `area` 下可微与生产算子的 CL/CD 差 ≤2e-9，批量 VJP 与逐载荷 VJP 一致 |
 | `test/test_web_solve_threads.py` | `--kutta production` 映射到 `kutta=None` |
-| `test/test_p1_te_recovery.py` | 三种恢复算子的形状、同位置性质与秩判定 |
+| `test/test_p1_te_recovery.py` | `area` 与 `quadratic` 的形状、同位置性质与秩判定 |
 | `test/test_p1_pressure_kutta_torch_driver.py` | pressure 驱动与冻结 bundle 的一致性 |
 | `test/test_p1_rank_aware_torch.py` | 秩感知最小二乘与参照结果一致 |
 | `test/test_p1_solution_status.py` | 灾变门的阈值语义 |
 | `test/test_wake_velocity_methods.py` | 尾迹速度方法文档路径常量指向现存文件 |
 
-全量基线见 `STATUS.md`（当前 674 passed / 17 skipped / 2 xfailed / 2 failed）。
+全量基线见 `STATUS.md`。
 
 ## 8 仓库约定
 

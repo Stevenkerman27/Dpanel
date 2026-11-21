@@ -73,7 +73,7 @@
 
 **验证**：`verification/issue92/` 的 s1–s9 冻结包与 parity 测试（[VALIDATION.md](VALIDATION.md) §2）。
 
-## D-4 face 恢复与 potential_jump 闭合的系统性不一致（open）
+## D-4 face 恢复与 potential_jump 闭合的系统性不一致（生产路径已移除）
 
 **症状定义**：Galerkin + face + potential_jump 在 30° 后掠翼上，随展向加密 e 单调下降
 （每段 3/4/5 等分：0.377 / 0.099 / 0.0028），c6/span5 时 CDi = 16.39（pressure 口径 5e-3）、
@@ -90,19 +90,9 @@ pressure 稳定（e 0.871–0.905）。因此缺陷属于 (face 恢复 × pj 闭
 **待定义**：需要一条含 Γ 展向锯齿的判据（如 Σ|ΔΓ| 或 max|dΓ/dy| 的上界），在闭合求解后
 评估；在此之前 pj 不进入默认链。数据见 [VALIDATION.md](VALIDATION.md) §3.1–3.2。
 
-## D-5 默认值与文档字符串不一致（open）
+## D-5 默认值与文档字符串不一致（fixed）
 
-| 位置 | 现状 | 应为 |
-|---|---|---|
-| `panel/p1_cst_gradient.py:200` | "kutta=None is the production closure, potential_jump" | production closure 是 pressure（`panel/p1_lifting_g2.py:330`） |
-| `panel/p1_cst_gradient.py:555` | "kutta=None takes the production closure (PRODUCTION_KUTTA, potential_jump)" | 同上 |
-| `panel/p1_te_recovery.py:3` | "Area-weighted one-ring recovery is the production option" | 生产默认是 face；area 是建议切换项（D-6） |
-
-**定义**：这三处是"标签与代码默认值相反"，不影响数值，但会误导读者与未来的默认值变更。
-
-**修复规格**：docstring 不再写 "production" 字样，改写成"默认值由 PRODUCTION_KUTTA 与
-pressure_recovery 参数决定"，并给出当前值。修复时需同时改默认值或只改文字，二者不可混在
-一次提交里。
+固定尾迹梯度入口从 `PRODUCTION_KUTTA` 读取默认闭合，默认恢复为 `area`。见 [INTERFACE.md](INTERFACE.md) §3。
 
 ## D-6 研究口径与生产口径分叉（open）
 
@@ -110,8 +100,8 @@ pressure_recovery 参数决定"，并给出当前值。修复时需同时改默�
 
 | 位置 | 壁面 | 恢复 | 闭合 |
 |---|---|---|---|
-| Web 前向（`tools/web/solve_runner.solve_fixed`） | galerkin | face | pressure |
-| `tools/wake_closure_study.py` `run()`（:129 / :152 / :189） | collocation（写死） | 显式传参 | 显式传参 |
+| Web 前向（`tools/web/solve_runner.solve_fixed`） | galerkin | area | pressure |
+| `tools/wake_closure_study.py` `run()` | collocation（显式） | area | 显式传参 |
 | `test/test_p1_cst_gradient.py`、`test/test_lifting_line_studies.py` | galerkin | area | 显式 |
 | `tools/calibration.py:205`、`tools/acceptance.py:70` | collocation | 显式 | 显式 |
 
@@ -120,8 +110,8 @@ pressure_recovery 参数决定"，并给出当前值。修复时需同时改默�
 没有随结论一起记录。
 
 **修复规格**：任何跨入口的结论必须标注 (wall_formulation, pressure_recovery, kutta) 三元组；
-报告与文档表格必须带这三列（[VALIDATION.md](VALIDATION.md) §3 已按此执行）。默认值统一
-（例如把 pressure_recovery 默认改为 area）属于独立决策项，需先过冻结基准与梯度一致性测试。
+报告与文档表格必须带这三列（[VALIDATION.md](VALIDATION.md) §3 已按此执行）。默认恢复已统一为 `area`。
+配点研究与 Galerkin 生产结果仍需注明壁面离散。
 
 ## 开放 issue
 

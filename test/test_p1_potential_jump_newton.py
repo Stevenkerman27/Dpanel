@@ -61,3 +61,21 @@ def test_singular_zero_residual_root_is_refused():
         solve_potential_jump(
             B, torch.zeros(1, dtype=torch.float64), J, QuadraticPressure(target=0.),
             torch.zeros(1, dtype=torch.float64), nm=2)
+
+
+def test_returned_jacobian_includes_direct_gamma_dependence():
+    class Pressure(QuadraticPressure):
+        def __call__(self, state):
+            return super().__call__(state) + 2. * (state[-1:] - 1.)
+
+        def jacobian(self, state):
+            row = super().jacobian(state)
+            row[0, -1] = 2.
+            return row
+
+    B = torch.tensor([[0., 1., 0.]], dtype=torch.float64)
+    J = torch.tensor([[1., 0., -1.]], dtype=torch.float64)
+    _, _, jac = solve_potential_jump(
+        B, B[0, :1], J, Pressure(), torch.ones(1, dtype=torch.float64),
+        nm=2, return_jacobian=True)
+    assert jac.item() == pytest.approx(4.)

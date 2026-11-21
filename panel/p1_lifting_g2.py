@@ -187,37 +187,12 @@ def _blocked_matmul(left, right, *, rows=512):
     return out
 
 
-def assemble_multi(mesh: MultiLiftingMesh, *, backend='numpy'):
-    """Assemble all wall/wake interactions in ONE coupled potential system.
-
-    No superposition of separate wing solutions; cross-component influence
-    appears in A and all wake groups act on every wall collocation target.
-    backend='torch' routes the wall influence matrix through
-    panel/p1_batched_influence.py; the default does not move.
-    """
-    ms=_mesh(mesh);nf=len(mesh.faces);nm=mesh.ndof_mu
-    if backend not in ('numpy','torch'):
-        raise ValueError("backend must be 'numpy' or 'torch'")
-    if backend=='numpy':
-        A=_doublet_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
-                          face_dofs=mesh.dof_face,ndof=nm)
-    else:
-        from .p1_batched_influence import influence_matrix
-        A=influence_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
-                           face_dofs=mesh.dof_face,ndof=nm)
-    grad=_gradient_map(mesh,ms)
-    W_parts=[];J_parts=[];K_parts=[];TEface=[];slices={};offset=0;groups_receipt=[]
-    for gi,group in enumerate(mesh.groups):
+def assemble_te_constraints(mesh, centers):
+    """Build jump constraints and signed-speed face pairs without influence kernels."""
+    nm=mesh.ndof_mu
+    J_parts=[];TEface=[];slices={};offset=0;groups_receipt=[]
+    for group in mesh.groups:
         ng=group.gamma_hat.shape[1]
-        wake_tris=np.asarray(group.wake_xyz,float)[np.asarray(group.wake_faces,int)]
-        # Assemble all wake source triangles in one analytic-kernel traversal.
-        # face_dofs maps each source triangle back to the shared wake-node basis,
-        # so this is algebraically the sum of the former per-triangle calls.
-        coefficients=_doublet_matrix(wake_tris,ms.centers,
-            face_dofs=np.asarray(group.wake_faces,int),
-            ndof=len(group.wake_xyz))
-        Wg=_blocked_matmul(coefficients,np.asarray(group.gamma_hat,float))
-        W_parts.append(Wg)
         slices[group.name]=slice(offset,offset+ng)
         offset+=ng
         c=np.zeros((len(group.te_pairs),nm))
@@ -231,7 +206,7 @@ def assemble_multi(mesh: MultiLiftingMesh, *, backend='numpy'):
             c=np.vstack((c,cc))
             H=np.vstack((H,group.contact_gamma_hat))
         J_parts.append((c,H))
-        kg=np.zeros((len(group.te_pairs),nm));pairs=[]
+        pairs=[]
         for i,(up,down) in enumerate(group.te_pairs):
             if group.te_face_pairs is not None:
                 top,bot=group.te_face_pairs[i]
@@ -243,27 +218,49 @@ def assemble_multi(mesh: MultiLiftingMesh, *, backend='numpy'):
                         np.any(mesh.dof_face[group.face_ids]==dof,axis=1)]
                     if not len(cand):
                         raise ValueError(f'Missing {group.name} TE face-bank support')
-                    metric=4*(ms.centers[cand,0]-pos[0])**2+(ms.centers[cand,1]-y)**2
+                    metric=4*(centers[cand,0]-pos[0])**2+(centers[cand,1]-y)**2
                     found.append(cand[np.argsort(metric)[:2]])
                 top,bot=found
             for bank_faces,dof in ((top,up),(bot,down)):
                 if not len(bank_faces) or not np.all(np.any(mesh.dof_face[bank_faces]==dof,axis=1)):
                     raise ValueError(f'Invalid declared {group.name} TE sampling faces')
             pairs.append((top,bot))
-            kg[i]=(np.mean(grad[top,0,:],axis=0)-np.mean(grad[bot,0,:],axis=0))
-        K_parts.append(kg);TEface.append(pairs)
+        TEface.append(pairs)
         groups_receipt.append(dict(name=group.name,n_gamma=ng,n_kutta=len(group.te_pairs),
                                    n_jump=len(c),n_contact_jump=len(c)-len(group.te_pairs),
                                    n_wall_faces=len(group.face_ids)))
-    W=np.column_stack(W_parts)
     J=[]
-    for gi,(c,h) in enumerate(J_parts):
-        part=np.zeros((len(c),W.shape[1]));part[:,slices[mesh.groups[gi].name]]=-h
+    for group,(c,h) in zip(mesh.groups,J_parts):
+        part=np.zeros((len(c),offset));part[:,slices[group.name]]=-h
         J.append(np.column_stack((c,part)))
-    J=np.concatenate(J,axis=0)
-    K=np.column_stack((np.concatenate(K_parts,axis=0),np.zeros((sum(len(g.te_pairs) for g in mesh.groups),W.shape[1]))))
-    return dict(A=A,W=W,J=J,K=K,grad=grad,mesh=ms,
+    return dict(J=np.concatenate(J,axis=0),
                 slices=slices,te_face_pairs=TEface,group_info=groups_receipt)
+
+
+def assemble_multi(mesh: MultiLiftingMesh, *, backend='numpy'):
+    """Assemble all wall/wake interactions in one coupled potential system."""
+    ms=_mesh(mesh);nf=len(mesh.faces);nm=mesh.ndof_mu
+    if backend not in ('numpy','torch'):
+        raise ValueError("backend must be 'numpy' or 'torch'")
+    if backend=='numpy':
+        A=_doublet_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
+                          face_dofs=mesh.dof_face,ndof=nm)
+    else:
+        from .p1_batched_influence import influence_matrix
+        A=influence_matrix(ms.triangles,ms.centers,self_faces=np.arange(nf),
+                           face_dofs=mesh.dof_face,ndof=nm)
+    grad=_gradient_map(mesh,ms)
+    W_parts=[]
+    for group in mesh.groups:
+        coefficients=_doublet_matrix(group.wake_xyz[group.wake_faces],ms.centers,
+            face_dofs=group.wake_faces,ndof=len(group.wake_xyz))
+        W_parts.append(_blocked_matmul(coefficients,np.asarray(group.gamma_hat,float)))
+    W=np.column_stack(W_parts)
+    te=assemble_te_constraints(mesh,ms.centers)
+    signed=[np.mean(grad[top,0,:],axis=0)-np.mean(grad[bot,0,:],axis=0)
+            for group in te["te_face_pairs"] for top,bot in group]
+    K=np.column_stack((np.asarray(signed).reshape(len(signed),nm),np.zeros((len(signed),W.shape[1]))))
+    return dict(A=A,W=W,K=K,grad=grad,mesh=ms,**te)
 
 
 def pressure_kutta_acceptance(*,result,fun,jac,z,wall_operator,wall_rhs,pressure_residual,
@@ -333,7 +330,7 @@ PRODUCTION_KUTTA = 'pressure'
 def solve_multi(mesh, alpha_deg=5., *, kutta=None,kut_weight=5.,
                 max_nfev=80,operators=None,pressure_solver=None,
                 backend=None, device='cpu', wall_formulation=None,
-                galerkin_order=3, pressure_recovery="face"):
+                galerkin_order=3, pressure_recovery="area"):
     """Solve wall P1 mu and ALL independent wake Gamma simultaneously, on torch.
 
     The NumPy/SciPy implementation of this equation set was retired in S9; it is

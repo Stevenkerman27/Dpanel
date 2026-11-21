@@ -75,12 +75,12 @@ def _acceptance_torch(*, result, fun, jac, z, wall_operator, wall_rhs,
 
 
 def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
-                      max_nfev=80, operators=None, device="cpu", pressure_recovery="face"):
+                      max_nfev=80, operators=None, device="cpu", pressure_recovery="area"):
     """Solve wall P1 mu and all independent wake Gamma, on torch."""
     if kutta not in ("pressure", "signed_speed", "potential_jump"):
         raise ValueError("kutta=pressure, signed_speed or potential_jump")
-    if pressure_recovery not in ("face", "area", "quadratic"):
-        raise ValueError("pressure_recovery must be face, area or quadratic")
+    if pressure_recovery not in ("area", "quadratic"):
+        raise ValueError("pressure_recovery must be area or quadratic")
     if not isinstance(max_nfev, int) or max_nfev < 1:
         raise ValueError("max_nfev must be a positive integer")
     start = time.perf_counter()
@@ -127,14 +127,10 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
     x = basis @ solved.x
     rank = int(solved.rank)
     singular = solved.singular
-    pairs = [p for group in operators["te_face_pairs"] for p in group]
-    velocity_maps, recovery_receipt = None, None
-    if pressure_recovery != "face":
-        from .p1_te_recovery import matched_te_velocity_maps
-        top, bottom, recovery_receipt = matched_te_velocity_maps(
-            mesh, device=device, method=pressure_recovery)
-        velocity_maps = (top, bottom)
-    model = TorchPressureModel(grad, pairs, nm+ng, device=device, velocity_maps=velocity_maps)
+    from .p1_te_recovery import matched_te_velocity_maps
+    top, bottom, recovery_receipt = matched_te_velocity_maps(
+        mesh, device=device, method=pressure_recovery)
+    model = TorchPressureModel((top, bottom), nm+ng, device=device)
     nonlinear, pressure_seconds = None, None
     rr = None
     if kutta == "pressure":
@@ -150,8 +146,7 @@ def solve_multi_torch(mesh, alpha_deg=5., *, kutta="pressure", kut_weight=5.,
 
         t_pressure = time.perf_counter()
         pressure = solve_pressure_kutta_torch(
-            wall_operator=B, wall_rhs=bw, kutta_operator=J, grad=grad,
-            te_face_pairs=pairs, x0=x, weight=kut_weight,
+            wall_operator=B, wall_rhs=bw, kutta_operator=J, x0=x, weight=kut_weight,
             max_nfev=max_nfev, device=device, pressure_model=model)
         rr = pressure.result
         pressure_seconds = time.perf_counter()-t_pressure
