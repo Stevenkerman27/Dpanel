@@ -1,16 +1,20 @@
-"""Registry and format checks for the issue #115 calibration suite."""
+"""Registry and format checks for the inviscid calibration suite."""
 import json
-
-import pytest
 
 from tools import calibration
 
 
-def test_every_case_of_issue_115_is_registered():
-    assert sorted(calibration.CASES) == ["C01", "C02", "C03", "C04", "C05", "C06"]
+def test_default_cli_runs_only_active_p1_cases(tmp_path, monkeypatch):
+    for name in calibration.CASES:
+        monkeypatch.setitem(calibration.CASES, name, lambda name=name: calibration._summary(name, status="ran"))
+    monkeypatch.setattr(calibration, "case_c05",
+                        lambda *, refine: calibration._summary("C05", status="ran"))
+    assert calibration.main(["--out", str(tmp_path)]) == 0
+    written = json.loads((tmp_path / "summary.json").read_text(encoding="utf-8"))
+    assert [record["case_id"] for record in written] == ["C02", "C04", "C05"]
 
 
-def test_theory_and_experiment_tables_include_their_conditions():
+def test_inviscid_reference_tables_have_expected_rows():
     data = calibration._reference()
     tables = data["tables"]
     assert len(tables["C01_cylinder_cp"]["rows"]) == 9
@@ -18,27 +22,15 @@ def test_theory_and_experiment_tables_include_their_conditions():
     assert len(tables["C03_joukowski"]["rows"]) == 3
     assert len(tables["C04_plate"]["rows"]) == 5
     assert len(tables["C05_elliptic"]["rows"]) == 5
-    assert len(tables["C06_ladson_80grit"]["rows"]) == 17
-    assert len(tables["C06_gregory_cp_alpha0"]["rows"]) == 25
-    assert data["conditions"]["C06_ladson_80grit"]["reynolds_chord"] == 6.0e6
-    assert data["conditions"]["C06_gregory_cp_alpha0"]["reynolds_chord"] == 2.88e6
 
 
 def test_blocked_cases_report_the_reason_and_keep_the_reference():
-    for name in ("C01", "C03", "C06"):
+    for name in ("C01", "C03"):
         record = calibration.CASES[name]()
         assert record["status"] == "blocked"
         assert record["notes"], name
         assert record["differences"], name
         assert record["physical_acceptance"] == "not_assessed"
-
-
-def test_ladson_fit_uses_the_declared_band_only():
-    record = calibration.case_c06()
-    rows = calibration._reference()["tables"]["C06_ladson_80grit"]["rows"]
-    band = [row for row in rows if abs(row[0]) <= 8.3]
-    assert len(band) == 7
-    assert record["differences"]["ladson_fit_slope_per_deg"] == pytest.approx(0.107994, abs=2e-4)
 
 
 def test_summary_fields_follow_the_issue_template(tmp_path):

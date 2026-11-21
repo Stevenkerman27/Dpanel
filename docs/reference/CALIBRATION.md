@@ -1,29 +1,36 @@
 # Standard-model calibration
 
 Run the calibration suite from the repository root in the project `myml`
-environment. Theory and experimental tables are in
+environment. Reference tables are in
 `benchmarks/calibration/reference.json`.
 
 ```powershell
 $env:OMP_NUM_THREADS='1'
 $env:OPENBLAS_NUM_THREADS='1'
 $env:MKL_NUM_THREADS='1'
-python -m tools.calibration --out runs/verification/current_area_calibration
-python -m tools.calibration --case C05 --refine --out runs/verification/calibration_refine
+python -m tools.calibration --out runs/verification/macro_calibration
+python -m tools.calibration --case C05 --refine --out runs/verification/macro_calibration_refine
 ```
 
-The first command writes one `summary.json` with the reported solver, geometry,
-conditions, and measurements. The second includes a three-grid elliptic-wing
-study. The suite reports differences without setting acceptance thresholds.
+The first command writes one `summary.json` with the three P1 cases, solver, geometry,
+conditions, and measurements. The second includes an AR 6 elliptic-wing study
+on 272, 740, and 1560 faces. Pytest applies the limits below to small, independent
+reference cases.
 For the current worktree status, see [STATUS.md](../../STATUS.md).
+
+## Automated Reference Checks
+
+| Case | Mesh and condition | Check |
+| --- | --- | --- |
+| Sphere | 80, 320, 1280 faces | Successive \(C_p\) RMS error ratios below 0.70, fine-grid RMS below 0.02, net force coefficient norm below \(10^{-10}\). The measured ratios were 0.49 and 0.46. |
+| Thin wing | AR 16, 4×16 and 6×24, 1° and 3° | The slope approaches the lifting-line estimate with refinement. The 6×24 error is within 12%. Measured slope errors were −15.03% and −10.45%. A separate 2° probe on 8×32 and 10×40 gave −8.66% and −8.02%. |
+| Elliptic wing | Nominal AR 6, 272 faces, 4° | Within 6% of the lifting-line lift, normalized circulation RMS below 0.09, and span efficiency above 0.94 with the ideal upper bound. On 272, 740 and 1560 faces, measured \(e\) was 0.9737, 0.9808, 0.9819. |
+| Free wake | Same 272-face thin wing, 0°, four updates | Require convergence, \(\lvert C_L\rvert<10^{-3}\), raw mapping residual below \(10^{-3}\), normal slip RMS below \(5\times10^{-4}\), and wake \(C_p\) jump RMS below \(5\times10^{-5}\). The 2° probe completed four updates with mapping residual 0.0548 and did not converge. |
 
 ## Measurements on 2026-11-21
 
 Windows, Python 3.13.14, Torch 2.13.0+cu132, NumPy 2.4.6, SciPy 1.18.0,
 single-threaded CPU. C04 and C05 use fixed wake with `Galerkin + pressure + area`.
-The first suite run stopped while constructing the C05 report because its
-`refinement` field was unsupported. The corrected run completed all six records
-and solved C02, C04, and C05. The optional C05 refinement was not run.
 
 | Case | Comparison | Result |
 | --- | --- | --- |
@@ -48,4 +55,5 @@ normal-velocity leakage.
 | --- | --- |
 | C01 cylinder | The P1 suite lists the analytic reference. The separate [potential-flow study](../../potential/RESULTS.md) reports cylinder pressure errors. |
 | C03 Joukowski | The separate [P2 airfoil study](../../airfoil2d/RESULTS.md) reports finest-grid \(C_L=0.586420\) versus 0.588180 analytically, with \(C_p\) RMSE 0.01127. |
-| C06 NACA 0012 | The suite stores experimental conditions and fits the Ladson small-angle slope (0.107994/deg at \(Re=6\times10^6\), \(M=0.15\), 80-grit). Gregory upper-surface \(C_p\) data are at \(Re=2.88\times10^6\). The solver has yet to be compared against either dataset at matched conditions. |
+
+The archived NACA 0012 measurements remain in `benchmarks/calibration/reference.json`.

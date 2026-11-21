@@ -63,6 +63,7 @@ def test_galerkin_cuda_matches_cpu():
         np.testing.assert_allclose(cpu[key],gpu[key],rtol=3e-5,atol=3e-7,err_msg=key)
 
 
+@pytest.mark.macro
 def test_live_fixed_wake_chord_refinement():
     values=[]
     for chord in (8,12):

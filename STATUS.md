@@ -10,7 +10,7 @@
 
 - 当前主线与路线边界：固定尾迹 P1 有前向和几何伴随；自由尾迹有材料线推进与几何门禁，但缺跨构型平衡验收和耦合伴随。全势/P2 有受限算例前向证据，通用三维形状梯度与跨声速格式未完成。JAX、升力线和 VSPAERO 用作独立对照；WBCAero 仅作路线参考。
 - 现役 pytest 移除了 #92 端到端冻结回放、S1/S2/S3/S5 冻结答案、Torch 与旧 SciPy 求解器并排测试及旧载荷断言。测试保留解析极限、方程与约束、中心差分梯度和接口检查。原算例和移植过程见 [历史离散化对照](docs/archive/notes/DISCRETIZATION_COMPARISONS.md)。
-- Windows/myml，Python 3.13.14、Torch 2.13.0+cu132、NumPy 2.4.6、SciPy 1.18.0，BLAS/OMP/MKL 单线程。`python -m pytest -q -p no:cacheprovider --tb=short test` 最终结果为 **665 passed / 8 skipped / 2 xfailed，273.56 s**。两项预期失败覆盖 `pressure` 配点闭合的升力斜率和弦向细化。
+- Windows/myml，Python 3.13.14、Torch 2.13.0+cu132、NumPy 2.4.6、SciPy 1.18.0，BLAS/OMP/MKL 单线程。`python -m pytest -q -p no:cacheprovider --strict-markers --tb=short -m "not macro" test` 为 **660 passed / 8 skipped**（196.08 s）。同参数的 `-m macro` 为 **8 passed / 2 xfailed**（139.98 s）。两项预期失败覆盖 `pressure` 配点闭合的升力斜率和弦向细化。
 
 ## 当前状态
 
@@ -19,7 +19,9 @@
 - **反传基准：** Windows/myml，CPU 单线程，792 面 30° 后掠翼，迎角 4°，`area`，返回 `CL` 与精确 Trefftz `CDi` 的两行梯度，各取 3 次的中位数。`pressure` 从 38.398 s 降至 24.663 s，载荷最大绝对差为 0，梯度为 1.261e-7。`potential_jump` 从 41.582 s 降至 27.085 s，载荷最大绝对差为 2.539e-13，梯度为 5.677e-12。梯度比较涵盖壁面坐标、尾迹坐标和参考面积。脚本、前后收据位于 `runs/scratch/area_adjoint_bench.py`、`area_adjoint_before.json`、`area_adjoint_after.json`。Web GRASS 两项测试通过。Web 优化和四截面研究脚本各完成两次目标与梯度评估，按设定在一次 SLSQP 迭代后达到迭代上限。
 - **尖翼梢：** 3096 面椭圆翼，4°，配点壁面，`potential_jump + area` 的闭合 Jacobian 条件数为 16.1。该几何仍触发后缘后掠告警。奇异根拒绝由代数测试覆盖。
 - **自由尾迹：** 结果依配置而异，部分 CAD 案例会几何阻塞或载荷异常。收敛必须同时检查未松弛映射残差、法向滑移、尾迹压差和几何有效性，不能只看载荷或迭代状态。
-- **物理校准：** 本轮重跑球体、薄翼和椭圆翼。球体最细网格解析 \(C_p\) RMS 误差为 0.01316。默认固定尾迹翼的薄翼升力斜率较升力线理论低 8.46%，椭圆翼在三个展弦比的升力偏差为 −9.77%、−2.32%、+1.48%。二维圆柱和 Joukowski 已有独立原型的解析对照。VSPAERO 四构型对照有历史记录。NACA 0012 已收录两套风洞数据，下一步为同工况的 \(C_p\) 和小迎角升力曲线对照。当前默认椭圆翼配置的三档网格细化尚未运行。复现和详细结果见 [标模校准](docs/reference/CALIBRATION.md)。
+- **物理校准：** 球体最细网格解析 \(C_p\) RMS 误差为 0.01316。默认固定尾迹薄翼升力斜率较升力线理论低 8.46%。椭圆翼 AR 6 三档网格由 272 面增至 1560 面，展向效率从 0.9737 升至 0.9819，升力偏差为 −1.81%、−1.80%、−2.32%。二维圆柱和 Joukowski 有独立原型的解析对照。复现和详细结果见 [标模校准](docs/reference/CALIBRATION.md)。
+- **测试分层：** 新增默认主线的球体、薄翼、椭圆翼和零迎角自由尾迹四项宏观检查。零迎角自由尾迹通过收敛判据，2° 工况四步后映射残差为 0.0548，仍待验证有载尾迹平衡。NACA 0012 风洞数据仅作归档。[测试与验证](docs/VALIDATION.md)
+- **VSPAERO：** OpenVSP 3.56.0 完成四构型、两档网格、每档四个迎角。细网格下矩形翼和椭圆翼的升力斜率差为 −5.41% 和 +0.15%。后掠和翼身融合体用于诊断，VSPAERO 重建省略弯度。翼身融合体的环量 RMS 差为 0.409，仍待对齐几何和条带口径。报告在 `runs/verification/current_vspaero/summary.json`。
 - **全势/P2：** 已有受限二维升力翼型、三维闭体和翼身前向算例；非线性跨声速方案未通过冻结验收，通用 CAD 体网格和几何伴随仍未完成。
 - **GitHub：** 2026-11-21 核对为 36 个开放 issue、2 个开放 PR。#115 的标模校准和 #103 的 P1 几何可微边界仍开放。上一轮推送被 GitHub 拒绝，现有令牌缺少提交链中 GitHub Actions 改动所需的 `workflow` 权限。
 

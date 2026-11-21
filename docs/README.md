@@ -21,7 +21,7 @@
 | [MODEL.md](MODEL.md) | 适用域；符号表；边值问题；P1 离散（壁面方程、尾迹势跳变）；两种后缘闭合（pressure / potential_jump）的数学定义；现役速度恢复（area / quadratic）的位置与算子定义；力与积分量（CL、CD_pressure、CL_γ、Trefftz CDi、e、Σ\|ΔΓ\|）；可微链定义；约定与不变量 |
 | [NUMERICS.md](NUMERICS.md) | 算子装配（解析核、Duffy 求积、质量矩阵）；约束与零空间降维；pressure 的结构化 Gauss-Newton 与接受判据；potential_jump 的仿射+Newton 与多根性；回退规则；灾变门阈值；条件数事实；成本与线程；自由尾迹迭代；进程级约束 |
 | [INTERFACE.md](INTERFACE.md) | 目录职责；生产调用链与函数签名；按入口的默认值表（壁面/闭合/恢复）；输出字段契约与残差定义；异常语义；Web 参数表；验证数据位置；测试契约；仓库约定 |
-| [VALIDATION.md](VALIDATION.md) | 实验、理论校准、数值验证和外部求解器对照的复现入口 |
+| [VALIDATION.md](VALIDATION.md) | 微观算法测试和宏观无粘气动对照的复现入口 |
 | [DEFECTS.md](DEFECTS.md) | 缺陷登记格式；#77 两条（Γ 支撑、接触迹分裂势）、#92 移植；face+pj 系统性不一致；默认值与 docstring 不一致；研究/生产口径分叉；开放 issue #113/#115/#103 |
 
 状态不在这五篇里：当前主线、测试基线、开放 PR、下一步只写 [STATUS.md](../STATUS.md)。文档与
@@ -33,7 +33,7 @@
 
 | 主题 | 文档 |
 |---|---|
-| 验收与标定 | [ACCEPTANCE.md](reference/ACCEPTANCE.md)（同一工况并排比较，不设阈值）、[CALIBRATION.md](reference/CALIBRATION.md)（#115 C01–C06）、[ERROR_SEPARATION.md](reference/ERROR_SEPARATION.md)（四类误差，2026-10-25）、[TEST_STATUS.md](reference/TEST_STATUS.md)（2026-11-03 基线） |
+| 验收与标定 | [ACCEPTANCE.md](reference/ACCEPTANCE.md)（同一工况并排比较）、[CALIBRATION.md](reference/CALIBRATION.md)（解析与升力线标模）、[ERROR_SEPARATION.md](reference/ERROR_SEPARATION.md)（四类误差，2026-10-25）、[TEST_STATUS.md](reference/TEST_STATUS.md)（2026-11-03 基线） |
 | 几何与网格 | [GEOMETRY_ROBUSTNESS.md](reference/GEOMETRY_ROBUSTNESS.md)、[PANEL_ROBUSTNESS.md](reference/PANEL_ROBUSTNESS.md)（37/37、180/180）、[MESH_CONVERGENCE.md](reference/MESH_CONVERGENCE.md)、[MESH_FEATURE_SIZE.md](reference/MESH_FEATURE_SIZE.md)、[MESH_QUALITY_GATES.md](reference/MESH_QUALITY_GATES.md)（#42，可选补丁） |
 | 尾迹 | [ARCHITECTURE_WAKE_MODELS.md](reference/ARCHITECTURE_WAKE_MODELS.md)（三轴、材料线推进、B3、合并边界）、[HALF_MODEL_SCALING.md](reference/HALF_MODEL_SCALING.md)（LU vs GMRES） |
 | 可微与力 | [DIFFERENTIABLE_MEMORY.md](reference/DIFFERENTIABLE_MEMORY.md)（15,273 → 1,810 MB）、[GEOMETRY_DIFFERENTIABILITY.md](reference/GEOMETRY_DIFFERENTIABILITY.md)、[EXACT_TREFFTZ_ENERGY.md](reference/EXACT_TREFFTZ_ENERGY.md)（#49，生产 CDi 的来源） |

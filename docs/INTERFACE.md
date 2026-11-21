@@ -105,10 +105,10 @@ thickness_tip、camber_root、camber_tip、camber_position、sections。没有�
 | #77 接触修复摘要 | `verification/issue77/` | 文档与 CI 工作流 |
 | 尾迹研究重放 | `verification/wake_*/` | 对应工具脚本 |
 | CST 梯度证据 | `verification/cst_gradient/` | `tools/cst_gradient_check.py` |
-| 标模参照表 | `benchmarks/calibration/reference.json` | `tools/calibration.py`（C01–C06） |
+| 标模参照表 | `benchmarks/calibration/reference.json` | `tools/calibration.py`（默认 C02、C04、C05） |
 | 运行产物 | `runs/verification/`、`runs/cases/`、`runs/scratch/`（gitignore） | 人工复核 |
 
-实验与理论参照由校准程序直接读取。
+标模理论参照由校准程序直接读取。
 
 ## 7 测试契约
 

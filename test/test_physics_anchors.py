@@ -106,12 +106,14 @@ def _lift_slope(kutta, chord_panels=8):
     return float(1.0 / intercept), float(slope)
 
 
+@pytest.mark.macro
 def test_potential_jump_recovers_the_two_dimensional_lift_slope():
     a_inf, slope = _lift_slope("potential_jump")
     assert 0.95 * TWO_PI < a_inf < 1.15 * TWO_PI, a_inf
     assert abs(slope - 1.0 / np.pi) < 0.15, slope
 
 
+@pytest.mark.macro
 @pytest.mark.xfail(strict=True,
                    reason="pressure collocation: aspect-ratio slope still outside the analytic band")
 def test_pressure_kutta_has_the_lifting_line_aspect_ratio_slope():
@@ -125,11 +127,13 @@ def _cl_at(aspect_ratio, chord_panels, kutta):
     return float(state["CL"])
 
 
+@pytest.mark.macro
 def test_potential_jump_survives_chordwise_refinement():
     coarse, fine = _cl_at(16, 8, "potential_jump"), _cl_at(16, 16, "potential_jump")
     assert abs(fine - coarse) / coarse < 0.05, (coarse, fine)
 
 
+@pytest.mark.macro
 @pytest.mark.xfail(strict=True,
                    reason="pressure collocation: c8-to-c16 lift change still exceeds 30%")
 def test_pressure_kutta_survives_chordwise_refinement():
@@ -179,6 +183,7 @@ def _span_efficiency(wing, alpha_deg=4.0):
     return optimum / drag["CDi_ideal"], float(state["CL"]) / np.deg2rad(alpha_deg), aspect_ratio
 
 
+@pytest.mark.macro
 def test_elliptic_planform_reaches_unit_span_efficiency():
     elliptic = _grass_wing(*_sections())
     efficiency, lift_slope, aspect_ratio = _span_efficiency(elliptic)

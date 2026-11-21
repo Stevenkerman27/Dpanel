@@ -1,17 +1,15 @@
 """Standard-model calibration suite for issue #115 (unsteady-free, inviscid panel).
 
-Each case reports differences against a frozen reference, never a pass/fail
-threshold: the analytic rows are exact, the NACA 0012 rows are experimental and
-carry their Reynolds/Mach/transition conditions. Run one case with
+Each case reports differences against analytic solutions or lifting-line
+theory. Run one case with
 
     python -m tools.calibration --case C02 --out runs/verification/calibration
 
-and every case with
+and the three P1 cases with
 
     python -m tools.calibration --out runs/verification/calibration
 
-A case that the current code cannot run yet is reported as blocked with the
-reason and its reference table, so the gap is visible instead of hidden.
+The C01 and C03 references point to separate two-dimensional studies.
 """
 from __future__ import annotations
 
@@ -27,7 +25,6 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 REFERENCE = ROOT / "benchmarks" / "calibration" / "reference.json"
 
-ALPHA_DEG = 4.0
 SPAN = 8.0
 TWO_PI = 2.0 * np.pi
 
@@ -123,7 +120,7 @@ def case_c02(levels=(1, 2, 3)):
     from panel.run_p1_closed import icosphere
 
     flow = np.array([1.0, 0.0, 0.0])
-    rows, states = [], []
+    rows = []
     for level in levels:
         vertices, faces = icosphere(level=level, radius=1.0)
         started = time.perf_counter()
@@ -145,14 +142,13 @@ def case_c02(levels=(1, 2, 3)):
             moment=[float(x) for x in values["moment"]],
             max_radius_error=float(np.max(np.abs(radius - 1.0))),
             seconds=elapsed))
-        states.append(state)
     for previous, current in zip(rows, rows[1:]):
         current["cp_l2_ratio_to_previous"] = current["cp_l2"] / previous["cp_l2"]
 
     finest = rows[-1]
     return _summary(
         "C02_sphere_A0", status="ran",
-        geometry_source="icosphere level 1..3 (80/320/1280 faces), radius 1",
+        geometry_source="unit icosphere",
         solver_mode="P1 continuous doublet, area-weighted QR, no prescribed analytic mu",
         alpha_deg=0.0,
         samples=dict(levels=[r["level"] for r in rows], surface_faces=finest["faces"]),
@@ -186,10 +182,10 @@ def case_c03():
 
 
 # --------------------------------------------------------------------------- C04
-def _thin_wing(aspect_ratio=16.0, chord_panels=8, thickness=0.02):
+def _thin_wing(aspect_ratio=16.0, chord_panels=8, thickness=0.02, *, span_panels=64):
     from panel import p1_lifting_g1 as g1
 
-    return g1.make_wing(chord_panels=chord_panels, span_panels=int(round(4 * aspect_ratio)),
+    return g1.make_wing(chord_panels=chord_panels, span_panels=span_panels,
                         thickness=thickness, camber=0.0, span=float(aspect_ratio),
                         chord=1.0, wake_panels=2, wake_length=5.)
 
@@ -202,26 +198,28 @@ def _solve(wing, alpha_deg):
     return state, time.perf_counter() - started
 
 
-def case_c04():
+def case_c04(*, chord_panels=8, span_panels=64, alphas=(1.0, 2.0, 3.0)):
     """Thin symmetric wing: the 2*pi lift slope in the 3D lifting-line limit."""
-    wing = _thin_wing()
+    wing = _thin_wing(chord_panels=chord_panels, span_panels=span_panels)
     aspect_ratio = float(np.ptp(wing.xyz[:, 1]) ** 2 / wing.reference_area)
     rows = []
-    for alpha in (1.0, 2.0, 3.0):
+    for alpha in alphas:
         state, seconds = _solve(wing, alpha)
         rows.append(dict(alpha_deg=alpha, CL=float(state["CL"]),
                          CL_gamma=float(state["CL_gamma"]),
                          CM_y=float(state["CM_y"]), CD_pressure=float(state["CD_pressure"]),
-                         seconds=seconds))
+                         converged=bool(state["nonlinear"]["success"]),
+                         kutta=state["kutta_effective"], seconds=seconds))
     slope = float(np.polyfit([r["alpha_deg"] for r in rows], [r["CL"] for r in rows], 1)[0])
     cl_alpha_rad = slope * 180.0 / np.pi
     lifting_line = TWO_PI * aspect_ratio / (aspect_ratio + 2.0)
     return _summary(
         "C04_thin_wing_AR16", status="ran",
-        geometry_source="closed symmetric thin wing, thickness 0.02, AR 16, chord 1, 8x64 panels",
+        geometry_source="closed symmetric thin wing, thickness 0.02, AR 16, chord 1",
         solver_mode=", ".join(state[key] for key in ("wall_formulation", "kutta", "pressure_recovery")),
-        alpha_deg=2.0,
-        samples=dict(chordwise_panels=8, spanwise_panels=64, surface_faces=len(wing.faces)),
+        alpha_deg=float(np.mean(alphas)),
+        samples=dict(chordwise_panels=chord_panels, spanwise_panels=span_panels,
+                     surface_faces=len(wing.faces)),
         differences=dict(
             cl_alpha_per_rad=cl_alpha_rad,
             two_pi=TWO_PI,
@@ -271,65 +269,47 @@ def _trefftz(wing, state):
                                           reference_area=float(wing.reference_area))
 
 
+def elliptic_row(target_ar, alpha_deg, *, sections=9, chordwise=6, spanwise=4):
+    y, chord, root_chord = _elliptic_planform(target_ar, sections=sections)
+    wing = _grass_wing(y, chord, chordwise, spanwise)
+    state, seconds = _solve(wing, alpha_deg)
+    drag = _trefftz(wing, state)
+    span = float(np.ptp(wing.xyz[:, 1]))
+    aspect_ratio = span ** 2 / wing.reference_area
+    optimum = drag["CL_circulation"] ** 2 / (np.pi * aspect_ratio)
+    gamma = np.asarray(state["gamma"], float)
+    shape = np.sqrt(np.clip(1.0 - (2.0 * wing.gamma_y[1:-1] / span) ** 2, 0.0, None))
+    gamma_error = gamma / np.max(gamma) - shape / np.max(shape)
+    measured_slope = float(state["CL"]) / np.deg2rad(alpha_deg)
+    llt_slope = TWO_PI * aspect_ratio / (aspect_ratio + 2.0)
+    return dict(
+        target_aspect_ratio=target_ar, aspect_ratio=aspect_ratio, root_chord=root_chord,
+        sections=sections, chordwise_panels=chordwise, spanwise_panels_per_segment=spanwise,
+        faces=len(wing.faces), CL=float(state["CL"]), CL_gamma=float(state["CL_gamma"]),
+        cl_alpha=measured_slope, cl_alpha_lifting_line=llt_slope,
+        cl_alpha_relative=measured_slope / llt_slope - 1.0,
+        CL_reference=llt_slope * np.deg2rad(alpha_deg), cdi_trefftz=drag["CDi_ideal"],
+        cdi_lifting_line=optimum, e=float(optimum / drag["CDi_ideal"]),
+        gamma_shape_rms=float(np.sqrt(np.mean(gamma_error ** 2))), seconds=seconds,
+        converged=bool(state["nonlinear"]["success"]),
+        solver_mode=", ".join(state[key] for key in ("wall_formulation", "kutta", "pressure_recovery")))
+
+
 def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0, *, refine=False):
-    rows = []
-    for target_ar in aspect_ratios:
-        y, chord, root_chord = _elliptic_planform(target_ar)
-        wing = _grass_wing(y, chord)
-        span = float(np.ptp(wing.xyz[:, 1]))
-        aspect_ratio = span ** 2 / wing.reference_area
-        state, seconds = _solve(wing, alpha_deg)
-        drag = _trefftz(wing, state)
-        gamma = np.asarray(state["gamma"], float)
-        shape = wing.gamma_y[1:-1]
-        reference_shape = np.sqrt(np.clip(1.0 - (2.0 * shape / span) ** 2, 0.0, None))
-        measured = gamma / np.max(gamma)
-        reference_shape = reference_shape / np.max(reference_shape)
-        measured_cl_alpha = float(state["CL"]) / np.deg2rad(alpha_deg)
-        llt_slope = TWO_PI * aspect_ratio / (aspect_ratio + 2.0)
-        optimum = drag["CL_circulation"] ** 2 / (np.pi * aspect_ratio)
-        rows.append(dict(
-            target_aspect_ratio=target_ar, aspect_ratio=aspect_ratio,
-            root_chord=root_chord, faces=len(wing.faces),
-            CL=float(state["CL"]), CL_gamma=float(state["CL_gamma"]),
-            cl_alpha=measured_cl_alpha, cl_alpha_lifting_line=llt_slope,
-            cl_alpha_relative=(measured_cl_alpha - llt_slope) / llt_slope,
-            CL_reference=llt_slope * np.deg2rad(alpha_deg),
-            cdi_trefftz=drag["CDi_ideal"], cdi_lifting_line=optimum,
-            e=float(optimum / drag["CDi_ideal"]),
-            gamma_shape_rms=float(np.sqrt(np.mean((measured - reference_shape) ** 2))),
-            seconds=seconds))
+    rows = [elliptic_row(target_ar, alpha_deg) for target_ar in aspect_ratios]
     refinement = []
-    for sections, chordwise, spanwise in (((9, 6, 4), (13, 8, 6), (17, 10, 8)) if refine else ()):
-        y, chord, root_chord = _elliptic_planform(6.0, sections=sections)
-        wing = _grass_wing(y, chord, chord_panels=chordwise,
-                           span_panels_per_segment=spanwise)
-        state, seconds = _solve(wing, alpha_deg)
-        drag = _trefftz(wing, state)
-        span = float(np.ptp(wing.xyz[:, 1]))
-        aspect_ratio = span ** 2 / wing.reference_area
-        optimum = drag["CL_circulation"] ** 2 / (np.pi * aspect_ratio)
-        measured = np.asarray(state["gamma"], float)
-        shape = wing.gamma_y[1:-1]
-        reference_shape = np.sqrt(np.clip(1.0 - (2.0 * shape / span) ** 2, 0.0, None))
-        reference_shape = reference_shape / np.max(reference_shape)
-        measured = measured / np.max(measured)
-        refinement.append(dict(
-            aspect_ratio=aspect_ratio, sections=sections, chordwise_panels=chordwise,
-            spanwise_panels_per_segment=spanwise, faces=len(wing.faces),
-            CL=float(state["CL"]),
-            cl_alpha=float(state["CL"]) / np.deg2rad(alpha_deg),
-            cl_alpha_lifting_line=TWO_PI * aspect_ratio / (aspect_ratio + 2.0),
-            cdi_trefftz=drag["CDi_ideal"], e=float(optimum / drag["CDi_ideal"]),
-            gamma_shape_rms=float(np.sqrt(np.mean((measured - reference_shape) ** 2))),
-            seconds=seconds))
-        print(json.dumps({k: refinement[-1][k] for k in
-                          ("sections", "chordwise_panels", "spanwise_panels_per_segment",
-                           "faces", "CL", "e", "gamma_shape_rms", "seconds")}), flush=True)
+    if refine:
+        for sections, chordwise, spanwise in ((5, 4, 2), (7, 5, 3)):
+            row = elliptic_row(6.0, alpha_deg, sections=sections, chordwise=chordwise,
+                               spanwise=spanwise)
+            refinement.append(row)
+            print(json.dumps(row), flush=True)
+        default_grid = next((row for row in rows if row["target_aspect_ratio"] == 6.0), None)
+        refinement.append(default_grid or elliptic_row(6.0, alpha_deg))
     return _summary(
         "C05_elliptic_AR4_6_8_A4", status="ran",
         geometry_source="elliptic planform, span 8, 9 sections, finite tip chord",
-        solver_mode=", ".join(state[key] for key in ("wall_formulation", "kutta", "pressure_recovery")),
+        solver_mode=rows[0]["solver_mode"],
         alpha_deg=alpha_deg,
         samples=dict(sections=9, chordwise_panels=6, spanwise_panels_per_segment=4),
         differences=dict(
@@ -344,36 +324,8 @@ def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0, *, refine=False):
                "CDi uses the exact Trefftz integral of the piecewise linear circulation."])
 
 
-# --------------------------------------------------------------------------- C06
-def case_c06():
-    ref = _reference()["tables"]["C06_ladson_80grit"]
-    rows = np.array(ref["rows"], float)
-    band = np.abs(rows[:, 0]) <= 8.3
-    slope_deg = float(np.polyfit(rows[band, 0], rows[band, 1], 1)[0])
-    return _summary(
-        "C06_NACA0012_A0_4_10", status="blocked",
-        geometry_source="TMR altered NACA 0012 (sharp trailing edge, 11.894% thickness)",
-        solver_mode="none: no matched-condition solver comparison configured",
-        alpha_deg=None,
-        differences=dict(
-            ladson_80grit_rows=int(len(rows)),
-            ladson_fit_slope_per_deg=slope_deg,
-            ladson_fit_slope_per_rad=slope_deg * 180.0 / np.pi,
-            fitting_band="|alpha| <= 8.3 deg",
-            gregory_cp_alpha0_rows=len(_reference()["tables"]["C06_gregory_cp_alpha0"]["rows"]),
-            gregory_cp_alpha10_rows=len(_reference()["tables"]["C06_gregory_cp_alpha10"]["rows"]),
-            conditions="Ladson forces Re=6e6 M=0.15 80-grit; Gregory Cp Re=2.88e6, upper surface"),
-        notes=["The force data and the pressure data come from different experiments at "
-               "different Reynolds numbers; they must never be merged into one 'same test' row.",
-               "Viscous total drag is not an inviscid solver target: only small-angle lift, the "
-               "pressure distribution and the ideal induced drag are compared.",
-               "A 3D high-aspect-ratio stand-in would need the section effective angle "
-               "alpha_eff = alpha - alpha_i before comparing with 2D Cp, so it is not used as a "
-               "substitute."])
-
-
-CASES = dict(C01=case_c01, C02=case_c02, C03=case_c03, C04=case_c04, C05=case_c05,
-             C06=case_c06)
+CASES = dict(C01=case_c01, C02=case_c02, C03=case_c03, C04=case_c04, C05=case_c05)
+P1_CASES = ("C02", "C04", "C05")
 
 
 def _print_case(record):
@@ -395,11 +347,11 @@ def _print_case(record):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", action="append", choices=sorted(CASES),
-                        help="case to run; repeatable; default all")
-    parser.add_argument("--refine", action="store_true", help="include the three finer-grid C05 solves")
+                        help="case to run; repeatable; default C02, C04, C05")
+    parser.add_argument("--refine", action="store_true", help="include the three-grid C05 study")
     parser.add_argument("--out", type=Path, default=ROOT / "runs" / "verification" / "calibration")
     args = parser.parse_args(argv)
-    names = args.case or sorted(CASES)
+    names = args.case or P1_CASES
     args.out.mkdir(parents=True, exist_ok=True)
     records = []
     for name in names:
