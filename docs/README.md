@@ -8,7 +8,7 @@
     ├── MODEL.md             定义：求解对象、方程、离散、闭合、恢复、力、可微
     ├── NUMERICS.md          定义：装配、约束降维、求解器、判据、条件数、成本、自由尾迹
     ├── INTERFACE.md         契约：目录职责、调用链、默认值、输出字段、异常、数据、测试
-    ├── VALIDATION.md        参照：验证层级、冻结包、A/B 参照表、回归基线、不声明项
+    ├── VALIDATION.md        物理对照、数值验证与复现
     ├── DEFECTS.md           登记：#77/#92 的规格修改、已知缺陷与开放 issue
     ├── RETIRED_RESEARCH.md  退役代码与迁移文档清单
     ├── reference/           15 篇分模块参考（验收、标定、网格、尾迹、可微、VSP）
@@ -18,10 +18,10 @@
 
 | 文档 | 定义的内容 |
 |---|---|
-| [MODEL.md](MODEL.md) | 适用域；符号表；边值问题；P1 离散（壁面方程、尾迹势跳变）；两种后缘闭合（pressure / potential_jump）的数学定义；三种速度恢复（face / area / quadratic）的位置与算子定义；力与积分量（CL、CD_pressure、CL_γ、Trefftz CDi、e、Σ\|ΔΓ\|）；可微链定义；约定与不变量 |
+| [MODEL.md](MODEL.md) | 适用域；符号表；边值问题；P1 离散（壁面方程、尾迹势跳变）；两种后缘闭合（pressure / potential_jump）的数学定义；现役速度恢复（area / quadratic）的位置与算子定义；力与积分量（CL、CD_pressure、CL_γ、Trefftz CDi、e、Σ\|ΔΓ\|）；可微链定义；约定与不变量 |
 | [NUMERICS.md](NUMERICS.md) | 算子装配（解析核、Duffy 求积、质量矩阵）；约束与零空间降维；pressure 的结构化 Gauss-Newton 与接受判据；potential_jump 的仿射+Newton 与多根性；回退规则；灾变门阈值；条件数事实；成本与线程；自由尾迹迭代；进程级约束 |
-| [INTERFACE.md](INTERFACE.md) | 目录职责；生产调用链与函数签名；按入口的默认值表（壁面/闭合/恢复）；输出字段契约与残差定义；异常语义；Web 参数表；数据与冻结包位置；测试契约；仓库约定 |
-| [VALIDATION.md](VALIDATION.md) | 三层验证的定义与当前达标情况；s1–s9 冻结包清单；三平面形状 × 壁面 × 恢复 × 闭合的参照表；弦向/展向细化；椭圆细化；其它验证记录；回归基线；复算命令；不声明项 |
+| [INTERFACE.md](INTERFACE.md) | 目录职责；生产调用链与函数签名；按入口的默认值表（壁面/闭合/恢复）；输出字段契约与残差定义；异常语义；Web 参数表；验证数据位置；测试契约；仓库约定 |
+| [VALIDATION.md](VALIDATION.md) | 实验、理论校准、数值验证和外部求解器对照的复现入口 |
 | [DEFECTS.md](DEFECTS.md) | 缺陷登记格式；#77 两条（Γ 支撑、接触迹分裂势）、#92 移植；face+pj 系统性不一致；默认值与 docstring 不一致；研究/生产口径分叉；开放 issue #113/#115/#103 |
 
 状态不在这五篇里：当前主线、测试基线、开放 PR、下一步只写 [STATUS.md](../STATUS.md)。文档与
@@ -53,7 +53,7 @@
 - `archive/pr/`（19 篇）、`archive/issue/`（53 篇）、`archive/notes/`（35 篇）、
   `archive/evidence/`（退役研究线原始数据）；结论在正文，数据在同名子目录。
 - 测试重放数据不在 `docs/`：`verification/issue92/`（s1–s9 冻结包与 `fixtures/`）、
-  `verification/issue77/`，由 `test/test_frozen_bundle_parity.py` 等直接读取。
+  `verification/issue77/`。旧输出回放记录见 [历史离散化对照](archive/notes/DISCRETIZATION_COMPARISONS.md)。
 - 退役代码：[RETIRED_RESEARCH.md](RETIRED_RESEARCH.md)（S12 清单、tag `research-p1-line-archive`）。
 
 ## 维护规则
@@ -61,7 +61,7 @@
 1. **一篇一个模块一个入口。** 新结论只写进这五篇之一；过程材料进 `archive/`。
 2. **文档只写定义与参照值，不写状态。** "现在是多少"写 `STATUS.md`；"定义是什么"写这里。
 3. **每个数字带口径。** 参照表必须带 (壁面, 恢复, 闭合) 与网格规模，否则不可比（D-6）。
-4. **每篇带复现命令与不声明项。** 复现入口在 [VALIDATION.md](VALIDATION.md) §6。
+4. **复现命令。** 统一入口见 [VALIDATION.md](VALIDATION.md)。
 5. **被取代的文档归档**，并在 `RETIRED_RESEARCH.md` 记一行（原路径、新路径、原因）。
 6. **文档不承载测试数据。** 测试只读 `json`/`npz`，不从 Markdown 正文抓字符串当契约。
 

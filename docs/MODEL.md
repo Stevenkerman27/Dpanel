@@ -76,7 +76,7 @@
 | 默认值来源 | `PRODUCTION_KUTTA = 'pressure'`（`panel/p1_lifting_g2.py:330`） | 需显式 `kutta="potential_jump"` |
 
 两种闭合的差别只在"把 Δp_TE=0 塞进离散方程的方式"，因此其差异与壁面离散（Galerkin/配点）
-和速度恢复位置（§6）耦合；三者不可分开评价。参照值见 [VALIDATION.md](VALIDATION.md) §3。
+和速度恢复位置（§6）耦合。现役校准入口见 [VALIDATION.md](VALIDATION.md)。
 
 ## 6 后缘速度恢复
 
@@ -125,5 +125,5 @@
 3. Γ 在两端翼尖为 0；每条尾迹的 Γ 独立，不跨 group 混合。
 4. 壁面方程与后缘约束在同一组算子上求解；不同时使用两种闭合。
 5. 所有解的输出恒带 `physical_accuracy_accepted = False`（:218）：本模型未通过气动精度验收，
-   只通过代数/数值层验证（见 [VALIDATION.md](VALIDATION.md) §1）。
+   验证范围见 [VALIDATION.md](VALIDATION.md)。
 6. `solution_status` 的判据是灾变门，不是精度门（[NUMERICS.md](NUMERICS.md) §6）。

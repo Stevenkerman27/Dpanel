@@ -71,7 +71,7 @@
 **约束（进程级）**：同一解释器内 torch 之后再调 SciPy LAPACK 可能触发 0xC0000005；证据
 脚本必须分进程运行（`docs/archive/issue/ISSUE92_PHASE1_WAKE_EVALUATOR.md` §6f）。
 
-**验证**：`verification/issue92/` 的 s1–s9 冻结包与 parity 测试（[VALIDATION.md](VALIDATION.md) §2）。
+**历史验证**：`verification/issue92/` 的 s1–s9 冻结包及移植记录见 [历史离散化对照](archive/notes/DISCRETIZATION_COMPARISONS.md) §2。
 
 ## D-4 face 恢复与 potential_jump 闭合的系统性不一致（生产路径已移除）
 
@@ -88,7 +88,7 @@ pressure 稳定（e 0.871–0.905）。因此缺陷属于 (face 恢复 × pj 闭
 本身，也不是后掠翼本身。
 
 **待定义**：需要一条含 Γ 展向锯齿的判据（如 Σ|ΔΓ| 或 max|dΓ/dy| 的上界），在闭合求解后
-评估；在此之前 pj 不进入默认链。数据见 [VALIDATION.md](VALIDATION.md) §3.1–3.2。
+评估；在此之前 pj 不进入默认链。数据见 [历史离散化对照](archive/notes/DISCRETIZATION_COMPARISONS.md) §3.1–3.2。
 
 ## D-5 默认值与文档字符串不一致（fixed）
 
@@ -110,7 +110,7 @@ pressure 稳定（e 0.871–0.905）。因此缺陷属于 (face 恢复 × pj 闭
 没有随结论一起记录。
 
 **修复规格**：任何跨入口的结论必须标注 (wall_formulation, pressure_recovery, kutta) 三元组；
-报告与文档表格必须带这三列（[VALIDATION.md](VALIDATION.md) §3 已按此执行）。默认恢复已统一为 `area`。
+离散诊断报告应记录这三项。默认恢复已统一为 `area`。
 配点研究与 Galerkin 生产结果仍需注明壁面离散。
 
 ## 开放 issue

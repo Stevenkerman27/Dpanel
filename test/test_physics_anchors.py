@@ -1,8 +1,6 @@
 """Physics anchors: analytic limits, not replays of our own past answers.
 
-The regression references in verification/issue92/references/ only prove that behaviour did not
-change. These tests ask whether the answer is right, using limits that depend on no
-implementation of ours:
+These tests compare solver behavior against independent analytic limits:
 
 * a wing of large aspect ratio must approach the two-dimensional lift slope. Fitting
   1/CL_alpha against 1/AR and extrapolating to 1/AR -> 0 gives a_inf; a flat plate gives

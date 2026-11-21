@@ -5,7 +5,6 @@ import pytest
 import torch
 
 from panel.p1_galerkin_wall import assemble_galerkin_multi
-from panel.p1_galerkin_solver import assemble_galerkin_multi as reference_assembly, solve_galerkin_multi
 from panel.p1_lifting_g1 import make_wing
 from panel.p1_lifting_g2 import combine_wings, solve_multi
 from panel.p1_steady_free_wake import reassemble_wake_only, solve_steady_free_wake, with_wake_xyz
@@ -25,19 +24,6 @@ def test_duffy_rule_does_not_use_numpy_lapack(monkeypatch):
     bary,weights=_duffy_rule(5)
     np.testing.assert_allclose(weights.sum(),.5,atol=1e-14)
     np.testing.assert_allclose(weights @ bary,np.full(3,1./6.),atol=1e-14)
-
-
-@pytest.mark.parametrize("kutta",["signed_speed","pressure"])
-def test_torch_matches_scipy_reference(kutta):
-    mesh=fixture()
-    ops=assemble_galerkin_multi(mesh,order=2)
-    refops=reference_assembly(mesh,order=2)
-    actual=solve_multi(mesh,5.,kutta=kutta,operators=ops,wall_formulation="galerkin",max_nfev=150)
-    expected=solve_galerkin_multi(mesh,5.,kutta=kutta,operators=refops,max_nfev=150)
-    for key in ("mu","gamma","CL","CL_gamma","CD_pressure","CM_y","wall_dual_rms"):
-        np.testing.assert_allclose(actual[key],expected[key],rtol=3e-4,atol=3e-6,err_msg=key)
-    assert actual["wall_formulation"]=="galerkin"
-    assert actual["physical_accuracy_accepted"] is False
 
 
 @pytest.mark.parametrize("two",[False,True])

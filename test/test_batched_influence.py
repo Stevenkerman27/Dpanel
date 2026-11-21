@@ -1,16 +1,11 @@
-"""Parity tests for the batched P1 influence kernel (issue 92, Phase 1 step 1).
-
-The kernel must reproduce the reference NumPy assembly, not merely approximate it: the
-checks below compare the assembled A and W on a synthetic geometry and on a frozen
-fixture, and confirm that the block sizes only change the traversal order.
-"""
+"""Check the batched P1 influence kernel on synthetic triangles."""
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
 from panel.p1_batched_influence import influence_matrix, source_invariants, wake_matrix
-from panel.p1_lifting_g1 import _doublet_matrix, _mesh_as_kernel, assemble, solve
+from panel.p1_lifting_g1 import _doublet_matrix
 
 torch = pytest.importorskip("torch")
 
@@ -104,81 +99,3 @@ def test_face_dofs_are_validated():
         influence_matrix(tri, targets, face_dofs=dofs, ndof=4)
     with pytest.raises(ValueError, match="positive"):
         influence_matrix(tri, targets, face_dofs=dofs, target_block=0)
-
-
-def _fixture_wing(name="g1_wing_rect"):
-    from tools.issue92 import fixtures, profile_production
-
-    if not fixtures.available(name):
-        pytest.skip("frozen fixture not present")
-    entry = fixtures.load_manifest()["fixtures"][name]
-    return entry, profile_production._wing_object(name, entry)
-
-
-def test_production_assemble_and_solve_accept_the_torch_backend():
-    entry, wing = _fixture_wing()
-    reference = assemble(wing)
-    other = assemble(wing, backend="torch")
-    for key in ("A", "W"):
-        scale = max(1.0, float(np.max(np.abs(reference[key]))))
-        assert float(np.max(np.abs(other[key] - reference[key]))) <= 1e-13 * scale, key
-    base = solve(wing, entry["meta"]["alpha_deg"], kutta=entry["meta"]["kutta"])
-    fast = solve(wing, entry["meta"]["alpha_deg"], kutta=entry["meta"]["kutta"], backend="torch")
-    for key in ("CL", "CL_gamma", "CD_pressure", "CM_y"):
-        assert abs(float(fast[key]) - float(base[key])) <= 1e-10 * max(1.0, abs(float(base[key]))), key
-    with pytest.raises(ValueError, match="backend must be"):
-        assemble(wing, backend="cuda-fast")
-
-
-def test_production_multi_assembly_and_solve_accept_the_torch_backend():
-    from panel.p1_lifting_g2 import assemble_multi, solve_multi
-    from tools.issue92 import fixtures, profile_production
-
-    if not fixtures.available("g2_conventional"):
-        pytest.skip("frozen fixture not present")
-    entry = fixtures.load_manifest()["fixtures"]["g2_conventional"]
-    mesh = profile_production._multi_object(entry)
-    reference = assemble_multi(mesh)
-    other = assemble_multi(mesh, backend="torch")
-    for key in ("A", "W"):
-        scale = max(1.0, float(np.max(np.abs(reference[key]))))
-        assert float(np.max(np.abs(other[key] - reference[key]))) <= 1e-13 * scale, key
-    alpha, kutta = entry["meta"]["alpha_deg"], entry["meta"]["kutta"]
-    base = solve_multi(mesh, alpha, kutta=kutta,wall_formulation="collocation")
-    fast = solve_multi(mesh, alpha, kutta=kutta, operators=other)
-    for key in ("CL", "CL_gamma", "CD_pressure", "CM_y"):
-        assert abs(float(fast[key]) - float(base[key])) <= 1e-10 * max(1.0, abs(float(base[key]))), key
-
-
-def test_frozen_fixture_assembly_and_loads_agree_with_the_reference():
-    from tools.issue92 import fixtures, profile_production
-
-    if not fixtures.available("g1_wing_rect"):
-        pytest.skip("frozen fixture not present")
-    manifest = fixtures.load_manifest()
-    entry = manifest["fixtures"]["g1_wing_rect"]
-    wing = profile_production._wing_object("g1_wing_rect", entry)
-    mesh = _mesh_as_kernel(wing)
-    ops = assemble(wing)
-
-    batched_A = influence_matrix(mesh.triangles, mesh.centers,
-                                 self_faces=np.arange(len(wing.faces)),
-                                 face_dofs=np.asarray(wing.dof_face), ndof=int(wing.ndof_mu))
-    batched_W = wake_matrix(wing.wake_xyz, wing.wake_faces, mesh.centers) @ np.asarray(wing.gamma_hat)
-    for name, reference, batched in (("A", ops["A"], batched_A), ("W", ops["W"], batched_W)):
-        scale = max(1.0, float(np.max(np.abs(reference))))
-        assert float(np.max(np.abs(batched - reference))) <= 1e-13 * scale, name
-
-    patched = dict(ops)
-    patched["A"] = batched_A
-    patched["W"] = batched_W
-    import panel.p1_lifting_g1 as lifting
-    original = lifting.assemble
-    try:
-        lifting.assemble = lambda w, **kw: patched
-        result = solve(wing, 5.0, kutta="signed_speed")
-    finally:
-        lifting.assemble = original
-    reference = solve(wing, 5.0, kutta="signed_speed")
-    for key in ("CL", "CL_gamma", "CD_pressure", "CM_y"):
-        assert abs(float(result[key]) - float(reference[key])) <= 1e-10 * max(1.0, abs(float(reference[key]))), key

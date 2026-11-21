@@ -1,9 +1,9 @@
 # 后缘 Kutta 条件：现状、理论、实测与两级求解方案
 
 > **证据日志（2026-11-21 降级）**：本文是按时间追加的后缘闭包实验记录，**不再是入口文档**。
-> 当前定义见 [MODEL.md](../../MODEL.md) §5–§6，参照值见 [VALIDATION.md](../../VALIDATION.md) §3；
+> 当前定义见 [MODEL.md](../../MODEL.md) §5–§6，参照值见 [历史离散化对照](DISCRETIZATION_COMPARISONS.md) §3；
 > 注意 §11.2 的“potential_jump 在后掠翼上 CDi 高 6 倍”是在 **collocation 壁面 + face 恢复**下测的，
-> 生产口径（Galerkin + area）复测不成立（见 VALIDATION.md §3.1–§3.2）。
+> 生产口径（Galerkin + area）复测不成立（见历史离散化对照 §3.1–§3.2）。
 
 
 2026-11-09 四步修复与实际验证见 §10，修复前复核见 §9；两节纠正前文的效率定义、权重、

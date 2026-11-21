@@ -69,7 +69,7 @@ def _git_dirty():
 
 
 def _summary(case_id, *, status, geometry_source="", solver_mode="", alpha_deg=None,
-             samples=None, differences=None, notes=None, levels=None):
+             samples=None, differences=None, notes=None, levels=None, refinement=None):
     """Per-run record following the field template of issue #115 section 7.2."""
     record = dict(
         case_id=case_id,
@@ -96,26 +96,24 @@ def _summary(case_id, *, status, geometry_source="", solver_mode="", alpha_deg=N
         generated=time.strftime("%Y-%m-%dT%H:%M:%S"),
         environment=_environment(),
     )
+    if refinement is not None:
+        record["refinement"] = refinement
     return record
 
 
 # --------------------------------------------------------------------------- C01
 def case_c01():
-    """2D cylinder: no 2D panel path exists in the current chain."""
+    """2D cylinder: not wired into this P1 calibration entry point."""
     ref = _reference()["tables"]["C01_cylinder_cp"]
     return _summary(
         "C01_cylinder_A0", status="blocked",
         geometry_source="analytic circle, radius 1, N=40..320 panels",
-        solver_mode="none: the repository has no 2D panel solver",
+        solver_mode="none: the 2D cylinder study is not wired into this suite",
         alpha_deg=0.0,
         differences={"reference_table": ref},
-        notes=["Issue #115 requires the exact 2D cylinder Cp = 1 - 4 sin^2(theta) and zero "
-               "force. The current code is a 3D surface solver (P1 doublet, wing or closed "
-               "body) and has no 2D mode, so this case cannot be run without a new 2D path. "
-               "The issue explicitly forbids substituting a long capped cylinder mid-section "
-               "for the 2D analytic answer.",
-               "Reference table is kept frozen in benchmarks/calibration/reference.json so the "
-               "case runs the moment a 2D path exists."])
+        notes=["This suite does not run the separate cylinder study documented in "
+               "potential/RESULTS.md. The reference is the exact 2D cylinder "
+               "Cp = 1 - 4 sin^2(theta) and zero force."])
 
 
 # --------------------------------------------------------------------------- C02
@@ -179,14 +177,12 @@ def case_c03():
     return _summary(
         "C03_joukowski_A0_4_8", status="blocked",
         geometry_source="Joukowski map z = zeta + 1/zeta, circle centre -0.1+0.1i, a=1.1045361",
-        solver_mode="none: the repository has no 2D panel solver or Kutta closure in 2D",
+        solver_mode="none: the 2D Joukowski study is not wired into this suite",
         alpha_deg=None,
         differences={"reference_table": ref,
                      "gamma_formula": "Gamma = 4 pi U a sin(alpha + beta), beta = 5.1944289077 deg"},
-        notes=["This is the cleanest Kutta/circulation standard model and it needs a sharp "
-               "trailing edge in 2D. The 3D wing path closes the wake implicitly on a lifting "
-               "surface and cannot represent this conformal airfoil, so the case is parked "
-               "until a 2D panel path exists."])
+        notes=["The separate 2D P2 Joukowski study with a sharp trailing edge is "
+               "documented in airfoil2d/RESULTS.md."])
 
 
 # --------------------------------------------------------------------------- C04
@@ -198,11 +194,11 @@ def _thin_wing(aspect_ratio=16.0, chord_panels=8, thickness=0.02):
                         chord=1.0, wake_panels=2, wake_length=5.)
 
 
-def _solve(wing, alpha_deg, kutta="potential_jump"):
+def _solve(wing, alpha_deg):
     from panel import p1_lifting_g1 as g1
 
     started = time.perf_counter()
-    state = g1.solve(wing, alpha_deg, kutta=kutta, wall_formulation="collocation")
+    state = g1.solve(wing, alpha_deg)
     return state, time.perf_counter() - started
 
 
@@ -210,34 +206,31 @@ def case_c04():
     """Thin symmetric wing: the 2*pi lift slope in the 3D lifting-line limit."""
     wing = _thin_wing()
     aspect_ratio = float(np.ptp(wing.xyz[:, 1]) ** 2 / wing.reference_area)
-    rows, moments = [], []
+    rows = []
     for alpha in (1.0, 2.0, 3.0):
         state, seconds = _solve(wing, alpha)
-        span = 0.5 * (wing.xyz[wing.te_faces[:, 0], 1] + wing.xyz[wing.te_faces[:, 1], 1]) \
-            if hasattr(wing, "te_faces") else wing.gamma_y
-        gamma = np.asarray(state["gamma"], float)
         rows.append(dict(alpha_deg=alpha, CL=float(state["CL"]),
                          CL_gamma=float(state["CL_gamma"]),
-                         cp_pressure_min=float(np.min(state["CD_pressure"])),
+                         CM_y=float(state["CM_y"]), CD_pressure=float(state["CD_pressure"]),
                          seconds=seconds))
-        moments.append((alpha, float(state["CL"]), float(state["CM_y"])))
     slope = float(np.polyfit([r["alpha_deg"] for r in rows], [r["CL"] for r in rows], 1)[0])
     cl_alpha_rad = slope * 180.0 / np.pi
     lifting_line = TWO_PI * aspect_ratio / (aspect_ratio + 2.0)
     return _summary(
         "C04_thin_wing_AR16", status="ran",
         geometry_source="closed symmetric thin wing, thickness 0.02, AR 16, chord 1, 8x64 panels",
-        solver_mode="potential_jump Kutta, collocation wall", alpha_deg=2.0,
-        samples=dict(chordwise_panels=8, spanwise_panels=64, surface_faces=int(len(wing.xyz))),
+        solver_mode=", ".join(state[key] for key in ("wall_formulation", "kutta", "pressure_recovery")),
+        alpha_deg=2.0,
+        samples=dict(chordwise_panels=8, spanwise_panels=64, surface_faces=len(wing.faces)),
         differences=dict(
             cl_alpha_per_rad=cl_alpha_rad,
             two_pi=TWO_PI,
             two_pi_relative=(cl_alpha_rad - TWO_PI) / TWO_PI,
             lifting_line_finite_AR=lifting_line,
             lifting_line_relative=(cl_alpha_rad - lifting_line) / lifting_line,
-            note="2*pi is the two-dimensional limit; a finite wing must be lower. The finite-AR "
-                 "lifting-line value is the correct comparison for this geometry."),
-        levels=[dict(alpha_deg=a, CL=cl, CM_y=cm) for a, cl, cm in moments],
+            note="2*pi is the two-dimensional limit. Finite-AR lifting-line theory provides "
+                 "an approximation for this rectangular wing."),
+        levels=rows,
         notes=["Section lift is not extracted here; the wing CL is compared through the "
                "lifting-line relation, which is only valid for attached small-angle flow."])
 
@@ -278,52 +271,55 @@ def _trefftz(wing, state):
                                           reference_area=float(wing.reference_area))
 
 
-def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0):
-    ref = np.array(_reference()["tables"]["C05_elliptic"]["rows"], float)
+def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0, *, refine=False):
     rows = []
-    for aspect_ratio in aspect_ratios:
-        y, chord, root_chord = _elliptic_planform(aspect_ratio)
+    for target_ar in aspect_ratios:
+        y, chord, root_chord = _elliptic_planform(target_ar)
         wing = _grass_wing(y, chord)
+        span = float(np.ptp(wing.xyz[:, 1]))
+        aspect_ratio = span ** 2 / wing.reference_area
         state, seconds = _solve(wing, alpha_deg)
         drag = _trefftz(wing, state)
         gamma = np.asarray(state["gamma"], float)
         shape = wing.gamma_y[1:-1]
-        reference_shape = np.sqrt(np.clip(1.0 - (2.0 * shape / SPAN) ** 2, 0.0, None))
+        reference_shape = np.sqrt(np.clip(1.0 - (2.0 * shape / span) ** 2, 0.0, None))
         measured = gamma / np.max(gamma)
         reference_shape = reference_shape / np.max(reference_shape)
         measured_cl_alpha = float(state["CL"]) / np.deg2rad(alpha_deg)
-        exact_cl = float(np.interp(aspect_ratio, ref[:, 0], ref[:, 2]))
-        exact_slope = TWO_PI * aspect_ratio / (aspect_ratio + 2.0)
+        llt_slope = TWO_PI * aspect_ratio / (aspect_ratio + 2.0)
         optimum = drag["CL_circulation"] ** 2 / (np.pi * aspect_ratio)
         rows.append(dict(
-            aspect_ratio=aspect_ratio, root_chord=root_chord, faces=int(len(wing.xyz)),
+            target_aspect_ratio=target_ar, aspect_ratio=aspect_ratio,
+            root_chord=root_chord, faces=len(wing.faces),
             CL=float(state["CL"]), CL_gamma=float(state["CL_gamma"]),
-            cl_alpha=measured_cl_alpha, cl_alpha_lifting_line=exact_slope,
-            cl_alpha_relative=(measured_cl_alpha - exact_slope) / exact_slope,
-            CL_reference_at_4deg=exact_cl,
+            cl_alpha=measured_cl_alpha, cl_alpha_lifting_line=llt_slope,
+            cl_alpha_relative=(measured_cl_alpha - llt_slope) / llt_slope,
+            CL_reference=llt_slope * np.deg2rad(alpha_deg),
             cdi_trefftz=drag["CDi_ideal"], cdi_lifting_line=optimum,
             e=float(optimum / drag["CDi_ideal"]),
             gamma_shape_rms=float(np.sqrt(np.mean((measured - reference_shape) ** 2))),
             seconds=seconds))
     refinement = []
-    for sections, chordwise, spanwise in ((9, 6, 4), (13, 8, 6), (17, 10, 8)):
+    for sections, chordwise, spanwise in (((9, 6, 4), (13, 8, 6), (17, 10, 8)) if refine else ()):
         y, chord, root_chord = _elliptic_planform(6.0, sections=sections)
         wing = _grass_wing(y, chord, chord_panels=chordwise,
                            span_panels_per_segment=spanwise)
         state, seconds = _solve(wing, alpha_deg)
         drag = _trefftz(wing, state)
-        optimum = drag["CL_circulation"] ** 2 / (np.pi * 6.0)
+        span = float(np.ptp(wing.xyz[:, 1]))
+        aspect_ratio = span ** 2 / wing.reference_area
+        optimum = drag["CL_circulation"] ** 2 / (np.pi * aspect_ratio)
         measured = np.asarray(state["gamma"], float)
         shape = wing.gamma_y[1:-1]
-        reference_shape = np.sqrt(np.clip(1.0 - (2.0 * shape / SPAN) ** 2, 0.0, None))
+        reference_shape = np.sqrt(np.clip(1.0 - (2.0 * shape / span) ** 2, 0.0, None))
         reference_shape = reference_shape / np.max(reference_shape)
         measured = measured / np.max(measured)
         refinement.append(dict(
-            aspect_ratio=6.0, sections=sections, chordwise_panels=chordwise,
-            spanwise_panels_per_segment=spanwise, faces=int(len(wing.xyz)),
+            aspect_ratio=aspect_ratio, sections=sections, chordwise_panels=chordwise,
+            spanwise_panels_per_segment=spanwise, faces=len(wing.faces),
             CL=float(state["CL"]),
             cl_alpha=float(state["CL"]) / np.deg2rad(alpha_deg),
-            cl_alpha_lifting_line=TWO_PI * 6.0 / (6.0 + 2.0),
+            cl_alpha_lifting_line=TWO_PI * aspect_ratio / (aspect_ratio + 2.0),
             cdi_trefftz=drag["CDi_ideal"], e=float(optimum / drag["CDi_ideal"]),
             gamma_shape_rms=float(np.sqrt(np.mean((measured - reference_shape) ** 2))),
             seconds=seconds))
@@ -333,7 +329,7 @@ def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0):
     return _summary(
         "C05_elliptic_AR4_6_8_A4", status="ran",
         geometry_source="elliptic planform, span 8, 9 sections, finite tip chord",
-        solver_mode="potential_jump Kutta, collocation wall, Trefftz drag",
+        solver_mode=", ".join(state[key] for key in ("wall_formulation", "kutta", "pressure_recovery")),
         alpha_deg=alpha_deg,
         samples=dict(sections=9, chordwise_panels=6, spanwise_panels_per_segment=4),
         differences=dict(
@@ -343,11 +339,9 @@ def case_c05(aspect_ratios=(4.0, 6.0, 8.0), alpha_deg=4.0):
         levels=rows,
         refinement=dict(protocol="AR 6, sections/chordwise/spanwise refined together",
                         rows=refinement),
-        notes=["The planform keeps a finite tip chord instead of a cusped tip: a cusped tip "
-               "sweeps the trailing edge into the stream direction and the potential-jump "
-               "closure becomes near singular (docs/archive/notes/KUTTA_CONDITION.md section 8).",
-               "CDi is the exact Trefftz integral of the solved circulation, not the near-field "
-               "pressure drag, which is unreliable on these coarse chordwise grids."])
+        notes=["The mesh uses a finite tip chord. The ideal elliptical loading is an approximate "
+               "reference for this geometry.",
+               "CDi uses the exact Trefftz integral of the piecewise linear circulation."])
 
 
 # --------------------------------------------------------------------------- C06
@@ -359,7 +353,7 @@ def case_c06():
     return _summary(
         "C06_NACA0012_A0_4_10", status="blocked",
         geometry_source="TMR altered NACA 0012 (sharp trailing edge, 11.894% thickness)",
-        solver_mode="none yet: needs the 2D path for a like-for-like Cp comparison",
+        solver_mode="none: no matched-condition solver comparison configured",
         alpha_deg=None,
         differences=dict(
             ladson_80grit_rows=int(len(rows)),
@@ -402,6 +396,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--case", action="append", choices=sorted(CASES),
                         help="case to run; repeatable; default all")
+    parser.add_argument("--refine", action="store_true", help="include the three finer-grid C05 solves")
     parser.add_argument("--out", type=Path, default=ROOT / "runs" / "verification" / "calibration")
     args = parser.parse_args(argv)
     names = args.case or sorted(CASES)
@@ -409,7 +404,7 @@ def main(argv=None):
     records = []
     for name in names:
         started = time.perf_counter()
-        record = CASES[name]()
+        record = case_c05(refine=args.refine) if name == "C05" else CASES[name]()
         record["seconds"] = time.perf_counter() - started
         _print_case(record)
         records.append(record)

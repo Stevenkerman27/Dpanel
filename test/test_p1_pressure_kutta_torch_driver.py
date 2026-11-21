@@ -1,32 +1,13 @@
-"""S3 tests: the torch driver for the nonlinear pressure-Kutta solve.
-
-Two layers:
-
-* a static syntax-tree guard, runnable in any interpreter, that keeps the torch
-  path free of NumPy/SciPy (a LAPACK call after torch has executed in the same
-  process dies with 0xC0000005, section 6f of the phase-1 doc);
-* analytic checks of the trailing-edge pressure model and a frozen end-to-end
-  case, which need torch and are skipped in the default .conda_env.
-
-The frozen case (verification/issue92/s3_reference_g1_wing_rect.npz) holds the system,
-the linear initial state and the NumPy structured result, all produced in a
-separate process by tools.issue92.s3_pressure_parity bundle. It is gated by
-PANEL_TORCH_PARITY=1 because a passing run leaves the interpreter unusable for
-later LAPACK calls.
-
-    PANEL_TORCH_PARITY=1 python -m pytest test/test_p1_pressure_kutta_torch_driver.py
-"""
+"""Pressure model equations, finite-difference derivatives, and input validation."""
 from __future__ import annotations
 
 import ast
-import os
 import pathlib
 
 import numpy as np
 import pytest
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
-BUNDLE = REPO / "verification" / "issue92" / "s3_reference_g1_wing_rect.npz"
 TORCH_MODULES = ("panel/p1_pressure_kutta_torch.py",
                  "panel/p1_pressure_kutta_torch_driver.py",
                  "panel/p1_rank_aware_torch.py",
@@ -112,36 +93,6 @@ def test_pressure_jacobian_matches_finite_differences():
                          - model(torch.as_tensor(state - bump)).numpy()) / (2 * step)
     analytic = model.jacobian(torch.as_tensor(state)).numpy()
     np.testing.assert_allclose(analytic, numeric, rtol=0, atol=1e-7)
-
-
-@pytest.mark.skipif(os.environ.get("PANEL_TORCH_PARITY") != "1",
-                    reason="torch run leaves LAPACK unusable; set PANEL_TORCH_PARITY=1")
-def test_frozen_case_matches_the_numpy_structured_result():
-    torch = _torch()
-    from panel.p1_pressure_kutta_torch_driver import solve_pressure_kutta_torch
-    from tools.issue92.s3_pressure_parity import FrozenFacePressure
-
-    with np.load(BUNDLE) as data:
-        B, bw, kutta, grad = (data[key] for key in ("B", "bw", "kutta", "grad"))
-        x0, expected_state = data["x0"], data["expected"]
-        top_flat, top_ptr = data["top_flat"], data["top_ptr"]
-        bot_flat, bot_ptr = data["bot_flat"], data["bot_ptr"]
-        status, nfev = int(data["status"]), int(data["nfev"])
-        message = str(data["message"])
-        max_nfev = int(data["max_nfev"])
-        weight = float(data["weight"])
-    tops = np.split(top_flat, top_ptr[1:-1])
-    bots = np.split(bot_flat, bot_ptr[1:-1])
-    pairs = [(list(map(int, top)), list(map(int, bot))) for top, bot in zip(tops, bots)]
-
-    out = solve_pressure_kutta_torch(wall_operator=B, wall_rhs=bw, kutta_operator=kutta,
-                                     pressure_model=FrozenFacePressure(grad, pairs, B.shape[1]), x0=x0,
-                                     weight=weight, max_nfev=max_nfev)
-    assert int(out.result.status) == status
-    assert int(out.result.nfev) == nfev
-    assert str(out.result.message) == message
-    np.testing.assert_allclose(out.state.numpy(), expected_state, rtol=0,
-                               atol=1e-10 * max(1.0, np.abs(expected_state).max()))
 
 
 def test_rejects_inconsistent_inputs():

@@ -103,9 +103,9 @@ def test_cuda_is_refused_when_unavailable():
 
 def test_coupled_loop_wiring_records_and_rejects():
     from panel.p1_coupled_material_wake import TotalVelocity
-    from tools.issue92.s5_loop_parity import _mesh
+    from panel.p1_lifting_g2 import make_conventional_fixture
 
-    mesh = _mesh("g2_conventional")
+    mesh = make_conventional_fixture(wake_panels=1)
     gamma_dofs = sum(group.gamma_hat.shape[1] for group in mesh.groups)
     state = dict(mu=np.zeros(mesh.dof_face.max() + 1), gamma=np.zeros(gamma_dofs),
                  alpha_deg=5.0)

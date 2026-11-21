@@ -1,5 +1,8 @@
 # 已退役的研究代码（S12）
 
+旧 #92 求解器冻结回放退出 pytest，原测试可在 `93abddb` 取回。旧 `face` 和移植对照统一索引于
+[历史离散化对照](archive/notes/DISCRETIZATION_COMPARISONS.md)。
+
 2026-11-10：分支收敛到单一 `master`。三条历史研究分支不再以分支形式存在，
 其提交由 tag 保留，可 `git checkout archive/<name>` 取回：
 `archive/fix-issue113-b3-material-wake-map`（4 个提交，其材料尾迹映射修复已被
@@ -159,7 +162,7 @@ python -m tools.issue71.galerkin_ab --help                 # the A/B driver
 
 | 文档 | 原入口角色 | 降级原因 | 现入口 |
 | --- | --- | --- | --- |
-| `docs/archive/notes/KUTTA_CONDITION.md` | 后缘闭合的唯一入口 | 814 行按时间追加的实验日志；§11.2 的“pj 后掠 CDi 6 倍”是 collocation+face 口径，生产口径（Galerkin+area）复测不成立 | `docs/MODEL.md` §5–§6、`docs/VALIDATION.md` §3 |
+| `docs/archive/notes/KUTTA_CONDITION.md` | 后缘闭合的唯一入口 | 814 行按时间追加的实验日志；§11.2 的“pj 后掠 CDi 6 倍”是 collocation+face 口径，生产口径（Galerkin+area）复测不成立 | `docs/MODEL.md` §5–§6、`docs/archive/notes/DISCRETIZATION_COMPARISONS.md` §3 |
 | `docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md` | “求解链现在是什么、为什么 torch” | 移植清单，不是路线；内容已被摘要 | `docs/DEFECTS.md` D-3 |
 | `docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md` | VSPAERO 对照入口 | 实验协议，不是路线 | `docs/DEFECTS.md` D-3 |
 | `docs/archive/notes/P1_G2_COUPLED.md` | G2 耦合现状 | 部分内容过时（NumPy 链、G1 退役、JAX VJP）；实测数字仍可用 | `docs/reference/ARCHITECTURE_WAKE_MODELS.md` |
@@ -175,7 +178,7 @@ python -m tools.issue71.galerkin_ab --help                 # the A/B driver
 | 原路径 | 新路径 | 原因 |
 | --- | --- | --- |
 | `docs/ROUTE.md` | `docs/MODEL.md`、`docs/NUMERICS.md`、`docs/INTERFACE.md` | 路线拆成定义（模型/数值/契约）三层 |
-| `docs/TRAILING_EDGE.md` | `docs/MODEL.md` §5–§6、`docs/VALIDATION.md` §3 | 闭合与恢复的定义 + 参照表分开 |
+| `docs/TRAILING_EDGE.md` | `docs/MODEL.md` §5–§6、`docs/archive/notes/DISCRETIZATION_COMPARISONS.md` §3 | 闭合与恢复的定义 + 参照表分开 |
 | `docs/ISSUE77_92.md` | `docs/DEFECTS.md` | 并入缺陷登记，补上 D-4/D-5/D-6 |
 
 同日 `docs/reference/ISSUE77_92.md` 与 `docs/archive/RETIRED_RESEARCH.md` 是本页与旧索引被

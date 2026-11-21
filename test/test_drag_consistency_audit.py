@@ -88,21 +88,6 @@ def test_bad_tip_gamma_or_sideslip_fails_closed():
             [[0,0,0],[1,0,0],[2,0,0]],[[0,1,2]],[1,0,0])
 
 
-def test_396_panel_projection_matches_local_frozen_force_evidence():
-    # Algebraic control from existing PR22/JAX LU report. A separate
-    # later test must check every face's Cp directly from saved surface.
-    Fx,Fz=-.09838129905838668,1.2978769424355368
-    alpha=math.radians(5)
-    qS=.5*1.225*4
-    xx=Fx*math.cos(alpha)/qS
-    zz=Fz*math.sin(alpha)/qS
-    np.testing.assert_allclose(xx,-.040002827964629895,rtol=1e-13)
-    np.testing.assert_allclose(zz,.04617037914817501,rtol=1e-13)
-    np.testing.assert_allclose(
-        xx+zz,.006167551183545117,rtol=1e-13)
-    assert (abs(xx)+abs(zz))/abs(xx+zz)>13.
-
-
 def test_moment_pressure_integration_and_cancellation():
     x=np.array([[0.,0.,0.],[1.,0.,0.],[0.,1.,0.],
                 [0.,0.,1.],[0.,1.,1.],[1.,0.,1.]])

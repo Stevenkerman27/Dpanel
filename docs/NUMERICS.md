@@ -96,7 +96,6 @@
 | 项 | 数值 |
 |---|---|
 | 单次求解（782 壁面节点，固定尾迹） | 2–30 s（CPU 单线程，双精度） |
-| 12 组 A/B（[VALIDATION.md](VALIDATION.md) §3） | ≈ 3 min |
 | 设备 | CPU torch 为默认；CUDA fp64 可选（`device` 参数），无 CUDA 时须显式回退 |
 | 线程 | 证据脚本固定单线程（`torch.set_num_threads(1)`，OMP/MKL/OPENBLAS=1），保证可比 |
 | 内存 | 显存/内存随 DOF 增长；隐式可微路径的内存对照见 `docs/reference/DIFFERENTIABLE_MEMORY.md` |

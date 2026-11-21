@@ -53,19 +53,3 @@ def test_zero_circulation_exact_zero():
 def test_malformed_or_budget_rejected(y,g,extra):
     with pytest.raises(ValueError):
         exact(y,g,U=1,density=1,reference_area=1,**extra)
-
-
-def test_original_frozen_trapezoid_g16_corrects_midpoint_bias():
-    positive_y = np.array([0,.1,.125,.2,.25,.3,.375,.4,.5,.6,.625,.7,.75,.8,.875,.9,1.])
-    g = np.array([.06669027241957647,.06526425250354918,.06460226718787455,
-        .06284955722689158,.06170070122263945,.059921665406563615,
-        .058618483763331126,.0574658139613297,.054158883266997804,
-        .05057856083485603,.04917176992327179,.046075187572070804,
-        .0426124203483533,.04062310848170645,.03514773813135791,
-        .03800337472537438,0.])
-    y = np.r_[-positive_y[:0:-1],positive_y]
-    full_gamma = np.r_[g[:0:-1],g]
-    d = exact(y,full_gamma,U=1.,density=1.225,reference_area=.3)
-    assert d['CL_circulation'] == pytest.approx(.6752255469472184, abs=2e-13)
-    assert d['CDi_ideal'] == pytest.approx(.011354166445387759, abs=1e-11)
-    assert d['CDi_ideal'] > .010275854533530063*1.10

@@ -101,25 +101,24 @@ thickness_tip、camber_root、camber_tip、camber_position、sections。没有�
 
 | 数据 | 位置 | 读取方 |
 |---|---|---|
-| #92 冻结基准（s1–s9 的 npz + parity json） | `verification/issue92/`（`fixtures/` 为网格输入，`references/` 为参照） | `test/test_frozen_bundle_parity.py` 等 |
+| #92 移植档案及 VSPAERO 对照输入 | `verification/issue92/` | 历史研究工具与 VSPAERO 对照工具 |
 | #77 接触修复摘要 | `verification/issue77/` | 文档与 CI 工作流 |
 | 尾迹研究重放 | `verification/wake_*/` | 对应工具脚本 |
 | CST 梯度证据 | `verification/cst_gradient/` | `tools/cst_gradient_check.py` |
 | 标模参照表 | `benchmarks/calibration/reference.json` | `tools/calibration.py`（C01–C06） |
 | 运行产物 | `runs/verification/`、`runs/cases/`、`runs/scratch/`（gitignore） | 人工复核 |
 
-冻结基准是**测试输入**，不属于文档，因此不进 `docs/`；文档只引用路径。
+实验与理论参照由校准程序直接读取。
 
 ## 7 测试契约
 
 | 测试 | 固定下来的契约 |
 |---|---|
-| `test/test_frozen_bundle_parity.py` | torch 后端与冻结包的 CL/CD/μ/Γ 逐位一致（缺输入即失败，不跳过） |
 | `test/test_p1_cst_gradient.py` | `area` 下可微与生产算子的 CL/CD 差 ≤2e-9，批量 VJP 与逐载荷 VJP 一致 |
 | `test/test_web_solve_threads.py` | `--kutta production` 映射到 `kutta=None` |
 | `test/test_p1_te_recovery.py` | `area` 与 `quadratic` 的形状、同位置性质与秩判定 |
-| `test/test_p1_pressure_kutta_torch_driver.py` | pressure 驱动与冻结 bundle 的一致性 |
-| `test/test_p1_rank_aware_torch.py` | 秩感知最小二乘与参照结果一致 |
+| `test/test_p1_pressure_kutta_torch_driver.py` | 后缘压力定义、有限差分 Jacobian 与输入校验 |
+| `test/test_p1_rank_aware_torch.py` | 已知零空间、秩截断、最小范数解与输入校验 |
 | `test/test_p1_solution_status.py` | 灾变门的阈值语义 |
 | `test/test_wake_velocity_methods.py` | 尾迹速度方法文档路径常量指向现存文件 |
 

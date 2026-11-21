@@ -10,7 +10,7 @@ def test_every_case_of_issue_115_is_registered():
     assert sorted(calibration.CASES) == ["C01", "C02", "C03", "C04", "C05", "C06"]
 
 
-def test_reference_tables_are_frozen_with_their_conditions():
+def test_theory_and_experiment_tables_include_their_conditions():
     data = calibration._reference()
     tables = data["tables"]
     assert len(tables["C01_cylinder_cp"]["rows"]) == 9
@@ -42,7 +42,8 @@ def test_ladson_fit_uses_the_declared_band_only():
 
 
 def test_summary_fields_follow_the_issue_template(tmp_path):
-    record = calibration._summary("X", status="blocked", notes=["n"])
+    refinement = {"rows": [{"faces": 1560}, {"faces": 4640}]}
+    record = calibration._summary("X", status="ran", refinement=refinement)
     required = {"case_id", "geometry_source", "geometry_sha256", "solver_commit",
                 "solver_mode", "U_inf", "rho_inf", "mach", "reynolds_chord", "alpha_deg",
                 "transition", "reference_area", "mesh", "algebraic_residual",
@@ -53,7 +54,9 @@ def test_summary_fields_follow_the_issue_template(tmp_path):
     assert record["physical_acceptance"] == "not_assessed"
     path = tmp_path / "summary.json"
     path.write_text(json.dumps(record), encoding="utf-8")
-    assert json.loads(path.read_text(encoding="utf-8"))["case_id"] == "X"
+    written = json.loads(path.read_text(encoding="utf-8"))
+    assert written["case_id"] == "X"
+    assert written["refinement"] == refinement
 
 
 def test_cli_runs_only_the_requested_case(tmp_path, capsys):

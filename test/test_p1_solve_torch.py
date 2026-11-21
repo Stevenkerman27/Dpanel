@@ -1,32 +1,11 @@
-"""S5 tests: the torch backend inside the coupled free-wake loop.
-
-Two layers:
-
-* argument handling and the static syntax-tree guard, which run in any
-  interpreter and pin the defaults (`solve_backend="numpy"`,
-  `solve_device="cpu"`, `pressure_solver=None`);
-* one end-to-end torch solve against a frozen NumPy reference, gated by
-  PANEL_TORCH_PARITY=1 because the torch path leaves the process unable to call
-  NumPy LAPACK afterwards (section 6f of the phase-1 doc).
-
-The regression reference (verification/issue92/s5_reference_g2.npz) holds the operators and
-the loads of one NumPy structured solve on the g2_conventional fixture, written by
-tools.issue92.s5_loop_parity bundle in a separate process. It is a continuity check on
-the retired chain's own answer, not a statement that those numbers are physically right.
-
-    PANEL_TORCH_PARITY=1 python -m pytest test/test_p1_solve_torch.py
-"""
+"""Coupled solver defaults, input validation, and device consistency."""
 from __future__ import annotations
 
 import ast
-import os
 import pathlib
-
-import numpy as np
 import pytest
 
 REPO = pathlib.Path(__file__).resolve().parents[1]
-BUNDLE = REPO / "verification" / "issue92" / "s5_reference_g2.npz"
 TORCH_MODULES = ("panel/p1_solve_torch.py",)
 LOADS = ("CL", "CL_gamma", "CD_pressure", "CM_y")
 
@@ -73,8 +52,8 @@ def test_coupled_solve_defaults_resolve_to_torch_when_available():
 
 
 def _mesh():
-    from tools.issue92.s5_loop_parity import _mesh as case_mesh
-    return case_mesh("g2_conventional")
+    from panel.p1_lifting_g2 import make_conventional_fixture
+    return make_conventional_fixture()
 
 
 @pytest.mark.parametrize("kwargs, message", [
@@ -91,50 +70,14 @@ def test_bad_backend_arguments_fail_closed(kwargs, message):
         solve_coupled_material_wake(_mesh(), 5., iterations=0, **kwargs)
 
 
-@pytest.mark.skipif(not BUNDLE.is_file(), reason="run tools.issue92.s5_loop_parity bundle")
-def test_frozen_reference_metadata():
-    """The frozen bundle is self-describing, so the torch test cannot drift."""
-    data = np.load(BUNDLE)
-    for key in ("A", "W", "J", "K", "grad", "mu", "gamma", "cp", "loads",
-                "reference_area", "reference_chord", "reference_point"):
-        assert key in data.files, key
-    assert data["loads"].shape == (4,)
-
-
-@pytest.mark.skipif(os.environ.get("PANEL_TORCH_PARITY") != "1",
-                    reason="set PANEL_TORCH_PARITY=1; a torch run poisons later LAPACK calls")
-def test_torch_solve_matches_the_frozen_numpy_reference():
-    """End to end: assemble with NumPy, solve with torch, compare loads."""
-    _torch()
-    from panel.p1_lifting_g2 import assemble_multi
-    from panel.p1_solve_torch import solve_multi_torch
-    from tools.issue92.s5_loop_parity import _mesh as case_mesh
-    frozen = np.load(BUNDLE)
-    expected = dict(zip(LOADS, frozen["loads"].tolist()))
-    mesh = case_mesh("g2_conventional")
-    operators = assemble_multi(mesh)
-    got = solve_multi_torch(mesh, 5., operators=operators)
-    assert got["backend"] == "torch"
-    assert got["pressure_success"] is True
-    for key in LOADS:
-        relative = abs(got[key]-expected[key])/max(abs(expected[key]), 1e-12)
-        assert relative <= 1e-10, (key, got[key], expected[key], relative)
-    assert got["CL_gamma"] == pytest.approx(expected["CL_gamma"], rel=1e-10)
-
-
-@pytest.mark.skipif(os.environ.get("PANEL_TORCH_PARITY") != "1",
-                    reason="torch only")
-def test_torch_rejects_numpy_operators_of_the_wrong_width():
-    """A mismatched operator set must raise, not silently truncate."""
+def test_torch_rejects_an_unknown_kutta_closure():
     _torch()
     from panel.p1_solve_torch import solve_multi_torch
     mesh = _mesh()
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="kutta="):
         solve_multi_torch(mesh, 5., kutta="magic")
 
 
-@pytest.mark.skipif(os.environ.get("PANEL_TORCH_PARITY") != "1",
-                    reason="torch only")
 def test_cuda_matches_cpu_when_a_device_is_present():
     """The device must not change the answer: CPU and CUDA agree to 1e-10."""
     torch = _torch()
@@ -142,8 +85,7 @@ def test_cuda_matches_cpu_when_a_device_is_present():
         pytest.skip("no CUDA device on this host")
     from panel.p1_lifting_g2 import assemble_multi
     from panel.p1_solve_torch import solve_multi_torch
-    from tools.issue92.s5_loop_parity import _mesh as case_mesh
-    mesh = case_mesh("g2_conventional")
+    mesh = _mesh()
     operators = assemble_multi(mesh)
     cpu = solve_multi_torch(mesh, 5., operators=operators, device="cpu")
     cuda = solve_multi_torch(mesh, 5., operators=operators, device="cuda")

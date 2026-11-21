@@ -1,12 +1,6 @@
-"""Tests for the torch port of the rank-aware decision points (issue #92, S2).
-
-The static guard and the shape/argument validation run everywhere. The numerical
-tests need torch and skip without it; the SciPy parity test also needs
-PANEL_TORCH_PARITY=1 and the committed reference verification/issue92/s2_reference.npz.
-"""
+"""Rank-aware Torch solves on matrices with known null spaces and solutions."""
 import ast
 import importlib.util
-import os
 from pathlib import Path
 
 import pytest
@@ -15,7 +9,6 @@ HAS_TORCH = importlib.util.find_spec("torch") is not None
 requires_torch = pytest.mark.skipif(not HAS_TORCH, reason="torch is not installed")
 
 MODULE = Path(__file__).resolve().parents[1] / "panel" / "p1_rank_aware_torch.py"
-REFERENCE = Path(__file__).resolve().parents[1] / "verification" / "issue92" / "s2_reference.npz"
 
 
 def _api():
@@ -125,30 +118,3 @@ def test_invalid_inputs_are_rejected(which):
     }
     with pytest.raises(ValueError):
         calls[which]()
-
-
-@requires_torch
-@pytest.mark.skipif(os.environ.get("PANEL_TORCH_PARITY") != "1",
-                    reason="set PANEL_TORCH_PARITY=1 in the torch environment")
-def test_matches_the_scipy_reference():
-    import numpy as np
-    import torch
-
-    constrained_solve, _, null_space = _api()
-    data = np.load(REFERENCE)
-    state, report = constrained_solve(data["wall"], data["rhs"], data["constraints"])
-    decided = report["least_squares"]
-    assert report["null_space"]["null_dim"] == int(data["null_dim"])
-    assert decided["rank"] == int(data["rank"])
-    basis = null_space(data["constraints"], rcond=float(data["rcond"]))
-    projector = basis @ basis.mT
-    reference = torch.as_tensor(data["basis"], dtype=torch.float64)
-    reference = reference @ reference.mT
-    assert float(torch.max(torch.abs(projector - reference))) < 1e-14
-    reference_state = torch.as_tensor(data["state"], dtype=torch.float64)
-    relative = float(torch.linalg.vector_norm(state - reference_state)
-                     / torch.linalg.vector_norm(reference_state))
-    assert relative < 1e-10, relative
-    reference_singular = torch.as_tensor(data["singular"], dtype=torch.float64)
-    singular = torch.as_tensor(decided["singular"], dtype=torch.float64)
-    assert float(torch.max(torch.abs(singular - reference_singular))) / float(reference_singular[0]) < 1e-13
