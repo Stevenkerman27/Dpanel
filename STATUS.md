@@ -1,10 +1,43 @@
 # 项目状态
 
-更新：2026-11-10。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
+更新：2026-11-21。本文件是根目录唯一的状态入口；2026-10-26 的旧状态文档已移到 `docs/archive/root/`。
 
 ## 一句话
 
-JAX 可微气动面元求解器（解析源/偶极子 + 真实流体侧接触尾迹），另有全势/P2 对照线；几何与离散导数在声明范围内通过，**物理精度尚未验收**（`physical_accuracy_accepted=false`）。
+低速主线是 Torch P1 源/偶极子面元，Web 默认固定尾迹、Galerkin 弱壁面、`pressure` Kutta 和 `face` 恢复。GRASS/CST 固定拓扑有隐式几何梯度。JAX 面元、VLM/升力线和全势/P2 提供不同层级的对照。**物理精度尚未验收**（`physical_accuracy_accepted=false`）。
+
+## 路线复核（2026-11-21）
+
+- 已完成：核对 `e39d0fb` 的生产入口、梯度入口、各研究线和 GitHub。P1 正向与固定尾迹隐式伴随已有同几何、同闭合及中心差分回归。CAD 接触与尾迹拓扑由独立几何流程确定。自由尾迹有材料线推进、探针与几何门禁，仍缺跨构型的平衡收敛与耦合几何伴随。体网格 `potential/`、`airfoil2d/`、`volume/` 和 `lifting3d/` 有圆柱、Joukowski、闭体和受限翼身的前向证据，跨声速格式与三维形状伴随仍在研究范围。VSPAERO 可作口径对齐后的外部对照。WBCAero 保留为全势路线参考。
+- 全量回归：Windows/myml，Python 3.13.14、Torch 2.13.0+cu132、NumPy 2.4.6、SciPy 1.18.0，`OPENBLAS_NUM_THREADS=1`、`OMP_NUM_THREADS=1`、`MKL_NUM_THREADS=1`，执行 `python -m pytest -q test -p no:cacheprovider`，得到 **2 failed / 674 passed / 17 skipped / 2 xfailed，299.39 s**。两项失败均为 `test_frozen_bundle_parity.py` 的翼身 CAD 夹具，引用已清理的 `runs/cases/wingbody/{half_cad_wingbody_v1,half_cad_wingbody_3x}/surface.json`，求解尚未开始。两个预期失败仍是配点 `pressure` 的展弦比斜率和弦向加密。
+- 新对照：同一 30° 后掠 GRASS 翼、AR 6、4°、1560 壁面三角形（782 个壁面节点）、固定尾迹，保持网格与 Trefftz 积分一致。下表每格依次给出 `CL / CDi / Σ|ΔΓ|`。同址分岸 `area` 恢复在该网格上压下了锯齿，且两闭合接近。需要独立参考、跨平面形和弦/展向细化判定这种改善能否推广。
+
+| 壁面与恢复 | `pressure` | `potential_jump` |
+| --- | --- | --- |
+| collocation + face | 0.278962 / 0.004218 / 0.4545 | 0.345508 / 0.039837 / 6.9725 |
+| Galerkin + face | 0.298891 / 0.004936 / 0.3672 | 0.343703 / 0.060171 / 8.7622 |
+| Galerkin + area | 0.299383 / 0.004979 / 0.2506 | 0.299370 / 0.004980 / 0.2503 |
+
+在仓库根用上述环境启动 `python`，运行以下代码可复算对照：
+
+```python
+import numpy as np
+import torch
+from panel.p1_lifting_g1 import solve
+from tools.wake_closure_study import build, _trefftz
+
+torch.set_num_threads(1)
+wing, digest = build("swept30")
+print(len(wing.faces), digest)
+for wall, recovery in [("collocation", "face"), ("galerkin", "face"), ("galerkin", "area")]:
+    for kutta in ["pressure", "potential_jump"]:
+        state = solve(wing, 4., wall_formulation=wall, pressure_recovery=recovery, kutta=kutta)
+        print(wall, recovery, kutta, state["CL"], _trefftz(wing, state)["CDi_ideal"],
+              np.abs(np.diff(state["gamma"])).sum())
+```
+
+- 当前阻塞与下一步：恢复两项 CAD 回归的可复现输入。以固定尾迹 P1 做物理验收，隔离壁面离散、尾缘速度恢复、闭合、翼尖和网格误差，检查 `Cp`、`Γ`、`CL`、`CM`、Trefftz `CDi` 及独立外侧法向速度。按固定拓扑定义允许的参数范围，再对同批网格上的方向导数和优化步验收。自由尾迹先验收几何、未松弛残差、滑移与尾迹压差，再求耦合伴随。性能用同模型的前向和反向分段测量。
+- GitHub 复核时远端 `master` 为 `7a959d9`，较本次测试的 `e39d0fb` 少 6 个提交（本地 `origin/master` 缓存仍在 `04a9913`）。开放 36 个 issue、2 个 PR（#114、#98）。#115 仍有标模缺口，#113 的既有回放与更新后的材料推进给出不同算例结果，#103 应接续区分固定拓扑与通用 CAD 梯度。两个 PR 的后续处置需核对剩余研究内容和分支差异。
 
 ## 代码基线
 
