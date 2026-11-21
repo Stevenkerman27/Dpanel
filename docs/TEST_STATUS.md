@@ -58,7 +58,7 @@ OPENBLAS_CORETYPE、NPY_DISABLE_CPU_FEATURES 都不改变结果；按行分块�
 | test/test_analytic_batch.py | 1 |
 | test/test_wake_step_scale.py | 1 |
 
-本轮同时把 `runs/` 按功能重组（见 [../runs/README.md](../runs/README.md)），
+本轮同时把 `runs/` 按功能重组，
 这次实测没有任何 `No such file` / 路径类失败，说明重组没有改坏测试。
 
 ### 2.2 重组前基线（提交 `86fab48`，只排除 7 个 torch 文件）

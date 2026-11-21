@@ -134,3 +134,19 @@ python -m tools.issue71.galerkin_ab --help                 # the A/B driver
 并依赖已退役的 `panel/p1_solution_status.py`；它的唯一测试被删除而不是
 重新实现，因为活动验收谓词位于 `panel/p1_lifting_g2.py`，并
 由其自身测试覆盖。
+
+## 文档降级（2026-11-21）
+
+路线文档从“按 issue/日志找”改为三层：`docs/ROUTE.md`（实际路线与默认值）、
+`docs/TRAILING_EDGE.md`（后缘闭包与速度恢复）、`docs/ISSUE77_92.md`（两次大修的遗留）。
+下列文档**退出入口层**，保留为证据，均已在文件头加横幅：
+
+| 文档 | 原入口角色 | 降级原因 | 现入口 |
+| --- | --- | --- | --- |
+| `docs/KUTTA_CONDITION.md` | 后缘闭合的唯一入口 | 814 行按时间追加的实验日志；§11.2 的“pj 后掠 CDi 6 倍”是 collocation+face 口径，生产口径（Galerkin+area）复测不成立 | `docs/TRAILING_EDGE.md` |
+| `docs/ISSUE92_TORCH_PORT_MAP.md` | “求解链现在是什么、为什么 torch” | 移植清单，不是路线；内容已被摘要 | `docs/ISSUE77_92.md` |
+| `docs/ISSUE92_B3_VSPAERO_PROTOCOL.md` | VSPAERO 对照入口 | 实验协议，不是路线 | `docs/ISSUE77_92.md` |
+| `docs/P1_G2_COUPLED.md` | G2 耦合现状 | 部分内容过时（NumPy 链、G1 退役、JAX VJP）；实测数字仍可用 | `docs/ARCHITECTURE_WAKE_MODELS.md` |
+
+`docs/README.md` 同时重写为分层索引（路线层 3 篇 / 状态只认 `STATUS.md` / 参考层 16 篇 /
+归档），并删掉了指向已不存在的 `WORKFLOW.md` 的死链。

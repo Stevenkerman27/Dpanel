@@ -1,5 +1,9 @@
 # B3: DPanel versus VSPAERO on four geometries
 
+> **实验协议（2026-11-21 降级）**：本文是自由尾迹/B3 与 VSPAERO 的对照协议，不是路线入口。
+> 摘要见 [ISSUE77_92.md](ISSUE77_92.md)；VSPAERO 不是真值 oracle。
+
+
 Issue #92, Route B, third gate. This document records the protocol, the raw
 numbers and the attribution for a cross-code comparison of the inviscid lift
 and induced drag of four wings. It replaces no solver behaviour: nothing in
