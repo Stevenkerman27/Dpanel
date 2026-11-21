@@ -146,23 +146,37 @@ python -m tools.issue71.galerkin_ab --help                 # the A/B driver
 | `docs/issue39_schema_example_v2.json` | `verification/issue39_schema_example_v2.json` | 数据 |
 | `docs/ACCEPTANCE.md` 等 15 篇 | `docs/reference/` | 模块入口，不是路线 |
 | `docs/KUTTA_CONDITION.md`、`docs/P1_G2_COUPLED.md` | `docs/archive/notes/` | 证据日志 |
-| `docs/ISSUE92_TORCH_PORT_MAP.md`、`docs/ISSUE92_B3_VSPAERO_PROTOCOL.md` | `docs/archive/issue/` | 过程/协议；摘要见 `docs/ISSUE77_92.md` |
+| `docs/ISSUE92_TORCH_PORT_MAP.md`、`docs/ISSUE92_B3_VSPAERO_PROTOCOL.md` | `docs/archive/issue/` | 过程/协议；摘要见 `docs/DEFECTS.md` D-3 |
 
 代码与文档里的路径字符串已同步替换（`.gitignore` 的 `!verification/issue92/fixtures/*.npz` 也改过），
 `docs/archive/` 内旧文中的路径一并改写，内容未改。
 
 ## 文档降级（2026-11-21）
 
-路线文档从“按 issue/日志找”改为三层：`docs/ROUTE.md`（实际路线与默认值）、
-`docs/TRAILING_EDGE.md`（后缘闭包与速度恢复）、`docs/ISSUE77_92.md`（两次大修的遗留）。
+路线文档从“按 issue/日志找”改为按主题分层（当时的形态是 ROUTE / TRAILING_EDGE / ISSUE77_92，
+当天下午进一步改写为定义式文档，见下节）。
 下列文档**退出入口层**，保留为证据，均已在文件头加横幅：
 
 | 文档 | 原入口角色 | 降级原因 | 现入口 |
 | --- | --- | --- | --- |
-| `docs/archive/notes/KUTTA_CONDITION.md` | 后缘闭合的唯一入口 | 814 行按时间追加的实验日志；§11.2 的“pj 后掠 CDi 6 倍”是 collocation+face 口径，生产口径（Galerkin+area）复测不成立 | `docs/TRAILING_EDGE.md` |
-| `docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md` | “求解链现在是什么、为什么 torch” | 移植清单，不是路线；内容已被摘要 | `docs/ISSUE77_92.md` |
-| `docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md` | VSPAERO 对照入口 | 实验协议，不是路线 | `docs/ISSUE77_92.md` |
+| `docs/archive/notes/KUTTA_CONDITION.md` | 后缘闭合的唯一入口 | 814 行按时间追加的实验日志；§11.2 的“pj 后掠 CDi 6 倍”是 collocation+face 口径，生产口径（Galerkin+area）复测不成立 | `docs/MODEL.md` §5–§6、`docs/VALIDATION.md` §3 |
+| `docs/archive/issue/ISSUE92_TORCH_PORT_MAP.md` | “求解链现在是什么、为什么 torch” | 移植清单，不是路线；内容已被摘要 | `docs/DEFECTS.md` D-3 |
+| `docs/archive/issue/ISSUE92_B3_VSPAERO_PROTOCOL.md` | VSPAERO 对照入口 | 实验协议，不是路线 | `docs/DEFECTS.md` D-3 |
 | `docs/archive/notes/P1_G2_COUPLED.md` | G2 耦合现状 | 部分内容过时（NumPy 链、G1 退役、JAX VJP）；实测数字仍可用 | `docs/reference/ARCHITECTURE_WAKE_MODELS.md` |
 
-`docs/README.md` 同时重写为分层索引（路线层 3 篇 / 状态只认 `STATUS.md` / 参考层 16 篇 /
-归档），并删掉了指向已不存在的 `WORKFLOW.md` 的死链。
+`docs/README.md` 同时重写为分层索引（定义层 5 篇 / 状态只认 `STATUS.md` / 参考层 15 篇 / 归档），
+并删掉了指向已不存在的 `WORKFLOW.md` 的死链。
+
+## 定义文档替换（2026-11-21）
+
+路线层三篇改写为定义式文档（符号、方程、离散、默认值、不变量、契约、参照值），不再使用
+问答式标题与叙述。三篇原文删除，内容按下表并入：
+
+| 原路径 | 新路径 | 原因 |
+| --- | --- | --- |
+| `docs/ROUTE.md` | `docs/MODEL.md`、`docs/NUMERICS.md`、`docs/INTERFACE.md` | 路线拆成定义（模型/数值/契约）三层 |
+| `docs/TRAILING_EDGE.md` | `docs/MODEL.md` §5–§6、`docs/VALIDATION.md` §3 | 闭合与恢复的定义 + 参照表分开 |
+| `docs/ISSUE77_92.md` | `docs/DEFECTS.md` | 并入缺陷登记，补上 D-4/D-5/D-6 |
+
+同日 `docs/reference/ISSUE77_92.md` 与 `docs/archive/RETIRED_RESEARCH.md` 是本页与旧索引被
+链接重写脚本误移的副本，已删除/移回。

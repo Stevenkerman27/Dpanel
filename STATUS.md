@@ -10,7 +10,7 @@
 
 - 当前主线与路线边界：固定尾迹 P1 有前向和几何伴随；自由尾迹有材料线推进与几何门禁，但缺跨构型平衡验收和耦合伴随。全势/P2 有受限算例前向证据，通用三维形状梯度与跨声速格式未完成。JAX、升力线和 VSPAERO 用作独立对照；WBCAero 仅作路线参考。
 - 全量回归：Windows/myml、Python 3.13.14、Torch 2.13.0+cu132、NumPy 2.4.6、SciPy 1.18.0；单线程 BLAS/OMP/MKL 执行 `python -m pytest -q test -p no:cacheprovider`，结果 **674 passed / 17 skipped / 2 xfailed / 2 failed，299.39 s**。两项失败是冻结回归所需的翼身 CAD 输入已不存在；求解未开始。两项预期失败是 `pressure` 配点闭合的升力斜率和弦向细化问题。
-- 后缘恢复对照：同一 30° 后掠 GRASS 翼、AR 6、4°、782 个壁面节点、固定尾迹。下表为 `CL / Trefftz CDi / Σ|ΔΓ|`。此单网格结果显示 `area` 恢复显著减弱环量锯齿、使两种闭合接近。2026-11-21 补充展向细化：同一后掠翼（弦向 6 分段）每段 3/4/5 等分下，`face + potential_jump` 的 e = 0.377 / 0.099 / 0.0028（CDi 到 1.6e1，Γ 变号 56 次），`area + potential_jump` 稳定在 0.895–0.899；即坏组合是 “face + pj”，不是 pj 方程或后掠翼本身。结论、对照表与复算入口见 [docs/TRAILING_EDGE.md](docs/TRAILING_EDGE.md)；尚不能推广为精度结论。
+- 后缘恢复对照：同一 30° 后掠 GRASS 翼、AR 6、4°、782 个壁面节点、固定尾迹。下表为 `CL / Trefftz CDi / Σ|ΔΓ|`。此单网格结果显示 `area` 恢复显著减弱环量锯齿、使两种闭合接近。2026-11-21 补充展向细化：同一后掠翼（弦向 6 分段）每段 3/4/5 等分下，`face + potential_jump` 的 e = 0.377 / 0.099 / 0.0028（CDi 到 1.6e1，Γ 变号 56 次），`area + potential_jump` 稳定在 0.895–0.899；即坏组合是 “face + pj”，不是 pj 方程或后掠翼本身。定义见 [docs/MODEL.md](docs/MODEL.md) §5–§6，对照表与复算入口见 [docs/VALIDATION.md](docs/VALIDATION.md) §3；尚不能推广为精度结论。
 
 | 壁面与恢复 | `pressure` | `potential_jump` |
 | --- | --- | --- |
@@ -50,9 +50,11 @@ for wall, recovery in [("collocation", "face"), ("galerkin", "face"), ("galerkin
 | --- | --- |
 | 协作、分支、验收规范 | [AGENTS.md](AGENTS.md) |
 | 现役文档与证据索引 | [docs/README.md](docs/README.md) |
-| 实际求解路线、各入口默认值、已知不一致 | [docs/ROUTE.md](docs/ROUTE.md) |
-| 后缘闭包（pressure/pj）与速度恢复（face/area）怎么选 | [docs/TRAILING_EDGE.md](docs/TRAILING_EDGE.md) |
-| issue #77（接触迹/Γ 支撑）与 #92（torch 移植）留下了什么 | [docs/ISSUE77_92.md](docs/ISSUE77_92.md) |
+| 模型定义：方程、离散、两种闭合、三种恢复、力与可微 | [docs/MODEL.md](docs/MODEL.md) |
+| 数值定义：装配、约束降维、求解器、判据、条件数、成本 | [docs/NUMERICS.md](docs/NUMERICS.md) |
+| 接口契约：调用链、默认值、输出字段、异常、数据位置 | [docs/INTERFACE.md](docs/INTERFACE.md) |
+| 参照值：冻结包、A/B 表、细化、回归基线、不声明项 | [docs/VALIDATION.md](docs/VALIDATION.md) |
+| 缺陷登记：#77 两条、#92 移植、face+pj 缺口、开放 issue | [docs/DEFECTS.md](docs/DEFECTS.md) |
 | #77/#92 的原始数据与过程日志 | `verification/issue92/`、`verification/issue77/`（测试重放用）；日志在 [docs/archive/issue/](docs/archive/issue/) |
 | 标模校准与验收比较 | [docs/reference/CALIBRATION.md](docs/reference/CALIBRATION.md)、[docs/reference/ACCEPTANCE.md](docs/reference/ACCEPTANCE.md) |
 | 尾迹模型和自由尾迹限制 | [docs/reference/ARCHITECTURE_WAKE_MODELS.md](docs/reference/ARCHITECTURE_WAKE_MODELS.md) |

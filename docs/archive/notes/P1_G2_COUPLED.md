@@ -2,7 +2,7 @@
 
 > **部分过时（2026-11-21）**：文中“NumPy/SciPy CPU 链”“基座 P1 G1 已退役”“最终需要 JAX 几何 VJP”
 > 均已不成立——现为 Torch、`p1_lifting_g1.solve` 只是薄适配器、几何 VJP 已用隐式微分进生产
-> （[ROUTE.md](../../ROUTE.md) §3）。G2 耦合实测（192 面、5° CLp 0.365472 vs 分离求和 0.417510）仍可用。
+> （[MODEL.md](../../MODEL.md) §8、[INTERFACE.md](../../INTERFACE.md) §2）。G2 耦合实测（192 面、5° CLp 0.365472 vs 分离求和 0.417510）仍可用。
 
 
 基于 P1 G1（`research/p1-g1-te-pairing-fix@4051ee8`）的研究实现。
